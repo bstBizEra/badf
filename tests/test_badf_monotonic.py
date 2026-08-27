@@ -20,6 +20,7 @@ import unittest
 from pathlib import Path
 
 import scripts.badf_gate as gate
+from tests._scratch import seed_clone
 
 MATRIX = gate.ROOT / gate.MATRIX
 
@@ -204,32 +205,7 @@ class CommittedDowngradeTests(unittest.TestCase):
         # deliberate breakage. Resolving the SHA from the checkout's origin/main
         # and fetching that one commit works on push, pull_request and detached
         # checkouts alike.
-        base = subprocess.run(["git", "-C", str(gate.ROOT), "rev-parse", f"origin/{gate.DEFAULT_BRANCH}"],
-                              capture_output=True, text=True, check=True).stdout.strip()
-        self.clone.mkdir()
-        subprocess.run(["git", "-C", str(self.clone), "init", "-q"], check=True)
-        subprocess.run(["git", "-C", str(self.clone), "remote", "add", "origin", str(gate.ROOT)], check=True)
-        subprocess.run(["git", "-C", str(self.clone), "fetch", "-q", "origin", base], check=True)
-        subprocess.run(["git", "-C", str(self.clone), "update-ref", f"refs/remotes/origin/{gate.DEFAULT_BRANCH}", base],
-                       check=True)
-        subprocess.run(["git", "-C", str(self.clone), "checkout", "-q", "-B", gate.DEFAULT_BRANCH, base], check=True)
-        subprocess.run(["git", "-C", str(self.clone), "config", "user.email", "t@t"], check=True)
-        subprocess.run(["git", "-C", str(self.clone), "config", "user.name", "t"], check=True)
-        # The clone must run the guard UNDER TEST, not the baseline's copy of it.
-        shutil.copy2(gate.ROOT / "scripts" / "badf_gate.py", self.clone / "scripts" / "badf_gate.py")
-        # And carry the decision records: since WP-0009 badf/decisions/*.json is
-        # a locked glob, and a glob matching nothing is refused (WP-0007). A
-        # clone without them cannot even re-sign.
-        dec_src = gate.ROOT / gate.DECISIONS_DIR
-        dec_dst = self.clone / gate.DECISIONS_DIR
-        dec_dst.mkdir(parents=True, exist_ok=True)
-        for f in dec_src.glob("BADF-DEC-000*.json"):
-            shutil.copy2(f, dec_dst / f.name)
-        # WP-0010 locked badf/repositories.json and work/**; a clone without them
-        # cannot re-sign (an empty glob is refused). Carry both.
-        shutil.copy2(gate.ROOT / gate.REPOSITORIES, self.clone / gate.REPOSITORIES)
-        if (gate.ROOT / "work").is_dir():
-            shutil.copytree(gate.ROOT / "work", self.clone / "work", dirs_exist_ok=True)
+        seed_clone(self.clone, carry_working_state=True)
         subprocess.run(["git", "-C", str(self.clone), "checkout", "-q", "-b", "weaken"], check=True)
         m = json.loads((self.clone / gate.MATRIX).read_text())
         m["change_classes"]["C3"]["required_roles"] = ["human_sponsor"]

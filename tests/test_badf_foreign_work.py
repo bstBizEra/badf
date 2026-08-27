@@ -19,6 +19,7 @@ import unittest
 from pathlib import Path
 
 import scripts.badf_gate as gate
+from tests._scratch import seed_clone
 
 WP = gate.ROOT / "work/WP-2026-0010"
 DOSSIER = WP / "gate-dossier.G07.json"
@@ -42,14 +43,7 @@ class ScratchCloneMixin:
     def setUp(self):
         self.tmp = tempfile.mkdtemp()
         self.root = Path(self.tmp) / "badf"
-        subprocess.run(["git", "clone", "-q", str(gate.ROOT), str(self.root)], check=True)
-        # the clone must see the same working state as ROOT (uncommitted WP files included)
-        for rel in ("work", "badf/repositories.json", "badf/decisions", "scripts/badf_gate.py"):
-            src = gate.ROOT / rel; dst = self.root / rel
-            if src.is_dir():
-                shutil.rmtree(dst, ignore_errors=True); shutil.copytree(src, dst)
-            else:
-                dst.parent.mkdir(parents=True, exist_ok=True); shutil.copy2(src, dst)
+        seed_clone(self.root, carry_working_state=True)
         self.env = {k: v for k, v in os.environ.items() if not k.startswith("BADF_")}
         self.lock()
         self.wp = self.root / "work/WP-2026-0010"
