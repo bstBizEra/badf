@@ -121,6 +121,70 @@
     "author": {
       "type": "string",
       "minLength": 1
+    },
+    "conditions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "condition_id",
+          "statement",
+          "status",
+          "severity",
+          "blocking_scope",
+          "owner",
+          "closure_predicate",
+          "closure_authority"
+        ],
+        "properties": {
+          "condition_id": {
+            "type": "string",
+            "pattern": "^C-[0-9]+$"
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": [
+              "OPEN",
+              "CLOSED",
+              "SUPERSEDED",
+              "WAIVED"
+            ]
+          },
+          "severity": {
+            "enum": [
+              "Critical",
+              "Major",
+              "Minor"
+            ]
+          },
+          "blocking_scope": {
+            "type": "string",
+            "minLength": 1
+          },
+          "owner": {
+            "type": "string",
+            "minLength": 1
+          },
+          "closure_predicate": {
+            "type": "string",
+            "minLength": 1
+          },
+          "closure_authority": {
+            "type": "string",
+            "minLength": 1
+          },
+          "closed_by": {
+            "type": "string"
+          },
+          "closed_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
     }
   }
 }

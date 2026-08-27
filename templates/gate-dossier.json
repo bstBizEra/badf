@@ -28,5 +28,17 @@
   "risks": [],
   "disposition": "BLOCKED",
   "created_at": "YYYY-MM-DDTHH:MM:SSZ",
-  "author": "<principal-id-of-the-author>"
+  "author": "<principal-id-of-the-author>",
+  "conditions": [
+    {
+      "condition_id": "C-<n>",
+      "statement": "<what is still owed>",
+      "status": "OPEN",
+      "severity": "Critical|Major|Minor",
+      "blocking_scope": "<gate or stage this blocks, or 'none'>",
+      "owner": "<role-from-authority-matrix>",
+      "closure_predicate": "<observable test that closes it>",
+      "closure_authority": "<role-from-authority-matrix, not the author>"
+    }
+  ]
 }
