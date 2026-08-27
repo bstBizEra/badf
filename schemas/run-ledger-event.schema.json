@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "BADF run-ledger event",
+  "description": "One line of work/<WP>/run-ledger.jsonl. Append-only, hash-chained. Ported from secb_pf EVENT_ENVELOPE.schema.json: the load-bearing fields only. tenant/ticket/retention are deliberately absent -- a field that is always a placeholder is a lie waiting to be relied on.",
+  "type": "object",
+  "required": [
+    "event_id",
+    "workflow_id",
+    "sequence",
+    "step",
+    "outcome",
+    "actor",
+    "recorded_at",
+    "previous_event_hash",
+    "event_hash"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "pattern": "^EVT-[A-Za-z0-9._-]+$"
+    },
+    "workflow_id": {
+      "type": "string",
+      "pattern": "^WP-[A-Za-z0-9._-]+$"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "step": {
+      "type": "string",
+      "minLength": 1
+    },
+    "outcome": {
+      "enum": [
+        "PREPARED",
+        "COMMITTED",
+        "REJECTED",
+        "OUTCOME_UNKNOWN",
+        "PROVEN_ABSENT",
+        "COMPENSATED",
+        "MANUAL_REMEDIATION",
+        "SKIPPED_ALREADY_COMMITTED",
+        "OBSERVED"
+      ]
+    },
+    "actor": {
+      "type": "object",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "enum": [
+            "human",
+            "agent",
+            "service",
+            "controller"
+          ]
+        }
+      }
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "effect_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "idempotency_key": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "output_digest": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "note": {
+      "type": "string"
+    },
+    "provenance": {
+      "enum": [
+        "RECORDED_AT_EVENT_TIME",
+        "RECONSTRUCTED"
+      ]
+    },
+    "previous_event_hash": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        {
+          "const": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        }
+      ]
+    },
+    "event_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}

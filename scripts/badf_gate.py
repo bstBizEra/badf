@@ -77,6 +77,7 @@ INTEGRITY_PATHS = [
     # plus a re-pointed artifact is a consistent forgery the gate cannot see.
     # Every new work package re-signs the lockfile: that is the reviewable act.
     "work/**/*.json",
+    "work/**/*.jsonl",
     "work/**/*.diff",
     "work/**/*.txt",
     "schemas/*.json",
@@ -118,6 +119,14 @@ CLASS_RANK = {"C0": 0, "C1": 1, "C2": 2, "C3": 3}
 DECISION_ID = re.compile(r"^BADF-DEC-[0-9]{4,}$")
 DECISIONS_DIR = "badf/decisions"
 REPOSITORIES = "badf/repositories.json"
+LEDGER_NAME = "run-ledger.jsonl"
+GENESIS_HASH = "sha256:" + "0" * 64
+LEDGER_FIELDS = {"event_id", "workflow_id", "sequence", "step", "outcome", "actor", "recorded_at",
+                 "previous_event_hash", "event_hash"}
+LEDGER_OUTCOMES = {"PREPARED", "COMMITTED", "REJECTED", "OUTCOME_UNKNOWN", "PROVEN_ABSENT",
+                   "COMPENSATED", "MANUAL_REMEDIATION", "SKIPPED_ALREADY_COMMITTED", "OBSERVED"}
+TERMINAL_OUTCOMES = {"COMMITTED", "REJECTED", "PROVEN_ABSENT", "COMPENSATED", "MANUAL_REMEDIATION",
+                     "SKIPPED_ALREADY_COMMITTED", "OBSERVED"}
 DECISION_FIELDS = {
     "schema_version", "decision_id", "title", "status", "decided_at",
     "decision_authority", "work_package_id", "change_class", "ballot",
@@ -976,6 +985,113 @@ def verify_foreign_revision(dossier: dict[str, Any], indexed: dict[str, str]) ->
             raise ValidationError(
                 f"source-change artifact does not match what {revision[:12]} actually changed in {repo_name} "
                 f"(recorded {len(recorded)} bytes, actual {len(actual.stdout)} bytes)")
+
+
+def _event_hash(event: dict[str, Any]) -> str:
+    """Hash of the event with its own event_hash removed; keys sorted so the
+    chain is independent of write order."""
+    body = {k: v for k, v in event.items() if k != "event_hash"}
+    return "sha256:" + hashlib.sha256(json.dumps(body, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def read_ledger(wp_dir: Path) -> list[dict[str, Any]]:
+    """The run ledger, verified: every event well-formed, sequence strictly
+    increasing from 1, hash chain intact. A broken chain is a refusal, not a
+    warning -- the ledger's whole value is that it cannot be edited in place.
+    Ported from secb_pf DETERMINISTIC_REPLAY_STANDARD step 3.
+    """
+    path = wp_dir / LEDGER_NAME
+    if not path.is_file():
+        raise ValidationError(f"no run ledger at {path.relative_to(ROOT)}")
+    events: list[dict[str, Any]] = []
+    prev = GENESIS_HASH
+    for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        if not line.strip():
+            continue
+        try:
+            ev = json.loads(line, object_pairs_hook=_no_duplicate_keys)
+        except ValueError as exc:
+            raise ValidationError(f"ledger line {n} is not valid JSON: {exc}")
+        require_fields(ev, LEDGER_FIELDS, f"ledger line {n}")
+        if ev["sequence"] != len(events) + 1:
+            raise ValidationError(f"ledger line {n}: sequence {ev['sequence']} breaks the run (expected {len(events)+1})")
+        if ev["outcome"] not in LEDGER_OUTCOMES:
+            raise ValidationError(f"ledger line {n}: invalid outcome {ev['outcome']!r}")
+        if ev["previous_event_hash"] != prev:
+            raise ValidationError(f"ledger line {n}: hash chain broken (previous_event_hash does not match event {n-1})")
+        if ev["event_hash"] != _event_hash(ev):
+            raise ValidationError(f"ledger line {n}: event_hash does not match content -- ledger edited in place")
+        events.append(ev)
+        prev = ev["event_hash"]
+    return events
+
+
+def replay_run(wp_dir: Path) -> dict[str, Any]:
+    """Reconstruct run state from the ledger. PURE: reads only, appends
+    nothing, re-executes nothing. Mandate section 6: 'Replay reconstructs
+    state; replay must not repeat external side effects.'
+
+    An effect whose LAST recorded outcome is OUTCOME_UNKNOWN is returned as
+    unresolved: the protocol says it is never terminal, and resume must
+    reconcile it before scheduling anything new.
+    """
+    events = read_ledger(wp_dir)
+    committed: dict[str, str] = {}
+    last_by_effect: dict[str, str] = {}
+    for ev in events:
+        eid = ev.get("effect_id")
+        if eid:
+            last_by_effect[eid] = ev["outcome"]
+            if ev["outcome"] == "COMMITTED" and ev.get("output_digest"):
+                committed[eid] = ev["output_digest"]
+    unresolved = sorted(e for e, o in last_by_effect.items() if o == "OUTCOME_UNKNOWN")
+    return {
+        "workflow_id": events[-1]["workflow_id"] if events else None,
+        "current_step": events[-1]["step"] if events else None,
+        "sequence": len(events),
+        "committed_effects": committed,
+        "unresolved_effects": unresolved,
+        "head_hash": events[-1]["event_hash"] if events else GENESIS_HASH,
+    }
+
+
+def plan_next_effect(wp_dir: Path, effect_id: str) -> str:
+    """What resume must do about an effect. Deny-unless-established: an
+    effect with a recorded receipt is SKIPPED, an unresolved one must be
+    RECONCILED first, anything else may be PREPARED. Never re-executed blind."""
+    state = replay_run(wp_dir)
+    if effect_id in state["committed_effects"]:
+        return "SKIP_ALREADY_COMMITTED"
+    if effect_id in state["unresolved_effects"]:
+        return "RECONCILE_FIRST"
+    return "PREPARE"
+
+
+def append_event(wp_dir: Path, step: str, outcome: str, actor_id: str, actor_type: str,
+                 effect_id: str | None = None, output_digest: str | None = None,
+                 note: str | None = None, provenance: str = "RECORDED_AT_EVENT_TIME") -> dict[str, Any]:
+    """Append one chained event. Verifies the existing chain first, so an
+    append onto a tampered ledger is refused rather than laundered."""
+    path = wp_dir / LEDGER_NAME
+    events = read_ledger(wp_dir) if path.is_file() else []
+    if outcome not in LEDGER_OUTCOMES:
+        raise ValidationError(f"invalid outcome {outcome!r}")
+    if actor_type not in PRINCIPAL_TYPES:
+        raise ValidationError(f"invalid actor type {actor_type!r}")
+    seq = len(events) + 1
+    ev: dict[str, Any] = {
+        "event_id": f"EVT-{wp_dir.name}-{seq:04d}", "workflow_id": wp_dir.name, "sequence": seq,
+        "step": step, "outcome": outcome, "actor": {"id": actor_id, "type": actor_type},
+        "recorded_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "effect_id": effect_id, "output_digest": output_digest, "provenance": provenance,
+        "previous_event_hash": events[-1]["event_hash"] if events else GENESIS_HASH,
+    }
+    if note:
+        ev["note"] = note
+    ev["event_hash"] = _event_hash(ev)
+    with path.open("a", encoding="utf-8") as h:
+        h.write(json.dumps(ev, sort_keys=True, separators=(",", ":")) + "\n")
+    return ev
 
 
 def validate_dossier(dossier_path: Path) -> str:
