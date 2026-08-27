@@ -73,6 +73,8 @@ CONDITION_FIELDS = {
 }
 CONDITION_STATUSES = {"OPEN", "CLOSED", "SUPERSEDED", "WAIVED"}
 CONDITION_SEVERITIES = {"Critical", "Major", "Minor"}
+GATE_IDS = {f"G{i:02d}" for i in range(15)}
+POSTURES = {"CLEAR", "OPEN_NON_BLOCKING", "OPEN_BLOCKING"}
 EVIDENCE_FIELDS = {
     "schema_version", "id", "work_package_id", "gate", "claim",
     "evidence_type", "producer", "source_revision", "target", "toolchain",
@@ -560,7 +562,101 @@ def validate_conditions(dossier: dict[str, Any], known_roles: set[str]) -> None:
             "conditional pass carries no OPEN condition -- nothing is actually owed; use PASS")
 
 
-def validate_dossier(dossier_path: Path) -> None:
+def parse_blocking_scope(value: str, label: str) -> set[str]:
+    """`blocking_scope` as a set of gate ids. `none` is the empty set.
+
+    Free text is refused: a scope that cannot be parsed cannot be compared
+    to the gate under decision, and an unparseable scope treated as
+    non-blocking would be the fail-open. Accepts `none`, one gate id, or a
+    comma list of gate ids.
+    """
+    text = value.strip()
+    if text.lower() == "none":
+        return set()
+    gates = {part.strip() for part in text.split(",") if part.strip()}
+    bad = sorted(g for g in gates if g not in GATE_IDS)
+    if bad or not gates:
+        raise ValidationError(
+            f"{label} blocking_scope {value!r} is not parseable -- use 'none', a gate id "
+            f"G00..G14, or a comma list of gate ids")
+    return gates
+
+
+def compute_obligation_posture(dossier: dict[str, Any]) -> str:
+    """Plane B, computed from the conditions -- never from the disposition.
+
+    Ported from secb_pf TWO_PLANE_DECISION_MODEL.md. The rule there:
+    'Posture is computed from the register, never from the verdict's prose.'
+    OPEN_UNCONTROLLED is not a return value here because validate_conditions
+    already refuses an uncontrolled condition outright -- a decision defect is
+    a refusal, not a posture to render.
+    """
+    gate = dossier["gate"]
+    open_conditions = [c for c in dossier.get("conditions", []) if c.get("status") == "OPEN"]
+    if not open_conditions:
+        return "CLEAR"
+    for index, cond in enumerate(open_conditions):
+        scope = parse_blocking_scope(str(cond["blocking_scope"]), f"conditions[{index}]")
+        if gate in scope:
+            return "OPEN_BLOCKING"
+    return "OPEN_NON_BLOCKING"
+
+
+def render_verdict(disposition: str, posture: str) -> str:
+    """The rendering matrix. Plane A is the author's baseline disposition;
+    Plane B is computed. The rendered verdict is what the gate stands behind.
+    """
+    if disposition in {"FAIL", "BLOCKED", "HUMAN_REQUIRED"}:
+        return {"FAIL": "REWORK_REQUIRED", "BLOCKED": "BLOCKED",
+                "HUMAN_REQUIRED": "HUMAN_REQUIRED"}[disposition]
+    return {"CLEAR": "APPROVED",
+            "OPEN_NON_BLOCKING": "APPROVED_WITH_CONDITIONS",
+            "OPEN_BLOCKING": "HELD_FOR_CONDITION_CLOSURE"}[posture]
+
+
+def verify_two_plane(dossier: dict[str, Any]) -> str:
+    """Refuse a disposition that contradicts the computed posture.
+
+    Before this, `disposition` was asserted by the author and checked only
+    for coherence with the conditions' *shape*. A dossier could assert
+    PASS_WITH_CONDITIONS while carrying an OPEN Critical condition whose
+    blocking_scope covered the very gate being passed, and the gate said
+    PASS. The author's plane was the only plane.
+
+    Contradictions refused:
+      PASS                  with any OPEN condition          (already refused upstream)
+      PASS_WITH_CONDITIONS  with posture OPEN_BLOCKING       -> must be HELD
+      PASS                  with posture != CLEAR            (defensive; upstream covers)
+    A dossier may DECLARE `rendered_verdict`; if it does, it must equal the
+    computed one. An absent declaration is filled in, not refused, because
+    the rendered verdict is an output of this gate, not an input to it.
+    """
+    disposition = dossier["disposition"]
+    posture = compute_obligation_posture(dossier)
+    rendered = render_verdict(disposition, posture)
+
+    if disposition == "PASS_WITH_CONDITIONS" and posture == "OPEN_BLOCKING":
+        blocking = [c["condition_id"] for c in dossier.get("conditions", [])
+                    if c.get("status") == "OPEN"
+                    and dossier["gate"] in parse_blocking_scope(str(c["blocking_scope"]), c["condition_id"])]
+        raise ValidationError(
+            f"disposition PASS_WITH_CONDITIONS contradicts computed posture OPEN_BLOCKING: "
+            f"{', '.join(blocking)} block(s) gate {dossier['gate']}. The rendered verdict is "
+            f"HELD_FOR_CONDITION_CLOSURE; a gate cannot be passed while a condition blocks it.")
+    if disposition == "PASS" and posture != "CLEAR":
+        raise ValidationError(f"disposition PASS contradicts computed posture {posture}")
+
+    declared = dossier.get("rendered_verdict")
+    if declared is not None and declared != rendered:
+        raise ValidationError(
+            f"declared rendered_verdict {declared!r} contradicts the computed verdict {rendered!r} "
+            f"(disposition={disposition}, posture={posture}). The verdict is computed, not asserted.")
+    dossier["obligation_posture"] = posture
+    dossier["rendered_verdict"] = rendered
+    return rendered
+
+
+def validate_dossier(dossier_path: Path) -> str:
     validate_repo()
     dossier = load_json(dossier_path.resolve())
     require_fields(dossier, DOSSIER_FIELDS, "dossier")
@@ -602,9 +698,11 @@ def validate_dossier(dossier_path: Path) -> None:
     matrix_classes = load_json(ROOT / "badf/authority-matrix.json")["change_classes"]
     known_roles = {role for entry in matrix_classes.values() for role in entry["required_roles"]}
     validate_conditions(dossier, known_roles)
+    rendered = verify_two_plane(dossier)
 
     for evidence_type, path_value in indexed.items():
         validate_evidence(safe_repo_path(path_value, "evidence path"), dossier, evidence_type)
+    return rendered
 
 
 def main() -> int:
@@ -621,11 +719,12 @@ def main() -> int:
         elif args.command == "lock":
             write_lockfile()
         else:
-            validate_dossier(args.path)
+            args._rendered = validate_dossier(args.path)
     except ValidationError as exc:
         print(f"BADF GATE FAIL: {exc}", file=sys.stderr)
         return 1
-    print(f"BADF GATE PASS: {args.command}")
+    verdict = getattr(args, "_rendered", None)
+    print(f"BADF GATE PASS: {args.command}" + (f" -- rendered verdict {verdict}" if verdict else ""))
     return 0
 
 
