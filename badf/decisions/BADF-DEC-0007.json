@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0.0",
+  "decision_id": "BADF-DEC-0007",
+  "title": "Gate 01 plan: governed state transition first (advance <instance> <dossier>, derived from bound APPROVED dossiers), then the G01 evidence contract inside the gate; no competing validator",
+  "status": "DECIDED",
+  "decided_at": "2026-08-27T20:26:22Z",
+  "decided_at_provenance": "RECORDED AT DECISION TIME. The ARCHI plan was posted on Issue #41 with an explicit stop for human approval; the operator replied 'Proceed on your call to validate/active' (2026-08-28). DELEGATED decision: content by the agent's plan, authority by the operator's quoted delegation; labelled so.",
+  "decision_authority": {
+    "role": "human_sponsor",
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "work_package_id": "BADF-WP-0029",
+  "change_class": "C3",
+  "ballot": "AGREE",
+  "options_considered": {
+    "A": "transition substrate first (advance; derive current_gate from the chain of bound APPROVED dossiers; refuse otherwise), then G01 contract inside badf_gate.py -- SELECTED by delegation",
+    "B": "merge PR #44 as-is (parallel validator scripts/badf_prd.py beside the lifecycle's G01 contract; no transition) -- REJECTED: competing validator; cannot change any instance's gate; ids collide; does not compose",
+    "C": "G01 contract without a transition -- REJECTED: evidence nobody can act on"
+  },
+  "authorizes": {
+    "summary": "WP-A: `advance <instance> <dossier>` binds an APPROVED (or APPROVED_WITH_CONDITIONS) dossier for the instance's NEXT gate, byte-identical, into <instance>/badf/evidence/dossiers/; derive_state computes lifecycle from the contiguous chain of bound dossiers that still validate against their framework originals; `instance` refuses any state the chain cannot corroborate. WP-B: prd / acceptance-criteria / product-approval evidence contract in the gate, salvaging #44's schema, template, tests and skill doc; no second script.",
+    "scope": [
+      "scripts/badf_gate.py (advance, derive_state lifecycle, validate_instance chain)",
+      "schemas/state.schema.json",
+      "tests/test_badf_advance.py",
+      "docs/governance/PROJECT_INSTANCE.md, README.md",
+      "later: schemas/prd.schema.json, validate_evidence rules, templates, skills/badf-prd (WP-B)"
+    ],
+    "excluded": [
+      "no change to lifecycle gate ids or required_evidence",
+      "no dossier may be authored or approved by the tool: advance binds what humans approved",
+      "no project is touched",
+      "PR #44 is closed in favour of this plan; its branch is preserved as salvage"
+    ]
+  },
+  "proven_defect": "On main 7336a48 an instance can only ever be at G00 / INITIALIZED; nothing consumes an APPROVED dossier, so a gate passing has no effect on any instance.",
+  "residual_risk": "The tool binds; it does not judge. A dossier approved under a weak matrix is still a human failure; the monotonic and charter floors bound that, not this decision.",
+  "authority_downgrade": {
+    "permits_downgrade": false,
+    "note": "Strengthening only: a transition now requires a bound, still-valid, APPROVED dossier where before nothing existed."
+  },
+  "binding": {
+    "authority_matrix_digest_before": "sha256:75d3e0216212ea7611c36b69bbea8d3835d32841e102561ea2ca4e1383208b43",
+    "policy_epoch": "BADF-2026-08-25",
+    "enacting_commit": null,
+    "enacting_pr": null,
+    "binding_note": "filled by reconciliation when BADF-WP-0029 lands."
+  },
+  "evidence": [
+    "ARCHI plan on #41 (2026-08-28)",
+    "REV verdict on #44 (Request Changes)",
+    "operator: 'Proceed on your call to validate/active'"
+  ],
+  "supersedes": null,
+  "superseded_by": null,
+  "invalidation": "Letting advance write a state without a bound APPROVED dossier, or accepting a bound dossier that differs from its framework original, invalidates this decision."
+}

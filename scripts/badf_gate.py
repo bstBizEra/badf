@@ -1647,15 +1647,20 @@ def write_instance_lock(inst: Path) -> int:
     return write_lock(inst, instance_patterns(inst))
 
 
+GATE_ORDER = [f"G{i:02d}" for i in range(15)]
+BOUND_DIR = "badf/evidence/dossiers"
+PASSING_VERDICTS = {"APPROVED", "APPROVED_WITH_CONDITIONS"}
+
+
 def derive_state(project_id: str, framework_revision: str, wp_id: str, target: str,
                  entrypoint: str, baseline_commit: str, receipt_rel: str,
-                 charter: str | None = None) -> dict[str, Any]:
+                 charter: str | None = None, gate: str = "G00", lifecycle_state: str = "INITIALIZED") -> dict[str, Any]:
     """The ONLY way a state.json comes to exist. init writes derive_state(...);
     validation recomputes it from the receipt and refuses a stored state that
     differs -- so a hand-typed state, even re-signed, is refused."""
     return {
         "schema_version": "1.0.0", "project_id": project_id, "framework_revision": framework_revision,
-        "lifecycle": {"current_gate": "G00", "state": "INITIALIZED", "target": target.upper()},
+        "lifecycle": {"current_gate": gate, "state": lifecycle_state, "target": target.upper()},
         "active_work_package": wp_id, "active_session": None,
         "authority": {"status": "RESOLVED", "charter": charter} if charter else {"status": "UNRESOLVED"},
         "entrypoint": entrypoint,
@@ -1763,6 +1768,88 @@ def write_charter(path: Path) -> str:
             f"authority RESOLVED (floor = ceiling; narrow by adding, never by removing)")
 
 
+def bound_dossiers(inst: Path) -> list[tuple[str, Path]]:
+    """(gate, path) for every file under badf/evidence/dossiers/, in gate order.
+    Anything that is not G0N.json is refused: the directory holds bound
+    dossiers and nothing else."""
+    found = []
+    for path in sorted((inst / BOUND_DIR).glob("*")):
+        if not path.is_file() or path.stem not in GATE_ORDER or path.suffix != ".json":
+            raise ValidationError(f"{BOUND_DIR}/{path.name} is not a bound gate dossier (expected G0N.json)")
+        found.append((path.stem, path))
+    return sorted(found, key=lambda t: GATE_ORDER.index(t[0]))
+
+
+def validate_chain(inst: Path, wp_id: str) -> tuple[str, str]:
+    """The instance's lifecycle, DERIVED from its bound dossiers (BADF-DEC-0007):
+    each bound copy must equal its framework original, the original must
+    still render APPROVED, and gates must be contiguous from G00. Returns
+    (current_gate, state); (G00, INITIALIZED) when nothing is bound."""
+    chain = bound_dossiers(inst)
+    if not chain:
+        return "G00", "INITIALIZED"
+    expected = GATE_ORDER[:len(chain)]
+    got = [g for g, _ in chain]
+    if got != expected:
+        missing = sorted(set(expected) - set(got)) or [expected[0]]
+        raise ValidationError(f"bound dossiers are not contiguous from G00: have {', '.join(got)}; missing {', '.join(missing)}")
+    for g, path in chain:
+        original = ROOT / "work" / wp_id / f"gate-dossier.{g}.json"
+        if not original.is_file() or original.read_bytes() != path.read_bytes():
+            raise ValidationError(f"bound dossier {g} differs from the framework original work/{wp_id}/gate-dossier.{g}.json (or the original is gone)")
+        try:
+            rendered = validate_dossier(original)
+        except ValidationError as exc:
+            raise ValidationError(f"bound dossier {g} no longer validates at the framework ({exc}); the instance cannot stay at {g}")
+        if rendered not in PASSING_VERDICTS:
+            raise ValidationError(f"bound dossier {g} no longer renders APPROVED at the framework (renders {rendered}); the instance cannot stay at {g}")
+    return chain[-1][0], "APPROVED"
+
+
+def advance_instance(path: Path, dossier_rel: str) -> str:
+    """`badf_gate.py advance <instance> work/<WP>/gate-dossier.<gate>.json`:
+    bind what humans approved for the instance's NEXT gate; never approve."""
+    inst = instance_root(path)
+    validate_instance(inst)   # deny unless established
+    state = load_json(inst / "badf/state.json")
+    wp_id = state["active_work_package"]
+    m = re.fullmatch(r"work/(WP-2026-[0-9]{4})/gate-dossier\.(G(?:0[0-9]|1[0-4]))\.json", dossier_rel.replace("\\", "/"))
+    if not m:
+        raise ValidationError(f"dossier must be the framework's work/<WP>/gate-dossier.<gate>.json, got {dossier_rel!r}")
+    if m.group(1) != wp_id:
+        raise ValidationError(f"dossier belongs to work package {m.group(1)}; this instance's work package is {wp_id}")
+    gate_id = m.group(2)
+    original = ROOT / dossier_rel
+    if not original.is_file():
+        raise ValidationError(f"{dossier_rel} does not exist in the framework")
+    doc = load_json(original)
+    if doc.get("work_package_id") != wp_id:
+        raise ValidationError(f"dossier names work package {doc.get('work_package_id')!r}, not {wp_id}")
+    if doc.get("gate") != gate_id:
+        raise ValidationError(f"dossier says gate {doc.get('gate')!r} but is filed as {gate_id}")
+    chain = bound_dossiers(inst)
+    next_gate = GATE_ORDER[len(chain)]
+    if (inst / BOUND_DIR / f"{gate_id}.json").exists():
+        raise ValidationError(f"{gate_id} is already bound in this instance; a gate is passed once")
+    if gate_id != next_gate:
+        raise ValidationError(f"the instance's next gate is {next_gate}, not {gate_id}")
+    rendered = validate_dossier(original)
+    if rendered not in PASSING_VERDICTS:
+        raise ValidationError(f"{dossier_rel} does not render APPROVED (renders {rendered}); advance binds approvals, it does not grant them")
+    project = parse_yaml_subset((inst / "badf/project.yaml").read_text(encoding="utf-8"))
+    new_state = derive_state(state["project_id"], state["framework_revision"], wp_id, project["delivery"]["target"],
+                             state["entrypoint"], state["derived_from"]["baseline_commit"], state["derived_from"]["receipt"],
+                             charter=(state["authority"].get("charter") if state["authority"]["status"] == "RESOLVED" else None),
+                             gate=gate_id, lifecycle_state="APPROVED")
+    check_schema("state", new_state)
+    (inst / BOUND_DIR).mkdir(parents=True, exist_ok=True)
+    (inst / BOUND_DIR / f"{gate_id}.json").write_bytes(original.read_bytes())
+    (inst / "badf/state.json").write_text(json.dumps(new_state, indent=2) + "\n", encoding="utf-8")
+    write_instance_lock(inst)
+    return (f"BADF ADVANCE: {state['project_id']} bound {dossier_rel} ({rendered}); lifecycle {gate_id} / APPROVED; "
+            f"next gate {GATE_ORDER[len(chain) + 1] if len(chain) + 1 < len(GATE_ORDER) else 'none'}")
+
+
 def validate_instance(path: Path) -> list[str]:
     """`badf_gate.py instance <path>`: writes nothing; refuses unless every
     claim in the instance is corroborated by another document, by git, or by
@@ -1804,8 +1891,10 @@ def validate_instance(path: Path) -> list[str]:
         raise ValidationError(f"framework_revision {framework_revision[:7]} is unknown to this framework")
 
     charter_rel, charter_notes = validate_charter(inst, project, framework_revision)
+    current_gate, lifecycle_state = validate_chain(inst, wp_id)
     expected = derive_state(project_id, framework_revision, wp_id, project["delivery"]["target"],
-                            state["entrypoint"], baseline, receipt_rel, charter=charter_rel)
+                            state["entrypoint"], baseline, receipt_rel, charter=charter_rel,
+                            gate=current_gate, lifecycle_state=lifecycle_state)
     if state != expected:
         have, want = _flat(state), _flat(expected)
         diffs = sorted(k for k in set(have) | set(want) if have.get(k) != want.get(k))
@@ -2228,6 +2317,9 @@ def main() -> int:
     inst_parser.add_argument("path", type=Path)
     charter_parser = subparsers.add_parser("charter", help="bind an instance to the framework's authority floor at its pinned revision")
     charter_parser.add_argument("path", type=Path)
+    adv_parser = subparsers.add_parser("advance", help="bind an APPROVED dossier for the instance's next gate; the gate is derived from the chain")
+    adv_parser.add_argument("path", type=Path)
+    adv_parser.add_argument("dossier", help="work/<WP>/gate-dossier.<gate>.json in the framework")
     dossier_parser = subparsers.add_parser("dossier", help="validate a gate dossier and its evidence")
     dossier_parser.add_argument("path", type=Path)
     init_parser = subparsers.add_parser("init", help="intake a project from a four-line intent; writes only under BADF's tree")
@@ -2250,6 +2342,9 @@ def main() -> int:
             return 0
         elif args.command == "charter":
             print(write_charter(args.path))
+            return 0
+        elif args.command == "advance":
+            print(advance_instance(args.path, args.dossier))
             return 0
         elif args.command == "init":
             print(init_project(args.intent))

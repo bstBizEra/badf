@@ -53,7 +53,8 @@ The G00 dossier renders `HUMAN_REQUIRED`: an instance is a request for authority
 grant of it. `python3 scripts/badf_gate.py instance <path>` validates an instance —
 documents, cross-document agreement, git corroboration, and the instance lockfile — and
 writes nothing. `python3 scripts/badf_gate.py charter <path>` binds an instance to the framework's
-authority matrix at its pinned revision (a charter may add constraints, never remove them). Refusals write nothing: dirty tree, existing `badf/`, the framework as target,
+authority matrix at its pinned revision (a charter may add constraints, never remove them). `python3 scripts/badf_gate.py advance <path> <dossier>`
+binds an APPROVED dossier for the instance's next gate; the instance's gate is derived from that chain. Refusals write nothing: dirty tree, existing `badf/`, the framework as target,
 a demand for another repository.
 
 ## Repository map
