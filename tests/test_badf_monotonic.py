@@ -162,8 +162,24 @@ class CommittedDowngradeTests(unittest.TestCase):
         # branch the developer happens to be on. A clone whose origin/main is the
         # working branch would carry the candidate change into the baseline and
         # build the exact blind spot this test exists to catch.
-        subprocess.run(["git", "clone", "-q", "--branch", gate.DEFAULT_BRANCH, str(gate.ROOT), str(self.clone)],
+        # Seed the scratch repo from the AUTHORIZED baseline commit, not from a
+        # branch name. `git clone` of a checkout copies the checkout's LOCAL
+        # branches as origin/* and never propagates its remote-tracking refs --
+        # so on a pull_request runner (detached HEAD, no local `main`) every
+        # clone-by-branch-name fails in setUp, and all four tests here errored
+        # on runs 33044484934, 33045361792 and 33045417251 while reading as the
+        # deliberate breakage. Resolving the SHA from the checkout's origin/main
+        # and fetching that one commit works on push, pull_request and detached
+        # checkouts alike.
+        base = subprocess.run(["git", "-C", str(gate.ROOT), "rev-parse", f"origin/{gate.DEFAULT_BRANCH}"],
+                              capture_output=True, text=True, check=True).stdout.strip()
+        self.clone.mkdir()
+        subprocess.run(["git", "-C", str(self.clone), "init", "-q"], check=True)
+        subprocess.run(["git", "-C", str(self.clone), "remote", "add", "origin", str(gate.ROOT)], check=True)
+        subprocess.run(["git", "-C", str(self.clone), "fetch", "-q", "origin", base], check=True)
+        subprocess.run(["git", "-C", str(self.clone), "update-ref", f"refs/remotes/origin/{gate.DEFAULT_BRANCH}", base],
                        check=True)
+        subprocess.run(["git", "-C", str(self.clone), "checkout", "-q", "-B", gate.DEFAULT_BRANCH, base], check=True)
         subprocess.run(["git", "-C", str(self.clone), "config", "user.email", "t@t"], check=True)
         subprocess.run(["git", "-C", str(self.clone), "config", "user.name", "t"], check=True)
         # The clone must run the guard UNDER TEST, not the baseline's copy of it.
