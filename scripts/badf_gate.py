@@ -65,6 +65,9 @@ INTEGRITY_PATHS = [
     "tests/*.py",
     "skills/**/*",
     "templates/*",
+    # #43: what CI applies is locked -- the example dossier is validated on every
+    # run and the drift walker reads example files as shipped instances.
+    "examples/**/*",
     "badf/authority-matrix.json",
     "badf/lifecycle.json",
     "badf/mcp-registry.json",

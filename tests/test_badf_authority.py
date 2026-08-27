@@ -117,8 +117,8 @@ class AuthorityEndToEndTests(unittest.TestCase):
     """Subprocess-level: a unit test of the validator is necessary, not sufficient."""
 
     def run_gate(self, payload):
-        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False,
-                                         dir=str(gate.ROOT / "examples")) as handle:
+        # not under examples/ -- locked since BADF-WP-0028; locked trees are not test fixtures
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as handle:
             json.dump(payload, handle)
             path = Path(handle.name)
         try:

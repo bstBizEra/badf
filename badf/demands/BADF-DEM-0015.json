@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0015",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 43,
+    "url": "https://github.com/bstBizEra/badf/issues/43",
+    "exported_at": "2026-08-27T19:33:58Z",
+    "body_digest": "sha256:38593419447b6013cc94d1188fd9381761b97d8fd3d317c7797f8b1abc2bec3d"
+  },
+  "title": "GOV-0015: examples/ is validated by CI but not under INTEGRITY_PATHS",
+  "problem": "## Observed\nCI runs `python3 scripts/badf_gate.py dossier examples/gate-dossier.G00.json` on every PR and push (`.github/workflows/badf-gates.yml`, 1 step), and `tests/test_badf_schema_drift.py` reads `examples/gate-dossier.G00.json` and `examples/evidence/G00/authority.json` as SHIPPED instances. `examples/` is not in `INTEGRITY_PATHS`: an edit to the example dossier (or to `examples/intent.json`, shipped by BADF-WP-0027) carries no re-sign in the diff.\n\n## Expected\nAnything the gate or CI applies is locked (the rule that put `schemas/` under the lockfile in BADF-WP-0007). `examples/**` joins `INTEGRITY_PATHS`; the scratch fixtures that already carry `examples/` (`tests/_scratch.seed_clone`) need no change.\n\n## Evidence (measured in the step that wrote this Issue, 2026-08-28, branch wp/BADF-WP-0027-intent-drift)\n```\nINTEGRITY_PATHS = ['scripts/*.py', '.github/workflows/badf-gates.yml', 'AGENTS.md', 'docs/**/*.md', 'tests/*.py', 'skills/**/*', 'templates/*', 'badf/authority-matrix.json', 'badf/lifecycle.json', 'badf/mcp-registry.json', 'badf/skill-registry.json', 'badf/tool-registry.json', 'badf/decisions/*.json', 'badf/demands/*.json', 'badf/repositories.json', 'work/**/*.json', 'work/**/*.jsonl', 'work/**/*.diff', 'work/**/*.txt', 'schemas/*.json']\nlockfile keys under examples/: 0 | under schemas/: 12\nworkflow validates examples/gate-dossier.G00.json: 1 step(s)\n```\n(#24 claimed the same for `schemas/` without measuring, and was false. This one is the pasted output.)\n\n## Unknowns\nNone of substance. `examples/evidence/G00/*.txt` artifacts are digest-bound by their evidence records already; locking the directory makes the binding visible in the diff as well.\n\n## Proposed work package\nPatch tier: `examples/**` in `INTEGRITY_PATHS`; re-sign; a test that an example edit without re-sign is drift.\n\ndiscovered-by: BADF-WP-0027 \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-27T19:33:58Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound (the Issue's own evidence was measured in the step that filed it). Authority: the operator's 'proceed on your call' on the #43 pick (2026-08-28). Worked as BADF-WP-0028."
+}

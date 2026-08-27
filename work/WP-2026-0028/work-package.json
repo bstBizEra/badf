@@ -1,0 +1,49 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0028",
+  "title": "Lock examples/: what CI applies is under the lockfile",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0015",
+  "objective": "Put examples/** under INTEGRITY_PATHS so an edit, addition or removal of an example without a re-sign is drift, on the rule that anything the gate or CI applies is locked.",
+  "business_value": "CI validates examples/gate-dossier.G00.json on every run and the drift walker reads two example files as shipped instances; today an edit to them carries no re-sign in the diff.",
+  "in_scope": [
+    "INTEGRITY_PATHS += examples/**/*",
+    "tests: example edit / added file without re-sign is drift; coverage test counts examples/",
+    "lockfile re-signed"
+  ],
+  "out_of_scope": [
+    "any change to example content"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "repo refuses an example edit without re-sign naming the file",
+    "repo refuses an added example file without re-sign",
+    "lockfile carries every file under examples/",
+    "suite green; compose green in both shapes"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_integrity.py"
+  ],
+  "evidence": [
+    "mutation on the glob entry",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "59c5293"
+  },
+  "note": "Lands IN_PROGRESS by design; reconciled by the next WP's branch."
+}

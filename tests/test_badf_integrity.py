@@ -174,9 +174,31 @@ class GlobCoverageTests(unittest.TestCase):
         finally:
             doc.write_bytes(keep)
 
+    def test_example_edit_is_drift(self):
+        """examples/ is applied: CI validates the example dossier on every run and
+        the drift walker reads two example files as shipped instances. An edit
+        without a re-sign must be drift (BADF-WP-0028, #43)."""
+        art = gate.ROOT / "examples" / "evidence" / "G00" / "authority.txt"
+        keep = art.read_bytes()
+        art.write_bytes(keep + b"\n<!-- silent -->\n")
+        try:
+            with self.assertRaisesRegex(gate.ValidationError, "changed: examples/evidence/G00/authority.txt"):
+                gate.verify_integrity()
+        finally:
+            art.write_bytes(keep)
+
+    def test_file_added_under_examples_is_drift(self):
+        rogue = gate.ROOT / "examples" / "rogue-unsigned.json"
+        rogue.write_text("{}")
+        try:
+            with self.assertRaisesRegex(gate.ValidationError, "absent from lockfile"):
+                gate.verify_integrity()
+        finally:
+            rogue.unlink()
+
     def test_lockfile_covers_every_governed_directory(self):
         """The analysis that motivated this: 0 of 16 docs were locked."""
         digests = json.loads((gate.ROOT / gate.LOCKFILE).read_text())["digests"]
-        for prefix, minimum in {"docs/": 16, "tests/": 7, "skills/": 2, "templates/": 5, "schemas/": 6}.items():
+        for prefix, minimum in {"docs/": 16, "tests/": 7, "skills/": 2, "templates/": 5, "schemas/": 6, "examples/": 8}.items():
             with self.subTest(prefix=prefix):
                 self.assertGreaterEqual(sum(1 for k in digests if k.startswith(prefix)), minimum)
