@@ -1,0 +1,58 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0024",
+  "title": "Composed-tree gate: scripts/badf_compose.py simulates the post-merge tree and CI runs it on every PR",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0011",
+  "objective": "Turn the hand-run post-merge simulation into a deterministic script and a named CI gate: compose base + candidate as the squash that would land, point origin/main at it, run repo and the suite there, and refuse unless the ledger sees the landing and everything is green.",
+  "business_value": "PR #30 was green and its squash turned main red. The simulation has caught nothing since only because a person kept running it; a discipline is not a control.",
+  "in_scope": [
+    "scripts/badf_compose.py (stdlib; clone by SHA; refuse to nest; refuse a message without a Work-Package line; --ci-shape; --tests pattern printed, never silent)",
+    "BADF_PROPTECH_PATH honoured by the three host-dependent test modules (CI shape without test-file surgery)",
+    "CI step on pull_request with the PR body as the squash message",
+    "tests, mutation where meaningful, post-merge simulation run by the new script itself",
+    "doctrine: the stated step becomes a named gate"
+  ],
+  "out_of_scope": [
+    "making compose a gate subcommand (it orchestrates subprocesses; the gate never runs the suite)",
+    "blocking merges mechanically beyond the existing required check",
+    "any project"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "compose PASSES on a candidate whose message carries its Work-Package line and whose composed tree is green, and reports the WP as LANDED_UNRECONCILED",
+    "compose FAILS when the composed suite fails, naming the failing test",
+    "compose FAILS when the composed repo check fails",
+    "compose FAILS on a message without a Work-Package line before running anything",
+    "compose FAILS on a candidate that does not squash-merge cleanly",
+    "compose refuses to nest and writes nothing to the source repository",
+    "CI runs compose on pull_request against base.sha + head.sha with the PR body",
+    "this PR's own compose run is cited"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR",
+    "write: scratch clones under tmp only"
+  ],
+  "tests": [
+    "tests/test_badf_compose.py"
+  ],
+  "evidence": [
+    "compose output for this PR",
+    "post-merge run on main"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "fe82ca5"
+  },
+  "note": "Lands IN_PROGRESS by design; reconciled by the next WP's branch."
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0011",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 21,
+    "url": "https://github.com/bstBizEra/badf/issues/21",
+    "exported_at": "2026-08-27T18:19:48Z",
+    "body_digest": "sha256:40319a7ed8aa68668c7db2cba5c47eb682993476b1c338f1c7063edd4545b945"
+  },
+  "title": "GOV-0002: composed-tree verification is implicit, not a named merge gate",
+  "problem": "## Observed\nOn a `pull_request` event, `actions/checkout` checks out `refs/pull/N/merge` \u2014 GitHub's own composition of head onto base \u2014 so CI step 5 already runs on a composed tree. But nothing **asserts** that, **records** the composed tree hash, or **names** the property. `BRANCH_GREEN \u2260 MERGE_SAFE` is enforced by accident of checkout behaviour, not by a gate. There is no `badf/composed-tree` status check.\n\n## Expected (GITHUB_CONTROL_PLANE.md \u00a77 of the adopted doctrine)\nAn explicit, named, required status check that computes `source_head_sha + current_target_sha + merge_method \u2192 expected_result_tree`, records the tree hash as evidence, and fails when the composition cannot be reproduced. `MERGE_ELIGIBLE` only after it passes against the **current** base.\n\n## Evidence\n`grep -n composed .github/workflows/badf-gates.yml` \u2192 comments only. WP-0010's G08 dossier records a composed-tree artifact (tree `e40c93f`) \u2014 the property is proven at dossier level for one WP, never as a merge gate.\n\n## Unknowns\nWhether a single `governance` job should stay monolithic or split into `badf/composed-tree`, `badf/tests`, `badf/traceability` so the decision surface is observable (\u00a78 of the doctrine). Splitting changes the ruleset's required contexts; that is a governance edit.\n\n## Proposed work package\n`BADF-WP-0017` \u2014 record `refs/pull/N/merge` tree hash as a CI artifact; assert it equals `git merge-tree`(base, head) recomputed in-job; expose as its own step. Splitting the job is a follow-on decision.\n\ndiscovered-by: BADF-WP-0016 \u00b7 status: DISCOVERED\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-27T18:19:48Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. DISCOVERED by BADF-WP-0016; a live occurrence recorded on the Issue after 30186c5 turned main red. Authority: the operator's 'Proceed on your call' (2026-08-28) on the #21 pick posted in session. Worked as BADF-WP-0024."
+}

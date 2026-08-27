@@ -23,7 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import badf_gate as gate  # noqa: E402
 from tests.test_badf_schema_drift import schema, enum_violations, unknown_keys  # noqa: E402
 
-PROPTECH = Path("/mnt/c/laragon/www/proptech")
+PROPTECH = Path(os.environ.get("BADF_PROPTECH_PATH", "/mnt/c/laragon/www/proptech"))   # CI shape: point it at nothing
 HAVE_PROPTECH = PROPTECH.is_dir() and (PROPTECH / ".git").exists()
 NAMESPACE = {"AGENTS.md", "badf"}
 
