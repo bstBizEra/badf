@@ -1,0 +1,57 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0016",
+  "title": "GitHub control plane: main is PR-only; Issue -> WP -> PR traceability",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0004",
+  "objective": "Make main the accepted integration ledger: active ruleset with zero bypass, squash-only, BADF-MAIN-001 as doctrine, PR traceability check in CI.",
+  "business_value": "Before this, main was not PR-only (protection held by accident of which events a status check reported on) and the repository had never had an Issue. The control plane must be structurally correct before autonomous execution authority increases.",
+  "in_scope": [
+    "GitHub ruleset and merge settings",
+    "docs/governance/GITHUB_CONTROL_PLANE.md",
+    "scripts/check_pr_traceability.py + CI step",
+    "tests"
+  ],
+  "out_of_scope": [
+    "Issue Forms",
+    "PR template",
+    "Draft-PR workflow",
+    "research agent",
+    "learning reconciliation"
+  ],
+  "target_gate": "G07",
+  "change_class": "C3",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "git push origin main is refused citing the pull_request rule",
+    "squash is the only allowed merge method in the ruleset",
+    "a PR without Work-Package + Closes fails the traceability step",
+    "PR #20 merges as one linear squash commit and auto-closes #19"
+  ],
+  "permissions": [
+    "admin: bstBizEra/badf (ruleset + merge settings)"
+  ],
+  "tests": [
+    "tests/test_badf_traceability.py",
+    "direct-push probe under the ruleset"
+  ],
+  "evidence": [
+    "GH013 refusal text",
+    "ruleset readback",
+    "squash commit 12f5056 carrying Work-Package + Closes"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "delete ruleset 21658781; restore repo merge settings; revert 12f5056 via PR"
+  },
+  "status": "CLOSED",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "0871417",
+    "landed_as": "12f505679ac9f4fde2371d4c4c490e98693b5bc6"
+  },
+  "note": "This record was written AFTER the WP landed (BADF-WP-0018), because WP-0016 adopted the 'no WP without a demand record' doctrine without having a work-package record of its own. Its demand, Issue #19, was real and preceded the work; only this file is late."
+}

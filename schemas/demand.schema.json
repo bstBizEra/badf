@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "BADF demand record",
+  "description": "badf/demands/<id>.json. The in-tree, digest-bound record of the demand that authorizes a work package. The GitHub Issue (or a target project's own token) is the SOURCE; this record is what the gate can verify offline. A demand is where authority enters: authorized_by must be a human. Agents may DISCOVER (kind=discovery) but may not authorize.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "demand_id",
+    "kind",
+    "source",
+    "title",
+    "problem",
+    "recorded_at",
+    "provenance",
+    "status"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "demand_id": {
+      "type": "string",
+      "pattern": "^BADF-DEM-[0-9]{4,}$",
+      "description": "Allocated sequentially by BADF: the next unused number. It never encodes the source Issue number (PRs and Issues share one number space); source.issue carries that."
+    },
+    "kind": {
+      "enum": [
+        "issue",
+        "token",
+        "decision",
+        "discovery"
+      ],
+      "description": "issue: exported from a GitHub Issue, body digest-bound. token: a [WP-NNNN]-style admission token in a repository with no Issue space. decision: an operator decision with no Issue (RECONSTRUCTED). discovery: found by BADF itself -- the only kind with no human authorizer; the human gate is then the merge."
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "repository"
+      ],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+        },
+        "issue": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "token": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "exported_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "body_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      },
+      "description": "The single repository this demand authorizes work on. A work package whose repository differs is refused, not reinterpreted."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "problem": {
+      "type": "string",
+      "minLength": 1
+    },
+    "authorized_by": {
+      "type": "object",
+      "required": [
+        "principal",
+        "principal_type"
+      ],
+      "properties": {
+        "principal": {
+          "type": "string",
+          "minLength": 1
+        },
+        "principal_type": {
+          "enum": [
+            "human",
+            "agent",
+            "service",
+            "controller"
+          ]
+        }
+      },
+      "description": "Required for every kind except discovery, and must be a human principal: a demand is where authority enters. An agent cannot manufacture one, and re-signing the lockfile does not change that."
+    },
+    "discovered_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "recorded_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "provenance": {
+      "enum": [
+        "EXPORTED_FROM_SOURCE",
+        "RECONSTRUCTED",
+        "DISCOVERED"
+      ],
+      "description": "How this record was produced, distinct from kind: EXPORTED_FROM_SOURCE (verbatim from the source, digest-bound), RECONSTRUCTED (written after the fact from a decision that preceded the doctrine), DISCOVERED (BADF found it)."
+    },
+    "status": {
+      "enum": [
+        "OPEN",
+        "TRIAGED",
+        "RESEARCH_REQUIRED",
+        "DECIDED",
+        "AUTHORIZED",
+        "RESOLVED",
+        "REJECTED",
+        "DEFERRED"
+      ]
+    },
+    "note": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0001",
+  "kind": "decision",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": null,
+    "token": null,
+    "url": null
+  },
+  "title": "Adopt BADF; import the v1.0.0 baseline",
+  "problem": "The operator decided to grow BADF from the existing baseline tree rather than restart. No Issue existed: the repository did not exist until the import.",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T00:00:00Z",
+  "provenance": "RECONSTRUCTED",
+  "status": "RESOLVED",
+  "note": "RECONSTRUCTED under BADF-WP-0018. The demand was an operator decision in session, before this repository or its doctrine existed. Recorded here so WP-2026-0001 resolves; no Issue was created after the fact to pretend otherwise."
+}

@@ -59,6 +59,34 @@ raise this to 1 and delete this paragraph.
 requiring mutation · `fix/BADF-BUG-NNNN-<slug>` · `gov/BADF-WP-NNNN-<slug>` for Tier-B/C changes.
 The authority object is in the name so the chain Issue → WP → branch → PR → `main` is greppable.
 
+## Demand records (`BADF-WP-0018`, Issue #22)
+
+The gate makes zero network calls, so "the Issue exists" is unknowable at gate time. The
+Issue is the **source**; the demand record `badf/demands/BADF-DEM-NNNN.json` is what the
+gate verifies, under the integrity lockfile.
+
+- **Allocation.** `demand_id` is sequential — the next unused number. It never encodes the
+  Issue number (PRs and Issues share one number space); `source.issue` carries that.
+  `BADF-DEM-0004` is Issue #19; `BADF-DEM-0005` is Issue #22.
+- **Kinds.** `issue` (exported from a GitHub Issue, body digest-bound) · `token` (a
+  `[WP-NNNN]`-style admission token in a repository with no Issue space) · `decision` (an
+  operator decision with no Issue) · `discovery` (found by BADF itself).
+- **Provenance** is how the record was produced, distinct from kind:
+  `EXPORTED_FROM_SOURCE` · `RECONSTRUCTED` (written after the fact, and says so) ·
+  `DISCOVERED`.
+- **Authority.** `authorized_by` must be a **human** principal for every kind except
+  `discovery`. A demand is where authority enters; an agent cannot manufacture one, and
+  re-signing the lockfile does not change that — the gate refuses on `principal_type` after
+  integrity passes. A `discovery` demand carries no authorizer, so its human gate is the merge.
+- **One demand, one repository.** A work package's `repository` must equal its demand's
+  `source.repository`; `badf init` refuses otherwise. This answers Issue #22's open question:
+  a demand *may* originate in the target project's Issue or token space, but the record lives
+  in BADF's tree, and a cross-repository demand is refused, never reinterpreted.
+- **Every shipped work package carries `demand`.** Work packages that predate this record
+  their demand as `RECONSTRUCTED` (`BADF-DEM-0001`, `-0002`); `WP-2026-0016`'s record was
+  written late and says so. The PropTech intake's demand is the operator's decision
+  (`BADF-DEM-0003`) — PropTech has no Issues, and its tokens are its own work.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

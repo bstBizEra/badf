@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0004",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 19,
+    "url": "https://github.com/bstBizEra/badf/issues/19",
+    "exported_at": "2026-08-28T00:00:00Z",
+    "body_digest": "sha256:e2b29761fd84ab5451245d1fc340ea8f3c0ec1e478c14bb1aaafd17ea6788a0d"
+  },
+  "title": "GOV-0001: main is not PR-only; the Issue\u2192WP\u2192PR chain has never existed",
+  "problem": "## Observed\n- `main` refuses a direct push only because `governance` is a required status check that has never reported on a push commit. No rule requires a PR. If that check ever reported on a push, `main` would open. (Measured: classic protection carries 6 of 11 \u00a78 rules; `require PR` absent; rulesets: 0.)\n- Every PR to date (#1\u2013#18) was merged with `--merge`; `main` holds 18 merge commits over 23 real commits. Three merge methods were allowed.\n- 23 non-merge commits on `main`: **0 reference a GitHub Issue.** 10 reference a Work Package, 10 a Decision. This repository has had **zero Issues, ever.** Every WP's demand was a chat message.\n\n## Expected\nThe BADF GitHub control plane: Issue \u2192 (Research) \u2192 Work Package \u2192 Branch \u2192 Draft PR \u2192 Verified Merge \u2192 `main`. `main` is the accepted integration ledger, never a workspace. No actor bypasses.\n\n## Evidence\n`gh api repos/bstBizEra/badf/branches/main/protection`, `gh api repos/bstBizEra/badf/rulesets` (empty), `git log --merges | wc -l` = 18, `gh issue list --state all` = 0. Measured 2026-08-28 before any change.\n\n## Unknowns\nWhether a single-collaborator repository can satisfy `required_approving_review_count >= 1` without making every PR permanently unmergeable. (Known from secb_pf: it cannot. Deviation from \u00a78 to be recorded, not hidden.)\n\n## Proposed work package\n`BADF-WP-0016` \u2014 P0 items: active ruleset with no bypass; squash-only + auto-merge; `BADF-MAIN-001` as normative doc stating this repository's own prior non-compliance; a traceability check on PR bodies (`Work-Package:` + `Closes #N`).\n\n## Scope boundary\nIssue Forms, PR template, Draft-PR workflow, research agent, learning reconciliation: **out of scope** (P1\u2013P3), separate Issues.\n\n*This is the first Issue this repository has ever had (it is #19 because PRs and Issues share a number space). It exists so the doctrine's first link exists before the doctrine claims it.*\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T00:00:00Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "RESOLVED",
+  "note": "Body exported verbatim from the GitHub Issue and digest-bound. The Issue is the source; this record is what the gate verifies offline. Closed by PR #20 (squash 12f5056)."
+}

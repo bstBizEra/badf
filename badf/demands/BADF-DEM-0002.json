@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0002",
+  "kind": "decision",
+  "source": {
+    "repository": "bstBizEra/secb_pf",
+    "issue": null,
+    "token": "fix/conflict-protocol-vocabulary-audit",
+    "url": null
+  },
+  "title": "Govern one non-BADF work package end-to-end",
+  "problem": "Every gate run had been BADF validating BADF. The operator asked for a real external work package; the agent chose the smallest unproposed secb_pf fix branch. No Issue existed in either repository.",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T00:00:00Z",
+  "provenance": "RECONSTRUCTED",
+  "status": "RESOLVED",
+  "note": "RECONSTRUCTED under BADF-WP-0018. The demand was 'proceed on your call' in session; the branch selection was the agent's. Both predate GITHUB_CONTROL_PLANE.md."
+}

@@ -37,7 +37,8 @@ HAVE_PROPTECH = PROPTECH.is_dir() and (PROPTECH / ".git").exists()
 
 INTENT = {"project": {"name": "PropTech", "intent": "Build a land valuation platform for Laos",
                       "owner": "BST", "target": "production",
-                      "repository": "bstBizEra/proptech", "local_path": str(PROPTECH)}}
+                      "repository": "bstBizEra/proptech", "local_path": str(PROPTECH),
+                     "demand": "BADF-DEM-0003"}}
 
 
 def tree_digest(root: Path) -> str:
@@ -54,7 +55,7 @@ class InitScratchMixin:
         self.tmp = tempfile.mkdtemp()
         self.root = Path(self.tmp) / "badf"
         subprocess.run(["git", "clone", "-q", str(gate.ROOT), str(self.root)], check=True)
-        for rel in ("scripts/badf_gate.py", "badf/repositories.json", "badf/decisions", "work"):
+        for rel in ("scripts/badf_gate.py", "badf/repositories.json", "badf/decisions", "badf/demands", "schemas", "work"):
             src, dst = gate.ROOT / rel, self.root / rel
             if src.is_dir():
                 shutil.rmtree(dst, ignore_errors=True); shutil.copytree(src, dst)
@@ -82,9 +83,9 @@ class InitOnRealProjectTests(InitScratchMixin, unittest.TestCase):
         self.assertEqual(tree_digest(PROPTECH), before, "init modified the target project's tree")
 
     def test_init_creates_a_work_package_with_judgment_fields_declared_missing(self):
+        before = set((self.root / "work").glob("WP-*/work-package.json"))
         r = self.init(); self.assertEqual(r.returncode, 0, r.stderr)
-        wps = sorted((self.root / "work").glob("WP-*/work-package.json"))
-        new = [p for p in wps if "0010" not in str(p) and "0001" not in str(p)]
+        new = sorted(set((self.root / "work").glob("WP-*/work-package.json")) - before)
         self.assertEqual(len(new), 1, f"expected exactly one new WP, got {[str(p) for p in new]}")
         w = json.loads(new[0].read_text())
         self.assertEqual(w["status"], "DRAFT")
@@ -158,7 +159,7 @@ class InitRefusalTests(InitScratchMixin, unittest.TestCase):
         self.assertIn("owner", r.stderr)
 
     def test_unregistrable_local_path_is_refused(self):
-        bad = dict(INTENT); bad["project"] = dict(INTENT["project"], local_path="/nonexistent/path", repository="x/y")
+        bad = dict(INTENT); bad["project"] = dict(INTENT["project"], local_path="/nonexistent/path")
         self.intent.write_text(json.dumps(bad))
         r = self.init()
         self.assertNotEqual(r.returncode, 0)
