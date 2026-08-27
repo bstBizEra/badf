@@ -16,6 +16,7 @@ import json
 import unittest
 
 import scripts.badf_gate as gate
+from tests.test_badf_foreign_work import MIRROR_PRESENT, MIRROR_REASON
 
 WP = gate.ROOT / "work/WP-2026-0010"
 DOSSIER = WP / "gate-dossier.G08.json"
@@ -63,7 +64,13 @@ class G08DossierTests(unittest.TestCase):
         d = json.loads(DOSSIER.read_text())
         self.assertEqual(gate.compute_obligation_posture(d), "OPEN_NON_BLOCKING")
 
+    @unittest.skipUnless(MIRROR_PRESENT, MIRROR_REASON)
     def test_g08_validates_end_to_end_as_approved_with_conditions(self):
+        """End-to-end resolves secb_pf through its LOCAL_MIRROR. On a CI
+        runner the mirror does not exist and the gate says UNRESOLVABLE_HERE
+        -- a fact about the host, by design. The seven tests above are pure
+        file reads and run everywhere; this one runs where the mirror is.
+        Went red on CI run 33080946366 for exactly this reason."""
         out = gate.validate_dossier(DOSSIER)
         self.assertEqual(out, "APPROVED_WITH_CONDITIONS")
 

@@ -48,7 +48,7 @@
     "tests/test_badf_council_disposition.py": "sha256:94935394329fa429c12af33b5d55bcc2088a63476d5574bfd40d185db01dd3b3",
     "tests/test_badf_decisions.py": "sha256:580ac8ecd7bdce799899a5389cdc4d3158ef49cc2c6965a899698a7a5b65a961",
     "tests/test_badf_foreign_work.py": "sha256:f264bd2cd7b88e9bc4d3928ee0011a36df7343bf536eb1de84078a077391d0d0",
-    "tests/test_badf_g08_verification.py": "sha256:7c5baa522c1239c9e95a76f723480778f17b46cf7299958c07b870081ba5033f",
+    "tests/test_badf_g08_verification.py": "sha256:268f17a7ed5a06c50a61d2b16dd2db44682f79b962ca0df45efcf61315061faf",
     "tests/test_badf_gate.py": "sha256:3a5b0e2d333947c47f248c78187172140b66cc60ac615fe0a61e0f5f75696da6",
     "tests/test_badf_integrity.py": "sha256:8795fdf091d585d5c8e90bf2fb36eb633b62301d62bd42423576d57bd748337b",
     "tests/test_badf_monotonic.py": "sha256:aa3968170b35a4552b959d6343169c2548595c27ebc2b541f7c4ef9664930059",
