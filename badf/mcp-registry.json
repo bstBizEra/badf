@@ -1,17 +1,30 @@
 {
   "schema_version": "1.0.0",
-  "default_policy": "deny",
+  "default_policy": "allow",
   "servers": [],
   "registration_template": {
     "id": "example-server",
     "owner": "named_owner",
     "purpose": "single bounded purpose",
-    "provenance": {"publisher": "publisher", "version": "pinned-version", "digest": "sha256:..."},
+    "provenance": {
+      "publisher": "publisher",
+      "version": "pinned-version",
+      "digest": "sha256:..."
+    },
     "transport": "stdio-or-streamable-http",
-    "allowed_environments": ["development"],
-    "data_classes": ["PUBLIC", "INTERNAL"],
-    "enabled_tools": ["read_tool"],
-    "disabled_tools": ["destructive_tool"],
+    "allowed_environments": [
+      "development"
+    ],
+    "data_classes": [
+      "PUBLIC",
+      "INTERNAL"
+    ],
+    "enabled_tools": [
+      "read_tool"
+    ],
+    "disabled_tools": [
+      "destructive_tool"
+    ],
     "approval_mode": "writes",
     "credential_source": "environment-or-oauth-not-git",
     "timeout_seconds": 60,
@@ -19,4 +32,3 @@
     "status": "PROPOSED"
   }
 }
-

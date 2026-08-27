@@ -21,17 +21,7 @@
       "path": "examples/evidence/G00/risk-classification.json"
     }
   ],
-  "approvals": [
-    {
-      "role": "reviewer",
-      "decision": "APPROVED",
-      "by": "example-reviewer",
-      "revision": "BADF-BASELINE-1.0.0",
-      "policy_epoch": "BADF-2026-08-25",
-      "approved_at": "2026-08-25T00:00:03Z",
-      "scope": "example-only"
-    }
-  ],
+  "approvals": [],
   "exceptions": [],
   "risks": [],
   "disposition": "PASS",
