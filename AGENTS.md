@@ -81,7 +81,10 @@ An agent may work within an open stage but may not declare the next stage open u
 - required checks pass on the composed result, not only the source branch;
 - required independent reviewers or human authorities approve;
 - exceptions are explicit, scoped, time-bounded, and approved;
-- `python3 scripts/badf_gate.py dossier <path>` returns `PASS`.
+- `python3 scripts/badf_gate.py dossier <path>` exits `0` with a rendered verdict of
+  `APPROVED` or `APPROVED_WITH_CONDITIONS`. A `BADF GATE HELD` (exit `3`) means the
+  dossier is well-formed but its verdict is `REWORK_REQUIRED`, `BLOCKED` or
+  `HUMAN_REQUIRED` -- that is not a pass and does not open the next stage.
 
 ## 7. Work-package contract
 

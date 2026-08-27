@@ -55,13 +55,22 @@ INTEGRITY_PATHS = [
     "scripts/badf_gate.py",
     ".github/workflows/badf-gates.yml",
     "AGENTS.md",
+    # The analysis of f337d9f found the lockfile protected the ENFORCER and
+    # not the POLICY: all 16 docs, all 7 test files, the skill source and the
+    # templates were unlocked. A change to the document defining what a
+    # council may do was invisible to every control. Directories are locked
+    # by glob; the lockfile lists every matched file explicitly so an added
+    # or removed file is drift too.
+    "docs/**/*.md",
+    "tests/*.py",
+    "skills/**/*",
+    "templates/*",
     "badf/authority-matrix.json",
     "badf/lifecycle.json",
     "badf/mcp-registry.json",
     "badf/skill-registry.json",
     "badf/tool-registry.json",
-    "schemas/evidence.schema.json",
-    "schemas/gate-dossier.schema.json",
+    "schemas/*.json",
 ]
 LOCKFILE = "badf/lockfile.json"
 
@@ -206,13 +215,25 @@ def sha256(path: Path) -> str:
 
 
 def compute_integrity() -> dict[str, str]:
-    """sha256 of every governance-critical file, by repo-relative path."""
+    """sha256 of every governance-critical file, by repo-relative path.
+
+    Entries may be globs. A glob that matches nothing is REFUSED, not skipped:
+    a pattern that silently matches zero files is a hole shaped exactly like
+    the directory it was meant to cover.
+    """
     digests: dict[str, str] = {}
-    for rel in INTEGRITY_PATHS:
-        path = ROOT / rel
-        if not path.is_file():
-            raise ValidationError(f"integrity path missing: {rel}")
-        digests[rel] = sha256(path)
+    for entry in INTEGRITY_PATHS:
+        if any(ch in entry for ch in "*?["):
+            matches = sorted(q for q in ROOT.glob(entry) if q.is_file())
+            if not matches:
+                raise ValidationError(f"integrity glob matches no files: {entry}")
+            for path in matches:
+                digests[path.relative_to(ROOT).as_posix()] = sha256(path)
+        else:
+            path = ROOT / entry
+            if not path.is_file():
+                raise ValidationError(f"integrity path missing: {entry}")
+            digests[entry] = sha256(path)
     return digests
 
 
