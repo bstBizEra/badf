@@ -1,0 +1,70 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0028",
+  "title": "Gate G02 capability: governed requirements decomposition and first-class RTM contract",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0015",
+  "objective": "Implement badf-requirements so an approved PRD baseline can be decomposed into a deterministic, bidirectionally complete RTM spanning objectives, capabilities, epics, requirements, quantified NFRs, acceptance criteria, test obligations and evidence requirements without granting G02 authority.",
+  "business_value": "Prevents story-generation shortcuts and orphan requirements from entering design by making traceability, testability, NFR quantification and evidence obligations explicit before Gate G02 review.",
+  "in_scope": [
+    "skills/badf-requirements/SKILL.md with RTM and external-methodology references",
+    "schemas/requirements-rtm.schema.json and templates/requirements-rtm.json",
+    "stdlib-only scripts/badf_requirements.py validator",
+    "tests/test_badf_requirements.py acceptance/refusal suite",
+    "G02 methodology provenance for Spec Kit, requirements-clarity and security-requirement-extraction",
+    "skill registry and badf-delivery routing integration at IMPLEMENTED status",
+    "BADF-DEM-0015 / WP-2026-0028 traceability and integrity lockfile update"
+  ],
+  "out_of_scope": [
+    "Gate G02 approval, DESIGN_READY or next-stage authorization",
+    "implementation of badf-prd or dependence on an unmerged G01 branch",
+    "architecture, solution design or implementation planning",
+    "vendoring or executing external skill code",
+    "direct writes to main or production"
+  ],
+  "target_gate": "G08",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "canonical RTM represents PRD objective -> capability -> epic -> requirement plus mandatory requirement -> quantified NFR overlay",
+    "every delivery path terminates through acceptance criterion -> test obligation -> evidence requirement",
+    "security/compliance-sensitive requirements require threat/compliance/privacy/abuse-case source provenance",
+    "unknown/orphan nodes, invalid edge types, duplicate identities/links, placeholders and unapproved upstream PRD baselines fail closed",
+    "requirement dependencies are known, non-self-referential and acyclic; BLOCKED dependencies produce REWORK_REQUIRED",
+    "open decisions and open blocking review findings produce REWORK_REQUIRED rather than approval",
+    "validator returns only ELIGIBLE_FOR_G02_REVIEW, REWORK_REQUIRED or fail-closed error and always reports NO_GATE_AUTHORITY",
+    "canonical template is intentionally not passable until placeholders are replaced",
+    "targeted tests, repository gate, full unittest suite and composed-tree verification pass before merge"
+  ],
+  "permissions": [
+    "write: feature/BADF-WP-G02-001-gate-02-requirements-rtm via PR",
+    "read: public methodology sources for provenance only",
+    "no write: main",
+    "no production or lifecycle gate authority"
+  ],
+  "tests": [
+    "python3 -m unittest tests.test_badf_requirements -v",
+    "python3 scripts/badf_gate.py repo",
+    "python3 -m unittest discover -s tests -p 'test_*.py'"
+  ],
+  "evidence": [
+    "targeted badf-requirements test output",
+    "repository integrity/gate output",
+    "full unittest output",
+    "PR CI and composed-tree verification",
+    "independent review with declared non-coverage"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the eventual squash commit through a separate PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "59c5293"
+  },
+  "note": "Issue/branch use the human-facing BADF-WP-G02-001 label; the repository machine work-package identity is WP-2026-0028."
+}

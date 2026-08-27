@@ -1,0 +1,640 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bizera.la/badf/schemas/requirements-rtm.schema.json",
+  "title": "BADF Requirements Traceability Matrix",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "rtm_id",
+    "work_package_id",
+    "gate",
+    "prd_baseline",
+    "nodes",
+    "links",
+    "dependencies",
+    "decisions",
+    "review_findings",
+    "author"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "rtm_id": {
+      "type": "string",
+      "pattern": "^RTM-[A-Za-z0-9._-]+$"
+    },
+    "work_package_id": {
+      "type": "string",
+      "pattern": "^WP-[A-Za-z0-9._-]+$"
+    },
+    "gate": {
+      "const": "G02"
+    },
+    "prd_baseline": {
+      "$ref": "#/$defs/prd"
+    },
+    "nodes": {
+      "$ref": "#/$defs/nodes"
+    },
+    "links": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/link"
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/dependency"
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/decision"
+      }
+    },
+    "review_findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "author": {
+      "$ref": "#/$defs/author"
+    }
+  },
+  "$defs": {
+    "str": {
+      "type": "string",
+      "minLength": 1
+    },
+    "id_statement": {
+      "type": "object",
+      "required": [
+        "id",
+        "statement"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/str"
+        },
+        "statement": {
+          "$ref": "#/$defs/str"
+        }
+      }
+    },
+    "prd": {
+      "type": "object",
+      "required": [
+        "id",
+        "version",
+        "artifact",
+        "digest",
+        "gate",
+        "disposition",
+        "approval_evidence_refs",
+        "objectives"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/str"
+        },
+        "version": {
+          "$ref": "#/$defs/str"
+        },
+        "artifact": {
+          "$ref": "#/$defs/str"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "gate": {
+          "const": "G01"
+        },
+        "disposition": {
+          "enum": [
+            "APPROVED",
+            "APPROVED_WITH_CONDITIONS"
+          ]
+        },
+        "approval_evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/str"
+          }
+        },
+        "objectives": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/id_statement"
+          }
+        }
+      }
+    },
+    "nodes": {
+      "type": "object",
+      "required": [
+        "capabilities",
+        "epics",
+        "requirements",
+        "nfrs",
+        "acceptance_criteria",
+        "test_obligations",
+        "evidence_requirements",
+        "security_sources"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "capabilities": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/capability"
+          }
+        },
+        "epics": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/epic"
+          }
+        },
+        "requirements": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/requirement"
+          }
+        },
+        "nfrs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/nfr"
+          }
+        },
+        "acceptance_criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/ac"
+          }
+        },
+        "test_obligations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/test"
+          }
+        },
+        "evidence_requirements": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/evidence_req"
+          }
+        },
+        "security_sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/source"
+          }
+        }
+      }
+    },
+    "capability": {
+      "type": "object",
+      "required": [
+        "id",
+        "statement",
+        "rationale"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/str"
+        },
+        "statement": {
+          "$ref": "#/$defs/str"
+        },
+        "rationale": {
+          "$ref": "#/$defs/str"
+        }
+      }
+    },
+    "epic": {
+      "type": "object",
+      "required": [
+        "id",
+        "statement",
+        "value",
+        "priority"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/str"
+        },
+        "statement": {
+          "$ref": "#/$defs/str"
+        },
+        "value": {
+          "$ref": "#/$defs/str"
+        },
+        "priority": {
+          "enum": [
+            "P0",
+            "P1",
+            "P2",
+            "P3"
+          ]
+        }
+      }
+    },
+    "requirement": {
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "statement",
+        "rationale",
+        "priority",
+        "security_sensitive"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/str"
+        },
+        "type": {
+          "enum": [
+            "FUNCTIONAL",
+            "DATA",
+            "SECURITY",
+            "COMPLIANCE",
+            "OPERABILITY"
+          ]
+        },
+        "statement": {
+          "$ref": "#/$defs/str"
+        },
+        "rationale": {
+          "$ref": "#/$defs/str"
+        },
+        "priority": {
+          "enum": [
+            "P0",
+            "P1",
+            "P2",
+            "P3"
+          ]
+        },
+        "security_sensitive": {
+          "type": "boolean"
+        }
+      }
+    },
+    "nfr": {
+      "type": "object",
+      "required": [
+        "id",
+        "category",
+        "statement",
+        "metric",
+        "operator",
+        "target",
+        "unit",
+        "measurement_method"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/str"
+        },
+        "category": {
+          "enum": [
+            "PERFORMANCE",
+            "AVAILABILITY",
+            "SECURITY",
+            "PRIVACY",
+            "SCALABILITY",
+            "RESILIENCE",
+            "ACCESSIBILITY",
+            "OBSERVABILITY",
+            "COST",
+            "DATA",
+            "COMPATIBILITY",
+            "OTHER"
+          ]
+        },
+        "statement": {
+          "$ref": "#/$defs/str"
+        },
+        "metric": {
+          "$ref": "#/$defs/str"
+        },
+        "operator": {
+          "enum": [
+            "<",
+            "<=",
+            ">",
+            ">=",
+            "=="
+          ]
+        },
+        "target": {
+          "type": "number"
+        },
+        "unit": {
+          "$ref": "#/$defs/str"
+        },
+        "measurement_method": {
+          "$ref": "#/$defs/str"
+        }
+      }
+    },
+    "ac": {
+      "type": "object",
+      "required": [
+        "id",
+        "statement",
+        "pass_condition"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/str"
+        },
+        "statement": {
+          "$ref": "#/$defs/str"
+        },
+        "pass_condition": {
+          "$ref": "#/$defs/str"
+        }
+      }
+    },
+    "test": {
+      "type": "object",
+      "required": [
+        "id",
+        "level",
+        "statement",
+        "expected_evidence_type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/str"
+        },
+        "level": {
+          "enum": [
+            "UNIT",
+            "INTEGRATION",
+            "CONTRACT",
+            "E2E",
+            "SECURITY",
+            "PERFORMANCE",
+            "RESILIENCE",
+            "UAT",
+            "OTHER"
+          ]
+        },
+        "statement": {
+          "$ref": "#/$defs/str"
+        },
+        "expected_evidence_type": {
+          "$ref": "#/$defs/str"
+        }
+      }
+    },
+    "evidence_req": {
+      "type": "object",
+      "required": [
+        "id",
+        "evidence_type",
+        "claim"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/str"
+        },
+        "evidence_type": {
+          "$ref": "#/$defs/str"
+        },
+        "claim": {
+          "$ref": "#/$defs/str"
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "reference",
+        "statement",
+        "requires_requirement"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/str"
+        },
+        "kind": {
+          "enum": [
+            "THREAT",
+            "COMPLIANCE",
+            "PRIVACY",
+            "ABUSE_CASE"
+          ]
+        },
+        "reference": {
+          "$ref": "#/$defs/str"
+        },
+        "statement": {
+          "$ref": "#/$defs/str"
+        },
+        "requires_requirement": {
+          "type": "boolean"
+        }
+      }
+    },
+    "link": {
+      "type": "object",
+      "required": [
+        "from",
+        "to",
+        "type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/str"
+        },
+        "to": {
+          "$ref": "#/$defs/str"
+        },
+        "type": {
+          "enum": [
+            "OBJECTIVE_TO_CAPABILITY",
+            "CAPABILITY_TO_EPIC",
+            "EPIC_TO_REQUIREMENT",
+            "REQUIREMENT_TO_NFR",
+            "REQUIREMENT_TO_ACCEPTANCE",
+            "NFR_TO_ACCEPTANCE",
+            "ACCEPTANCE_TO_TEST",
+            "TEST_TO_EVIDENCE",
+            "SOURCE_TO_REQUIREMENT"
+          ]
+        }
+      }
+    },
+    "dependency": {
+      "type": "object",
+      "required": [
+        "from_requirement",
+        "to_requirement",
+        "kind",
+        "status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "from_requirement": {
+          "$ref": "#/$defs/str"
+        },
+        "to_requirement": {
+          "$ref": "#/$defs/str"
+        },
+        "kind": {
+          "enum": [
+            "REQUIRES",
+            "SEQUENCES_AFTER",
+            "EXTERNAL_BLOCKER"
+          ]
+        },
+        "status": {
+          "enum": [
+            "MAPPED",
+            "RESOLVED",
+            "BLOCKED"
+          ]
+        }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "required": [
+        "id",
+        "status",
+        "statement",
+        "owner",
+        "resolution"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/str"
+        },
+        "status": {
+          "enum": [
+            "OPEN",
+            "RESOLVED"
+          ]
+        },
+        "statement": {
+          "$ref": "#/$defs/str"
+        },
+        "owner": {
+          "$ref": "#/$defs/str"
+        },
+        "resolution": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "required": [
+        "id",
+        "lens",
+        "severity",
+        "status",
+        "statement",
+        "node_refs"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/str"
+        },
+        "lens": {
+          "enum": [
+            "CLARITY",
+            "SCOPE",
+            "TRACEABILITY",
+            "TESTABILITY",
+            "SECURITY",
+            "COMPLIANCE",
+            "DEPENDENCY",
+            "OTHER"
+          ]
+        },
+        "severity": {
+          "enum": [
+            "BLOCKING",
+            "NON_BLOCKING"
+          ]
+        },
+        "status": {
+          "enum": [
+            "OPEN",
+            "RESOLVED"
+          ]
+        },
+        "statement": {
+          "$ref": "#/$defs/str"
+        },
+        "node_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/str"
+          }
+        }
+      }
+    },
+    "author": {
+      "type": "object",
+      "required": [
+        "id",
+        "principal_type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/str"
+        },
+        "principal_type": {
+          "enum": [
+            "human",
+            "agent",
+            "service",
+            "controller"
+          ]
+        }
+      }
+    }
+  }
+}

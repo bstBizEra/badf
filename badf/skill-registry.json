@@ -8,10 +8,25 @@
       "owner": "BADF Governance Authority",
       "version": "1.0.0",
       "risk_class": "C1",
-      "allowed_tools": ["local-filesystem", "local-shell"],
+      "allowed_tools": [
+        "local-filesystem",
+        "local-shell"
+      ],
       "status": "VALIDATED",
+      "digest": "GENERATED_AT_RELEASE"
+    },
+    {
+      "name": "badf-requirements",
+      "source": "skills/badf-requirements/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem",
+        "local-shell"
+      ],
+      "status": "IMPLEMENTED",
       "digest": "GENERATED_AT_RELEASE"
     }
   ]
 }
-

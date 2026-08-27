@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0015",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 46,
+    "url": "https://github.com/bstBizEra/badf/issues/46",
+    "exported_at": "2026-08-27T19:29:08Z",
+    "body_digest": "sha256:16edceac85c921b8e1607db342f66cc95b4b4dc3d2be389ca38e64713ceeee99"
+  },
+  "title": "BADF-WP-G02-001: Build Gate 02 — Requirements Decomposition and RTM",
+  "problem": "## Objective\nImplement Gate 02 as the canonical BADF requirements-decomposition capability: approved PRD intent → capability/epic/requirement/NFR/acceptance/test/evidence traceability → G02 review eligibility.\n\n## Canonical chain\n\n`PRD objective → capability → epic → requirement/NFR → acceptance criterion → test obligation → evidence requirement`\n\n## Scope\n- canonical `badf-requirements` skill\n- first-class Requirements Traceability Matrix (RTM) contract\n- versioned upstream PRD-baseline reference interface (without depending on unmerged G01 implementation)\n- capability, epic, functional requirement, NFR, acceptance criterion, test obligation and evidence-requirement identities\n- security-sensitive requirement provenance from threat/compliance sources\n- deterministic bidirectional traceability and completeness validation\n- ambiguity/unresolved-decision handling\n- Definition of Ready evidence for G02 review\n- templates, schema, acceptance/refusal tests, routing and skill-registry integration\n\n## External methodology inputs\n- GitHub Spec Kit: specify / clarify / checklist / analyze sequencing\n- softaworks requirements-clarity: functional scope, user interaction, technical constraints, business value, acceptance and ambiguity lenses\n- wshobson security-requirement-extraction: threat/compliance → specific, traceable, testable security requirements\n\nThese are methodology references only. BADF owns the canonical RTM schema, evidence contract, validator and authority boundary.\n\n## Non-goals\n- no story generator that bypasses RTM traceability\n- no G03–G14 implementation\n- no architecture or implementation planning\n- no vendored external executable\n- no direct writes to `main`\n- no authority to emit `G02 PASS`, `DESIGN_READY`, or open the next stage\n\n## Acceptance target\nMalformed, orphaned, cyclic, placeholder-bearing, untestable or incompletely traced requirements fail closed. A structurally and semantically complete RTM may become `ELIGIBLE_FOR_G02_REVIEW`, but independent product/gate authority remains required.\n\n## Target delivery disposition\n`IMPLEMENTED → VALIDATED → SHADOWED` for the skill capability; Gate G02 authority remains separate.",
+  "authorized_by": {
+    "principal": "bstBizEra",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-27T19:29:08Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Issue #46 authorizes the G02 requirements/RTM capability build. Machine delivery identity is WP-2026-0028. The skill may establish review eligibility but may not approve Gate G02."
+}

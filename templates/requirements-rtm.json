@@ -1,0 +1,134 @@
+{
+  "schema_version": "1.0.0",
+  "rtm_id": "RTM-__REQUIRED__",
+  "work_package_id": "WP-__REQUIRED__",
+  "gate": "G02",
+  "prd_baseline": {
+    "id": "PRD-__REQUIRED__",
+    "version": "__REQUIRED__",
+    "artifact": "__REQUIRED__",
+    "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "gate": "G01",
+    "disposition": "APPROVED",
+    "approval_evidence_refs": [
+      "__REQUIRED__"
+    ],
+    "objectives": [
+      {
+        "id": "OBJ-001",
+        "statement": "__REQUIRED__"
+      }
+    ]
+  },
+  "nodes": {
+    "capabilities": [
+      {
+        "id": "CAP-001",
+        "statement": "__REQUIRED__",
+        "rationale": "__REQUIRED__"
+      }
+    ],
+    "epics": [
+      {
+        "id": "EPIC-001",
+        "statement": "__REQUIRED__",
+        "value": "__REQUIRED__",
+        "priority": "P0"
+      }
+    ],
+    "requirements": [
+      {
+        "id": "REQ-001",
+        "type": "FUNCTIONAL",
+        "statement": "__REQUIRED__",
+        "rationale": "__REQUIRED__",
+        "priority": "P0",
+        "security_sensitive": false
+      }
+    ],
+    "nfrs": [
+      {
+        "id": "NFR-001",
+        "category": "PERFORMANCE",
+        "statement": "__REQUIRED__",
+        "metric": "__REQUIRED__",
+        "operator": "<=",
+        "target": 0,
+        "unit": "__REQUIRED__",
+        "measurement_method": "__REQUIRED__"
+      }
+    ],
+    "acceptance_criteria": [
+      {
+        "id": "AC-001",
+        "statement": "__REQUIRED__",
+        "pass_condition": "__REQUIRED__"
+      }
+    ],
+    "test_obligations": [
+      {
+        "id": "TEST-001",
+        "level": "E2E",
+        "statement": "__REQUIRED__",
+        "expected_evidence_type": "TEST"
+      }
+    ],
+    "evidence_requirements": [
+      {
+        "id": "EVDREQ-001",
+        "evidence_type": "TEST",
+        "claim": "__REQUIRED__"
+      }
+    ],
+    "security_sources": []
+  },
+  "links": [
+    {
+      "from": "OBJ-001",
+      "to": "CAP-001",
+      "type": "OBJECTIVE_TO_CAPABILITY"
+    },
+    {
+      "from": "CAP-001",
+      "to": "EPIC-001",
+      "type": "CAPABILITY_TO_EPIC"
+    },
+    {
+      "from": "EPIC-001",
+      "to": "REQ-001",
+      "type": "EPIC_TO_REQUIREMENT"
+    },
+    {
+      "from": "REQ-001",
+      "to": "NFR-001",
+      "type": "REQUIREMENT_TO_NFR"
+    },
+    {
+      "from": "REQ-001",
+      "to": "AC-001",
+      "type": "REQUIREMENT_TO_ACCEPTANCE"
+    },
+    {
+      "from": "NFR-001",
+      "to": "AC-001",
+      "type": "NFR_TO_ACCEPTANCE"
+    },
+    {
+      "from": "AC-001",
+      "to": "TEST-001",
+      "type": "ACCEPTANCE_TO_TEST"
+    },
+    {
+      "from": "TEST-001",
+      "to": "EVDREQ-001",
+      "type": "TEST_TO_EVIDENCE"
+    }
+  ],
+  "dependencies": [],
+  "decisions": [],
+  "review_findings": [],
+  "author": {
+    "id": "__REQUIRED__",
+    "principal_type": "agent"
+  }
+}
