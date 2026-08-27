@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0.0",
+  "decision_id": "BADF-DEC-0001",
+  "title": "Adopt the Self-Development Rule and enforce monotonic authority",
+  "status": "DECIDED",
+  "decided_at": "2026-08-27T05:30:00Z",
+  "decided_at_provenance": "RECONSTRUCTED from the operator session on 2026-08-27; the AGREE was given in chat and recorded here after the fact. Future decisions are recorded at decision time.",
+  "decision_authority": {
+    "role": "human_sponsor",
+    "principal": "operator"
+  },
+  "work_package_id": "BADF-WP-0004",
+  "change_class": "C3",
+  "ballot": "AGREE",
+  "authorizes": {
+    "summary": "Commit docs/governance/SELF_DEVELOPMENT_RULE.md as normative; add verify_monotonic_authority() to the repo gate refusing any reduction of required_roles, reserved_actions, or rules.minimum_class versus the last authorized baseline; adversarial tests, mutation verification, CI negative control.",
+    "scope": [
+      "scripts/badf_gate.py",
+      "tests/test_badf_monotonic.py",
+      "docs/governance/SELF_DEVELOPMENT_RULE.md",
+      "badf/lockfile.json"
+    ],
+    "excluded": [
+      "badf/authority-matrix.json -- policy unchanged; only the guard changed"
+    ]
+  },
+  "authority_downgrade": {
+    "permits_downgrade": false,
+    "note": "This decision STRENGTHENS authority. It does not admit any downgrade; a downgrade ack citing it must be refused."
+  },
+  "binding": {
+    "authority_matrix_digest": "sha256:007dd9151ec95d7b75851e4a397b6f9b0ba8e537b7884eb756429a226b814ff8",
+    "enacting_commit": "671f0ea27114072f7ac16b33e437a5fa500914fb",
+    "policy_epoch": "BADF-2026-08-25"
+  },
+  "evidence": [
+    "CI run 33044746017 on 7c086ab (canonical, PASS)",
+    "negative control PR #2 run 33044484934; corrected by PR #3 run 33044787967 (step 4 FAIL: authority downgrade refused)"
+  ],
+  "supersedes": null,
+  "superseded_by": null,
+  "invalidation": "Any material change to scope, authority class, or the enacting implementation invalidates this decision; a new decision is required."
+}
