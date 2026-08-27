@@ -11,6 +11,7 @@ a scratch clone whose origin/main is the real authorized ledger.
 """
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -39,12 +40,36 @@ class LedgerScratch(unittest.TestCase):
         for rec in list((self.root / "work").glob("WP-*/work-package.json")):
             if rec.relative_to(self.root).as_posix() not in on_ledger:
                 shutil.rmtree(rec.parent)
+        # The design guarantees that right after EVERY merge origin/main carries one
+        # LANDED_UNRECONCILED record: the one that just landed. The first version of
+        # this fixture assumed a debt-free ledger and was red on main from the very
+        # merge that shipped it (30186c5, run 33091002713) -- BRANCH_GREEN != MERGE_SAFE.
+        # Normalise: corroborate every carried record the ledger shows landed, using
+        # an INDEPENDENT parse so the gate's parser is cross-checked, never trusted.
+        for wp, sha in self.ledger().items():
+            rec = self.record(wp)
+            if rec.is_file() and not (json.loads(rec.read_text()).get("external_target") or {}).get("landed_as"):
+                self.set_record(wp, status="CLOSED", landed_as=sha, landing_not_on_ledger=None)
 
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     def git(self, *a):
         return subprocess.run(["git", "-C", str(self.root), *a], capture_output=True, text=True, check=True).stdout.strip()
+
+    def ledger(self):
+        """Independent derivation, deliberately unlike the gate's: WP id -> OLDEST
+        first-parent origin/main commit whose body carries its Work-Package line."""
+        out = {}
+        log = self.git("log", "--first-parent", "--reverse", "--format=%H%n%B%n@@END@@", f"origin/{gate.DEFAULT_BRANCH}")
+        for chunk in log.split("@@END@@"):
+            lines = chunk.strip().splitlines()
+            if not lines:
+                continue
+            sha, body = lines[0].strip(), "\n".join(lines[1:])
+            for m in re.finditer(r"^Work-Package:\s*(?:BADF-WP-|WP-2026-)(\d{4})\s*$", body, re.M):
+                out.setdefault(f"WP-2026-{m.group(1)}", sha)   # --reverse: first seen is oldest
+        return out
 
     def record(self, wp):
         return self.root / "work" / wp / "work-package.json"

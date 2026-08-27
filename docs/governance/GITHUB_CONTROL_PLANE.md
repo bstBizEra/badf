@@ -112,6 +112,13 @@ it rather than trusting the record.
   is unchanged.
 - Foreign work packages (`repository` ≠ this one) land in another ledger and are outside
   this rule.
+- **The tree that is tested is not the tree that lands.** A PR runner's `origin/main` is the
+  pre-merge ledger; the merge itself adds the new landing. `WP-2026-0019` shipped this rule
+  green and turned `main` red at `30186c5` because its tests assumed a debt-free ledger
+  (#31). Before merging a PR whose tests read the ledger, simulate the post-merge tree:
+  squash the branch onto a local `main` in a scratch clone, point `origin/main` at it, run
+  the suite. Fixtures normalise inherited debt and add only what they assert on. Until #21
+  makes this a named gate, it is a stated step, performed and cited in the PR.
 
 ## Discovery ≠ scope expansion
 
