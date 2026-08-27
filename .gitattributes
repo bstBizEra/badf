@@ -1,0 +1,7 @@
+# QA finding E7: the integrity lockfile hashes working-tree bytes. A clone with
+# core.autocrlf=true rewrote every locked text file with CRLF and drifted all
+# governance paths at once, indistinguishable from tampering. Pin LF so the
+# digest is a property of the content, not of the checkout.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
