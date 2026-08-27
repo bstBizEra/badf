@@ -1,0 +1,14 @@
+{
+  "project": {
+    "name": "PropTech",
+    "intent": "Build a land valuation platform for Laos",
+    "owner": "BST",
+    "target": "production",
+    "repository": "bstBizEra/proptech",
+    "local_path": "/path/to/a/clean/checkout/of/proptech",
+    "demand": "BADF-DEM-0003",
+    "project_id": "BST-PROPTECH",
+    "type": "web-platform",
+    "maturity": "IDEA"
+  }
+}

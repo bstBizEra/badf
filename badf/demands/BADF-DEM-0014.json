@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0014",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 25,
+    "url": "https://github.com/bstBizEra/badf/issues/25",
+    "exported_at": "2026-08-27T19:13:13Z",
+    "body_digest": "sha256:bbda35fa1c2be4a7cad7c93addb102361d50611852e56dfa83f9f5604ec430a6"
+  },
+  "title": "GOV-0005: badf init's intent contract exists only in code",
+  "problem": "## Observed\n`INTENT_REQUIRED` (now 7 fields: `name`, `intent`, `owner`, `target`, `repository`, `local_path`, `demand`) and `INTENT_TARGETS` are defined only in `scripts/badf_gate.py`. No README section, no `docs/` page and no `examples/` file describes the intent file a human writes for `badf init`. Issue #22 itself had to read the code to learn the field set, and the demand field added by BADF-WP-0018 is documented in the doctrine's *Demand records* section but not on any intent surface.\n\n## Expected\nThe contract a human writes to is documented on a surface that carries it, with an example intent \u2014 and a drift test asserting the documented field list equals `INTENT_REQUIRED`, so the document cannot silently fall behind the code (the same pattern the schema-drift tests use for `DOSSIER_FIELDS` and friends).\n\n## Evidence\n`grep -rnE \"local_path|intent\\.project|badf init\" docs README.md examples` \u2192 no matches on `main` at the merge of #23.\n\n## Unknowns\nWhether the intent example should live in `examples/` (locked? \u2014 see GOV-0004 for the same question about `schemas/`) or in `docs/`.\n\n## Proposed work package\nPatch tier: a `badf init` section (README or `docs/`), `examples/intent.yaml`, and `test_badf_init_docs_match_code` comparing the documented fields to `INTENT_REQUIRED` and `INTENT_TARGETS`.\n\ndiscovered-by: BADF-WP-0018 \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-27T19:13:13Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. DISCOVERED by BADF-WP-0018; the README section landed with WP-0021; this WP adds the example and the drift test. Authority: the operator's pick of #24 + #25 (2026-08-28). Worked as BADF-WP-0027."
+}

@@ -1,0 +1,51 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0026",
+  "title": "Lock schemas/: the contracts the gate applies are under the lockfile",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0013",
+  "objective": "Put schemas/*.json under INTEGRITY_PATHS so a schema edit, addition or removal without a re-sign is drift; carry schemas/ into the scratch clones that run the working gate.",
+  "business_value": "The gate applies schemas (check_schema) and the drift walker validates every shipped record against them; a loosened required set or widened enum today changes what is accepted with no re-sign in the diff.",
+  "in_scope": [
+    "INTEGRITY_PATHS += schemas/*.json",
+    "tests: edit / add / remove a schema without re-sign is drift",
+    "tests/_scratch.seed_clone carries schemas/",
+    "lockfile re-signed"
+  ],
+  "out_of_scope": [
+    "examples/ (validated by CI, not locked -- separate Issue)",
+    "any schema content change"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "repo refuses a schema edit without re-sign naming the file",
+    "repo refuses an added or removed schema file without re-sign",
+    "all existing tests green; compose green in both shapes"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_integrity.py"
+  ],
+  "evidence": [
+    "mutation on the glob entry",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "CLOSED",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "8f193cc"
+  },
+  "note": "Lands IN_PROGRESS by design; reconciled by the next WP's branch.",
+  "landing_not_on_ledger": "Withdrawn before any PR: Issue #24's premise was false (schemas/*.json locked since BADF-WP-0007) and its Evidence line was not measured. Recorded, not deleted."
+}

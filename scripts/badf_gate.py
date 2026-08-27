@@ -1393,6 +1393,7 @@ def verify_council(dossier: dict[str, Any], work_package: dict[str, Any] | None)
 
 
 INTENT_REQUIRED = {"name", "intent", "owner", "target", "repository", "local_path", "demand"}
+INTENT_OPTIONAL = {"project_id", "type", "maturity"}   # README documents exactly these; a drift test holds both to it
 INTENT_TARGETS = {"production", "sandbox"}
 JUDGMENT_FIELDS = ["objective", "business_value", "in_scope", "out_of_scope", "acceptance_criteria"]
 
@@ -1843,6 +1844,12 @@ def load_intent(path: Path) -> dict[str, Any]:
     missing = sorted(INTENT_REQUIRED - set(proj))
     if missing:
         raise ValidationError(f"intent.project missing required field(s): {', '.join(missing)}")
+    unknown = sorted(set(proj) - INTENT_REQUIRED - INTENT_OPTIONAL)
+    if unknown:
+        # a typo of an optional key would otherwise be ignored and its value
+        # invented as DECLARED_MISSING -- refused, never silently dropped
+        raise ValidationError(f"intent.project has unknown field(s): {', '.join(unknown)}; "
+                              f"known: {', '.join(sorted(INTENT_REQUIRED | INTENT_OPTIONAL))}")
     for k in INTENT_REQUIRED:
         expect_str(proj[k], f"intent.project.{k}")
         if not proj[k].strip():

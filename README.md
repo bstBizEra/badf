@@ -46,6 +46,9 @@ The intent is a JSON/YAML mapping under `project`:
 | `project_id` | no | e.g. `BST-PROPTECH`; derived from owner and name when absent |
 | `type`, `maturity` | no | recorded as given, else `DECLARED_MISSING` — never guessed |
 
+A complete example is [`examples/intent.json`](examples/intent.json). Any key outside this table is
+refused, not ignored — a typo of an optional key would otherwise be invented as `DECLARED_MISSING`.
+
 The G00 dossier renders `HUMAN_REQUIRED`: an instance is a request for authority, not a
 grant of it. `python3 scripts/badf_gate.py instance <path>` validates an instance —
 documents, cross-document agreement, git corroboration, and the instance lockfile — and
