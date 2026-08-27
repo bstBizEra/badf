@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import argparse
+import os
+import subprocess
 import hashlib
 import json
 import re
@@ -196,6 +198,102 @@ def verify_integrity() -> None:
         )
 
 
+MATRIX = "badf/authority-matrix.json"
+DOWNGRADE_ACK = "BADF_AUTHORITY_DOWNGRADE_ACK"
+
+
+def committed_matrix() -> dict[str, Any] | None:
+    """The authority matrix as last committed, or None if there is no commit."""
+    try:
+        out = subprocess.run(
+            ["git", "show", f"HEAD:{MATRIX}"], cwd=ROOT,
+            capture_output=True, text=True, check=True).stdout
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+    return json.loads(out)
+
+
+def verify_monotonic_authority() -> None:
+    """Refuse any change to the authority matrix that lowers required authority.
+
+    Enforces the self-development rule's monotonic invariant: BADF may
+    strengthen its own controls within delegated authority, but may not
+    reduce required authority, independence or fail-closed behaviour without
+    an explicit decision.
+
+    Proven necessary before it was written: with the integrity lockfile
+    alone, an author could cut C3 from four required roles to one, re-sign
+    the lockfile, and both the repo gate and a one-approval C3 dossier
+    PASSED. Integrity made the change visible; nothing refused it.
+
+    Compared against the matrix at HEAD, a change is a DOWNGRADE if it:
+      - removes a change class;
+      - removes any role from a class's required_roles;
+      - removes a reserved action;
+      - lowers a rule's minimum_class, or removes a rule.
+    Additions and strengthenings pass. A downgrade is refused unless the
+    environment carries BADF_AUTHORITY_DOWNGRADE_ACK=<decision id> -- an
+    explicit, attributable authorization that CI never sets, so a downgrade
+    can only ever be admitted deliberately and locally, never by a pipeline
+    going green.
+
+    Deny-unless-established: if HEAD has no matrix to compare against, the
+    check cannot establish monotonicity and refuses.
+    """
+    current_path = ROOT / MATRIX
+    if not current_path.is_file():
+        raise ValidationError(f"{MATRIX} is missing")
+    current = load_json(current_path)
+    baseline = committed_matrix()
+    if baseline is None:
+        raise ValidationError(
+            f"no committed {MATRIX} at HEAD to compare against -- monotonic "
+            f"authority cannot be established, refusing")
+
+    order = ["C0", "C1", "C2", "C3"]
+    rank = {c: i for i, c in enumerate(order)}
+    downgrades: list[str] = []
+
+    b_classes = baseline.get("change_classes", {})
+    c_classes = current.get("change_classes", {})
+    for name, spec in b_classes.items():
+        if name not in c_classes:
+            downgrades.append(f"change class {name} removed")
+            continue
+        lost = set(spec.get("required_roles", [])) - set(c_classes[name].get("required_roles", []))
+        if lost:
+            downgrades.append(f"{name} lost required role(s): {', '.join(sorted(lost))}")
+
+    lost_actions = set(baseline.get("reserved_actions", [])) - set(current.get("reserved_actions", []))
+    if lost_actions:
+        downgrades.append("reserved action(s) removed: " + ", ".join(sorted(lost_actions)))
+
+    b_rules = {r["action"]: r for r in baseline.get("rules", []) if "action" in r}
+    c_rules = {r["action"]: r for r in current.get("rules", []) if "action" in r}
+    for action, rule in b_rules.items():
+        if action not in c_rules:
+            downgrades.append(f"rule for action {action!r} removed")
+            continue
+        was, now = rule.get("minimum_class"), c_rules[action].get("minimum_class")
+        if was in rank and now in rank and rank[now] < rank[was]:
+            downgrades.append(f"rule {action!r} minimum_class lowered {was} -> {now}")
+        elif was in rank and now not in rank:
+            downgrades.append(f"rule {action!r} minimum_class became invalid: {now!r}")
+
+    if not downgrades:
+        return
+    ack = os.environ.get(DOWNGRADE_ACK, "").strip()
+    if ack:
+        print(f"authority downgrade admitted under explicit decision {ack}: "
+              + "; ".join(downgrades))
+        return
+    raise ValidationError(
+        "authority downgrade refused -- " + "; ".join(downgrades)
+        + f". Reducing required authority needs an explicit decision: set "
+          f"{DOWNGRADE_ACK}=<decision id> for a deliberate, attributable local run. "
+          f"No pipeline sets it.")
+
+
 def write_lockfile() -> None:
     """Re-sign the lockfile from current content.
 
@@ -244,6 +342,7 @@ def validate_repo() -> None:
         raise ValidationError("badf-delivery SKILL.md frontmatter is invalid")
 
     verify_integrity()
+    verify_monotonic_authority()
 
 def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -> None:
     evidence = load_json(path)
