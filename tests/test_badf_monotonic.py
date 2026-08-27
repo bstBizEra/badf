@@ -94,8 +94,16 @@ class MonotonicAuthorityTests(unittest.TestCase):
     # --- explicit downgrade is admitted only with an attributable ack ----
     def test_downgrade_with_explicit_decision_ack_is_admitted(self):
         self.edit(lambda m: m["change_classes"]["C3"].__setitem__("required_roles", ["human_sponsor"]))
-        os.environ[gate.DOWNGRADE_ACK] = "BADF-DEC-TEST"
+        os.environ[gate.DOWNGRADE_ACK] = "BADF-DEC-0001"
         gate.verify_monotonic_authority()
+
+    def test_malformed_ack_does_not_admit(self):
+        """QA finding F-8: '0', 'false', and 200 chars all admitted a downgrade."""
+        self.edit(lambda m: m["change_classes"]["C3"].__setitem__("required_roles", ["human_sponsor"]))
+        for bad in ("0", "false", "x" * 200, "BADF-DEC-TEST"):
+            with self.subTest(ack=bad):
+                os.environ[gate.DOWNGRADE_ACK] = bad
+                self.deny("not a decision id")
 
     def test_blank_ack_does_not_admit(self):
         self.edit(lambda m: m["change_classes"]["C3"].__setitem__("required_roles", ["human_sponsor"]))

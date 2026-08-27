@@ -94,7 +94,8 @@ class AuthoritySatisfiedTests(unittest.TestCase):
         self.deny("predates the dossier", approvals=items)
 
     def test_absent_author_denies(self):
-        self.deny("author is required", author="")
+        self.deny("principal is empty", author="")
+        self.deny("must be a string", author=None)
 
     def test_non_approved_decision_does_not_count_toward_quorum(self):
         items = [approval(r, f"principal-{i}") for i, r in enumerate(C3_ROLES)]

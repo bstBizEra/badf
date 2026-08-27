@@ -17,7 +17,10 @@ class BADFGateTests(unittest.TestCase):
 
     def test_passing_dossier_fails_closed_when_required_evidence_missing(self):
         source = json.loads((gate.ROOT / "examples/gate-dossier.G00.json").read_text())
-        source["evidence"] = source["evidence"][:-1]
+        # Drop a REQUIRED evidence type by name, not by position. Dropping [-1]
+        # coupled this test to the last index happening to be required; an
+        # appended optional item would have silently broken it (QA finding).
+        source["evidence"] = [e for e in source["evidence"] if e["type"] != "authority"]
         with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as handle:
             json.dump(source, handle)
             path = Path(handle.name)

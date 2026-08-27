@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import unicodedata
 import os
 import subprocess
 import hashlib
@@ -46,6 +47,13 @@ REQUIRED_FILES = [
 ]
 
 INTEGRITY_PATHS = [
+    # QA finding F-1: the gate was not in its own lockfile. Any control could
+    # be deleted from this file with the lockfile byte-identical to main.
+    # Hashing the gate, the workflow and the tests does not make them
+    # un-editable -- it makes every edit carry a visible re-sign in the same
+    # diff, so the reviewer's eye is drawn to exactly the files that decide.
+    "scripts/badf_gate.py",
+    ".github/workflows/badf-gates.yml",
     "AGENTS.md",
     "badf/authority-matrix.json",
     "badf/lifecycle.json",
@@ -86,6 +94,67 @@ class ValidationError(Exception):
     pass
 
 
+INVISIBLE_CATEGORIES = {"Cc", "Cf", "Zl", "Zp"}
+CLASS_RANK = {"C0": 0, "C1": 1, "C2": 2, "C3": 3}
+DECISION_ID = re.compile(r"^BADF-DEC-[0-9]{4,}$")
+
+
+def expect_str(value: Any, label: str) -> str:
+    """Refuse a non-string where a string is required, as a controlled refusal.
+
+    QA found 32 inputs that exited via traceback rather than BADF GATE FAIL:
+    a list where a string was expected hits `in <set>` and raises TypeError; a
+    null hits `.replace` and raises AttributeError. A traceback is not a
+    refusal -- it leaks internals and is not the contract main() promises.
+    """
+    if not isinstance(value, str):
+        raise ValidationError(f"{label} must be a string, got {type(value).__name__}")
+    return value
+
+
+def canonical_principal(value: Any, label: str) -> str:
+    """One identity for one person, however they typed it.
+
+    QA finding F-2: principals were compared with raw `==`, so `mallory`,
+    `mallory `, `Mallory`, `mallory<ZWSP>` and `mallory<TAB>` were four
+    distinct approvers -- and the author approved their own C3 change under
+    all four. Canonical form is NFKC + casefold + strip. Invisible and
+    control characters (Unicode Cc/Cf/Zl/Zp, and any Zs but plain space)
+    survive NFKC, so they are REFUSED rather than stripped: an identifier
+    carrying a zero-width space is not a typo, it is an attempt.
+
+    Not handled: cross-script homoglyphs (Cyrillic `а` for Latin `a`). A
+    confusables table is out of scope here; mixed-script identifiers are
+    refused as the cheap approximation, and the residue is stated.
+    """
+    text = expect_str(value, label)
+    norm = unicodedata.normalize("NFKC", text).casefold().strip()
+    if not norm:
+        raise ValidationError(f"{label} principal is empty")
+    for ch in norm:
+        cat = unicodedata.category(ch)
+        if cat in INVISIBLE_CATEGORIES or (cat == "Zs" and ch != " "):
+            raise ValidationError(
+                f"{label} contains an invisible or control character (U+{ord(ch):04X}); refused")
+    scripts = {"latin" if "LATIN" in unicodedata.name(ch, "") else "other"
+               for ch in norm if ch.isalpha()}
+    if len(scripts) > 1:
+        raise ValidationError(f"{label} mixes scripts; refused as a possible homoglyph")
+    return norm
+
+
+def _no_duplicate_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    """QA finding F-9: json.loads keeps the LAST duplicate key, so a dossier
+    whose first `disposition` reads FAIL and last reads PASS is evaluated as
+    PASS while a reviewer reading top-down sees FAIL. Refuse duplicates."""
+    out: dict[str, Any] = {}
+    for k, v in pairs:
+        if k in out:
+            raise ValueError(f"duplicate key {k!r}")
+        out[k] = v
+    return out
+
+
 def load_json(path: Path) -> dict[str, Any]:
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
@@ -103,6 +172,7 @@ def require_fields(value: dict[str, Any], fields: set[str], label: str) -> None:
 
 
 def parse_time(value: str, label: str) -> datetime:
+    expect_str(value, label)
     try:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except (TypeError, ValueError) as exc:
@@ -113,7 +183,11 @@ def parse_time(value: str, label: str) -> datetime:
 
 
 def safe_repo_path(value: str, label: str) -> Path:
-    candidate = (ROOT / value).resolve()
+    expect_str(value, label)
+    try:
+        candidate = (ROOT / value).resolve()
+    except (OSError, ValueError) as exc:
+        raise ValidationError(f"{label} is not a usable path: {exc.__class__.__name__}") from exc
     try:
         candidate.relative_to(ROOT)
     except ValueError as exc:
@@ -240,6 +314,14 @@ def resolve_authority_baseline() -> str | None:
         # itself and launder any downgrade. Refuse it as unestablished.
         if base is None or head is None or base == head:
             return None
+        # QA finding F-3: an explicit baseline was accepted for ANY commit,
+        # including the attacker's own weak parent (HEAD~1) or a tag on a side
+        # branch. The baseline must be a policy that actually reached the
+        # default branch: require it to be an ancestor of origin/<default>.
+        anc = subprocess.run(["git", "merge-base", "--is-ancestor", base, f"origin/{DEFAULT_BRANCH}"],
+                             cwd=ROOT, capture_output=True)
+        if anc.returncode != 0:
+            return None
         return base
     # Implicit: the merge-base with the default branch. When HEAD is *on* the
     # default branch (or a branch with no commits past it) the merge-base IS
@@ -255,7 +337,15 @@ def committed_matrix() -> dict[str, Any] | None:
     if base is None:
         return None
     out = _git("show", f"{base}:{MATRIX}")
-    return None if out is None else json.loads(out)
+    if out is None:
+        return None
+    try:
+        parsed = json.loads(out, object_pairs_hook=_no_duplicate_keys)
+    except ValueError:
+        raise ValidationError(f"the baseline {MATRIX} at {base[:12]} is not valid JSON; refusing")
+    if not isinstance(parsed, dict):
+        raise ValidationError(f"the baseline {MATRIX} at {base[:12]} is not an object; refusing")
+    return parsed
 
 
 def verify_monotonic_authority() -> None:
@@ -330,11 +420,22 @@ def verify_monotonic_authority() -> None:
 
     if not downgrades:
         return
+    _admit_downgrade(downgrades)
+
+
+def _admit_downgrade(downgrades: list[str]) -> None:
+    """QA finding F-8: any non-blank ack admitted a downgrade -- "0", "false",
+    10,000 characters, and ANSI escapes that erased their own log line. The
+    ack must look like a decision id and is echoed ASCII-safe."""
     ack = os.environ.get(DOWNGRADE_ACK, "").strip()
-    if ack:
-        print(f"authority downgrade admitted under explicit decision {ack}: "
-              + "; ".join(downgrades))
+    if ack and DECISION_ID.match(ack):
+        print("authority downgrade admitted under explicit decision "
+              + ascii(ack) + ": " + "; ".join(downgrades))
         return
+    if ack:
+        raise ValidationError(
+            f"{DOWNGRADE_ACK} is set but is not a decision id (expected BADF-DEC-nnnn, got {ascii(ack)[:40]}); "
+            "refusing the downgrade")
     raise ValidationError(
         "authority downgrade refused -- " + "; ".join(downgrades)
         + f". Reducing required authority needs an explicit decision: set "
@@ -418,7 +519,7 @@ def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -
         raise ValidationError(f"evidence {path} artifact digest mismatch")
 
 
-def validate_authority(dossier: dict[str, Any]) -> None:
+def validate_authority(dossier: dict[str, Any], require_quorum: bool = True) -> None:
     """Enforce AUTHORITY_SATISFIED(change_class).
 
         required_roles subset of distinct approving roles
@@ -439,9 +540,7 @@ def validate_authority(dossier: dict[str, Any]) -> None:
     required = set(spec["required_roles"])
     known_roles = {role for entry in classes.values() for role in entry["required_roles"]}
 
-    author = dossier.get("author")
-    if not isinstance(author, str) or not author.strip():
-        raise ValidationError("dossier author is required to evaluate authority")
+    author = canonical_principal(dossier.get("author"), "dossier author")
 
     approvals = dossier["approvals"]
     if not isinstance(approvals, list):
@@ -457,12 +556,11 @@ def validate_authority(dossier: dict[str, Any]) -> None:
         if absent:
             raise ValidationError(f"{label} missing required fields: {', '.join(absent)}")
         role = item["role"]
-        principal = item["by"]
         if not isinstance(role, str) or role not in known_roles:
             raise ValidationError(f"{label} unknown role: {role!r}")
-        if not isinstance(principal, str) or not principal.strip():
-            raise ValidationError(f"{label} approving principal is empty")
-        if item["decision"] not in APPROVAL_DECISIONS:
+        principal = canonical_principal(item["by"], f"{label} approving")
+        decision = expect_str(item["decision"], f"{label} decision")
+        if decision not in APPROVAL_DECISIONS:
             raise ValidationError(f"{label} invalid decision: {item['decision']!r}")
         if item["revision"] != dossier["source_revision"]:
             raise ValidationError(
@@ -476,7 +574,11 @@ def validate_authority(dossier: dict[str, Any]) -> None:
             raise ValidationError(
                 f"{label} is supplied by the dossier author {principal!r}: "
                 "approve-own-work is a reserved action")
-        if item["decision"] == "APPROVED":
+        if decision == "REJECTED" and role in required:
+            raise ValidationError(
+                f"{label}: {principal!r} REJECTED as {role}, a required role -- a rejection from "
+                "a required role is a veto, not a vote to be outnumbered")
+        if decision == "APPROVED":
             granted.setdefault(principal, set()).add(role)
 
     for principal, roles in sorted(granted.items()):
@@ -486,6 +588,8 @@ def validate_authority(dossier: dict[str, Any]) -> None:
                 f"principal {principal!r} fills {len(overlap)} required roles "
                 f"({', '.join(sorted(overlap))}); required roles must be distinct principals")
 
+    if not require_quorum:
+        return
     satisfied = {role for roles in granted.values() for role in roles}
     unmet = sorted(required - satisfied)
     if unmet:
@@ -518,7 +622,24 @@ def validate_conditions(dossier: dict[str, Any], known_roles: set[str]) -> None:
     disposition = dossier["disposition"]
     author = dossier.get("author")
 
-    if disposition == "PASS_WITH_CONDITIONS" and not raw and not dossier["exceptions"]:
+    exceptions = dossier.get("exceptions", [])
+    if not isinstance(exceptions, list):
+        raise ValidationError("dossier exceptions must be an array")
+    for index, exc in enumerate(exceptions):
+        # QA finding M2: `exceptions` was the unguarded twin of `conditions`.
+        # `["waive-mandatory-gate"]` satisfied a conditional pass and rendered
+        # unconditional APPROVED. An exception is an object with an owner and
+        # an authority, or it is nothing.
+        elabel = f"exceptions[{index}]"
+        if not isinstance(exc, dict):
+            raise ValidationError(f"{elabel} must be an object, not a bare value")
+        absent = sorted({"exception_id", "control", "justification", "granted_by", "expires_at"} - set(exc))
+        if absent:
+            raise ValidationError(f"{elabel} missing required fields: {', '.join(absent)}")
+        if exc["granted_by"] not in known_roles:
+            raise ValidationError(f"{elabel} granted_by {exc['granted_by']!r} is not a role in the authority matrix")
+        parse_time(exc["expires_at"], f"{elabel}.expires_at")
+    if disposition == "PASS_WITH_CONDITIONS" and not raw and not exceptions:
         raise ValidationError("conditional pass requires conditions or exceptions")
     if disposition == "PASS" and any(isinstance(c, dict) and c.get("status") == "OPEN" for c in raw):
         raise ValidationError(
@@ -543,6 +664,10 @@ def validate_conditions(dossier: dict[str, Any], known_roles: set[str]) -> None:
         for field in ("statement", "closure_predicate", "blocking_scope"):
             if not isinstance(cond[field], str) or not cond[field].strip():
                 raise ValidationError(f"{label} {field} is empty")
+        expect_str(cond["status"], f"{label} status")
+        expect_str(cond["severity"], f"{label} severity")
+        expect_str(cond["owner"], f"{label} owner")
+        expect_str(cond["closure_authority"], f"{label} closure_authority")
         if cond["status"] not in CONDITION_STATUSES:
             raise ValidationError(f"{label} invalid status {cond['status']!r}")
         if cond["severity"] not in CONDITION_SEVERITIES:
@@ -552,8 +677,15 @@ def validate_conditions(dossier: dict[str, Any], known_roles: set[str]) -> None:
         if cond["closure_authority"] not in known_roles:
             raise ValidationError(
                 f"{label} closure_authority {cond['closure_authority']!r} is not a role in the authority matrix")
-        if cond.get("closed_by") is not None and cond["closed_by"] == author:
-            raise ValidationError(f"{label} closed by the dossier author -- closure is not self-certified")
+        if cond["status"] in {"CLOSED", "SUPERSEDED", "WAIVED"}:
+            # QA finding F-5: a Critical condition blocking THIS gate could be
+            # marked WAIVED with no closer at all, and the dossier rendered
+            # APPROVED. Closure is an act by someone; it must name them.
+            if cond.get("closed_by") is None:
+                raise ValidationError(f"{label} is {cond['status']} but names no closed_by")
+            closer = canonical_principal(cond["closed_by"], f"{label} closed_by")
+            if author is not None and closer == canonical_principal(author, "dossier author"):
+                raise ValidationError(f"{label} closed by the dossier author -- closure is not self-certified")
         if cond["status"] == "OPEN":
             open_count += 1
 
@@ -666,7 +798,9 @@ def validate_dossier(dossier_path: Path) -> str:
         raise ValidationError("invalid dossier id")
     if not re.fullmatch(r"WP-[A-Za-z0-9._-]+", str(dossier["work_package_id"])):
         raise ValidationError("invalid work_package_id")
-    if dossier["change_class"] not in {"C0", "C1", "C2", "C3"}:
+    expect_str(dossier["change_class"], "dossier.change_class")
+    expect_str(dossier["disposition"], "dossier.disposition")
+    if dossier["change_class"] not in CLASS_RANK:
         raise ValidationError("invalid change_class")
     if dossier["disposition"] not in {"PASS", "PASS_WITH_CONDITIONS", "FAIL", "BLOCKED", "HUMAN_REQUIRED"}:
         raise ValidationError("invalid disposition")
@@ -678,6 +812,19 @@ def validate_dossier(dossier_path: Path) -> str:
     gate = next((item for item in lifecycle["gates"] if item["id"] == dossier["gate"]), None)
     if gate is None:
         raise ValidationError("unknown gate")
+    # QA finding B1 (BLOCKER): change_class was self-asserted and the
+    # lifecycle's minimum_change_class was never read. A G09 dossier (floor
+    # C2, four roles) declaring C0 passed with ONE reviewer -- no forgery, no
+    # re-sign, nothing in the diff for a reviewer to notice. The floor is a
+    # floor. Refuse rather than silently promote: the author must reclassify
+    # visibly.
+    floor = gate.get("minimum_change_class")
+    if floor not in CLASS_RANK:
+        raise ValidationError(f"gate {gate['id']} declares no valid minimum_change_class; refusing")
+    if CLASS_RANK[dossier["change_class"]] < CLASS_RANK[floor]:
+        raise ValidationError(
+            f"dossier change_class {dossier['change_class']} is below the gate's minimum_change_class "
+            f"{floor} for {gate['id']} -- reclassify; the floor is not negotiable per dossier")
     if not isinstance(dossier["evidence"], list):
         raise ValidationError("dossier evidence must be an array")
 
@@ -685,12 +832,17 @@ def validate_dossier(dossier_path: Path) -> str:
     for item in dossier["evidence"]:
         if not isinstance(item, dict) or not {"type", "path"} <= set(item):
             raise ValidationError("evidence index items require type and path")
+        expect_str(item["type"], "evidence index type")
         if item["type"] in indexed:
             raise ValidationError(f"duplicate evidence type: {item['type']}")
         indexed[item["type"]] = item["path"]
 
+    # QA finding M1: approvals were not validated at all under FAIL / BLOCKED /
+    # HUMAN_REQUIRED, so `approvals: "garbage"` and author self-approval both
+    # passed through on a FAIL dossier. The SHAPE of every approval is checked
+    # on every disposition; the QUORUM only when the disposition claims a pass.
+    validate_authority(dossier, require_quorum=dossier["disposition"] in {"PASS", "PASS_WITH_CONDITIONS"})
     if dossier["disposition"] in {"PASS", "PASS_WITH_CONDITIONS"}:
-        validate_authority(dossier)
         missing = sorted(set(gate["required_evidence"]) - set(indexed))
         if missing:
             raise ValidationError("passing dossier missing evidence: " + ", ".join(missing))
@@ -723,7 +875,17 @@ def main() -> int:
     except ValidationError as exc:
         print(f"BADF GATE FAIL: {exc}", file=sys.stderr)
         return 1
+    except Exception as exc:  # noqa: BLE001 -- the contract is: never a traceback
+        print(f"BADF GATE FAIL: internal error ({type(exc).__name__}): {exc}", file=sys.stderr)
+        return 2
     verdict = getattr(args, "_rendered", None)
+    # QA finding M1: exit 0 and the PASS banner were printed for REWORK_REQUIRED,
+    # BLOCKED and HUMAN_REQUIRED. AGENTS.md makes "returns PASS" a stage-exit
+    # trigger, so any exit-code-keyed automation opened the next stage on a
+    # FAIL dossier. Exit 0 means APPROVED or APPROVED_WITH_CONDITIONS. Nothing else.
+    if verdict and verdict not in {"APPROVED", "APPROVED_WITH_CONDITIONS"}:
+        print(f"BADF GATE HELD: {args.command} is well-formed; rendered verdict {verdict}")
+        return 3
     print(f"BADF GATE PASS: {args.command}" + (f" -- rendered verdict {verdict}" if verdict else ""))
     return 0
 

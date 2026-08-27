@@ -1,5 +1,6 @@
 {
   "digests": {
+    ".github/workflows/badf-gates.yml": "sha256:425f99edfe5f0d3eac978552f6ffc6abcd1f4c7feb9f649f19075299d923342a",
     "AGENTS.md": "sha256:96ec65d051a790abf7a5516ff310c2b1dfae5a9e58805cfeef4a64eb6043d86b",
     "badf/authority-matrix.json": "sha256:007dd9151ec95d7b75851e4a397b6f9b0ba8e537b7884eb756429a226b814ff8",
     "badf/lifecycle.json": "sha256:1e9fa682c333c3b2101c8769d8411b762ef32114fe4c1b16e8f0e97420a6ce4d",
@@ -7,7 +8,8 @@
     "badf/skill-registry.json": "sha256:e9c57b24af48a68aec6d1a27e02cc2cbed7a38c91df55c6b64b90acfa0534bd4",
     "badf/tool-registry.json": "sha256:7a5e7c6e39dcf2eb40f166d128e91adead9c90ee51c72b6837890500d133a852",
     "schemas/evidence.schema.json": "sha256:644d1a427288ce49a1c64a4a5e7e89c9b251b2bff5f99e8885771211b0349a70",
-    "schemas/gate-dossier.schema.json": "sha256:232918c359825c80936df9a2af830f44d95637235e05697d7b6f1812e6d13fdf"
+    "schemas/gate-dossier.schema.json": "sha256:232918c359825c80936df9a2af830f44d95637235e05697d7b6f1812e6d13fdf",
+    "scripts/badf_gate.py": "sha256:3a7541b430ae4d9272e6dc564b1ab23016a82a982d9924a6452b0f05bf4fed86"
   },
   "schema_version": "1.0.0"
 }
