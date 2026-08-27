@@ -43,6 +43,19 @@ REQUIRED_FILES = [
     "skills/badf-delivery/SKILL.md",
 ]
 
+INTEGRITY_PATHS = [
+    "AGENTS.md",
+    "badf/authority-matrix.json",
+    "badf/lifecycle.json",
+    "badf/mcp-registry.json",
+    "badf/skill-registry.json",
+    "badf/tool-registry.json",
+    "schemas/evidence.schema.json",
+    "schemas/gate-dossier.schema.json",
+]
+LOCKFILE = "badf/lockfile.json"
+
+
 DOSSIER_FIELDS = {
     "schema_version", "id", "work_package_id", "gate", "policy_epoch",
     "source_revision", "target", "change_class", "evidence", "approvals",
@@ -104,6 +117,88 @@ def sha256(path: Path) -> str:
     return f"sha256:{digest.hexdigest()}"
 
 
+def compute_integrity() -> dict[str, str]:
+    """sha256 of every governance-critical file, by repo-relative path."""
+    digests: dict[str, str] = {}
+    for rel in INTEGRITY_PATHS:
+        path = ROOT / rel
+        if not path.is_file():
+            raise ValidationError(f"integrity path missing: {rel}")
+        digests[rel] = sha256(path)
+    return digests
+
+
+def verify_integrity() -> None:
+    """Refuse when a governance-critical file no longer matches the lockfile.
+
+    This exists because policy in this repository was previously decorative:
+    flipping `default_policy` from `deny` to `allow` in all three registries
+    left `badf_gate.py repo` reporting PASS. Shape was validated; content was
+    not.
+
+    What this does and does not buy, stated plainly so the control is not
+    read as stronger than it is:
+
+      DOES  make a policy edit impossible to land silently -- the lockfile
+            must change in the same diff, which puts it in front of review
+            and in front of the authority classifier.
+      DOES  detect out-of-band edits to the rule tree between runs.
+      NOT   prevent an author who regenerates the lockfile deliberately.
+            A lockfile inside the tree it protects can always be re-signed.
+
+    The remedy for that residue is authority, not hashing: `badf/lockfile.json`
+    is a governance path, so re-signing it is a reviewable act by someone other
+    than the author. Integrity converts a silent change into a visible one; the
+    approval control decides whether the visible change is allowed.
+
+    Unlike the upstream pattern this is adapted from, drift is REFUSED and not
+    auto-reverted. Reverting a file is a destructive act, and a validator does
+    not hold authority to mutate the tree it is judging.
+    """
+    lock_path = ROOT / LOCKFILE
+    if not lock_path.is_file():
+        raise ValidationError(
+            f"{LOCKFILE} is absent -- integrity cannot be established. "
+            f"Generate it deliberately with: python3 scripts/badf_gate.py lock"
+        )
+    lock = load_json(lock_path)
+    recorded = lock.get("digests")
+    if not isinstance(recorded, dict):
+        raise ValidationError(f"{LOCKFILE} has no digests object")
+
+    actual = compute_integrity()
+    drifted = sorted(p for p in actual if recorded.get(p) != actual[p])
+    missing = sorted(set(recorded) - set(actual))
+    extra = sorted(set(actual) - set(recorded))
+    if drifted or missing or extra:
+        detail = []
+        if drifted:
+            detail.append("changed: " + ", ".join(drifted))
+        if missing:
+            detail.append("in lockfile but not checked: " + ", ".join(missing))
+        if extra:
+            detail.append("checked but absent from lockfile: " + ", ".join(extra))
+        raise ValidationError(
+            "governance integrity drift -- " + "; ".join(detail)
+            + f". If the change is intended, re-sign with "
+              f"`python3 scripts/badf_gate.py lock` in the same change, so the "
+              f"edit is visible in the diff and reviewable."
+        )
+
+
+def write_lockfile() -> None:
+    """Re-sign the lockfile from current content.
+
+    Deliberate and explicit: re-signing is how an intended policy change is
+    admitted, and it must appear in the same diff as the change it admits.
+    """
+    digests = compute_integrity()
+    (ROOT / LOCKFILE).write_text(
+        json.dumps({"schema_version": "1.0.0", "digests": digests}, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8")
+    print(f"re-signed {LOCKFILE} over {len(digests)} governance paths")
+
+
 def validate_repo() -> None:
     missing = [path for path in REQUIRED_FILES if not (ROOT / path).is_file()]
     if missing:
@@ -138,6 +233,7 @@ def validate_repo() -> None:
     if not re.match(r"^---\nname: badf-delivery\ndescription: .+\n---\n", skill):
         raise ValidationError("badf-delivery SKILL.md frontmatter is invalid")
 
+    verify_integrity()
 
 def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -> None:
     evidence = load_json(path)
@@ -213,11 +309,17 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("repo", help="validate repository governance structure")
+    subparsers.add_parser("lock", help="re-sign badf/lockfile.json from current content")
     dossier_parser = subparsers.add_parser("dossier", help="validate a gate dossier and its evidence")
     dossier_parser.add_argument("path", type=Path)
     args = parser.parse_args()
     try:
-        validate_repo() if args.command == "repo" else validate_dossier(args.path)
+        if args.command == "repo":
+            validate_repo()
+        elif args.command == "lock":
+            write_lockfile()
+        else:
+            validate_dossier(args.path)
     except ValidationError as exc:
         print(f"BADF GATE FAIL: {exc}", file=sys.stderr)
         return 1
