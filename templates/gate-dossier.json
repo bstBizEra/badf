@@ -25,7 +25,13 @@
     }
   ],
   "exceptions": [],
-  "risks": [],
+  "risks": [
+    {
+      "id": "R-<n>",
+      "severity": "Critical|Major|Minor",
+      "statement": "<what could go wrong>"
+    }
+  ],
   "disposition": "BLOCKED",
   "created_at": "YYYY-MM-DDTHH:MM:SSZ",
   "author": "<principal-id-of-the-author>",
@@ -42,5 +48,7 @@
     }
   ],
   "obligation_posture": "<COMPUTED by the gate from conditions -- do not assert>",
-  "rendered_verdict": "<COMPUTED by the gate from disposition x posture -- do not assert>"
+  "rendered_verdict": "<COMPUTED by the gate from disposition x posture -- do not assert>",
+  "council": null,
+  "council_disposition": "<COMPUTED by the gate from change_class, risks, rollback, data_classification, gate -- do not assert>"
 }

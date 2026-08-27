@@ -125,6 +125,10 @@ LEDGER_FIELDS = {"event_id", "workflow_id", "sequence", "step", "outcome", "acto
                  "previous_event_hash", "event_hash"}
 LEDGER_OUTCOMES = {"PREPARED", "COMMITTED", "REJECTED", "OUTCOME_UNKNOWN", "PROVEN_ABSENT",
                    "COMPENSATED", "MANUAL_REMEDIATION", "SKIPPED_ALREADY_COMMITTED", "OBSERVED"}
+COUNCIL_DISPOSITIONS = {"CHALLENGE_REQUIRED", "CHALLENGE_OPTIONAL", "CHALLENGE_NOT_REQUIRED"}
+COUNCIL_VERDICTS = {"APPROVE", "APPROVE_WITH_CONDITIONS", "REJECT", "ABSTAIN", "INSUFFICIENT_EVIDENCE"}
+RISK_SEVERITIES = {"Critical", "Major", "Minor"}
+PRODUCTION_GATES = {"G10", "G11", "G12"}
 TERMINAL_OUTCOMES = {"COMMITTED", "REJECTED", "PROVEN_ABSENT", "COMPENSATED", "MANUAL_REMEDIATION",
                      "SKIPPED_ALREADY_COMMITTED", "OBSERVED"}
 DECISION_FIELDS = {
@@ -1094,6 +1098,109 @@ def append_event(wp_dir: Path, step: str, outcome: str, actor_id: str, actor_typ
     return ev
 
 
+def compute_council_disposition(dossier: dict[str, Any], work_package: dict[str, Any] | None) -> dict[str, Any]:
+    """Mandate section 7: is council invocation warranted? Computed, never inferred.
+
+    Of the mandate's eight triggers, four have NO carrier on any BADF object
+    (novelty, architectural significance, blast radius, uncertainty-as-a-
+    value). Weighing them would be the gate inferring risk -- judgment
+    dressed as computation, which section 21 forbids. So this reads ONLY
+    fields that exist and names which fired:
+
+      change_class C3                     -> REQUIRED
+      declared Critical risk              -> REQUIRED
+      irreversible (or rollback absent)   -> REQUIRED   (absence is not reversibility)
+      data_classification restricted      -> REQUIRED
+      production gate G10-G12             -> REQUIRED
+      change_class C2                     -> OPTIONAL
+      otherwise                           -> NOT_REQUIRED
+
+    ADVISORY. This writes a disposition; it grants no authority and changes
+    who may approve nothing. Council consensus != constitutional authority.
+    """
+    triggers: list[str] = []
+    cc = expect_str(dossier.get("change_class"), "dossier.change_class")
+    if cc == "C3":
+        triggers.append("change_class:C3")
+    for i, r in enumerate(dossier.get("risks") or []):
+        if not isinstance(r, dict) or "severity" not in r:
+            raise ValidationError(f"risks[{i}] must be an object with a severity; an untyped risk cannot be weighed")
+        sev = expect_str(r["severity"], f"risks[{i}].severity")
+        if sev not in RISK_SEVERITIES:
+            raise ValidationError(f"risks[{i}].severity {sev!r} is not one of {sorted(RISK_SEVERITIES)}")
+        if sev == "Critical":
+            triggers.append("risk:Critical")
+    wp = work_package or {}
+    rb = wp.get("rollback")
+    if not isinstance(rb, dict) or rb.get("reversible") is not True:
+        triggers.append("irreversible")
+    if wp.get("data_classification") == "restricted":
+        triggers.append("data_classification:restricted")
+    g = dossier.get("gate")
+    if g in PRODUCTION_GATES:
+        triggers.append(f"gate:{g}")
+    if triggers:
+        disp = "CHALLENGE_REQUIRED"
+    elif cc == "C2":
+        disp = "CHALLENGE_OPTIONAL"
+    else:
+        disp = "CHALLENGE_NOT_REQUIRED"
+    return {"disposition": disp, "triggers": sorted(set(triggers)),
+            "unweighed": ["novelty", "architectural_significance", "blast_radius", "uncertainty"]}
+
+
+def verify_council(dossier: dict[str, Any], work_package: dict[str, Any] | None) -> dict[str, Any]:
+    """The ONLY enforcement: a claimed pass at CHALLENGE_REQUIRED must carry a
+    council record, and that record must be well-formed by BADF's own rules
+    (docs/03): first-round ballots sealed, each ballot typed and attributable.
+
+    What this does NOT do, deliberately: a council REJECT does not refuse the
+    dossier -- it is evidence for the human authority, not a veto. A council
+    APPROVE satisfies no approval quorum. Approvals are untouched.
+    """
+    result = compute_council_disposition(dossier, work_package)
+    council = dossier.get("council")
+    claims_pass = dossier.get("disposition") in {"PASS", "PASS_WITH_CONDITIONS"}
+    if result["disposition"] == "CHALLENGE_REQUIRED" and claims_pass and not council:
+        raise ValidationError(
+            "council disposition is CHALLENGE_REQUIRED (" + ", ".join(result["triggers"]) +
+            ") but the dossier carries no council record; a pass cannot be claimed unchallenged")
+    if council is not None:
+        if not isinstance(council, dict):
+            raise ValidationError("dossier.council must be an object")
+        for f in ("convened_at", "verdict", "ballots"):
+            if f not in council:
+                raise ValidationError(f"council record missing {f}")
+        parse_time(council["convened_at"], "council.convened_at")
+        v = expect_str(council["verdict"], "council.verdict")
+        if v not in COUNCIL_VERDICTS:
+            raise ValidationError(f"council.verdict {v!r} is not one of {sorted(COUNCIL_VERDICTS)}")
+        ballots = council["ballots"]
+        if not isinstance(ballots, list) or not ballots:
+            raise ValidationError("council.ballots must be a non-empty array")
+        seen: set[str] = set()
+        for i, b in enumerate(ballots):
+            lbl = f"council.ballots[{i}]"
+            if not isinstance(b, dict):
+                raise ValidationError(f"{lbl} must be an object")
+            for f in ("by", "principal_type", "verdict", "sealed"):
+                if f not in b:
+                    raise ValidationError(f"{lbl} missing {f}")
+            who = canonical_principal(b["by"], lbl)
+            if who in seen:
+                raise ValidationError(f"{lbl}: {who!r} cast more than one ballot; the same principal cannot count twice")
+            seen.add(who)
+            if expect_str(b["principal_type"], f"{lbl}.principal_type") not in PRINCIPAL_TYPES:
+                raise ValidationError(f"{lbl} invalid principal_type")
+            if expect_str(b["verdict"], f"{lbl}.verdict") not in COUNCIL_VERDICTS:
+                raise ValidationError(f"{lbl} invalid verdict")
+            if b["sealed"] is not True:
+                raise ValidationError(f"{lbl} was not sealed before synthesis; first-round ballots must be independent and sealed")
+        result["council_verdict"] = v
+        result["ballots"] = len(ballots)
+    return result
+
+
 def validate_dossier(dossier_path: Path) -> str:
     validate_repo()
     dossier = load_json(dossier_path.resolve())
@@ -1157,6 +1264,15 @@ def validate_dossier(dossier_path: Path) -> str:
     known_roles = {role for entry in matrix_classes.values() for role in entry["required_roles"]}
     validate_conditions(dossier, known_roles)
     verify_foreign_revision(dossier, indexed)
+    wp_path = ROOT / "work" / dossier["work_package_id"] / "work-package.json"
+    work_package = load_json(wp_path) if wp_path.is_file() else None
+    council = verify_council(dossier, work_package)
+    declared = dossier.get("council_disposition")
+    if declared is not None and declared.get("disposition") != council["disposition"]:
+        raise ValidationError(
+            f"declared council_disposition {declared.get('disposition')!r} contradicts the computed "
+            f"{council['disposition']!r}; the disposition is computed, not asserted")
+    dossier["council_disposition"] = {"disposition": council["disposition"], "triggers": council["triggers"]}
     rendered = verify_two_plane(dossier)
 
     for evidence_type, path_value in indexed.items():
