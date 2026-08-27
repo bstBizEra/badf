@@ -31,9 +31,10 @@ class ValidatedInstance(InstanceScratch):
         assert r.returncode == 0, r.stderr
         self.receipt_path = sorted((self.t / "badf/evidence/receipts").glob("init-*.json"))[0]
 
-    def instance(self, path=None):
+    def instance(self, path=None, **env_over):
+        env = dict(self.env); env.update(env_over)
         return subprocess.run([sys.executable, "scripts/badf_gate.py", "instance", str(path or self.t)],
-                              cwd=str(self.root), capture_output=True, text=True, env=self.env)
+                              cwd=str(self.root), capture_output=True, text=True, env=env)
 
     def resign(self):
         return subprocess.run([sys.executable, "scripts/badf_gate.py", "lock", "--instance", str(self.t)],

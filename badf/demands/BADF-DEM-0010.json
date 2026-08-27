@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0010",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 37,
+    "url": "https://github.com/bstBizEra/badf/issues/37",
+    "exported_at": "2026-08-27T17:52:45Z",
+    "body_digest": "sha256:aa2f4fb935672b6e3170a56c58042e69030b191eee13dd865b3aac30df2579bd"
+  },
+  "title": "GOV-0013: an instance has no authority policy of its own",
+  "problem": "## Observed\nAfter BADF-WP-0022 (`dd1f897`) an instance carries `state.authority.status: UNRESOLVED` and `project.yaml authority.policy: null`, by construction and forever: nothing can create an authority policy for a project, and `instance` refuses any other value. The doctrine says *local instructions may narrow authority but cannot expand it* \u2014 but there is no instance-side artefact for \"local authority\", no floor it is measured against, and no transition that resolves `authority.status`. Every dossier for a project is still judged only against the framework's `badf/authority-matrix.json` at the framework's HEAD, which the instance does not pin.\n\n## Expected\n`badf/authority/charter.json` in the instance: the framework's authority matrix **at the instance's pinned `framework_revision`** is the floor; the charter must be a **superset** of it \u2014 no role removed from any change class, no class added or missing, no reserved action dropped, no human-reserved role opened \u2014 and may add roles, reserved actions or human-reserved roles (narrowing). The charter binds the floor by digest of the matrix blob at the pinned revision. There is **no downgrade acknowledgement path for instances**: a project cannot ack itself out of the framework's floor. `authority.status` becomes `RESOLVED` only as a *derived* consequence of a valid charter, computed by `derive_state`, never typed. If the framework's matrix has moved since the pin, `instance` reports it; adopting it is a re-pin (later work package).\n\n## Evidence\n`grep -n \"authority\" scripts/badf_gate.py | grep -i instance` \u2192 only `{\"status\": \"UNRESOLVED\"}` in `derive_state`. `schemas/project.schema.json` `authority.policy`: \"null until then, never a path that does not exist\".\n\n## Unknowns\n- Whether narrowing should require a human declaration. Reading: no \u2014 adding constraints is strengthening, which \u00a710 permits autonomously; *using* authority still requires human approvals per dossier. A charter grants nothing.\n- Whether the floor is the pinned or the current matrix. Reading: pinned (that is what the instance consumes); current is reported.\n\n## Proposed work package\n`BADF-WP-0023` \u2014 `charter <path>` generates the default charter (floor = ceiling, no narrowing) and re-derives state; `instance` validates a charter against the pinned floor with the framework's own downgrade semantics (one implementation); schema; doctrine. Tests in scratch instances; mutation; post-merge simulation.\n\nauthority: operator, \"Proceed on your call\" (2026-08-28) on the packet posted in session \u00b7 status: PROPOSED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-27T17:52:45Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. Authority: the operator's 'Proceed on your call' (2026-08-28) in reply to the WP-0023 packet posted in session. Worked as BADF-WP-0023."
+}
