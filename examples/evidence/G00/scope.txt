@@ -1,0 +1,2 @@
+BADF example scope: validate the static governance baseline; no external or production mutation.
+

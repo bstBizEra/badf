@@ -1,0 +1,2 @@
+BADF example authority receipt: WP-2026-0001 is authorized for repository-baseline validation only.
+

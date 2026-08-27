@@ -1,0 +1,21 @@
+{
+  "$schema": "../schemas/evidence.schema.json",
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-YYYY-NNNN-G00-TYPE-v1",
+  "work_package_id": "WP-YYYY-NNNN",
+  "gate": "G00",
+  "claim": "Exact claim this evidence supports",
+  "evidence_type": "required-type",
+  "producer": {"id": "actor-or-system", "type": "human-agent-or-automation"},
+  "source_revision": "full-source-revision",
+  "target": "repository-or-environment-identity",
+  "toolchain": {"name": "tool", "version": "pinned-version"},
+  "operation": "exact command or typed operation",
+  "started_at": "YYYY-MM-DDTHH:MM:SSZ",
+  "completed_at": "YYYY-MM-DDTHH:MM:SSZ",
+  "outcome": "NOT_RUN",
+  "artifact": "relative/path/to/artifact",
+  "digest": "sha256:replace-with-64-lowercase-hex",
+  "sanitization": "No secrets or regulated data retained"
+}
+

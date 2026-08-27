@@ -1,0 +1,25 @@
+{
+  "$schema": "../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-YYYY-NNNN",
+  "title": "Concise delivery outcome",
+  "owner": "named accountable owner",
+  "objective": "Measurable result",
+  "business_value": "Value proposition and KPI",
+  "in_scope": [],
+  "out_of_scope": [],
+  "dependencies": [],
+  "target_gate": "G00",
+  "change_class": "C1",
+  "data_classification": "INTERNAL",
+  "acceptance_criteria": [],
+  "non_functional_requirements": [],
+  "permissions": {"tools": [], "environments": [], "mutations": []},
+  "tests": [],
+  "evidence": [],
+  "reviewers": [],
+  "rollback": {"trigger": "", "procedure": "", "owner": ""},
+  "escalation": {"owner": "", "conditions": []},
+  "status": "DRAFT"
+}
+

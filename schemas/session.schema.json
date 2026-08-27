@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bizera.la/badf/schemas/session.schema.json",
+  "type": "object",
+  "required": ["schema_version", "id", "actor", "work_package_id", "repository", "base_revision", "stage", "started_at", "scope", "status"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "id": {"type": "string", "pattern": "^SES-[A-Za-z0-9._-]+$"},
+    "work_package_id": {"type": "string", "pattern": "^WP-[A-Za-z0-9._-]+$"},
+    "stage": {"type": "string", "pattern": "^G(0[0-9]|1[0-4])$"},
+    "status": {"enum": ["ACTIVE", "PAUSED", "BLOCKED", "HANDED_OFF", "CLOSED"]}
+  }
+}
+

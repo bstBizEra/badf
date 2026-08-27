@@ -1,0 +1,2 @@
+BADF example risk classification: C0, internal documentation and validator example only.
+

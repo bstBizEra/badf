@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "default_policy": "approved-only",
+  "skills": [
+    {
+      "name": "badf-delivery",
+      "source": "skills/badf-delivery/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "1.0.0",
+      "risk_class": "C1",
+      "allowed_tools": ["local-filesystem", "local-shell"],
+      "status": "VALIDATED",
+      "digest": "GENERATED_AT_RELEASE"
+    }
+  ]
+}
+

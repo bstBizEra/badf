@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "policy_epoch": "BADF-2026-08-25",
+  "change_classes": {
+    "C0": {"description": "Non-normative documentation", "required_roles": ["reviewer"]},
+    "C1": {"description": "Low-risk reversible internal change", "required_roles": ["engineering_owner", "independent_reviewer"]},
+    "C2": {"description": "User, contract, data, dependency, or operations impact", "required_roles": ["product_owner", "engineering_owner", "quality_authority", "service_owner"]},
+    "C3": {"description": "Governance, security/privacy, destructive, regulated, credential, or high blast radius", "required_roles": ["human_sponsor", "security_authority", "release_authority", "service_owner"]}
+  },
+  "reserved_actions": [
+    "modify-authority-policy",
+    "approve-own-work",
+    "accept-legal-or-privacy-risk",
+    "handle-production-credentials",
+    "execute-destructive-production-data-change",
+    "waive-mandatory-gate",
+    "authorize-high-impact-production-release"
+  ],
+  "rules": [
+    {"action": "read", "minimum_class": "C0", "approval": "work-package-or-repository-policy"},
+    {"action": "write-repository", "minimum_class": "C1", "approval": "work-package"},
+    {"action": "write-external", "minimum_class": "C2", "approval": "target-specific"},
+    {"action": "destructive-or-admin", "minimum_class": "C3", "approval": "explicit-human"},
+    {"action": "production-deploy", "minimum_class": "C2", "approval": "release-authority"}
+  ]
+}
+

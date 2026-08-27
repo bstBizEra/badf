@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bizera.la/badf/schemas/lifecycle.schema.json",
+  "type": "object",
+  "required": ["schema_version", "policy_epoch", "gates"],
+  "properties": {
+    "schema_version": {"type": "string"},
+    "policy_epoch": {"type": "string"},
+    "gates": {
+      "type": "array",
+      "minItems": 15,
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "owner_role", "required_evidence", "exit_criteria"]
+      }
+    }
+  }
+}
+

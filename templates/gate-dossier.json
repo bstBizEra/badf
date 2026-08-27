@@ -1,0 +1,18 @@
+{
+  "$schema": "../schemas/gate-dossier.schema.json",
+  "schema_version": "1.0.0",
+  "id": "DOS-WP-YYYY-NNNN-G00-v1",
+  "work_package_id": "WP-YYYY-NNNN",
+  "gate": "G00",
+  "policy_epoch": "BADF-2026-08-25",
+  "source_revision": "full-source-revision",
+  "target": "repository-or-environment-identity",
+  "change_class": "C1",
+  "evidence": [{"type": "required-type", "path": "evidence/path.json"}],
+  "approvals": [],
+  "exceptions": [],
+  "risks": [],
+  "disposition": "BLOCKED",
+  "created_at": "YYYY-MM-DDTHH:MM:SSZ"
+}
+

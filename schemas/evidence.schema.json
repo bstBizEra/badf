@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bizera.la/badf/schemas/evidence.schema.json",
+  "type": "object",
+  "required": ["schema_version", "id", "work_package_id", "gate", "claim", "evidence_type", "producer", "source_revision", "target", "toolchain", "operation", "started_at", "completed_at", "outcome", "artifact", "digest"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "id": {"type": "string", "pattern": "^EVD-[A-Za-z0-9._-]+$"},
+    "work_package_id": {"type": "string", "pattern": "^WP-[A-Za-z0-9._-]+$"},
+    "gate": {"type": "string", "pattern": "^G(0[0-9]|1[0-4])$"},
+    "claim": {"type": "string", "minLength": 1},
+    "evidence_type": {"type": "string", "minLength": 1},
+    "producer": {"type": "object", "required": ["id", "type"]},
+    "source_revision": {"type": "string", "minLength": 1},
+    "target": {"type": "string", "minLength": 1},
+    "toolchain": {"type": "object", "required": ["name", "version"]},
+    "operation": {"type": "string", "minLength": 1},
+    "started_at": {"type": "string", "format": "date-time"},
+    "completed_at": {"type": "string", "format": "date-time"},
+    "outcome": {"enum": ["PASS", "FAIL", "BLOCKED", "NOT_RUN"]},
+    "artifact": {"type": "string", "minLength": 1},
+    "digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+    "composition": {"type": "object"},
+    "sanitization": {"type": "string"}
+  },
+  "additionalProperties": true
+}
+

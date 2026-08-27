@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0001-G00-RISK-v1",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G00",
+  "claim": "Example change is classified C0 and limited to internal documentation validation",
+  "evidence_type": "risk-classification",
+  "producer": {"id": "badf-example-authority", "type": "human-template"},
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "badf-repository-baseline",
+  "toolchain": {"name": "BADF example generator", "version": "1.0.0"},
+  "operation": "record example risk classification",
+  "started_at": "2026-08-25T00:00:00Z",
+  "completed_at": "2026-08-25T00:00:01Z",
+  "outcome": "PASS",
+  "artifact": "examples/evidence/G00/risk-classification.txt",
+  "digest": "sha256:e0411181ba01349a7f788a403505a1bad1e36ce9b2f13f00ec54515e7d6b7768",
+  "sanitization": "No secrets or personal data"
+}
+

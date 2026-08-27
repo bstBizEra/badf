@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0001-G00-AUTHORITY-v1",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G00",
+  "claim": "Example work is authorized for repository-baseline validation only",
+  "evidence_type": "authority",
+  "producer": {"id": "badf-example-authority", "type": "human-template"},
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "badf-repository-baseline",
+  "toolchain": {"name": "BADF example generator", "version": "1.0.0"},
+  "operation": "record scoped example authority",
+  "started_at": "2026-08-25T00:00:00Z",
+  "completed_at": "2026-08-25T00:00:01Z",
+  "outcome": "PASS",
+  "artifact": "examples/evidence/G00/authority.txt",
+  "digest": "sha256:37a6799ccdc866f34b9eea3899e633d9a864550139b9d514b70a1b2a23a0a681",
+  "sanitization": "No secrets or personal data"
+}
+
