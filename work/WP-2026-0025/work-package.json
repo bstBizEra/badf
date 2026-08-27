@@ -1,0 +1,67 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0025",
+  "title": "Gate G01 capability: governed badf-prd definition, challenge, completeness and baseline-evidence preparation",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0012",
+  "objective": "Implement the first lifecycle-specific BADF skill for Gate G01 so product intent can be converted into a structurally complete, challenge-tested, evidence-ready PRD candidate without allowing the skill to self-issue PRD_BASELINED.",
+  "business_value": "Creates a repeatable product-definition control at the start of delivery, reducing ambiguity and preventing incomplete or self-approved PRDs from advancing into requirement decomposition.",
+  "in_scope": [
+    "skills/badf-prd/SKILL.md and focused references",
+    "schemas/prd-baseline.schema.json and templates/prd-baseline.json",
+    "stdlib-only scripts/badf_prd.py deterministic eligibility validator",
+    "tests/test_badf_prd.py acceptance and refusal tests",
+    "BADF delivery routing integration and skill registration as a non-active implementation source",
+    "Gate G01 demand/work-package traceability and integrity lockfile update"
+  ],
+  "out_of_scope": [
+    "issuing PRD_BASELINED or changing gate authority",
+    "G02 requirement decomposition and Gates G03-G14 implementation",
+    "vendoring or executing GitHub Spec Kit, platform-product-skills, Product on Purpose, or Matt Pocock external scripts",
+    "production deployment or direct writes to main"
+  ],
+  "target_gate": "G08",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "badf-prd defines product definition, completeness, challenge, and baseline-evidence preparation for G01",
+    "validator fails closed on missing fields, contradictions, unresolved placeholders, duplicate JSON keys and invalid approval records",
+    "validator returns REWORK_REQUIRED for blocking challenge findings or unresolved decisions",
+    "complete candidate returns ELIGIBLE_FOR_G01_REVIEW with NO_GATE_AUTHORITY and never PRD_BASELINED",
+    "objective metric_refs resolve to declared success metrics and scope cannot contain the same item on both sides",
+    "approved baseline requires independent product_owner identity, timestamp and evidence refs; candidate author cannot self-approve",
+    "external methodology is reference-only with no third-party executable vendored",
+    "targeted tests, full BADF repository checks, and composed-tree verification pass before merge"
+  ],
+  "permissions": [
+    "write: feature/BADF-WP-G01-001-gate-01-prd-baseline via PR",
+    "read: public external methodology sources for provenance only",
+    "no write: main",
+    "no production authority"
+  ],
+  "tests": [
+    "python3 -m unittest tests.test_badf_prd -v",
+    "python3 scripts/badf_gate.py repo",
+    "python3 -m unittest discover -s tests -p 'test_*.py'"
+  ],
+  "evidence": [
+    "targeted badf-prd test output",
+    "repository gate output",
+    "full unittest output",
+    "PR CI and composed-tree verification",
+    "independent review with declared non-coverage"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the eventual squash commit through a separate PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "0b88c74"
+  },
+  "note": "Issue/branch use the human-facing BADF-WP-G01-001 label; this machine work-package record uses the repository schema-compatible canonical WP-2026-0025 identity."
+}
