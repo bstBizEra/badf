@@ -570,6 +570,129 @@ def write_lockfile() -> None:
     print(f"re-signed {LOCKFILE} over {len(digests)} governance paths")
 
 
+
+# ---- work ledger: landing is derived from git, claims are corroborated (BADF-WP-0019, #26) ----
+WP_LINE = re.compile(r"^Work-Package:\s*(?:BADF-WP-|WP-2026-)([0-9]{4})\s*$", re.M)
+WP_ID_FORMS = re.compile(r"^(?:BADF-WP-|WP-2026-)([0-9]{4})$")
+
+
+def self_repository() -> str:
+    reg = load_json(ROOT / REPOSITORIES)
+    for name, spec in (reg.get("repositories") or {}).items():
+        if isinstance(spec, dict) and spec.get("resolution") == "SELF":
+            return name
+    raise ValidationError(f"{REPOSITORIES} declares no SELF repository; the ledger cannot be established")
+
+
+def ledger_landings() -> dict[str, list[str]]:
+    """WP id -> commits on the first-parent history of origin/<default> whose
+    body carries that WP's Work-Package line, newest first. A record cannot
+    know its own squash SHA before it lands, so landing is never read from
+    the record: it is read from the ledger and the record is held to it."""
+    ref = f"origin/{DEFAULT_BRANCH}"
+    if _git("rev-parse", "--verify", f"{ref}^{{commit}}") is None:
+        raise ValidationError(f"ledger cannot be established: {ref} is unreachable")
+    raw = _git("log", "--first-parent", "--format=%H%x00%B%x1e", ref)
+    if raw is None:
+        raise ValidationError(f"ledger cannot be established: git log {ref} failed")
+    out: dict[str, list[str]] = {}
+    for rec in raw.split("\x1e"):
+        if "\x00" not in rec:
+            continue
+        sha, body = rec.split("\x00", 1)
+        for m in WP_LINE.finditer(body):
+            out.setdefault(f"WP-2026-{m.group(1)}", []).append(sha.strip())
+    return out
+
+
+def self_work_packages() -> list[tuple[Path, dict[str, Any]]]:
+    me = self_repository()
+    found = []
+    for path in sorted((ROOT / "work").glob("WP-2026-*/work-package.json")):
+        rec = load_json(path)
+        if isinstance(rec, dict) and rec.get("repository") == me:
+            found.append((path, rec))
+    return found
+
+
+def verify_work_ledger() -> list[str]:
+    """Corroborate every landing claim; name silence; refuse a new record
+    while landed ones are unreconciled. Returns the LANDED_UNRECONCILED ids."""
+    ref = f"origin/{DEFAULT_BRANCH}"
+    landings = ledger_landings()
+    first_parent = set((_git("rev-list", "--first-parent", ref) or "").split())
+    ledger_tree = set((_git("ls-tree", "-r", "--name-only", ref, "--", "work/") or "").splitlines())
+    unreconciled: list[tuple[str, str]] = []
+    new: list[str] = []
+    for path, rec in self_work_packages():
+        wp = rec.get("id") or path.parent.name
+        status = rec.get("status")
+        target = rec.get("external_target") if isinstance(rec.get("external_target"), dict) else {}
+        claimed = target.get("landed_as")
+        reason = rec.get("landing_not_on_ledger")
+        landed = landings.get(wp, [])
+        if claimed:
+            full = _git("rev-parse", "--verify", f"{claimed}^{{commit}}")
+            if full is None:
+                raise ValidationError(f"{wp} claims landed_as {claimed}, which is not a commit in this repository")
+            if full not in first_parent:
+                raise ValidationError(f"{wp} claims landed_as {full[:7]}, which is not on the ledger (first-parent history of {ref})")
+            if full not in landed:
+                raise ValidationError(f"{wp} claims landed_as {full[:7]}, but that commit does not carry its Work-Package line")
+            if status != "CLOSED":
+                raise ValidationError(f"{wp} claims landed_as {full[:7]} so its status must be CLOSED, not {status!r}")
+            if reason:
+                raise ValidationError(f"{wp} states landing_not_on_ledger while claiming landed_as {full[:7]}: contradictory")
+        elif status == "CLOSED":
+            if landed:
+                what = "landing_not_on_ledger is a false statement" if reason else "reconcile it"
+                raise ValidationError(f"{wp} is CLOSED with no landed_as, but the ledger shows it landed as {landed[-1][:7]}; {what}")
+            if not isinstance(reason, str) or not reason.strip():
+                raise ValidationError(f"{wp} is CLOSED with no corroborated landing; state landing_not_on_ledger: <reason>")
+        else:
+            if reason:
+                raise ValidationError(f"{wp} states landing_not_on_ledger but is {status!r}, not CLOSED")
+            if landed:
+                unreconciled.append((wp, landed[-1]))
+        if path.relative_to(ROOT).as_posix() not in ledger_tree:
+            new.append(wp)
+    if new and unreconciled:
+        debt = ", ".join(f"{wp} (landed as {sha[:7]})" for wp, sha in unreconciled)
+        raise ValidationError(f"reconcile landed work packages before opening a new one: {debt}; new: {', '.join(new)}")
+    for wp, sha in unreconciled:
+        print(f"BADF LEDGER: {wp} LANDED_UNRECONCILED (landed as {sha[:7]}; run: badf_gate.py reconcile {wp})")
+    return [wp for wp, _ in unreconciled]
+
+
+def reconcile_work_package(wp_arg: str) -> str:
+    m = WP_ID_FORMS.match(wp_arg.strip())
+    if not m:
+        raise ValidationError(f"{wp_arg!r} is not a work package id (WP-2026-NNNN or BADF-WP-NNNN)")
+    wp = f"WP-2026-{m.group(1)}"
+    path = ROOT / "work" / wp / "work-package.json"
+    if not path.is_file():
+        raise ValidationError(f"{wp} has no record at work/{wp}/work-package.json")
+    rec = load_json(path)
+    me = self_repository()
+    if rec.get("repository") != me:
+        raise ValidationError(f"{wp} targets {rec.get('repository')!r}: not this repository's ledger ({me}); reconcile it where it landed")
+    target = dict(rec.get("external_target") or {})
+    if target.get("landed_as"):
+        raise ValidationError(f"{wp} already claims landed_as {target['landed_as']}; nothing to reconcile")
+    landed = ledger_landings().get(wp, [])
+    if not landed:
+        raise ValidationError(f"{wp} has not landed on origin/{DEFAULT_BRANCH}: no first-parent commit carries its Work-Package line")
+    sha = landed[-1]   # the first landing; later ones are named, not chosen
+    target["landed_as"] = sha
+    rec["external_target"] = target
+    rec["status"] = "CLOSED"
+    rec.pop("landing_not_on_ledger", None)
+    path.write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
+    write_lockfile()
+    also = f" (also carried by {', '.join(s[:7] for s in landed[:-1])})" if len(landed) > 1 else ""
+    return f"BADF RECONCILE: {wp} CLOSED, landed_as {sha[:7]}{also}; lockfile re-signed -- ship it in the next work package's PR"
+
+
 def validate_repo() -> None:
     missing = [path for path in REQUIRED_FILES if not (ROOT / path).is_file()]
     if missing:
@@ -606,6 +729,7 @@ def validate_repo() -> None:
 
     verify_integrity()
     verify_monotonic_authority()
+    verify_work_ledger()
 
 def check_non_coverage(dossier: dict[str, Any], evidence_type: str, outcome: str) -> None:
     """G08 exit criterion: 'non-coverage declared'. Before WP-0014 nothing on a
@@ -1573,6 +1697,8 @@ def main() -> int:
     dossier_parser.add_argument("path", type=Path)
     init_parser = subparsers.add_parser("init", help="intake a project from a four-line intent; writes only under BADF's tree")
     init_parser.add_argument("intent", type=Path)
+    rec_parser = subparsers.add_parser("reconcile", help="write a landed work package's corroborated landing from the ledger; refuses otherwise")
+    rec_parser.add_argument("work_package")
     args = parser.parse_args()
     try:
         if args.command == "repo":
@@ -1582,6 +1708,9 @@ def main() -> int:
         elif args.command == "init":
             wp_id = init_project(args.intent)
             print(f"BADF INIT: {wp_id} created at G00, disposition HUMAN_REQUIRED; nothing written to the target project")
+            return 0
+        elif args.command == "reconcile":
+            print(reconcile_work_package(args.work_package))
             return 0
         else:
             args._rendered = validate_dossier(args.path)

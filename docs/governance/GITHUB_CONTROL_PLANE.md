@@ -87,6 +87,32 @@ gate verifies, under the integrity lockfile.
   written late and says so. The PropTech intake's demand is the operator's decision
   (`BADF-DEM-0003`) — PropTech has no Issues, and its tokens are its own work.
 
+## Reconciliation (`BADF-WP-0019`, Issue #26)
+
+A work-package record cannot know its own squash SHA before it lands, and `main` is
+PR-only, so nothing could update it after — `WP-2026-0018` landed as `c510516` with a
+record that said `IN_PROGRESS`. Landing is a fact of the git ledger, so the gate derives
+it rather than trusting the record.
+
+- **Derived.** A self work package has landed iff a commit on the first-parent history of
+  `origin/main` carries its `Work-Package:` line. No network call, no per-WP
+  reconciliation PR.
+- **Claims are corroborated.** A record may carry `external_target.landed_as` only if that
+  commit is on the ledger and carries the record's line — and then its status must be
+  `CLOSED`. A `CLOSED` record without a corroborated landing must state
+  `landing_not_on_ledger: <reason>`; that statement is refused if the ledger does show a
+  landing.
+- **Silence is named.** A landed record that claims nothing is reported by `repo` as
+  `LANDED_UNRECONCILED`. On `main` it is not a failure; it is a visible debt.
+- **Debt blocks the next opening.** A tree that adds a work-package record absent from
+  `origin/main` while any self work package is `LANDED_UNRECONCILED` is refused. The branch
+  that opens the next WP therefore starts with `badf_gate.py reconcile <WP>`, which writes
+  the corroborated claim and re-signs the lockfile — *sync before you start*, mechanized.
+  Reconciliation rides in that PR under that WP's own traceability; `check_pr_traceability.py`
+  is unchanged.
+- Foreign work packages (`repository` ≠ this one) land in another ledger and are outside
+  this rule.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

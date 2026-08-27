@@ -41,5 +41,6 @@
     "repository": "bstBizEra/badf",
     "branch": "main",
     "base_revision": "3f6119b05ae4a5158d40f5d9965d4ebe57bee794"
-  }
+  },
+  "landing_not_on_ledger": "Landed as the v1.0.0 baseline import (f337d9f) before any commit carried a Work-Package line; the ledger cannot corroborate it. Stated under BADF-WP-0019."
 }

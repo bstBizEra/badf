@@ -64,6 +64,15 @@ class InitScratchMixin:
         self.env = {k: v for k, v in os.environ.items() if not k.startswith("BADF_")}
         self.intent = self.root / "intent.yaml"
         self.intent.write_text(json.dumps(INTENT))   # JSON is valid YAML; no new dependency
+        self._wps_before = {q.name for q in (self.root / "work").glob("WP-*")}
+
+    def new_wp(self):
+        """The one work package init added. Selecting it by excluding IDs that
+        existed when a test was written broke as soon as WP-0016/0018/0019 entered
+        the tree -- the exclusions picked whichever record sorted first."""
+        new = sorted(q for q in (self.root / "work").glob("WP-*") if q.name not in self._wps_before)
+        assert len(new) == 1, f"expected exactly one new WP, got {[q.name for q in new]}"
+        return new[0]
 
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
@@ -98,8 +107,7 @@ class InitOnRealProjectTests(InitScratchMixin, unittest.TestCase):
 
     def test_init_derives_change_class_c3_for_a_new_product(self):
         self.init()
-        w = json.loads(next(p for p in (self.root / "work").glob("WP-*/work-package.json")
-                            if "0010" not in str(p) and "0001" not in str(p)).read_text())
+        w = json.loads((self.new_wp() / "work-package.json").read_text())
         self.assertEqual(w["change_class"], "C3", "a new production product is high blast radius by the matrix's own definition")
 
     def test_init_registers_the_repository_as_local_mirror(self):
@@ -112,8 +120,7 @@ class InitOnRealProjectTests(InitScratchMixin, unittest.TestCase):
         """PropTech's README states a binding boundary. init must carry the
         project's own words into the WP as discovered facts, attributed."""
         self.init()
-        w = json.loads(next(p for p in (self.root / "work").glob("WP-*/work-package.json")
-                            if "0010" not in str(p) and "0001" not in str(p)).read_text())
+        w = json.loads((self.new_wp() / "work-package.json").read_text())
         self.assertIn("discovered", w)
         self.assertTrue(any("AGENTS.md" in d.get("source", "") for d in w["discovered"]))
         self.assertTrue(any("existing_wp_admission" in d.get("kind", "") for d in w["discovered"]),
@@ -124,7 +131,7 @@ class InitOnRealProjectTests(InitScratchMixin, unittest.TestCase):
         declarations must be SIGNED by a human before the dossier can pass.
         Until then: HELD. AUTHORIZE is a gate outcome, not a chat message."""
         r = self.init(); self.assertEqual(r.returncode, 0, r.stderr)
-        d = next(p for p in (self.root / "work").glob("WP-*/gate-dossier.G00.json") if "0001" not in str(p))
+        d = (self.new_wp() / "gate-dossier.G00.json")
         dossier = json.loads(d.read_text())
         self.assertEqual(dossier["disposition"], "HUMAN_REQUIRED")
         self.assertEqual(dossier["approvals"], [])
@@ -141,8 +148,7 @@ class InitOnRealProjectTests(InitScratchMixin, unittest.TestCase):
 
     def test_init_records_itself_in_the_run_ledger(self):
         self.init()
-        wp_dir = next(p.parent for p in (self.root / "work").glob("WP-*/work-package.json")
-                      if "0010" not in str(p) and "0001" not in str(p))
+        wp_dir = self.new_wp()
         ev = gate.read_ledger(wp_dir)
         self.assertGreaterEqual(len(ev), 1)
         self.assertEqual(ev[0]["step"], "init")
@@ -186,7 +192,7 @@ class HeldDossierCannotBeLaunderedTests(InitScratchMixin, unittest.TestCase):
 
     def _g00(self):
         self.init()
-        return next(p for p in (self.root / "work").glob("WP-*/gate-dossier.G00.json") if "0001" not in str(p))
+        return (self.new_wp() / "gate-dossier.G00.json")
 
     def _validate(self, path):
         return subprocess.run([sys.executable, "scripts/badf_gate.py", "dossier", str(path)],
