@@ -1,0 +1,57 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0029",
+  "title": "Governed state transition: advance <instance> <dossier> binds an APPROVED dossier; the instance's gate is derived from the chain",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0016",
+  "objective": "Let an instance move beyond G00 only as a derived consequence of a bound, still-valid, APPROVED dossier for its next gate -- the same derive-and-corroborate pattern as landed_as and the charter.",
+  "business_value": "Today a gate passing changes nothing anywhere; G01 (Issue #41) and every later gate need this substrate before their contracts mean anything.",
+  "in_scope": [
+    "advance <instance> <dossier> (validates instance first; dossier must render APPROVED/APPROVED_WITH_CONDITIONS, name the instance's WP, be for the NEXT gate; bound byte-identical under badf/evidence/dossiers/; state re-derived; lock re-signed)",
+    "derive_state lifecycle from the chain; validate_instance re-validates every bound dossier against its framework original and requires contiguity",
+    "state schema",
+    "doctrine + README",
+    "tests in scratch instances incl. an APPROVED G00 fixture; mutation; compose"
+  ],
+  "out_of_scope": [
+    "G01 evidence contract (WP-B)",
+    "authoring or approving dossiers",
+    "any project"
+  ],
+  "target_gate": "G07",
+  "change_class": "C3",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "fresh instance: advance with the HELD init dossier is refused",
+    "an APPROVED G00 dossier advances the instance to G00 / APPROVED; instance re-derives it",
+    "a G01 dossier is refused before G00 is bound (contiguity) and accepted after",
+    "a bound copy that differs from the framework original is refused; a framework original that no longer renders APPROVED is refused",
+    "a dossier for another WP, or for a gate that is not next, is refused",
+    "hand-edited lifecycle after re-sign is refused",
+    "advance writes only the bound dossier, state.json and the lockfile"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR",
+    "write: scratch instances under tmp only"
+  ],
+  "tests": [
+    "tests/test_badf_advance.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "7336a48"
+  },
+  "note": "Lands IN_PROGRESS by design. Decision BADF-DEC-0007 is delegated and says so."
+}

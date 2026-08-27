@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0016",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 41,
+    "url": "https://github.com/bstBizEra/badf/issues/41",
+    "exported_at": "2026-08-27T20:26:22Z",
+    "body_digest": "sha256:82e133d3b5cab28543231f55b7b0aab30741c55e5a6b254bab3e9ace4282b846"
+  },
+  "title": "BADF-WP-G01-001: Build Gate 01 -- PRD Review and Baseline (as planned on the Issue: transition first, then the G01 contract inside the gate)",
+  "problem": "## Objective\nImplement Gate 01 as the first full BADF lifecycle capability: `PRD Review and Baseline \u2192 PRD_BASELINED`.\n\n## Scope\n- canonical `badf-prd` skill\n- Gate 01 machine-readable contract\n- PRD baseline evidence/schema contract\n- PRD baseline template/checklist\n- deterministic validation entry point\n- acceptance tests\n- routing/integration with existing BADF delivery conventions where required\n\n## Non-goals\n- no production deployment authority changes\n- no constitutional/authority policy expansion\n- no implementation of Gates 02\u201314\n- no direct edits to `main`\n\n## Source baseline\n- Enterprise Delivery Lifecycle Gate 01 definition\n- Product Definition structure for PRD\n- existing `badf-delivery` governance conventions\n\n## Target disposition\n`IMPLEMENTATION_READY \u2192 BUILT \u2192 ENGINEERING_VERIFIED` for the Gate 01 capability only. Gate authority remains deterministic and separate from skill execution.\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-27T20:26:22Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. The Issue was opened by a second autonomous session under the shared account; the ARCHI plan on it (two WPs, transition first) was AGREED by the operator's delegation 'Proceed on your call' (2026-08-28). WP-A is BADF-WP-0029, WP-B follows."
+}

@@ -107,23 +107,10 @@ def compose(args: argparse.Namespace) -> int:
 
         env = {k: v for k, v in os.environ.items() if not k.startswith("BADF_")}
         env["BADF_COMPOSE_DEPTH"] = str(depth + 1)
-        shape = "host"
-        if args.ci_shape:
-            shape = "CI"
-            env["BADF_PROPTECH_PATH"] = str(scratch / "no-proptech")
-            reg = work / "badf/repositories.json"
-            if reg.is_file():
-                doc = json.loads(reg.read_text(encoding="utf-8"))
-                for spec in (doc.get("repositories") or {}).values():
-                    if isinstance(spec, dict) and spec.get("resolution") == "LOCAL_MIRROR":
-                        spec["local_path"] = str(scratch / "no-mirror")
-                reg.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
-                r = sh([sys.executable, "scripts/badf_gate.py", "lock"], work, env=env)
-                if r.returncode:
-                    return fail(f"re-signing the CI-shape scratch failed: {r.stderr.strip()}")
-        print(f"  shape: {shape}")
-        print(f"  suite pattern: {args.tests}" + ("" if args.tests == FULL_PATTERN else "   (RESTRICTED -- not the full suite)"))
-
+        # The repository contract is judged on the UNTOUCHED composed tree, before any
+        # CI-shape mutation: --ci-shape re-signs the scratch lockfile, and the first
+        # version ran `repo` after that re-sign, so a candidate carrying integrity
+        # drift passed under --ci-shape and failed under host shape (WP-0029).
         # No material code without a Work Package: the WP the message names must
         # have a record in the composed tree. Whether the ledger then reports it
         # LANDED_UNRECONCILED (the usual case) or finds it already reconciled (a
@@ -143,6 +130,23 @@ def compose(args: argparse.Namespace) -> int:
         debt = any(f"{wp} LANDED_UNRECONCILED" in line for line in r.stdout.splitlines())
         print(f"  repo: PASS -- {wp} " + ("LANDED_UNRECONCILED on the composed ledger (reconciled by the next work package)"
                                          if debt else "record present and already reconciled (a follow-up under a closed work package)"))
+
+        shape = "host"
+        if args.ci_shape:
+            shape = "CI"
+            env["BADF_PROPTECH_PATH"] = str(scratch / "no-proptech")
+            reg = work / "badf/repositories.json"
+            if reg.is_file():
+                doc = json.loads(reg.read_text(encoding="utf-8"))
+                for spec in (doc.get("repositories") or {}).values():
+                    if isinstance(spec, dict) and spec.get("resolution") == "LOCAL_MIRROR":
+                        spec["local_path"] = str(scratch / "no-mirror")
+                reg.write_text(json.dumps(doc, indent=2) + "\n", encoding="utf-8")
+                r = sh([sys.executable, "scripts/badf_gate.py", "lock"], work, env=env)
+                if r.returncode:
+                    return fail(f"re-signing the CI-shape scratch failed: {r.stderr.strip()}")
+        print(f"  shape: {shape}")
+        print(f"  suite pattern: {args.tests}" + ("" if args.tests == FULL_PATTERN else "   (RESTRICTED -- not the full suite)"))
 
         r = sh([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-p", args.tests, "-q"], work, env=env)
         text = r.stdout + r.stderr

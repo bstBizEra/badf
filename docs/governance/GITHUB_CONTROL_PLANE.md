@@ -124,6 +124,11 @@ it rather than trusting the record.
   (its own tests run in the composed world; `0b88c74` went red because they did not), and
   writes nothing to the source repository. Run it locally before pushing:
   `python3 scripts/badf_compose.py --message-file <pr-body> [--ci-shape]`.
+  **What it cannot see:** a composed world always has a `main` branch, but a pull-request
+  runner's checkout is detached with none — a fixture that `git clone`s it gets no
+  `origin/main`. The plain *Run validator tests* step on the runner is the control for that
+  shape (WP-0029: 13 advance tests red there, green in the composed run). Scratch clones pin
+  `origin/main` explicitly (`tests/_scratch.pin_origin_main`).
 
 ## Discovery ≠ scope expansion
 

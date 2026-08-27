@@ -101,6 +101,22 @@ does not launder a state; only a governed transition (later work package) may mo
   `project.yaml authority.policy` names it. `instance` recomputes the same derivation and
   refuses a state that says `RESOLVED` without a valid charter, or `UNRESOLVED` with one.
 
+## Advancing an instance (`BADF-WP-0029`, Issue #41, `BADF-DEC-0007` — delegated)
+
+An instance's gate is never typed. It is **derived from the chain of bound dossiers**:
+
+- `badf_gate.py advance <instance> work/<WP>/gate-dossier.<gate>.json` validates the instance,
+  validates the dossier (it must render `APPROVED` or `APPROVED_WITH_CONDITIONS`, name the
+  instance's work package, and be for the instance's **next** gate — `G00` first), copies it
+  **byte-identical** to `<instance>/badf/evidence/dossiers/<gate>.json`, re-derives
+  `state.json` (`lifecycle: <gate> / APPROVED`), and re-signs the instance lockfile.
+- `instance` recomputes the chain every time: each bound copy must equal its framework
+  original, the original must **still** render `APPROVED` (a withdrawn approval un-advances
+  the instance), and gates must be contiguous from `G00`. A lifecycle the chain cannot
+  support is refused, re-signed or not.
+- The tool binds what humans approved. It never approves: the G00 dossier `init` writes is
+  `HUMAN_REQUIRED` and cannot be bound until a human completes and approves it.
+
 ## Not on day 0 — each arrives with its first record
 
 `badf/authority/` (BADF-WP-0023: an instance charter may **narrow** the framework's
