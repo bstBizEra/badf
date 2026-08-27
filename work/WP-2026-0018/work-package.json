@@ -1,0 +1,61 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0018",
+  "title": "Demand records: no Work Package without an Issue or authorized demand",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0005",
+  "objective": "Make 'no WP without an Issue or authorized demand' enforced, not stated: an in-tree, integrity-locked demand record that intent, init and every shipped WP must resolve, human-authorized unless it is a BADF discovery.",
+  "business_value": "init (WP-0015) could create a WP from a six-field intent with no demand at all -- the pattern GITHUB_CONTROL_PLANE.md forbids. The gate makes zero network calls, so the record is the only form of demand it can verify offline.",
+  "in_scope": [
+    "schemas/demand.schema.json",
+    "badf/demands/*.json under INTEGRITY_PATHS",
+    "load_demand + init demand binding in scripts/badf_gate.py",
+    "demand required in intent and work-package schema",
+    "demand records for every shipped WP (RECONSTRUCTED where pre-doctrine)",
+    "GITHUB_CONTROL_PLANE.md: Demand records section",
+    "tests"
+  ],
+  "out_of_scope": [
+    "Issue Forms / PR template (P1)",
+    "autonomous Issue creation",
+    "network verification of Issue existence at gate time",
+    "re-running the PropTech G00 intake"
+  ],
+  "target_gate": "G07",
+  "change_class": "C3",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "intent without demand is refused",
+    "unresolvable demand is refused",
+    "demand for another repository is refused",
+    "agent-authorized non-discovery demand is refused even when integrity passes",
+    "every shipped WP resolves its demand",
+    "WP created by init carries demand and held_because names it",
+    "demand and WP records are schema-walked (required keys + enum values)"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_demand.py",
+    "tests/test_badf_init.py",
+    "tests/test_badf_schema_drift.py"
+  ],
+  "evidence": [
+    "mutation: 6 mutants / 6 kills on load_demand + init binding, unique anchors",
+    "negative control: forged demand -> integrity drift (exit 1); re-signed agent-authorized demand -> refused on principal_type"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR; demand records are additive"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "12f5056"
+  },
+  "note": "Deviation from Issue #22's proposal: it said the PropTech intake 'must cite a PropTech Issue'. PropTech has zero Issues and its [WP-NNNN] tokens are its own work, so the intake demand is recorded as an operator decision (BADF-DEM-0003, RECONSTRUCTED). Demand IDs are allocated sequentially and never encode the Issue number; the first export (#19) was renamed from DEM-0019 to DEM-0004 in this WP before it ever landed."
+}

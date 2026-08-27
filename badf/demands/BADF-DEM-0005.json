@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0005",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 22,
+    "url": "https://github.com/bstBizEra/badf/issues/22",
+    "exported_at": "2026-08-27T15:16:28Z",
+    "body_digest": "sha256:f74c9ce2897c6e769176eb126813c2c340062fd8664b343d6b69d5fdc0e450c1"
+  },
+  "title": "GOV-0003: badf init creates a Work Package with no demand record",
+  "problem": "## Observed\n`badf init` (BADF-WP-0015) creates a work package, three G00 declarations, a dossier, a ledger and a registry entry from a six-field intent. `INTENT_REQUIRED` = intent, local_path, name, owner, repository, target. **No `issue` field.** The WP schema has no `issue`, `demand`, or `discovered_from` property at all.\n\n## Expected (GITHUB_CONTROL_PLANE.md, adopted one WP after init shipped)\n> No Work Package without an Issue or authorized demand.\nAn intake with no demand record is the exact pattern the doctrine forbids. `init` predates the doctrine; it is now non-compliant by construction.\n\n## Evidence\n`python3 -c \"import scripts.badf_gate as g; print(sorted(g.INTENT_REQUIRED))\"` \u2192 no issue. `schemas/work-package.schema.json` properties \u2192 no demand field.\n\n## Unknowns\nWhether the demand must be a GitHub Issue in **BADF's** repo, or may be an Issue in the target project's repo (PropTech has its own `[WP-NNNN]` admission control and its own issue space). Cross-repo demand binding is a design question, not a bug fix.\n\n## Proposed work package\n`BADF-WP-0018` \u2014 intent gains a required `demand` (an Issue URL or `repo#N`); WP schema gains `demand` bound to it; `init` refuses without it; the G00 dossier's `held_because` names the demand. The PropTech intake, when re-run, must cite a PropTech Issue.\n\ndiscovered-by: BADF-WP-0016 \u00b7 status: DISCOVERED\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-27T15:16:28Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim from the GitHub Issue and digest-bound. The Issue was DISCOVERED by BADF-WP-0016 and filed under the shared account; the authority to act on it is the operator's explicit in-session delegation ('Proceed on your call'), recorded here as the authorizer. Worked as BADF-WP-0018."
+}

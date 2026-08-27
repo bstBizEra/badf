@@ -19,7 +19,8 @@
     "tests",
     "evidence",
     "rollback",
-    "status"
+    "status",
+    "demand"
   ],
   "properties": {
     "schema_version": {
@@ -210,6 +211,10 @@
     },
     "external_target": {
       "type": "object"
+    },
+    "demand": {
+      "type": "string",
+      "pattern": "^BADF-DEM-[0-9]{4,}$"
     }
   }
 }

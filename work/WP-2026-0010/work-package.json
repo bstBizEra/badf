@@ -5,6 +5,7 @@
   "title": "secb_pf: SPECIFICATION_CONFLICT_PROTOCOL.md vocabulary-set count agrees with itself",
   "owner": "engineering_owner",
   "repository": "bstBizEra/secb_pf",
+  "demand": "BADF-DEM-0002",
   "objective": "Land secb_pf branch fix/conflict-protocol-vocabulary-audit: the protocol says 'three sets, deliberately separate' at :108 and 'Eight sets now' at :131. One document, two counts.",
   "business_value": "A governance document that contradicts itself on the number of verdict vocabularies cannot be the authority on which vocabulary a verdict belongs to. First non-BADF work package governed by BADF.",
   "in_scope": [

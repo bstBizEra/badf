@@ -18,10 +18,19 @@ import scripts.badf_gate as gate
 
 SRC = (gate.ROOT / "scripts" / "badf_gate.py").read_text(encoding="utf-8")
 SHIPPED = {
-    "gate-dossier": gate.ROOT / "examples/gate-dossier.G00.json",
-    "evidence": gate.ROOT / "examples/evidence/G00/authority.json",
-    "lifecycle": gate.ROOT / "badf/lifecycle.json",
+    "gate-dossier": [gate.ROOT / "examples/gate-dossier.G00.json"],
+    "evidence": [gate.ROOT / "examples/evidence/G00/authority.json"],
+    "lifecycle": [gate.ROOT / "badf/lifecycle.json"],
+    "demand": sorted((gate.ROOT / "badf/demands").glob("BADF-DEM-*.json")),
+    "work-package": sorted(gate.ROOT.glob("work/WP-*/work-package.json")),
 }
+assert SHIPPED["demand"] and SHIPPED["work-package"], "an empty shipped set would make these tests vacuous"
+
+
+def shipped():
+    for name, paths in SHIPPED.items():
+        for path in paths:
+            yield name, path
 
 
 def code_set(name):
@@ -73,7 +82,7 @@ class SchemaInternalConsistencyTests(unittest.TestCase):
     """Every schema, read or not: a required property must be defined."""
 
     def test_no_schema_requires_an_undefined_property(self):
-        for name in ("gate-dossier", "evidence", "lifecycle", "memory", "session", "work-package"):
+        for name in ("gate-dossier", "evidence", "lifecycle", "memory", "session", "work-package", "demand"):
             with self.subTest(schema=name):
                 s = schema(name)
                 undefined = set(s.get("required", [])) - set(s.get("properties", {}))
@@ -81,7 +90,7 @@ class SchemaInternalConsistencyTests(unittest.TestCase):
 
     def test_shipped_instances_satisfy_their_schema_required_sets(self):
         """Structural only (no jsonschema dependency): every required key present."""
-        for name, path in SHIPPED.items():
+        for name, path in shipped():
             with self.subTest(schema=name, file=path.name):
                 inst = json.loads(path.read_text())
                 missing = set(schema(name)["required"]) - set(inst)
@@ -106,7 +115,7 @@ class SchemaInternalConsistencyTests(unittest.TestCase):
                     for i, item in enumerate(val):
                         if isinstance(item, dict):
                             yield from walk(spec["items"]["properties"], item, f"{trail}{key}[{i}].")
-        for name, path in SHIPPED.items():
+        for name, path in shipped():
             inst = json.loads(path.read_text())
             for where, val, allowed in walk(schema(name)["properties"], inst, ""):
                 with self.subTest(schema=name, file=path.name, field=where):

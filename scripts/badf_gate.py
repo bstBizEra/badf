@@ -71,6 +71,7 @@ INTEGRITY_PATHS = [
     "badf/skill-registry.json",
     "badf/tool-registry.json",
     "badf/decisions/*.json",
+    "badf/demands/*.json",
     "badf/repositories.json",
     # Foreign work packages: the evidence ARTIFACTS are digest-bound already,
     # but the dossier and evidence .json files were not -- a re-pointed digest
@@ -119,6 +120,11 @@ CLASS_RANK = {"C0": 0, "C1": 1, "C2": 2, "C3": 3}
 DECISION_ID = re.compile(r"^BADF-DEC-[0-9]{4,}$")
 DECISIONS_DIR = "badf/decisions"
 REPOSITORIES = "badf/repositories.json"
+DEMANDS_DIR = "badf/demands"
+DEMAND_ID = re.compile(r"^BADF-DEM-[0-9]{4,}$")
+DEMAND_FIELDS = {"schema_version", "demand_id", "kind", "source", "title", "problem", "recorded_at", "provenance", "status"}
+DEMAND_KINDS = {"issue", "token", "decision", "discovery"}
+DEMAND_PROVENANCE = {"EXPORTED_FROM_SOURCE", "RECONSTRUCTED", "DISCOVERED"}
 LEDGER_NAME = "run-ledger.jsonl"
 GENESIS_HASH = "sha256:" + "0" * 64
 LEDGER_FIELDS = {"event_id", "workflow_id", "sequence", "step", "outcome", "actor", "recorded_at",
@@ -1235,9 +1241,50 @@ def verify_council(dossier: dict[str, Any], work_package: dict[str, Any] | None)
     return result
 
 
-INTENT_REQUIRED = {"name", "intent", "owner", "target", "repository", "local_path"}
+INTENT_REQUIRED = {"name", "intent", "owner", "target", "repository", "local_path", "demand"}
 INTENT_TARGETS = {"production", "sandbox"}
 JUDGMENT_FIELDS = ["objective", "business_value", "in_scope", "out_of_scope", "acceptance_criteria"]
+
+
+def load_demand(demand_id: str) -> dict[str, Any]:
+    """The demand record a work package cites, or a refusal.
+
+    Issue #22: a work package had no demand link, and the doctrine says no WP
+    without one. But the gate makes no network calls and an Issue's existence
+    is knowable only via the API -- and PropTech, the intake probe, has zero
+    Issues; its demand record is a [WP-NNNN] token. So a demand is a RECORD
+    IN THE TREE: the source exported and digest-bound, existence a file
+    check, forgery caught by the lockfile. Same pattern as decisions.
+
+    A demand is where authority ENTERS the system. Unless kind is
+    'discovery', authorized_by is required and must be a human principal.
+    Agents discover; they do not authorize.
+    """
+    if not isinstance(demand_id, str) or not DEMAND_ID.match(demand_id):
+        raise ValidationError(f"{demand_id!r} is not a demand id (expected BADF-DEM-nnnn)")
+    path = ROOT / DEMANDS_DIR / f"{demand_id}.json"
+    if not path.is_file():
+        raise ValidationError(f"demand {demand_id} does not exist at {DEMANDS_DIR}/{demand_id}.json")
+    rec = load_json(path)
+    require_fields(rec, DEMAND_FIELDS, f"demand {demand_id}")
+    if rec["demand_id"] != demand_id:
+        raise ValidationError(f"demand file {path.name} carries id {rec['demand_id']!r}")
+    if expect_str(rec["kind"], f"demand {demand_id}.kind") not in DEMAND_KINDS:
+        raise ValidationError(f"demand {demand_id} kind {rec['kind']!r} is not one of {sorted(DEMAND_KINDS)}")
+    if expect_str(rec["provenance"], f"demand {demand_id}.provenance") not in DEMAND_PROVENANCE:
+        raise ValidationError(f"demand {demand_id} provenance {rec['provenance']!r} is not one of {sorted(DEMAND_PROVENANCE)}")
+    src = rec["source"]
+    if not isinstance(src, dict) or "repository" not in src:
+        raise ValidationError(f"demand {demand_id} source must carry a repository")
+    parse_time(rec["recorded_at"], f"demand {demand_id}.recorded_at")
+    if rec["kind"] != "discovery":
+        auth = rec.get("authorized_by")
+        if not isinstance(auth, dict):
+            raise ValidationError(f"demand {demand_id} missing fields: authorized_by")
+        if auth.get("principal_type") != "human":
+            raise ValidationError(f"demand {demand_id}: authorized_by must be a human principal; a demand is where authority enters")
+        canonical_principal(auth.get("principal"), f"demand {demand_id}.authorized_by")
+    return rec
 
 
 def load_intent(path: Path) -> dict[str, Any]:
@@ -1319,6 +1366,11 @@ def init_project(intent_path: Path) -> str:
     It reads the target project and never writes to it.
     """
     proj = load_intent(intent_path)
+    dem = load_demand(proj["demand"])
+    if dem["source"]["repository"] != proj["repository"]:
+        raise ValidationError(
+            f"demand {proj['demand']} belongs to {dem['source']['repository']}, but the intent targets "
+            f"{proj['repository']}; a demand authorizes work on ONE repository")
     root = Path(proj["local_path"])
     top = _foreign_git(root, "rev-parse", "--show-toplevel")
     if top.returncode != 0:
@@ -1346,7 +1398,7 @@ def init_project(intent_path: Path) -> str:
     wp: dict[str, Any] = {
         "$schema": "../../schemas/work-package.schema.json", "schema_version": "1.0.0",
         "id": wp_id, "title": f"{proj['name']}: {proj['intent']}", "owner": proj["owner"],
-        "repository": proj["repository"],
+        "repository": proj["repository"], "demand": proj["demand"],
         "objective": "DECLARED_MISSING", "business_value": "DECLARED_MISSING",
         "in_scope": "DECLARED_MISSING", "out_of_scope": "DECLARED_MISSING", "acceptance_criteria": "DECLARED_MISSING",
         "declared_missing": list(JUDGMENT_FIELDS),
@@ -1394,7 +1446,7 @@ def init_project(intent_path: Path) -> str:
         "evidence": index, "approvals": [], "conditions": [], "non_coverage": [], "exceptions": [],
         "risks": [], "council": None,
         "disposition": "HUMAN_REQUIRED", "created_at": now,
-        "held_because": "5 judgment fields DECLARED_MISSING; 3 G00 declarations PREPARED but UNSIGNED; C3 requires " +
+        "held_because": f"demand {proj['demand']} ({dem['kind']}); 5 judgment fields DECLARED_MISSING; 3 G00 declarations PREPARED but UNSIGNED; C3 requires " +
                         ", ".join(load_json(ROOT / MATRIX)["change_classes"]["C3"]["required_roles"]) + " approvals",
     }
     (wp_dir / "gate-dossier.G00.json").write_text(json.dumps(dossier, indent=2) + "\n", encoding="utf-8")

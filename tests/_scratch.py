@@ -36,7 +36,7 @@ def seed_clone(dest: Path, *, carry_working_state: bool = False) -> str:
         # The clone must see the same working state as ROOT: the gate under test,
         # the registries and decisions, and any work packages -- including files
         # not yet committed on the source branch.
-        for rel in ("scripts/badf_gate.py", gate.REPOSITORIES, gate.DECISIONS_DIR, "work", "examples"):
+        for rel in ("scripts/badf_gate.py", gate.REPOSITORIES, gate.DECISIONS_DIR, gate.DEMANDS_DIR, "work", "examples"):
             src = gate.ROOT / rel; dst = dest / rel
             if src.is_dir():
                 shutil.rmtree(dst, ignore_errors=True); shutil.copytree(src, dst)

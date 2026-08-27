@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0003",
+  "kind": "decision",
+  "source": {
+    "repository": "bstBizEra/proptech",
+    "issue": null,
+    "token": null,
+    "url": null
+  },
+  "title": "Bring PropTech under BADF governance (badf init)",
+  "problem": "The operator directed BADF to intake the PropTech repository via badf init (Self-Development Rule section 4). PropTech has 0 GitHub Issues; its own [WP-0001..0006] tokens are PropTech work packages, none of which demands BADF intake, so no token or issue can be exported as this demand.",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-27T15:11:43Z",
+  "provenance": "RECONSTRUCTED",
+  "status": "AUTHORIZED",
+  "note": "RECONSTRUCTED under BADF-WP-0018 from the operator's in-session directive. The resulting G00 dossier is HELD (HUMAN_REQUIRED) until the operator supplies the five judgment fields and signs the three declarations; this record authorizes the intake, not the work."
+}
