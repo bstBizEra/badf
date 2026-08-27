@@ -251,27 +251,66 @@ def sha256(path: Path) -> str:
     return f"sha256:{digest.hexdigest()}"
 
 
-def compute_integrity() -> dict[str, str]:
-    """sha256 of every governance-critical file, by repo-relative path.
+def compute_integrity(root: Path = None, patterns: list[str] = None) -> dict[str, str]:
+    """sha256 of every governance-critical file, by root-relative path.
 
     Entries may be globs. A glob that matches nothing is REFUSED, not skipped:
     a pattern that silently matches zero files is a hole shaped exactly like
-    the directory it was meant to cover.
+    the directory it was meant to cover. One implementation serves the
+    framework (ROOT, INTEGRITY_PATHS) and every project instance
+    (BADF-WP-0022): a second lockfile format would drift from the first.
     """
+    root = ROOT if root is None else root
+    patterns = INTEGRITY_PATHS if patterns is None else patterns
     digests: dict[str, str] = {}
-    for entry in INTEGRITY_PATHS:
+    for entry in patterns:
         if any(ch in entry for ch in "*?["):
-            matches = sorted(q for q in ROOT.glob(entry) if q.is_file())
+            matches = sorted(q for q in root.glob(entry) if q.is_file())
             if not matches:
                 raise ValidationError(f"integrity glob matches no files: {entry}")
             for path in matches:
-                digests[path.relative_to(ROOT).as_posix()] = sha256(path)
+                digests[path.relative_to(root).as_posix()] = sha256(path)
         else:
-            path = ROOT / entry
+            path = root / entry
             if not path.is_file():
                 raise ValidationError(f"integrity path missing: {entry}")
             digests[entry] = sha256(path)
     return digests
+
+
+def verify_lock(root: Path, patterns: list[str], what: str, resign_hint: str) -> None:
+    lock_path = root / LOCKFILE
+    if not lock_path.is_file():
+        raise ValidationError(f"{LOCKFILE} is absent -- integrity cannot be established. "
+                              f"Generate it deliberately with: {resign_hint}")
+    lock = load_json(lock_path)
+    recorded = lock.get("digests")
+    if not isinstance(recorded, dict):
+        raise ValidationError(f"{LOCKFILE} has no digests object")
+    actual = compute_integrity(root, patterns)
+    drifted = sorted(p for p in actual if recorded.get(p) != actual[p])
+    missing = sorted(set(recorded) - set(actual))
+    extra = sorted(set(actual) - set(recorded))
+    if drifted or missing or extra:
+        detail = []
+        if drifted:
+            detail.append("changed: " + ", ".join(drifted))
+        if missing:
+            detail.append("in lockfile but not checked: " + ", ".join(missing))
+        if extra:
+            detail.append("checked but absent from lockfile: " + ", ".join(extra))
+        raise ValidationError(
+            f"{what} integrity drift -- " + "; ".join(detail)
+            + f". If the change is intended, re-sign with `{resign_hint}` in the same change, "
+              "so the edit is visible in the diff and reviewable.")
+
+
+def write_lock(root: Path, patterns: list[str]) -> int:
+    digests = compute_integrity(root, patterns)
+    (root / LOCKFILE).write_text(
+        json.dumps({"schema_version": "1.0.0", "digests": digests}, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8")
+    return len(digests)
 
 
 def verify_integrity() -> None:
@@ -301,35 +340,8 @@ def verify_integrity() -> None:
     auto-reverted. Reverting a file is a destructive act, and a validator does
     not hold authority to mutate the tree it is judging.
     """
-    lock_path = ROOT / LOCKFILE
-    if not lock_path.is_file():
-        raise ValidationError(
-            f"{LOCKFILE} is absent -- integrity cannot be established. "
-            f"Generate it deliberately with: python3 scripts/badf_gate.py lock"
-        )
-    lock = load_json(lock_path)
-    recorded = lock.get("digests")
-    if not isinstance(recorded, dict):
-        raise ValidationError(f"{LOCKFILE} has no digests object")
+    verify_lock(ROOT, INTEGRITY_PATHS, "governance", "python3 scripts/badf_gate.py lock")
 
-    actual = compute_integrity()
-    drifted = sorted(p for p in actual if recorded.get(p) != actual[p])
-    missing = sorted(set(recorded) - set(actual))
-    extra = sorted(set(actual) - set(recorded))
-    if drifted or missing or extra:
-        detail = []
-        if drifted:
-            detail.append("changed: " + ", ".join(drifted))
-        if missing:
-            detail.append("in lockfile but not checked: " + ", ".join(missing))
-        if extra:
-            detail.append("checked but absent from lockfile: " + ", ".join(extra))
-        raise ValidationError(
-            "governance integrity drift -- " + "; ".join(detail)
-            + f". If the change is intended, re-sign with "
-              f"`python3 scripts/badf_gate.py lock` in the same change, so the "
-              f"edit is visible in the diff and reviewable."
-        )
 
 
 MATRIX = "badf/authority-matrix.json"
@@ -563,11 +575,8 @@ def write_lockfile() -> None:
     Deliberate and explicit: re-signing is how an intended policy change is
     admitted, and it must appear in the same diff as the change it admits.
     """
-    digests = compute_integrity()
-    (ROOT / LOCKFILE).write_text(
-        json.dumps({"schema_version": "1.0.0", "digests": digests}, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8")
-    print(f"re-signed {LOCKFILE} over {len(digests)} governance paths")
+    n = write_lock(ROOT, INTEGRITY_PATHS)
+    print(f"re-signed {LOCKFILE} over {n} governance paths")
 
 
 
@@ -1581,6 +1590,131 @@ def _digest_bytes(data: bytes) -> str:
     return "sha256:" + hashlib.sha256(data).hexdigest()
 
 
+
+# ---- project instance: lockfile, derived state, validation (BADF-WP-0022) ----
+INSTANCE_INTEGRITY = ["badf/project.yaml", "badf/state.json", "badf/evidence/**/*.json"]
+
+
+def instance_root(path: Path) -> Path:
+    inst = Path(path).resolve()
+    if inst == ROOT.resolve():
+        raise ValidationError("the framework itself is not a project instance")
+    if not (inst / "badf/project.yaml").is_file():
+        raise ValidationError(f"no instance at {inst}: badf/project.yaml is absent")
+    top = _foreign_git(inst, "rev-parse", "--show-toplevel")
+    if top.returncode != 0 or Path(top.stdout.decode().strip()).resolve() != inst:
+        raise ValidationError(f"{inst} is not a git repository root")
+    return inst
+
+
+def instance_patterns(inst: Path) -> list[str]:
+    """AGENTS.md is locked only when BADF generated it; a preserved one is the
+    project's file. The decision is read from state.json, which is itself locked."""
+    patterns = list(INSTANCE_INTEGRITY)
+    state_path = inst / "badf/state.json"
+    if state_path.is_file():
+        state = load_json(state_path)
+        if isinstance(state, dict) and state.get("entrypoint") == "AGENTS_MD_GENERATED":
+            patterns.append("AGENTS.md")
+    return patterns
+
+
+def write_instance_lock(inst: Path) -> int:
+    return write_lock(inst, instance_patterns(inst))
+
+
+def derive_state(project_id: str, framework_revision: str, wp_id: str, target: str,
+                 entrypoint: str, baseline_commit: str, receipt_rel: str) -> dict[str, Any]:
+    """The ONLY way a state.json comes to exist. init writes derive_state(...);
+    validation recomputes it from the receipt and refuses a stored state that
+    differs -- so a hand-typed state, even re-signed, is refused."""
+    return {
+        "schema_version": "1.0.0", "project_id": project_id, "framework_revision": framework_revision,
+        "lifecycle": {"current_gate": "G00", "state": "INITIALIZED", "target": target.upper()},
+        "active_work_package": wp_id, "active_session": None,
+        "authority": {"status": "UNRESOLVED"},
+        "entrypoint": entrypoint,
+        "readiness": {"product": "NOT_STARTED", "architecture": "NOT_STARTED", "engineering": "NOT_STARTED",
+                      "security": "NOT_STARTED", "release": "NOT_STARTED", "production": "NOT_READY"},
+        "derived_from": {"baseline_commit": baseline_commit, "receipt": receipt_rel},
+    }
+
+
+def _flat(d: Any, prefix: str = "") -> dict[str, Any]:
+    if isinstance(d, dict):
+        out = {}
+        for k, v in d.items():
+            out.update(_flat(v, f"{prefix}{k}."))
+        return out
+    return {prefix.rstrip("."): d}
+
+
+def validate_instance(path: Path) -> list[str]:
+    """`badf_gate.py instance <path>`: writes nothing; refuses unless every
+    claim in the instance is corroborated by another document, by git, or by
+    the framework. Returns the lines to print (notes, then the PASS line)."""
+    inst = instance_root(path)
+    verify_lock(inst, instance_patterns(inst), "instance",
+                f"python3 scripts/badf_gate.py lock --instance {inst}")
+    project = parse_yaml_subset((inst / "badf/project.yaml").read_text(encoding="utf-8"))
+    check_schema("project", project)
+    state = load_json(inst / "badf/state.json")
+    check_schema("state", state)
+    receipts = sorted((inst / "badf/evidence/receipts").glob("init-*.json"))
+    if len(receipts) != 1:
+        raise ValidationError(f"expected exactly one init receipt, found {len(receipts)}")
+    receipt = load_json(receipts[0])
+    check_schema("init-receipt", receipt)
+    receipt_rel = receipts[0].relative_to(inst).as_posix()
+
+    def agree(label: str, *values: Any) -> Any:
+        if any(v != values[0] for v in values[1:]):
+            raise ValidationError(f"documents disagree on {label}: {' vs '.join(repr(v) for v in values)}")
+        return values[0]
+
+    project_id = agree("project id", project["project"]["id"], state["project_id"], receipt["project_id"])
+    framework_revision = agree("framework_revision", project["badf"]["framework_revision"],
+                               state["framework_revision"], receipt["framework_revision"])
+    wp_id = agree("work package", project["delivery"]["work_package"], receipt["work_package"])
+    agree("repository", project["project"]["repository"], receipt["repository"])
+    agree("classification", project["project"]["classification"], receipt["classification"])
+    agree("framework_repository", project["badf"]["framework_repository"], receipt["framework_repository"], self_repository())
+    agree("receipt", state["derived_from"]["receipt"], receipt_rel)
+    baseline = agree("baseline commit", state["derived_from"]["baseline_commit"], receipt["baseline_commit"])
+
+    if _foreign_git(inst, "cat-file", "-e", f"{baseline}^{{commit}}").returncode != 0:
+        raise ValidationError(f"baseline commit {baseline[:7]} is unknown to the instance")
+    if _foreign_git(inst, "merge-base", "--is-ancestor", baseline, "HEAD").returncode != 0:
+        raise ValidationError(f"baseline commit {baseline[:7]} is not an ancestor of the instance's HEAD")
+    if _git("cat-file", "-e", f"{framework_revision}^{{commit}}") is None:
+        raise ValidationError(f"framework_revision {framework_revision[:7]} is unknown to this framework")
+
+    expected = derive_state(project_id, framework_revision, wp_id, project["delivery"]["target"],
+                            state["entrypoint"], baseline, receipt_rel)
+    if state != expected:
+        have, want = _flat(state), _flat(expected)
+        diffs = sorted(k for k in set(have) | set(want) if have.get(k) != want.get(k))
+        raise ValidationError("state.json disagrees with the derived state on " + ", ".join(diffs)
+                              + "; only init has run, so a state the receipt cannot corroborate is refused")
+
+    notes: list[str] = []
+    agents = inst / "AGENTS.md"
+    if state["entrypoint"] == "EXISTING_AGENTS_MD_PRESERVED":
+        recorded = next((p["digest"] for p in receipt["preserved"] if p["path"] == "AGENTS.md"), None)
+        if recorded is None:
+            raise ValidationError("state says AGENTS.md was preserved but the receipt records no preserved AGENTS.md")
+        if not agents.is_file():
+            notes.append("BADF INSTANCE NOTE: AGENTS.md removed since baseline (project-owned; merge plan required)")
+        elif sha256(agents) != recorded:
+            notes.append("BADF INSTANCE NOTE: AGENTS.md changed since baseline (project-owned; merge plan required)")
+    elif not agents.is_file():
+        raise ValidationError("state says BADF generated AGENTS.md but it is absent")
+    notes.append(f"BADF INSTANCE PASS: {project_id} ({receipt['repository']}) at "
+                 f"{state['lifecycle']['current_gate']} / {state['lifecycle']['state']}; "
+                 f"framework {framework_revision[:7]}; baseline {baseline[:7]}; work package {wp_id}")
+    return notes
+
+
 def load_intent(path: Path) -> dict[str, Any]:
     """The four-line intent (plus where the project lives). JSON is accepted
     as YAML's strict subset -- no new dependency. A document that is not a
@@ -1732,16 +1866,9 @@ def init_project(intent_path: Path) -> str:
         "evidence": {"root": "badf/evidence", "receipts": "badf/evidence/receipts"},
         "state": {"file": "badf/state.json"},
     }
-    state_doc: dict[str, Any] = {
-        "schema_version": "1.0.0", "project_id": project_id, "framework_revision": framework_revision,
-        "lifecycle": {"current_gate": "G00", "state": "INITIALIZED", "target": proj["target"].upper()},
-        "active_work_package": wp_id, "active_session": None,
-        "authority": {"status": "UNRESOLVED"},
-        "entrypoint": "EXISTING_AGENTS_MD_PRESERVED" if agents_exists else "AGENTS_MD_GENERATED",
-        "readiness": {"product": "NOT_STARTED", "architecture": "NOT_STARTED", "engineering": "NOT_STARTED",
-                      "security": "NOT_STARTED", "release": "NOT_STARTED", "production": "NOT_READY"},
-        "derived_from": {"baseline_commit": head, "receipt": receipt_rel},
-    }
+    state_doc = derive_state(project_id, framework_revision, wp_id, proj["target"],
+                             "EXISTING_AGENTS_MD_PRESERVED" if agents_exists else "AGENTS_MD_GENERATED",
+                             head, receipt_rel)
     template_path = ROOT / "templates/AGENTS.instance.md"
     if not template_path.is_file():
         raise ValidationError("templates/AGENTS.instance.md is missing from the framework; refusing to invent an entrypoint")
@@ -1780,6 +1907,7 @@ def init_project(intent_path: Path) -> str:
     for rel, data in contents:
         (root / rel).write_bytes(data)
     (root / receipt_rel).write_bytes(receipt_bytes)
+    write_instance_lock(root)   # the signature over the governed files; not a generated claim
 
     # REGISTER -- BADF's side
     wp_dir = ROOT / "work" / wp_id
@@ -1972,7 +2100,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser("repo", help="validate repository governance structure")
-    subparsers.add_parser("lock", help="re-sign badf/lockfile.json from current content")
+    lock_parser = subparsers.add_parser("lock", help="re-sign badf/lockfile.json from current content")
+    lock_parser.add_argument("--instance", type=Path, default=None, help="re-sign a project instance's badf/lockfile.json instead")
+    inst_parser = subparsers.add_parser("instance", help="validate a project instance at <path>; writes nothing")
+    inst_parser.add_argument("path", type=Path)
     dossier_parser = subparsers.add_parser("dossier", help="validate a gate dossier and its evidence")
     dossier_parser.add_argument("path", type=Path)
     init_parser = subparsers.add_parser("init", help="intake a project from a four-line intent; writes only under BADF's tree")
@@ -1984,7 +2115,15 @@ def main() -> int:
         if args.command == "repo":
             validate_repo()
         elif args.command == "lock":
-            write_lockfile()
+            if args.instance is not None:
+                inst = instance_root(args.instance)
+                print(f"re-signed {inst / LOCKFILE} over {write_instance_lock(inst)} instance paths")
+            else:
+                write_lockfile()
+        elif args.command == "instance":
+            for line in validate_instance(args.path):
+                print(line)
+            return 0
         elif args.command == "init":
             print(init_project(args.intent))
             return 0

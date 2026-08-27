@@ -46,7 +46,9 @@ The intent is a JSON/YAML mapping under `project`:
 | `type`, `maturity` | no | recorded as given, else `DECLARED_MISSING` — never guessed |
 
 The G00 dossier renders `HUMAN_REQUIRED`: an instance is a request for authority, not a
-grant of it. Refusals write nothing: dirty tree, existing `badf/`, the framework as target,
+grant of it. `python3 scripts/badf_gate.py instance <path>` validates an instance —
+documents, cross-document agreement, git corroboration, and the instance lockfile — and
+writes nothing. Refusals write nothing: dirty tree, existing `badf/`, the framework as target,
 a demand for another repository.
 
 ## Repository map

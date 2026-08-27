@@ -100,13 +100,14 @@ class BoundedWriteTests(InstanceScratch):
         self.assertEqual(outside(after), outside(before), "init wrote outside its namespace")
         new = sorted(set(after) - set(before))
         self.assertEqual([p for p in new if not p.startswith("badf/evidence/receipts/init-")],
-                         ["AGENTS.md", "badf/project.yaml", "badf/state.json"])
+                         ["AGENTS.md", "badf/lockfile.json", "badf/project.yaml", "badf/state.json"])
         self.assertEqual(len([p for p in new if p.startswith("badf/evidence/receipts/init-")]), 1)
         rec = self.receipt(t)
         self.assertEqual(rec["classification"], "GREENFIELD")
         # the receipt cannot carry its own digest; it is bound BADF-side instead
         self.assertEqual(sorted(g["path"] for g in rec["generated"]),
-                         [p for p in new if not p.startswith("badf/evidence/receipts/")], "receipt.generated != what appeared")
+                         [p for p in new if not p.startswith("badf/evidence/receipts/") and p != "badf/lockfile.json"],
+                         "receipt.generated != what appeared (the receipt and the lockfile are the signature, not claims)")
         for g in rec["generated"]:
             self.assertEqual(g["digest"], after[g["path"]], f"{g['path']}: receipt digest != file")
         self.assertEqual(rec["preserved"], []); self.assertEqual(rec["conflicts"], [])

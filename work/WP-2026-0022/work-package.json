@@ -1,0 +1,60 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0022",
+  "title": "Instance validation: badf_gate.py instance <path> and a per-instance lockfile",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0009",
+  "objective": "Make a project's badf/ governed rather than decorative: one command validates the instance's documents, corroborates them against each other and against git (instance baseline, framework revision), and verifies a per-instance lockfile written by init.",
+  "business_value": "An instance nobody reads is a claim nobody checks. Validation is what lets a later work package advance state.json through governed transitions and refuse a hand-typed one.",
+  "in_scope": [
+    "instance <path> subcommand",
+    "badf/lockfile.json in the instance, written by init, same implementation as the framework's (lock/verify parameterised by root and patterns)",
+    "cross-document corroboration and git corroboration",
+    "tests in scratch instances; mutation; post-merge simulation",
+    "doctrine and README updates"
+  ],
+  "out_of_scope": [
+    "state transitions beyond G00 (later WP)",
+    "authority instance (BADF-WP-0023)",
+    "AGENTS.md merge planning",
+    "any run against a real project"
+  ],
+  "target_gate": "G07",
+  "change_class": "C3",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "a freshly initialised instance passes `instance`",
+    "a hand-edited state.json is refused (lockfile drift) and, if re-signed, refused on cross-document disagreement",
+    "a receipt or state naming a baseline commit the instance does not have, or that is not an ancestor of HEAD, is refused",
+    "a framework_revision unknown to this framework is refused",
+    "the framework itself is refused as an instance",
+    "a preserved AGENTS.md that changed since baseline is reported, not refused",
+    "the framework's own lock/verify behaviour is unchanged (existing integrity tests green)"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR",
+    "write: scratch repositories under the test tmpdir only"
+  ],
+  "tests": [
+    "tests/test_badf_instance_validation.py",
+    "tests/test_badf_instance.py",
+    "tests/test_badf_integrity.py"
+  ],
+  "evidence": [
+    "mutation on the corroboration checks, unique anchors",
+    "post-merge simulation cited in the PR"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "369d67a"
+  },
+  "note": "Lands IN_PROGRESS by design; reconciled by the next WP's branch."
+}
