@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0007",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 31,
+    "url": "https://github.com/bstBizEra/badf/issues/31",
+    "exported_at": "2026-08-27T16:03:47Z",
+    "body_digest": "sha256:f8f8bde12db5aa1faaa866ecc05184e3be180a94fb50e770c14038958058f5b9"
+  },
+  "title": "GOV-0010: main is red at 30186c5 -- reconciliation tests assume a debt-free ledger",
+  "problem": "## Observed\nThe push-to-`main` run for `30186c5` (run 33091002713) fails 4 tests in `tests/test_badf_reconcile.py` while PR #30's run on `a77c042` was green. The tests seed scratch clones from the real `origin/main` and assert on a ledger with no `LANDED_UNRECONCILED` record except the one each test sets up. After the merge, `origin/main` carries `WP-2026-0019` landed and unreconciled \u2014 **by design** (`GITHUB_CONTROL_PLANE.md` \u00a7 Reconciliation: silence is named, and the next WP's branch reconciles it). So the fixture is red on `main` from the very merge that shipped it, and would be red again after every future merge.\n\nFailing: `test_corroborated_claim_passes_with_nothing_to_report`, `test_closed_without_a_corroborated_landing_needs_a_stated_reason`, `test_new_record_after_reconciliation_is_admitted`, `test_reconcile_writes_the_corroborated_claim`.\n\n## Expected\n`BRANCH_GREEN \u2260 MERGE_SAFE`. A fixture that depends on the ledger must normalise the ledger state it inherits \u2014 corroborating every carried record the ledger shows landed, with an **independent** parse so the gate's parser is cross-checked rather than trusted \u2014 and each test adds exactly the debt it asserts on. Before merging, the composed **post-merge** tree must be simulated (squash the branch onto a local `main` in the CI-shape clone, point `origin/main` at it, run the suite), because the PR runner's `origin/main` is the pre-merge ledger.\n\n## Evidence\n`gh api repos/bstBizEra/badf/actions/runs/33091002713 --jq .conclusion` \u2192 `failure`. Pristine clone of `30186c5`: `repo` exit 0 with `BADF LEDGER: WP-2026-0019 LANDED_UNRECONCILED`; `unittest discover` \u2192 251 run, 4 failures.\n\n## Unknowns\nNone. This is a concrete occurrence of #21 (composed-tree verification is implicit): the tree that was tested is not the tree that landed.\n\n## Proposed work package\n`BADF-WP-0020` \u2014 hot-fix through the loop: the branch starts with `reconcile WP-2026-0019` (rule: no new WP record over debt); fixture normalisation with an independent ledger parse; post-merge simulation added to the verification recipe and recorded in the doctrine's Reconciliation section.\n\ndiscovered-by: BADF-WP-0019 (post-merge) \u00b7 status: DISCOVERED \u00b7 severity: main red\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-27T16:03:47Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim from the GitHub Issue and digest-bound. Hot-fix for a red main caused by BADF-WP-0019's own fixture; authority: the operator's standing in-session delegation. Worked as BADF-WP-0020."
+}
