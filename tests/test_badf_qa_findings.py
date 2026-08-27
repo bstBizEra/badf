@@ -27,7 +27,10 @@ def load_example():
 
 
 def cli(payload, **env_over):
-    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, dir=str(gate.ROOT / "examples")) as h:
+    # NOT under examples/: since BADF-WP-0028 that directory is locked, and a
+    # temporary dossier there is drift. Evidence paths are repo-relative; the
+    # dossier file itself may live anywhere. Locked trees are not test fixtures.
+    with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as h:
         json.dump(payload, h); p = Path(h.name)
     env = {k: v for k, v in os.environ.items() if not k.startswith("BADF_")}
     env.update(env_over)
