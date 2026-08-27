@@ -113,7 +113,32 @@
       "type": "array"
     },
     "risks": {
-      "type": "array"
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "severity",
+          "statement"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^R-[0-9]+$"
+          },
+          "severity": {
+            "enum": [
+              "Critical",
+              "Major",
+              "Minor"
+            ]
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
     },
     "disposition": {
       "enum": [
@@ -220,6 +245,103 @@
         "service",
         "controller"
       ]
+    },
+    "council": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "convened_at",
+        "verdict",
+        "ballots"
+      ],
+      "properties": {
+        "convened_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "verdict": {
+          "enum": [
+            "APPROVE",
+            "APPROVE_WITH_CONDITIONS",
+            "REJECT",
+            "ABSTAIN",
+            "INSUFFICIENT_EVIDENCE"
+          ]
+        },
+        "question": {
+          "type": "string"
+        },
+        "artifact_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "ballots": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "by",
+              "principal_type",
+              "verdict",
+              "sealed"
+            ],
+            "properties": {
+              "by": {
+                "type": "string",
+                "minLength": 1
+              },
+              "principal_type": {
+                "enum": [
+                  "human",
+                  "agent",
+                  "service",
+                  "controller"
+                ]
+              },
+              "verdict": {
+                "enum": [
+                  "APPROVE",
+                  "APPROVE_WITH_CONDITIONS",
+                  "REJECT",
+                  "ABSTAIN",
+                  "INSUFFICIENT_EVIDENCE"
+                ]
+              },
+              "lens": {
+                "type": "string"
+              },
+              "sealed": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "council_disposition": {
+      "type": "object",
+      "required": [
+        "disposition",
+        "triggers"
+      ],
+      "properties": {
+        "disposition": {
+          "enum": [
+            "CHALLENGE_REQUIRED",
+            "CHALLENGE_OPTIONAL",
+            "CHALLENGE_NOT_REQUIRED"
+          ]
+        },
+        "triggers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     }
   }
 }
