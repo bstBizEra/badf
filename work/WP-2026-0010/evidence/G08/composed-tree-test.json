@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0010",
+  "gate": "G08",
+  "source_revision": "99fc25997225adfee9843f0ccfba1eefe8f41d2c",
+  "target": "bstBizEra/secb_pf:main",
+  "started_at": "2026-08-27T17:00:00Z",
+  "completed_at": "2026-08-27T17:20:00Z",
+  "id": "EVD-WP-2026-0010-G08-composed-tree-test",
+  "claim": "fix merged --no-ff onto ace1e57 -> tree e40c93f; full suite 439 passed",
+  "evidence_type": "composed-tree-test",
+  "producer": {
+    "id": "claude-opus-5",
+    "type": "agent"
+  },
+  "toolchain": {
+    "name": "git+pytest",
+    "version": "2.34.1/8.x"
+  },
+  "operation": "git merge + pytest",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0010/evidence/G08/composed-tree-test.txt",
+  "digest": "sha256:878e268d00280923f884a7e584ab2d5ca2b1621dcd45d6c03b0c67ffd467ce70"
+}

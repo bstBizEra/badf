@@ -1,0 +1,11 @@
+composed-tree-test
+base:      ace1e579597f768c34b222a91d66ed445dfe34d3
+head:      99fc25997225adfee9843f0ccfba1eefe8f41d2c
+merge:     d1d75e6aa3b56e1e3537e8e1eb666a12cc1ada56  (throwaway; --no-ff onto base)
+tree:      e40c93ff27459a940247c27860198192f3fa33ed
+merge rc:  0
+files changed vs base: 1
+---- suite on the COMPOSED tree ----
+.......                                                                  [100%]
+439 passed in 16.19s
+exit=0
