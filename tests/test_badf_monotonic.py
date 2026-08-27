@@ -93,9 +93,34 @@ class MonotonicAuthorityTests(unittest.TestCase):
 
     # --- explicit downgrade is admitted only with an attributable ack ----
     def test_downgrade_with_explicit_decision_ack_is_admitted(self):
+        """The ack must name a decision that EXISTS, is DECIDED, PERMITS a
+        downgrade, and is BOUND to the matrix being changed. DEC-0001 is a
+        real decision that strengthened authority; citing it is refused --
+        so this test writes its own permitting fixture (WP-0009)."""
+        import hashlib, json as _json, subprocess as _sp
+        raw = _sp.run(["git", "show", f"{gate.resolve_authority_baseline()}:{gate.MATRIX}"],
+                      cwd=gate.ROOT, capture_output=True).stdout
+        fixture = gate.ROOT / gate.DECISIONS_DIR / "BADF-DEC-0999.json"
+        fixture.write_text(_json.dumps({
+            "schema_version": "1.0.0", "decision_id": "BADF-DEC-0999", "title": "fixture",
+            "status": "DECIDED", "decided_at": "2026-08-27T00:00:00Z",
+            "decision_authority": {"role": "human_sponsor", "principal": "operator"},
+            "work_package_id": "BADF-WP-0999", "change_class": "C3", "ballot": "AGREE",
+            "authorizes": {"summary": "s", "scope": [], "excluded": []},
+            "authority_downgrade": {"permits_downgrade": True, "note": "fixture"},
+            "binding": {"authority_matrix_digest": "sha256:" + hashlib.sha256(raw).hexdigest()}}))
+        try:
+            self.edit(lambda m: m["change_classes"]["C3"].__setitem__("required_roles", ["human_sponsor"]))
+            os.environ[gate.DOWNGRADE_ACK] = "BADF-DEC-0999"
+            gate.verify_monotonic_authority()
+        finally:
+            fixture.unlink(missing_ok=True)
+
+    def test_citing_a_strengthening_decision_for_a_downgrade_is_refused(self):
+        """DEC-0001 strengthened authority. It must not launder a downgrade."""
         self.edit(lambda m: m["change_classes"]["C3"].__setitem__("required_roles", ["human_sponsor"]))
         os.environ[gate.DOWNGRADE_ACK] = "BADF-DEC-0001"
-        gate.verify_monotonic_authority()
+        self.deny("does not permit an authority downgrade")
 
     def test_malformed_ack_does_not_admit(self):
         """QA finding F-8: '0', 'false', and 200 chars all admitted a downgrade."""
@@ -192,6 +217,14 @@ class CommittedDowngradeTests(unittest.TestCase):
         subprocess.run(["git", "-C", str(self.clone), "config", "user.name", "t"], check=True)
         # The clone must run the guard UNDER TEST, not the baseline's copy of it.
         shutil.copy2(gate.ROOT / "scripts" / "badf_gate.py", self.clone / "scripts" / "badf_gate.py")
+        # And carry the decision records: since WP-0009 badf/decisions/*.json is
+        # a locked glob, and a glob matching nothing is refused (WP-0007). A
+        # clone without them cannot even re-sign.
+        dec_src = gate.ROOT / gate.DECISIONS_DIR
+        dec_dst = self.clone / gate.DECISIONS_DIR
+        dec_dst.mkdir(parents=True, exist_ok=True)
+        for f in dec_src.glob("BADF-DEC-000*.json"):
+            shutil.copy2(f, dec_dst / f.name)
         subprocess.run(["git", "-C", str(self.clone), "checkout", "-q", "-b", "weaken"], check=True)
         m = json.loads((self.clone / gate.MATRIX).read_text())
         m["change_classes"]["C3"]["required_roles"] = ["human_sponsor"]

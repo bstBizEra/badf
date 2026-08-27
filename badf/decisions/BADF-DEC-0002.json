@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0.0",
+  "decision_id": "BADF-DEC-0002",
+  "title": "schemas/ are drift-tested documentation, not an applied contract",
+  "status": "DECIDED",
+  "decided_at": "2026-08-27T13:45:00Z",
+  "decided_at_provenance": "RECONSTRUCTED from the operator session on 2026-08-27; the AGREE was given in chat and recorded here after the fact. Future decisions are recorded at decision time.",
+  "decision_authority": {
+    "role": "human_sponsor",
+    "principal": "operator"
+  },
+  "work_package_id": "BADF-WP-0008",
+  "change_class": "C1",
+  "ballot": "AGREE",
+  "options_considered": {
+    "A": "drift test asserting each schema's required/enum sets equal the gate's field sets; stdlib only -- SELECTED",
+    "B": "apply schemas via jsonschema at runtime; adds a CI dependency and a second enforcement path -- REJECTED",
+    "C": "relabel the README row 'documentation' only; protects nothing -- REJECTED"
+  },
+  "authorizes": {
+    "summary": "Add tests/test_badf_schema_drift.py; repair internally inconsistent schemas by ADDING definitions, never removing requirements; constrain session.actor.type and evidence.producer.type to secb_pf's shipped vocabulary.",
+    "scope": [
+      "tests/test_badf_schema_drift.py",
+      "schemas/*.json",
+      "examples/evidence/G00/*.json",
+      "templates/evidence.json"
+    ],
+    "excluded": [
+      "scripts/badf_gate.py runtime behaviour -- no schema is applied at runtime"
+    ]
+  },
+  "authority_downgrade": {
+    "permits_downgrade": false,
+    "note": "Not an authority decision."
+  },
+  "binding": {
+    "enacting_commit": "1d0f04f66967bf6ebcdc3e98dcebdd13add4a6a6",
+    "policy_epoch": "BADF-2026-08-25"
+  },
+  "evidence": [
+    "PR #9 run 33051420223 (PASS, 120 tests)"
+  ],
+  "supersedes": null,
+  "superseded_by": null,
+  "invalidation": "Applying schemas at runtime (option B) would supersede this decision and requires a new one."
+}

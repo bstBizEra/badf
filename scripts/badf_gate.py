@@ -70,6 +70,7 @@ INTEGRITY_PATHS = [
     "badf/mcp-registry.json",
     "badf/skill-registry.json",
     "badf/tool-registry.json",
+    "badf/decisions/*.json",
     "schemas/*.json",
 ]
 LOCKFILE = "badf/lockfile.json"
@@ -106,6 +107,13 @@ class ValidationError(Exception):
 INVISIBLE_CATEGORIES = {"Cc", "Cf", "Zl", "Zp"}
 CLASS_RANK = {"C0": 0, "C1": 1, "C2": 2, "C3": 3}
 DECISION_ID = re.compile(r"^BADF-DEC-[0-9]{4,}$")
+DECISIONS_DIR = "badf/decisions"
+DECISION_FIELDS = {
+    "schema_version", "decision_id", "title", "status", "decided_at",
+    "decision_authority", "work_package_id", "change_class", "ballot",
+    "authorizes", "authority_downgrade", "binding",
+}
+DECISION_STATUSES = {"PROPOSED", "DECIDED", "SUPERSEDED", "REVOKED"}
 
 
 def expect_str(value: Any, label: str) -> str:
@@ -444,19 +452,69 @@ def verify_monotonic_authority() -> None:
     _admit_downgrade(downgrades)
 
 
+def load_decision(decision_id: str) -> dict[str, Any]:
+    """The decision record a given id names, or a refusal.
+
+    F-8 residue: the ack was validated against a REGEX. BADF-DEC-9999
+    matched and named nothing. A decision the framework acts on must be a
+    file in the tree -- lockfile-covered, so it cannot be forged without a
+    visible re-sign -- with a status, an authority, a scope and a binding.
+    BADF's own two decisions had less provenance than its evidence until
+    this existed.
+    """
+    if not DECISION_ID.match(decision_id):
+        raise ValidationError(f"{decision_id!r} is not a decision id (expected BADF-DEC-nnnn)")
+    path = ROOT / DECISIONS_DIR / f"{decision_id}.json"
+    if not path.is_file():
+        raise ValidationError(f"decision {decision_id} does not exist at {DECISIONS_DIR}/{decision_id}.json")
+    record = load_json(path)
+    require_fields(record, DECISION_FIELDS, f"decision {decision_id}")
+    if record["decision_id"] != decision_id:
+        raise ValidationError(f"decision file {path.name} carries id {record['decision_id']!r}")
+    status = expect_str(record["status"], f"decision {decision_id} status")
+    if status not in DECISION_STATUSES:
+        raise ValidationError(f"decision {decision_id} has invalid status {status!r}")
+    parse_time(record["decided_at"], f"decision {decision_id}.decided_at")
+    return record
+
+
 def _admit_downgrade(downgrades: list[str]) -> None:
     """QA finding F-8: any non-blank ack admitted a downgrade -- "0", "false",
     10,000 characters, and ANSI escapes that erased their own log line. The
     ack must look like a decision id and is echoed ASCII-safe."""
     ack = os.environ.get(DOWNGRADE_ACK, "").strip()
-    if ack and DECISION_ID.match(ack):
-        print("authority downgrade admitted under explicit decision "
-              + ascii(ack) + ": " + "; ".join(downgrades))
-        return
     if ack:
-        raise ValidationError(
-            f"{DOWNGRADE_ACK} is set but is not a decision id (expected BADF-DEC-nnnn, got {ascii(ack)[:40]}); "
-            "refusing the downgrade")
+        decision = load_decision(ack)
+        if decision["status"] != "DECIDED":
+            raise ValidationError(
+                f"decision {ack} is {decision['status']}, not DECIDED; it cannot admit a downgrade")
+        grant = decision.get("authority_downgrade") or {}
+        if grant.get("permits_downgrade") is not True:
+            raise ValidationError(
+                f"decision {ack} does not permit an authority downgrade "
+                f"(authority_downgrade.permits_downgrade is not true); refusing")
+        # The decision must name the baseline it was taken against. A decision
+        # that authorized SOME downgrade does not authorize THIS one unless the
+        # policy it looked at is the policy being changed.
+        bound = (decision.get("binding") or {}).get("authority_matrix_digest")
+        baseline = resolve_authority_baseline()
+        actual = None
+        if baseline:
+            # Raw bytes, not _git()'s stripped text: the artifact binds to the
+            # file exactly as sha256() hashes evidence, trailing newline and
+            # all. The first version stripped and could never match a real
+            # decision -- caught by the test that checks DEC-0001's own binding.
+            raw = subprocess.run(["git", "show", f"{baseline}:{MATRIX}"], cwd=ROOT, capture_output=True)
+            if raw.returncode == 0:
+                actual = "sha256:" + hashlib.sha256(raw.stdout).hexdigest()
+        if not bound or not actual or bound != actual:
+            raise ValidationError(
+                f"decision {ack} is bound to authority matrix {str(bound)[:23]}..., but the baseline "
+                f"being changed is {str(actual)[:23]}...; a decision authorizes a downgrade from ONE "
+                f"specific policy, not from whatever is current. Take a new decision.")
+        print("authority downgrade admitted under decision " + ascii(ack)
+              + " (" + ascii(decision["title"])[:60] + "): " + "; ".join(downgrades))
+        return
     raise ValidationError(
         "authority downgrade refused -- " + "; ".join(downgrades)
         + f". Reducing required authority needs an explicit decision: set "
