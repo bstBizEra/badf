@@ -19,6 +19,7 @@ BADF is a repository-native governance and delivery framework that moves an auth
 python3 scripts/badf_gate.py repo
 python3 -m unittest discover -s tests -p 'test_*.py'
 python3 scripts/badf_gate.py dossier examples/gate-dossier.G00.json
+python3 scripts/badf_compose.py --message-file <pr-body>   # the tree that would land, not the branch
 ```
 
 Start new work from `templates/work-package.json`, use `templates/session.md` for execution continuity, and create a gate dossier from `templates/gate-dossier.json` when requesting advancement.

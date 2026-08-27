@@ -32,7 +32,7 @@ from pathlib import Path
 
 import scripts.badf_gate as gate
 
-PROPTECH = Path("/mnt/c/laragon/www/proptech")
+PROPTECH = Path(os.environ.get("BADF_PROPTECH_PATH", "/mnt/c/laragon/www/proptech"))   # CI shape: point it at nothing
 HAVE_PROPTECH = PROPTECH.is_dir() and (PROPTECH / ".git").exists()
 
 INTENT = {"project": {"name": "PropTech", "intent": "Build a land valuation platform for Laos",

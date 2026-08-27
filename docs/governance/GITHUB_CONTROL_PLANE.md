@@ -117,8 +117,12 @@ it rather than trusting the record.
   green and turned `main` red at `30186c5` because its tests assumed a debt-free ledger
   (#31). Before merging a PR whose tests read the ledger, simulate the post-merge tree:
   squash the branch onto a local `main` in a scratch clone, point `origin/main` at it, run
-  the suite. Fixtures normalise inherited debt and add only what they assert on. Until #21
-  makes this a named gate, it is a stated step, performed and cited in the PR.
+  the suite. Fixtures normalise inherited debt and add only what they assert on. Since
+  `BADF-WP-0024` (#21) this is a **named gate**: `scripts/badf_compose.py` does it
+  deterministically and CI runs it on every pull request with the PR body as the squash
+  message — the gate refuses a message the ledger would not see, refuses to nest, and
+  writes nothing to the source repository. Run it locally before pushing:
+  `python3 scripts/badf_compose.py --message-file <pr-body> [--ci-shape]`.
 
 ## Discovery ≠ scope expansion
 
