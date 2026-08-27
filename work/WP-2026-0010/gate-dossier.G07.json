@@ -8,6 +8,7 @@
   "target": "bstBizEra/secb_pf:main",
   "change_class": "C1",
   "author": "claude-opus-5",
+  "author_type": "agent",
   "evidence": [
     {
       "type": "source-change",
@@ -33,7 +34,8 @@
       "by": "operator",
       "revision": "99fc25997225adfee9843f0ccfba1eefe8f41d2c",
       "policy_epoch": "BADF-2026-08-25",
-      "approved_at": "2026-08-27T15:10:00Z"
+      "approved_at": "2026-08-27T15:10:00Z",
+      "principal_type": "human"
     },
     {
       "role": "independent_reviewer",
@@ -41,7 +43,8 @@
       "by": "security-auditor-agent",
       "revision": "99fc25997225adfee9843f0ccfba1eefe8f41d2c",
       "policy_epoch": "BADF-2026-08-25",
-      "approved_at": "2026-08-27T15:10:00Z"
+      "approved_at": "2026-08-27T15:10:00Z",
+      "principal_type": "agent"
     }
   ],
   "conditions": [],

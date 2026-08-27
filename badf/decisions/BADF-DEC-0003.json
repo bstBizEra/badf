@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0.0",
+  "decision_id": "BADF-DEC-0003",
+  "title": "Enforce Orchestrator != Authority: type every approver; reserve sponsor/security/release roles to humans",
+  "status": "DECIDED",
+  "decided_at": "2026-08-27T16:20:00Z",
+  "decided_at_provenance": "RECORDED AT DECISION TIME. The AGREE was given in the operator session and this record was written in the same turn, before any implementation.",
+  "decision_authority": {
+    "role": "human_sponsor",
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "work_package_id": "BADF-WP-0011",
+  "change_class": "C3",
+  "ballot": "AGREE",
+  "options_considered": {
+    "A": "reserve human_sponsor, security_authority, release_authority -- SELECTED",
+    "B": "reserve all four C3 roles incl. service_owner -- REJECTED (stricter than the mandate requires)",
+    "C": "NOT_AGREE -- proof and failing tests retained as evidence, no mutation -- REJECTED"
+  },
+  "authorizes": {
+    "summary": "Add human_reserved_roles to the authority matrix; add required principal_type to approvals and author_type to dossiers using the existing human|agent|service|controller vocabulary; refuse any non-human principal in a reserved role; refuse untyped approvers rather than assume human.",
+    "scope": [
+      "badf/authority-matrix.json",
+      "schemas/gate-dossier.schema.json",
+      "scripts/badf_gate.py",
+      "tests/test_badf_principal_type.py",
+      "examples/gate-dossier.G00.json",
+      "work/WP-2026-0010/gate-dossier.G07.json",
+      "badf/lockfile.json"
+    ],
+    "excluded": [
+      "no role removed, no change class lowered, no reserved action changed",
+      "agent approvers remain valid for non-reserved roles"
+    ]
+  },
+  "proven_defect": "On canonical main: author orchestrator-agent, four distinct agent approvers for all four C3 roles including human_sponsor -> BADF GATE PASS, rendered verdict APPROVED, exit 0.",
+  "residual_risk": "principal_type is self-declared text. This control makes a false declaration explicit and attributable; it does not make it impossible. The structural remedy remains a second identity (secb_pf condition C-7).",
+  "authority_downgrade": {
+    "permits_downgrade": false,
+    "note": "Strengthening only. Adds a constraint; removes none."
+  },
+  "binding": {
+    "authority_matrix_digest_before": "sha256:007dd9151ec95d7b75851e4a397b6f9b0ba8e537b7884eb756429a226b814ff8",
+    "policy_epoch": "BADF-2026-08-25",
+    "enacting_commit": "the merge commit of BADF-WP-0011 onto main (set post-merge; a self-referencing pre-merge SHA cannot be stable)"
+  },
+  "evidence": [
+    "tests/test_badf_principal_type.py written before implementation: 7 of 9 failed on origin/main",
+    "CLI proof BEFORE: author orchestrator-agent + four agent approvers incl. human_sponsor -> APPROVED exit 0",
+    "CLI proof AFTER: same, typed honestly as agent -> 'role human_sponsor is human-reserved; a principal of type agent may not supply it' exit 1",
+    "RESIDUE MEASURED: same agents declaring principal_type 'human' -> APPROVED exit 0. The declaration is self-asserted; this control makes a false one explicit and attributable, not impossible. Structural remedy remains a second identity (secb_pf C-7).",
+    "monotonic guard extended: removing a human_reserved_role is a refused downgrade (2 tests failed first)"
+  ],
+  "supersedes": null,
+  "superseded_by": null,
+  "invalidation": "Changing the reserved-role set, or the principal-type vocabulary, invalidates this decision; a new decision is required."
+}

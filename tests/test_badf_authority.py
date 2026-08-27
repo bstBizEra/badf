@@ -23,6 +23,7 @@ C3_ROLES = ["human_sponsor", "security_authority", "release_authority", "service
 def approval(role, by, **over):
     item = {
         "role": role, "decision": "APPROVED", "by": by,
+        "principal_type": "human",   # BADF-DEC-0003: every approver is typed; fixtures are human by default
         "revision": REV, "policy_epoch": EPOCH,
         "approved_at": "2026-08-25T01:00:00Z",
     }
@@ -37,7 +38,7 @@ def dossier(**over):
         "source_revision": REV, "target": "badf-repository-baseline",
         "change_class": "C3", "evidence": [], "exceptions": [], "risks": [],
         "disposition": "PASS", "created_at": "2026-08-25T00:00:00Z",
-        "author": AUTHOR,
+        "author": AUTHOR, "author_type": "human",
         "approvals": [approval(r, f"principal-{i}") for i, r in enumerate(C3_ROLES)],
     }
     base.update(over)

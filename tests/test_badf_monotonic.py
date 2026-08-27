@@ -250,3 +250,64 @@ class CommittedDowngradeTests(unittest.TestCase):
         r = self.gate()
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("cannot be established", r.stdout + r.stderr)
+
+
+def _origin_main_has_reserved_list():
+    import subprocess as _sp, json as _json
+    out = _sp.run(["git", "-C", str(gate.ROOT), "show", f"origin/{gate.DEFAULT_BRANCH}:{gate.MATRIX}"],
+                  capture_output=True, text=True)
+    return out.returncode == 0 and "human_reserved_roles" in _json.loads(out.stdout)
+
+
+class HumanReservedMonotonicTests(MonotonicAuthorityTests):
+    """BADF-DEC-0003 added human_reserved_roles. Removing a role from that
+    list lowers required authority exactly as removing a required_role does,
+    and the guard must refuse it the same way.
+
+    HONEST LIMIT. The guard compares against the last AUTHORIZED baseline:
+    the merge-base with origin/main, or an explicit BADF_AUTHORITY_BASELINE
+    that must itself be an ancestor of origin/main (the F-3 fix). Until this
+    WP merges, no such baseline carries the list, so nothing can be 'lost'.
+    A first version of these tests manufactured a side-branch baseline and
+    was correctly REFUSED by the ancestry check -- the test was defeating a
+    control. So: these tests skip with a stated reason until origin/main
+    carries the list, and become live on the first run after merge. The
+    post-merge check for this WP asserts that they RAN, not skipped.
+
+    Proven to fail first against the unextended guard (2 failures) by
+    running them with the list present on a throwaway origin/main."""
+
+    @unittest.skipUnless(_origin_main_has_reserved_list(),
+                         "origin/main does not yet carry human_reserved_roles; live after BADF-WP-0011 merges")
+    def test_removing_a_human_reserved_role_is_refused(self):
+        self.edit(lambda m: m["human_reserved_roles"].remove("security_authority"))
+        self.deny("human_reserved_roles lost")
+
+    @unittest.skipUnless(_origin_main_has_reserved_list(),
+                         "origin/main does not yet carry human_reserved_roles; live after BADF-WP-0011 merges")
+    def test_deleting_the_human_reserved_list_is_refused(self):
+        self.edit(lambda m: m.pop("human_reserved_roles"))
+        self.deny("human_reserved_roles lost")
+
+    def test_adding_a_human_reserved_role_passes(self):
+        self.edit(lambda m: m["human_reserved_roles"].append("service_owner"))
+        gate.verify_monotonic_authority()
+
+    test_c3_cut_from_four_roles_to_one_is_refused = None
+    test_single_role_removed_is_refused = None
+    test_change_class_removed_is_refused = None
+    test_reserved_action_removed_is_refused = None
+    test_rule_minimum_class_lowered_is_refused = None
+    test_rule_removed_is_refused = None
+    test_rule_minimum_class_made_invalid_is_refused = None
+    test_missing_matrix_is_refused = None
+    test_no_committed_baseline_is_refused_not_skipped = None
+    test_downgrade_with_explicit_decision_ack_is_admitted = None
+    test_citing_a_strengthening_decision_for_a_downgrade_is_refused = None
+    test_malformed_ack_does_not_admit = None
+    test_blank_ack_does_not_admit = None
+    test_unchanged_matrix_passes = None
+    test_adding_a_required_role_passes = None
+    test_adding_a_reserved_action_passes = None
+    test_raising_a_rule_minimum_class_passes = None
+    test_cli_refuses_a_resigned_downgrade = None

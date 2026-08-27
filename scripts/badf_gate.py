@@ -87,11 +87,12 @@ LOCKFILE = "badf/lockfile.json"
 DOSSIER_FIELDS = {
     "schema_version", "id", "work_package_id", "gate", "policy_epoch",
     "source_revision", "target", "change_class", "evidence", "approvals",
-    "exceptions", "risks", "disposition", "created_at", "author",
+    "exceptions", "risks", "disposition", "created_at", "author", "author_type",
 }
 APPROVAL_FIELDS = {
-    "role", "decision", "by", "revision", "policy_epoch", "approved_at",
+    "role", "decision", "by", "principal_type", "revision", "policy_epoch", "approved_at",
 }
+PRINCIPAL_TYPES = {"human", "agent", "service", "controller"}
 APPROVAL_DECISIONS = {"APPROVED", "REJECTED", "ABSTAIN"}
 CONDITION_FIELDS = {
     "condition_id", "statement", "status", "severity", "blocking_scope",
@@ -440,6 +441,12 @@ def verify_monotonic_authority() -> None:
         if lost:
             downgrades.append(f"{name} lost required role(s): {', '.join(sorted(lost))}")
 
+    # BADF-DEC-0003: human_reserved_roles is a constraint. Losing one is a
+    # downgrade of exactly the kind losing a required_role is.
+    lost_reserved = set(baseline.get("human_reserved_roles") or []) - set(current.get("human_reserved_roles") or [])
+    if lost_reserved:
+        downgrades.append("human_reserved_roles lost: " + ", ".join(sorted(lost_reserved)))
+
     lost_actions = set(baseline.get("reserved_actions", [])) - set(current.get("reserved_actions", []))
     if lost_actions:
         downgrades.append("reserved action(s) removed: " + ", ".join(sorted(lost_actions)))
@@ -629,6 +636,10 @@ def validate_authority(dossier: dict[str, Any], require_quorum: bool = True) -> 
     known_roles = {role for entry in classes.values() for role in entry["required_roles"]}
 
     author = canonical_principal(dossier.get("author"), "dossier author")
+    author_type = expect_str(dossier.get("author_type"), "dossier author_type")
+    if author_type not in PRINCIPAL_TYPES:
+        raise ValidationError(f"dossier author_type {author_type!r} is not one of {sorted(PRINCIPAL_TYPES)}")
+    human_reserved = set(matrix.get("human_reserved_roles") or [])
 
     approvals = dossier["approvals"]
     if not isinstance(approvals, list):
@@ -647,6 +658,19 @@ def validate_authority(dossier: dict[str, Any], require_quorum: bool = True) -> 
         if not isinstance(role, str) or role not in known_roles:
             raise ValidationError(f"{label} unknown role: {role!r}")
         principal = canonical_principal(item["by"], f"{label} approving")
+        ptype = expect_str(item["principal_type"], f"{label} principal_type")
+        if ptype not in PRINCIPAL_TYPES:
+            raise ValidationError(f"{label} invalid principal_type {ptype!r}; expected one of {sorted(PRINCIPAL_TYPES)}")
+        if role in human_reserved and ptype != "human":
+            # BADF-DEC-0003 / mandate section 3: Orchestrator != Authority.
+            # Before this, the gate knew an approver only as a string. An agent
+            # authored a C3 change, four distinct agents approved it including
+            # human_sponsor, and the gate rendered APPROVED. The role label is
+            # not the principal; the matrix now says which roles a non-human may
+            # never hold, and the declared type decides -- deny-unless-established.
+            raise ValidationError(
+                f"{label} role {role} is human-reserved; a principal of type {ptype!r} "
+                f"({principal!r}) may not supply it")
         decision = expect_str(item["decision"], f"{label} decision")
         if decision not in APPROVAL_DECISIONS:
             raise ValidationError(f"{label} invalid decision: {item['decision']!r}")
