@@ -13,10 +13,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history: the monotonic-authority guard compares the candidate
+          # matrix against its merge-base with main. A depth-1 checkout has no
+          # history to compute one from, and the guard refuses rather than
+          # falling back to HEAD (which would compare the change to itself).
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Validate repository contract
+        env:
+          # The last AUTHORIZED policy, supplied per event so the guard never
+          # has to guess. pull_request: the base branch tip. push to main: the
+          # tip before this push. Anything else: unset, and the guard resolves
+          # merge-base(HEAD, origin/main) or refuses.
+          BADF_AUTHORITY_BASELINE: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: python3 scripts/badf_gate.py repo
       - name: Run validator tests
         run: python3 -m unittest discover -s tests -p 'test_*.py'
