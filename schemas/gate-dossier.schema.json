@@ -162,7 +162,7 @@
           },
           "blocking_scope": {
             "type": "string",
-            "minLength": 1
+            "pattern": "^(none|G(0[0-9]|1[0-4])(\\s*,\\s*G(0[0-9]|1[0-4]))*)$"
           },
           "owner": {
             "type": "string",
@@ -185,6 +185,23 @@
           }
         }
       }
+    },
+    "obligation_posture": {
+      "enum": [
+        "CLEAR",
+        "OPEN_NON_BLOCKING",
+        "OPEN_BLOCKING"
+      ]
+    },
+    "rendered_verdict": {
+      "enum": [
+        "APPROVED",
+        "APPROVED_WITH_CONDITIONS",
+        "HELD_FOR_CONDITION_CLOSURE",
+        "REWORK_REQUIRED",
+        "BLOCKED",
+        "HUMAN_REQUIRED"
+      ]
     }
   }
 }

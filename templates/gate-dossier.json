@@ -35,10 +35,12 @@
       "statement": "<what is still owed>",
       "status": "OPEN",
       "severity": "Critical|Major|Minor",
-      "blocking_scope": "<gate or stage this blocks, or 'none'>",
+      "blocking_scope": "<none | G00..G14 | comma list of gate ids>",
       "owner": "<role-from-authority-matrix>",
       "closure_predicate": "<observable test that closes it>",
       "closure_authority": "<role-from-authority-matrix, not the author>"
     }
-  ]
+  ],
+  "obligation_posture": "<COMPUTED by the gate from conditions -- do not assert>",
+  "rendered_verdict": "<COMPUTED by the gate from disposition x posture -- do not assert>"
 }
