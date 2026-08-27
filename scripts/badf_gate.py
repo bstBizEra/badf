@@ -59,8 +59,12 @@ LOCKFILE = "badf/lockfile.json"
 DOSSIER_FIELDS = {
     "schema_version", "id", "work_package_id", "gate", "policy_epoch",
     "source_revision", "target", "change_class", "evidence", "approvals",
-    "exceptions", "risks", "disposition", "created_at",
+    "exceptions", "risks", "disposition", "created_at", "author",
 }
+APPROVAL_FIELDS = {
+    "role", "decision", "by", "revision", "policy_epoch", "approved_at",
+}
+APPROVAL_DECISIONS = {"APPROVED", "REJECTED", "ABSTAIN"}
 EVIDENCE_FIELDS = {
     "schema_version", "id", "work_package_id", "gate", "claim",
     "evidence_type", "producer", "source_revision", "target", "toolchain",
@@ -261,6 +265,80 @@ def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -
         raise ValidationError(f"evidence {path} artifact digest mismatch")
 
 
+def validate_authority(dossier: dict[str, Any]) -> None:
+    """Enforce AUTHORITY_SATISFIED(change_class).
+
+        required_roles subset of distinct approving roles
+    AND author not among approving principals
+    AND every approval bound to the dossier's source_revision
+    AND every approval carrying the dossier's policy_epoch and not predating it
+
+    Deny-unless-established: a term that is UNKNOWN -- absent, malformed, or
+    unparseable -- denies exactly as a term that is FALSE. The matrix is the
+    single source of role requirements; this function adds no vocabulary.
+    """
+    matrix = load_json(ROOT / "badf/authority-matrix.json")
+    classes = matrix["change_classes"]
+    change_class = dossier["change_class"]
+    spec = classes.get(change_class)
+    if spec is None:
+        raise ValidationError(f"change class absent from authority matrix: {change_class}")
+    required = set(spec["required_roles"])
+    known_roles = {role for entry in classes.values() for role in entry["required_roles"]}
+
+    author = dossier.get("author")
+    if not isinstance(author, str) or not author.strip():
+        raise ValidationError("dossier author is required to evaluate authority")
+
+    approvals = dossier["approvals"]
+    if not isinstance(approvals, list):
+        raise ValidationError("dossier approvals must be an array")
+
+    created_at = parse_time(dossier["created_at"], "dossier.created_at")
+    granted: dict[str, set[str]] = {}
+    for index, item in enumerate(approvals):
+        label = f"approvals[{index}]"
+        if not isinstance(item, dict):
+            raise ValidationError(f"{label} must be an object")
+        absent = sorted(APPROVAL_FIELDS - set(item))
+        if absent:
+            raise ValidationError(f"{label} missing required fields: {', '.join(absent)}")
+        role = item["role"]
+        principal = item["by"]
+        if not isinstance(role, str) or role not in known_roles:
+            raise ValidationError(f"{label} unknown role: {role!r}")
+        if not isinstance(principal, str) or not principal.strip():
+            raise ValidationError(f"{label} approving principal is empty")
+        if item["decision"] not in APPROVAL_DECISIONS:
+            raise ValidationError(f"{label} invalid decision: {item['decision']!r}")
+        if item["revision"] != dossier["source_revision"]:
+            raise ValidationError(
+                f"{label} is bound to revision {item['revision']!r}, "
+                f"not {dossier['source_revision']!r}")
+        if item["policy_epoch"] != dossier["policy_epoch"]:
+            raise ValidationError(f"{label} carries a stale policy epoch: {item['policy_epoch']!r}")
+        if parse_time(item["approved_at"], f"{label}.approved_at") < created_at:
+            raise ValidationError(f"{label} predates the dossier it approves")
+        if principal == author:
+            raise ValidationError(
+                f"{label} is supplied by the dossier author {principal!r}: "
+                "approve-own-work is a reserved action")
+        if item["decision"] == "APPROVED":
+            granted.setdefault(principal, set()).add(role)
+
+    for principal, roles in sorted(granted.items()):
+        overlap = roles & required
+        if len(overlap) > 1:
+            raise ValidationError(
+                f"principal {principal!r} fills {len(overlap)} required roles "
+                f"({', '.join(sorted(overlap))}); required roles must be distinct principals")
+
+    satisfied = {role for roles in granted.values() for role in roles}
+    unmet = sorted(required - satisfied)
+    if unmet:
+        raise ValidationError(f"{change_class} requires approvals from: {', '.join(unmet)}")
+
+
 def validate_dossier(dossier_path: Path) -> None:
     validate_repo()
     dossier = load_json(dossier_path.resolve())
@@ -295,6 +373,7 @@ def validate_dossier(dossier_path: Path) -> None:
         indexed[item["type"]] = item["path"]
 
     if dossier["disposition"] in {"PASS", "PASS_WITH_CONDITIONS"}:
+        validate_authority(dossier)
         missing = sorted(set(gate["required_evidence"]) - set(indexed))
         if missing:
             raise ValidationError("passing dossier missing evidence: " + ", ".join(missing))

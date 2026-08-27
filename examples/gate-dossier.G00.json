@@ -8,14 +8,33 @@
   "target": "badf-repository-baseline",
   "change_class": "C0",
   "evidence": [
-    {"type": "authority", "path": "examples/evidence/G00/authority.json"},
-    {"type": "scope", "path": "examples/evidence/G00/scope.json"},
-    {"type": "risk-classification", "path": "examples/evidence/G00/risk-classification.json"}
+    {
+      "type": "authority",
+      "path": "examples/evidence/G00/authority.json"
+    },
+    {
+      "type": "scope",
+      "path": "examples/evidence/G00/scope.json"
+    },
+    {
+      "type": "risk-classification",
+      "path": "examples/evidence/G00/risk-classification.json"
+    }
   ],
-  "approvals": [{"role": "reviewer", "decision": "APPROVED", "scope": "example-only"}],
+  "approvals": [
+    {
+      "role": "reviewer",
+      "decision": "APPROVED",
+      "by": "example-reviewer",
+      "revision": "BADF-BASELINE-1.0.0",
+      "policy_epoch": "BADF-2026-08-25",
+      "approved_at": "2026-08-25T00:00:03Z",
+      "scope": "example-only"
+    }
+  ],
   "exceptions": [],
   "risks": [],
   "disposition": "PASS",
-  "created_at": "2026-08-25T00:00:02Z"
+  "created_at": "2026-08-25T00:00:02Z",
+  "author": "example-author"
 }
-
