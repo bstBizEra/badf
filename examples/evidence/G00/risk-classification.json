@@ -10,7 +10,7 @@
     "type": "human"
   },
   "source_revision": "BADF-BASELINE-1.0.0",
-  "target": "badf-repository-baseline",
+  "target": "bstBizEra/badf:main",
   "toolchain": {
     "name": "BADF example generator",
     "version": "1.0.0"

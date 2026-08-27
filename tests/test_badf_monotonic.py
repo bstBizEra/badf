@@ -225,6 +225,11 @@ class CommittedDowngradeTests(unittest.TestCase):
         dec_dst.mkdir(parents=True, exist_ok=True)
         for f in dec_src.glob("BADF-DEC-000*.json"):
             shutil.copy2(f, dec_dst / f.name)
+        # WP-0010 locked badf/repositories.json and work/**; a clone without them
+        # cannot re-sign (an empty glob is refused). Carry both.
+        shutil.copy2(gate.ROOT / gate.REPOSITORIES, self.clone / gate.REPOSITORIES)
+        if (gate.ROOT / "work").is_dir():
+            shutil.copytree(gate.ROOT / "work", self.clone / "work", dirs_exist_ok=True)
         subprocess.run(["git", "-C", str(self.clone), "checkout", "-q", "-b", "weaken"], check=True)
         m = json.loads((self.clone / gate.MATRIX).read_text())
         m["change_classes"]["C3"]["required_roles"] = ["human_sponsor"]

@@ -1,0 +1,49 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0010",
+  "title": "secb_pf: SPECIFICATION_CONFLICT_PROTOCOL.md vocabulary-set count agrees with itself",
+  "owner": "engineering_owner",
+  "objective": "Land secb_pf branch fix/conflict-protocol-vocabulary-audit: the protocol says 'three sets, deliberately separate' at :108 and 'Eight sets now' at :131. One document, two counts.",
+  "business_value": "A governance document that contradicts itself on the number of verdict vocabularies cannot be the authority on which vocabulary a verdict belongs to. First non-BADF work package governed by BADF.",
+  "in_scope": [
+    "docs/00-governance/SPECIFICATION_CONFLICT_PROTOCOL.md in bstBizEra/secb_pf"
+  ],
+  "out_of_scope": [
+    "any other secb_pf file",
+    "secb_pf's 44-PR queue",
+    "BADF's own controls"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the section heading and the 'Eight sets now' sentence state the same count",
+    "secb_pf's full suite passes on the fix branch",
+    "the diff touches exactly one file"
+  ],
+  "permissions": [
+    "read: bstBizEra/secb_pf",
+    "write: none -- BADF governs, it does not merge"
+  ],
+  "tests": [
+    "secb_pf: python3 -m pytest tests/ + router suite on the fix head"
+  ],
+  "evidence": [
+    "source-change",
+    "build",
+    "unit-test",
+    "documentation"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "the fix is an unmerged branch; not landing it is the rollback"
+  },
+  "status": "APPROVED",
+  "external_target": {
+    "repository": "bstBizEra/secb_pf",
+    "branch": "fix/conflict-protocol-vocabulary-audit",
+    "base_revision": "ace1e579597f768c34b222a91d66ed445dfe34d3"
+  },
+  "status_note": "G07 (Build complete) dossier rendered APPROVED. Not CLOSED: the fix is an unmerged secb_pf branch; BADF governs, it does not merge."
+}

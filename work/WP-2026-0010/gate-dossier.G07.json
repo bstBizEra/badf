@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0.0",
+  "id": "DOS-WP-2026-0010-G07-v1",
+  "work_package_id": "WP-2026-0010",
+  "gate": "G07",
+  "policy_epoch": "BADF-2026-08-25",
+  "source_revision": "99fc25997225adfee9843f0ccfba1eefe8f41d2c",
+  "target": "bstBizEra/secb_pf:main",
+  "change_class": "C1",
+  "author": "claude-opus-5",
+  "evidence": [
+    {
+      "type": "source-change",
+      "path": "work/WP-2026-0010/evidence/G07/source-change.json"
+    },
+    {
+      "type": "build",
+      "path": "work/WP-2026-0010/evidence/G07/build.json"
+    },
+    {
+      "type": "unit-test",
+      "path": "work/WP-2026-0010/evidence/G07/unit-test.json"
+    },
+    {
+      "type": "documentation",
+      "path": "work/WP-2026-0010/evidence/G07/documentation.json"
+    }
+  ],
+  "approvals": [
+    {
+      "role": "engineering_owner",
+      "decision": "APPROVED",
+      "by": "operator",
+      "revision": "99fc25997225adfee9843f0ccfba1eefe8f41d2c",
+      "policy_epoch": "BADF-2026-08-25",
+      "approved_at": "2026-08-27T15:10:00Z"
+    },
+    {
+      "role": "independent_reviewer",
+      "decision": "APPROVED",
+      "by": "security-auditor-agent",
+      "revision": "99fc25997225adfee9843f0ccfba1eefe8f41d2c",
+      "policy_epoch": "BADF-2026-08-25",
+      "approved_at": "2026-08-27T15:10:00Z"
+    }
+  ],
+  "conditions": [],
+  "exceptions": [],
+  "risks": [],
+  "disposition": "PASS",
+  "created_at": "2026-08-27T15:00:00Z"
+}

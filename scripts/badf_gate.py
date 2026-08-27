@@ -71,6 +71,14 @@ INTEGRITY_PATHS = [
     "badf/skill-registry.json",
     "badf/tool-registry.json",
     "badf/decisions/*.json",
+    "badf/repositories.json",
+    # Foreign work packages: the evidence ARTIFACTS are digest-bound already,
+    # but the dossier and evidence .json files were not -- a re-pointed digest
+    # plus a re-pointed artifact is a consistent forgery the gate cannot see.
+    # Every new work package re-signs the lockfile: that is the reviewable act.
+    "work/**/*.json",
+    "work/**/*.diff",
+    "work/**/*.txt",
     "schemas/*.json",
 ]
 LOCKFILE = "badf/lockfile.json"
@@ -108,6 +116,7 @@ INVISIBLE_CATEGORIES = {"Cc", "Cf", "Zl", "Zp"}
 CLASS_RANK = {"C0": 0, "C1": 1, "C2": 2, "C3": 3}
 DECISION_ID = re.compile(r"^BADF-DEC-[0-9]{4,}$")
 DECISIONS_DIR = "badf/decisions"
+REPOSITORIES = "badf/repositories.json"
 DECISION_FIELDS = {
     "schema_version", "decision_id", "title", "status", "decided_at",
     "decision_authority", "work_package_id", "change_class", "ballot",
@@ -867,6 +876,84 @@ def verify_two_plane(dossier: dict[str, Any]) -> str:
     return rendered
 
 
+def _foreign_git(repo_root: Path, *args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(["git", "-C", str(repo_root), *args], capture_output=True)
+
+
+def verify_foreign_revision(dossier: dict[str, Any], indexed: dict[str, str]) -> None:
+    """A dossier governs a commit that EXISTS and CHANGED WHAT THE EVIDENCE SAYS.
+
+    WP-2026-0010 -- the first work package BADF governed that was not BADF --
+    exposed this: source_revision was only ever compared for EQUALITY across
+    dossier, evidence and approvals. A dossier whose three copies all agreed
+    on the all-zeros SHA passed. For BADF's own work the SHA was always
+    BADF's, so it never mattered. For foreign work it is the whole claim.
+
+    The dossier's `target` is `<repository>:<branch>`. The repository must be
+    registered in badf/repositories.json with a local path (no network; the
+    gate is deterministic), the path must be a git repository, the revision
+    must resolve there, it must descend from the work package's declared
+    base_revision, and if a `source-change` evidence artifact is indexed, its
+    content must equal `git diff base..revision`. Deny-unless-established.
+    """
+    target = expect_str(dossier["target"], "dossier.target")
+    repo_name, _, _branch = target.partition(":")
+    registry = load_json(ROOT / REPOSITORIES)
+    entry = (registry.get("repositories") or {}).get(repo_name)
+    if not isinstance(entry, dict) or "local_path" not in entry:
+        raise ValidationError(f"target repository {repo_name!r} is not a registered repository in {REPOSITORIES}")
+    repo_root = (ROOT / entry["local_path"]).resolve() if not Path(entry["local_path"]).is_absolute() else Path(entry["local_path"])
+    revision = expect_str(dossier["source_revision"], "dossier.source_revision")
+    resolution = entry.get("resolution")
+    if resolution not in {"SELF", "LOCAL_MIRROR"}:
+        raise ValidationError(f"{repo_name} in {REPOSITORIES} declares no valid resolution (SELF | LOCAL_MIRROR); refusing")
+
+    top = _foreign_git(repo_root, "rev-parse", "--show-toplevel")
+    if top.returncode != 0:
+        if resolution == "LOCAL_MIRROR" and not repo_root.exists():
+            # The registry said this repo lives on a specific host. It is not
+            # here. That is a fact about WHERE the gate is running, and it must
+            # be reported as such -- not as a refusal of the dossier, which a
+            # reader would take as 'the work is bad'. A CI runner hits this for
+            # every LOCAL_MIRROR repo, by design: the gate makes no network calls.
+            raise ValidationError(
+                f"UNRESOLVABLE_HERE: {repo_name} is registered as LOCAL_MIRROR at {repo_root}, which does not "
+                f"exist on this host. The dossier is neither approved nor refused here; validate it where the "
+                f"mirror exists.")
+        raise ValidationError(f"registered local_path {repo_root} for {repo_name} is not a git repository")
+    exists = _foreign_git(repo_root, "cat-file", "-e", f"{revision}^{{commit}}")
+    if exists.returncode != 0:
+        raise ValidationError(f"source_revision {revision[:12]} cannot be resolved: no such commit in {repo_name} at {repo_root}")
+
+    # The work package declares what this revision is built on.
+    wp_path = ROOT / "work" / dossier["work_package_id"] / "work-package.json"
+    base = None
+    if wp_path.is_file():
+        base = ((load_json(wp_path).get("external_target") or {}).get("base_revision"))
+    if base:
+        base_ok = _foreign_git(repo_root, "cat-file", "-e", f"{base}^{{commit}}")
+        if base_ok.returncode != 0:
+            raise ValidationError(f"declared base_revision {base[:12]} cannot be resolved in {repo_name}")
+        anc = _foreign_git(repo_root, "merge-base", "--is-ancestor", base, revision)
+        if anc.returncode != 0:
+            raise ValidationError(
+                f"source_revision {revision[:12]} is not descended from the declared base_revision {base[:12]} in {repo_name}")
+
+    # The recorded diff must be the diff.
+    if "source-change" in indexed:
+        ev = load_json(safe_repo_path(indexed["source-change"], "source-change evidence"))
+        artifact = safe_repo_path(ev["artifact"], "source-change artifact")
+        recorded = artifact.read_bytes()
+        span = f"{base}..{revision}" if base else f"{revision}^..{revision}"
+        actual = _foreign_git(repo_root, "diff", span)
+        if actual.returncode != 0:
+            raise ValidationError(f"cannot compute the actual diff for {span} in {repo_name}")
+        if actual.stdout != recorded:
+            raise ValidationError(
+                f"source-change artifact does not match what {revision[:12]} actually changed in {repo_name} "
+                f"(recorded {len(recorded)} bytes, actual {len(actual.stdout)} bytes)")
+
+
 def validate_dossier(dossier_path: Path) -> str:
     validate_repo()
     dossier = load_json(dossier_path.resolve())
@@ -929,6 +1016,7 @@ def validate_dossier(dossier_path: Path) -> str:
     matrix_classes = load_json(ROOT / "badf/authority-matrix.json")["change_classes"]
     known_roles = {role for entry in matrix_classes.values() for role in entry["required_roles"]}
     validate_conditions(dossier, known_roles)
+    verify_foreign_revision(dossier, indexed)
     rendered = verify_two_plane(dossier)
 
     for evidence_type, path_value in indexed.items():
