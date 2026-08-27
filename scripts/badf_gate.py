@@ -52,7 +52,7 @@ INTEGRITY_PATHS = [
     # Hashing the gate, the workflow and the tests does not make them
     # un-editable -- it makes every edit carry a visible re-sign in the same
     # diff, so the reviewer's eye is drawn to exactly the files that decide.
-    "scripts/badf_gate.py",
+    "scripts/*.py",
     ".github/workflows/badf-gates.yml",
     "AGENTS.md",
     # The analysis of f337d9f found the lockfile protected the ENFORCER and
