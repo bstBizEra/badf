@@ -84,12 +84,12 @@ class MonotonicAuthorityTests(unittest.TestCase):
         self.deny("is missing")
 
     def test_no_committed_baseline_is_refused_not_skipped(self):
-        real = gate.committed_matrix
-        gate.committed_matrix = lambda: None
+        real = gate.resolve_authority_baseline
+        gate.resolve_authority_baseline = lambda: None
         try:
             self.deny("cannot be established")
         finally:
-            gate.committed_matrix = real
+            gate.resolve_authority_baseline = real
 
     # --- explicit downgrade is admitted only with an attributable ack ----
     def test_downgrade_with_explicit_decision_ack_is_admitted(self):
@@ -139,3 +139,76 @@ class MonotonicAuthorityTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CommittedDowngradeTests(unittest.TestCase):
+    """The defect the first negative control exposed.
+
+    Every test above weakens the WORKING TREE. In CI the weakening is already
+    COMMITTED, HEAD is the weakened commit, and a guard that compares against
+    HEAD sees no difference. Run 33044484934 reached 'BADF GATE PASS: repo' on
+    a branch that cut C3 from four roles to one; CI went red only because
+    unrelated fixtures assumed four roles.
+
+    These tests commit the weakening to a throwaway branch in a scratch clone
+    and assert the guard still refuses -- which requires comparing against the
+    last AUTHORIZED policy (the merge-base with the default branch), not HEAD.
+    """
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.clone = Path(self.tmp) / "c"
+        # Clone the AUTHORIZED policy -- the real default branch -- not whatever
+        # branch the developer happens to be on. A clone whose origin/main is the
+        # working branch would carry the candidate change into the baseline and
+        # build the exact blind spot this test exists to catch.
+        subprocess.run(["git", "clone", "-q", "--branch", gate.DEFAULT_BRANCH, str(gate.ROOT), str(self.clone)],
+                       check=True)
+        subprocess.run(["git", "-C", str(self.clone), "config", "user.email", "t@t"], check=True)
+        subprocess.run(["git", "-C", str(self.clone), "config", "user.name", "t"], check=True)
+        # The clone must run the guard UNDER TEST, not the baseline's copy of it.
+        shutil.copy2(gate.ROOT / "scripts" / "badf_gate.py", self.clone / "scripts" / "badf_gate.py")
+        subprocess.run(["git", "-C", str(self.clone), "checkout", "-q", "-b", "weaken"], check=True)
+        m = json.loads((self.clone / gate.MATRIX).read_text())
+        m["change_classes"]["C3"]["required_roles"] = ["human_sponsor"]
+        (self.clone / gate.MATRIX).write_text(json.dumps(m, indent=2))
+        env = {k: v for k, v in os.environ.items() if k not in (gate.DOWNGRADE_ACK, gate.BASELINE_ENV)}
+        subprocess.run([sys.executable, "scripts/badf_gate.py", "lock"], cwd=self.clone, env=env,
+                       capture_output=True, check=True)
+        subprocess.run(["git", "-C", str(self.clone), "commit", "-qam", "weaken C3"], check=True)
+        self.env = env
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def gate(self, **extra):
+        env = dict(self.env); env.update(extra)
+        return subprocess.run([sys.executable, "scripts/badf_gate.py", "repo"],
+                              cwd=self.clone, env=env, capture_output=True, text=True)
+
+    def test_committed_downgrade_is_refused_against_default_branch(self):
+        """HEAD is the weakened commit; origin/main is the authorized policy."""
+        r = self.gate()
+        self.assertNotEqual(r.returncode, 0, "a COMMITTED downgrade passed the gate:\n" + r.stdout + r.stderr)
+        self.assertIn("authority downgrade refused", r.stdout + r.stderr)
+
+    def test_explicit_baseline_sha_is_honoured(self):
+        base = subprocess.run(["git", "-C", str(self.clone), "rev-parse", "origin/main"],
+                              capture_output=True, text=True, check=True).stdout.strip()
+        r = self.gate(BADF_AUTHORITY_BASELINE=base)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("authority downgrade refused", r.stdout + r.stderr)
+
+    def test_baseline_equal_to_head_is_refused_as_unestablished(self):
+        """Pointing the baseline at the weakened commit itself must not launder it."""
+        head = subprocess.run(["git", "-C", str(self.clone), "rev-parse", "HEAD"],
+                              capture_output=True, text=True, check=True).stdout.strip()
+        r = self.gate(BADF_AUTHORITY_BASELINE=head)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("cannot be established", r.stdout + r.stderr)
+
+    def test_unreachable_default_branch_is_refused_not_skipped(self):
+        subprocess.run(["git", "-C", str(self.clone), "remote", "remove", "origin"], check=True)
+        r = self.gate()
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("cannot be established", r.stdout + r.stderr)

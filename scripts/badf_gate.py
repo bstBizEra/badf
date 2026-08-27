@@ -202,15 +202,58 @@ MATRIX = "badf/authority-matrix.json"
 DOWNGRADE_ACK = "BADF_AUTHORITY_DOWNGRADE_ACK"
 
 
-def committed_matrix() -> dict[str, Any] | None:
-    """The authority matrix as last committed, or None if there is no commit."""
+BASELINE_ENV = "BADF_AUTHORITY_BASELINE"
+DEFAULT_BRANCH = "main"
+
+
+def _git(*args: str) -> str | None:
     try:
-        out = subprocess.run(
-            ["git", "show", f"HEAD:{MATRIX}"], cwd=ROOT,
-            capture_output=True, text=True, check=True).stdout
+        return subprocess.run(["git", *args], cwd=ROOT, capture_output=True,
+                              text=True, check=True).stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
         return None
-    return json.loads(out)
+
+
+def resolve_authority_baseline() -> str | None:
+    """The commit holding the last AUTHORIZED authority policy, or None.
+
+    Never HEAD. The first negative control (run 33044484934) proved why: on a
+    pushed branch HEAD *is* the candidate change, so comparing against it
+    finds nothing to refuse. The baseline is the last policy that reached the
+    default branch:
+
+      1. BADF_AUTHORITY_BASELINE=<sha|ref>, when the caller knows it -- CI
+         passes the PR base SHA or the pre-push tip of the default branch;
+      2. otherwise merge-base(HEAD, origin/<default>);
+      3. otherwise None, and the caller refuses.
+
+    A baseline equal to HEAD is rejected: it would compare the candidate
+    against itself and launder any downgrade.
+    """
+    head = _git("rev-parse", "HEAD")
+    explicit = os.environ.get(BASELINE_ENV, "").strip()
+    if explicit:
+        base = _git("rev-parse", "--verify", f"{explicit}^{{commit}}")
+        # An explicit baseline equal to HEAD would compare the candidate against
+        # itself and launder any downgrade. Refuse it as unestablished.
+        if base is None or head is None or base == head:
+            return None
+        return base
+    # Implicit: the merge-base with the default branch. When HEAD is *on* the
+    # default branch (or a branch with no commits past it) the merge-base IS
+    # HEAD, and that is the legitimate no-change case -- there is nothing to
+    # compare and nothing to refuse.
+    base = _git("merge-base", "HEAD", f"origin/{DEFAULT_BRANCH}")
+    return base
+
+
+def committed_matrix() -> dict[str, Any] | None:
+    """The authority matrix at the resolved baseline, or None if unestablished."""
+    base = resolve_authority_baseline()
+    if base is None:
+        return None
+    out = _git("show", f"{base}:{MATRIX}")
+    return None if out is None else json.loads(out)
 
 
 def verify_monotonic_authority() -> None:
@@ -226,7 +269,9 @@ def verify_monotonic_authority() -> None:
     the lockfile, and both the repo gate and a one-approval C3 dossier
     PASSED. Integrity made the change visible; nothing refused it.
 
-    Compared against the matrix at HEAD, a change is a DOWNGRADE if it:
+    Compared against the matrix at the last AUTHORIZED baseline (the merge-base
+    with the default branch, or an explicit BADF_AUTHORITY_BASELINE -- never
+    HEAD), a change is a DOWNGRADE if it:
       - removes a change class;
       - removes any role from a class's required_roles;
       - removes a reserved action;
@@ -237,8 +282,8 @@ def verify_monotonic_authority() -> None:
     can only ever be admitted deliberately and locally, never by a pipeline
     going green.
 
-    Deny-unless-established: if HEAD has no matrix to compare against, the
-    check cannot establish monotonicity and refuses.
+    Deny-unless-established: if no baseline can be resolved, or the baseline
+    is HEAD itself, monotonicity cannot be established and the check refuses.
     """
     current_path = ROOT / MATRIX
     if not current_path.is_file():
@@ -247,8 +292,9 @@ def verify_monotonic_authority() -> None:
     baseline = committed_matrix()
     if baseline is None:
         raise ValidationError(
-            f"no committed {MATRIX} at HEAD to compare against -- monotonic "
-            f"authority cannot be established, refusing")
+            f"the last authorized {MATRIX} cannot be established -- no usable "
+            f"{BASELINE_ENV}, no reachable origin/{DEFAULT_BRANCH}, or the baseline "
+            f"equals HEAD (which would compare the candidate against itself). Refusing.")
 
     order = ["C0", "C1", "C2", "C3"]
     rank = {c: i for i, c in enumerate(order)}
