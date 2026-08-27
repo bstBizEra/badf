@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "note": "Repositories BADF may govern. A dossier whose target names a repository not listed here is refused; a listed path that is not a git repository is refused. Paths are local mirrors -- the gate makes no network calls. Adding a repository is a governance edit: this file is lockfile-covered. resolution: SELF (this repository), LOCAL_MIRROR (a clone on this host; NOT resolvable on a CI runner -- a dossier for such a repo is validated locally, and CI reports it as UNRESOLVABLE_HERE rather than as a refusal).",
+  "repositories": {
+    "bstBizEra/badf": {
+      "local_path": ".",
+      "default_branch": "main",
+      "resolution": "SELF"
+    },
+    "bstBizEra/secb_pf": {
+      "local_path": "/mnt/c/laragon/www/SecB_PF",
+      "default_branch": "main",
+      "resolution": "LOCAL_MIRROR"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0010",
+  "gate": "G07",
+  "producer": {
+    "id": "claude-opus-5",
+    "type": "agent"
+  },
+  "source_revision": "99fc25997225adfee9843f0ccfba1eefe8f41d2c",
+  "target": "bstBizEra/secb_pf:main",
+  "toolchain": {
+    "name": "git+pytest",
+    "version": "2.34.1/8.x"
+  },
+  "started_at": "2026-08-27T15:00:00Z",
+  "completed_at": "2026-08-27T15:05:00Z",
+  "outcome": "PASS",
+  "id": "EVD-WP-2026-0010-G07-unit-test",
+  "claim": "secb_pf full suite passes on the fix head",
+  "evidence_type": "unit-test",
+  "operation": "pytest",
+  "artifact": "work/WP-2026-0010/evidence/G07/unit-test.txt",
+  "digest": "sha256:ef3b97b2304613533fa6bedaeb326ffb2557335bfa32149b90ffcd36be6e99bb"
+}

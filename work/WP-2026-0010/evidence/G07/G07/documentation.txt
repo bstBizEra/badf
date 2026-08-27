@@ -1,0 +1,2 @@
+The change IS documentation: docs/00-governance/SPECIFICATION_CONFLICT_PROTOCOL.md.
+See source-change.diff.
