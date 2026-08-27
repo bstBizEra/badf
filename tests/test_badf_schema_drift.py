@@ -109,7 +109,7 @@ class SchemaInternalConsistencyTests(unittest.TestCase):
     """Every schema, read or not: a required property must be defined."""
 
     def test_no_schema_requires_an_undefined_property(self):
-        for name in ("gate-dossier", "evidence", "lifecycle", "memory", "session", "work-package", "demand", "project", "state", "init-receipt"):
+        for name in ("gate-dossier", "evidence", "lifecycle", "memory", "session", "work-package", "demand", "project", "state", "init-receipt", "charter"):
             with self.subTest(schema=name):
                 s = schema(name)
                 undefined = set(s.get("required", [])) - set(s.get("properties", {}))

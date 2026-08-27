@@ -176,7 +176,11 @@
             "string",
             "null"
           ],
-          "description": "badf/authority/charter.yaml once BADF-WP-0023 exists; null until then, never a path that does not exist."
+          "enum": [
+            "badf/authority/charter.json",
+            null
+          ],
+          "description": "badf/authority/charter.json once `charter <path>` has run (BADF-WP-0023); null until then, never a path that does not exist."
         }
       }
     },

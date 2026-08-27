@@ -76,6 +76,31 @@ A hand-edited `state.json` is drift. Re-signing (`lock --instance <path>`) makes
 visible, and the corroboration then refuses what the receipt cannot support — re-signing
 does not launder a state; only a governed transition (later work package) may move it.
 
+## The authority instance (`BADF-WP-0023`, Issue #37, `BADF-DEC-0006` — delegated)
+
+> Local instructions may **narrow** authority; they can never expand it.
+
+`badf/authority/charter.json` is that sentence made mechanical:
+
+- **The floor is pinned.** The charter binds, by digest, the framework's
+  `badf/authority-matrix.json` **at the instance's `framework_revision`** — the same commit
+  everything else in the instance consumes. If the framework's matrix has moved since the
+  pin, `instance` reports it; adopting it is a re-pin, not a silent drift.
+- **Superset or refused.** Exactly the framework's change classes; each class's
+  `required_roles` ⊇ the floor's; `reserved_actions` ⊇; `human_reserved_roles` ⊇; no rule's
+  `minimum_class` lowered. The comparison is the framework's own monotonic-guard function —
+  one definition of "downgrade", not two.
+- **No acknowledgement path.** The framework can admit a downgrade of its own matrix under a
+  decision record and an explicit ack. An instance cannot: `BADF_AUTHORITY_DOWNGRADE_ACK`
+  is not read when validating a charter. A project does not ack itself below the floor.
+- **Adding is free.** A project may add roles (`data_protection_officer`), reserved actions,
+  human-reserved roles. Adding constraints is strengthening, which §10 permits without a
+  declaration. A charter grants nothing — every dossier still needs its human approvals.
+- **Status is derived.** `charter <path>` writes the default charter (floor = ceiling) and
+  re-derives `state.json`: `authority.status` becomes `RESOLVED` with the charter path, and
+  `project.yaml authority.policy` names it. `instance` recomputes the same derivation and
+  refuses a state that says `RESOLVED` without a valid charter, or `UNRESOLVED` with one.
+
 ## Not on day 0 — each arrives with its first record
 
 `badf/authority/` (BADF-WP-0023: an instance charter may **narrow** the framework's

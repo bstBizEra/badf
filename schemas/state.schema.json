@@ -78,12 +78,19 @@
       "required": [
         "status"
       ],
+      "description": "DERIVED: RESOLVED iff a valid badf/authority/charter.json exists (BADF-DEC-0006); never typed.",
       "properties": {
         "status": {
           "type": "string",
           "enum": [
             "UNRESOLVED",
             "RESOLVED"
+          ]
+        },
+        "charter": {
+          "type": "string",
+          "enum": [
+            "badf/authority/charter.json"
           ]
         }
       }

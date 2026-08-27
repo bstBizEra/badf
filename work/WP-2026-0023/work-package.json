@@ -1,0 +1,59 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0023",
+  "title": "Authority instance with a framework floor: charter.json narrows, never expands; authority.status derived",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0010",
+  "objective": "Give a project instance an authority policy that is bound to the framework matrix at its pinned revision, can only add constraints, and resolves state.authority as a derived fact of a valid charter.",
+  "business_value": "Without it, authority is the one thing an instance does not pin, and 'narrow, never expand' is a sentence with no artefact and no check behind it.",
+  "in_scope": [
+    "charter <path> (default charter = floor, re-derives state, re-signs)",
+    "validate_charter in instance: digest binding to the pinned matrix blob; superset of roles per class, reserved actions, human-reserved roles; unknown/missing class refused; no ack path",
+    "derive_state authority from charter presence/validity",
+    "schemas: charter; state.authority.charter; project.authority.policy",
+    "doctrine + README",
+    "tests, mutation, post-merge simulation"
+  ],
+  "out_of_scope": [
+    "framework matrix or monotonic guard semantics",
+    "re-pin / framework upgrade",
+    "human-declared narrowings",
+    "any project"
+  ],
+  "target_gate": "G07",
+  "change_class": "C3",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "fresh instance: authority UNRESOLVED; after charter: RESOLVED with charter path, project.yaml policy set, lock re-signed",
+    "removing a role from any class, a reserved action, or a human-reserved role is refused; BADF_AUTHORITY_DOWNGRADE_ACK does not admit it",
+    "adding a role or reserved action passes",
+    "wrong matrix digest, unknown class, missing class refused",
+    "charter present with state UNRESOLVED (re-signed) refused; charter absent with state RESOLVED refused",
+    "framework matrix moved since the pin is reported, not refused",
+    "charter writes only charter.json, state.json, project.yaml, lockfile; refuses a second charter and the framework"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR",
+    "write: scratch repositories under the test tmpdir only"
+  ],
+  "tests": [
+    "tests/test_badf_authority_instance.py"
+  ],
+  "evidence": [
+    "mutation, unique anchors",
+    "post-merge simulation"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "dd1f897"
+  },
+  "note": "Lands IN_PROGRESS by design; reconciled by the next WP's branch. Decision BADF-DEC-0006 is delegated, and says so."
+}

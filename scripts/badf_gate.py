@@ -360,6 +360,15 @@ def _git(*args: str) -> str | None:
         return None
 
 
+def _git_bytes(*args: str) -> bytes | None:
+    """Like _git but returns raw stdout bytes -- for digests, where _git's strip
+    would drop the trailing newline and corrupt every comparison."""
+    try:
+        return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, check=True).stdout
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+
+
 def resolve_authority_baseline() -> str | None:
     """The commit holding the last AUTHORIZED authority policy, or None.
 
@@ -418,6 +427,50 @@ def committed_matrix() -> dict[str, Any] | None:
     return parsed
 
 
+def authority_downgrades(baseline: dict[str, Any], current: dict[str, Any]) -> list[str]:
+    """Every way `current` is weaker than `baseline`. ONE definition of
+    "downgrade": the framework's monotonic guard (matrix vs its authorized
+    baseline) and the instance charter check (charter vs the framework floor
+    at the pinned revision) both call this."""
+    order = ["C0", "C1", "C2", "C3"]
+    rank = {c: i for i, c in enumerate(order)}
+    downgrades: list[str] = []
+
+    b_classes = baseline.get("change_classes", {})
+    c_classes = current.get("change_classes", {})
+    for name, spec in b_classes.items():
+        if name not in c_classes:
+            downgrades.append(f"change class {name} removed")
+            continue
+        lost = set(spec.get("required_roles", [])) - set(c_classes[name].get("required_roles", []))
+        if lost:
+            downgrades.append(f"{name} lost required role(s): {', '.join(sorted(lost))}")
+
+    # BADF-DEC-0003: human_reserved_roles is a constraint. Losing one is a
+    # downgrade of exactly the kind losing a required_role is.
+    lost_reserved = set(baseline.get("human_reserved_roles") or []) - set(current.get("human_reserved_roles") or [])
+    if lost_reserved:
+        downgrades.append("human_reserved_roles lost: " + ", ".join(sorted(lost_reserved)))
+
+    lost_actions = set(baseline.get("reserved_actions", [])) - set(current.get("reserved_actions", []))
+    if lost_actions:
+        downgrades.append("reserved action(s) removed: " + ", ".join(sorted(lost_actions)))
+
+    b_rules = {r["action"]: r for r in baseline.get("rules", []) if "action" in r}
+    c_rules = {r["action"]: r for r in current.get("rules", []) if "action" in r}
+    for action, rule in b_rules.items():
+        if action not in c_rules:
+            downgrades.append(f"rule for action {action!r} removed")
+            continue
+        was, now = rule.get("minimum_class"), c_rules[action].get("minimum_class")
+        if was in rank and now in rank and rank[now] < rank[was]:
+            downgrades.append(f"rule {action!r} minimum_class lowered {was} -> {now}")
+        elif was in rank and now not in rank:
+            downgrades.append(f"rule {action!r} minimum_class became invalid: {now!r}")
+
+    return downgrades
+
+
 def verify_monotonic_authority() -> None:
     """Refuse any change to the authority matrix that lowers required authority.
 
@@ -458,42 +511,7 @@ def verify_monotonic_authority() -> None:
             f"{BASELINE_ENV}, no reachable origin/{DEFAULT_BRANCH}, or the baseline "
             f"equals HEAD (which would compare the candidate against itself). Refusing.")
 
-    order = ["C0", "C1", "C2", "C3"]
-    rank = {c: i for i, c in enumerate(order)}
-    downgrades: list[str] = []
-
-    b_classes = baseline.get("change_classes", {})
-    c_classes = current.get("change_classes", {})
-    for name, spec in b_classes.items():
-        if name not in c_classes:
-            downgrades.append(f"change class {name} removed")
-            continue
-        lost = set(spec.get("required_roles", [])) - set(c_classes[name].get("required_roles", []))
-        if lost:
-            downgrades.append(f"{name} lost required role(s): {', '.join(sorted(lost))}")
-
-    # BADF-DEC-0003: human_reserved_roles is a constraint. Losing one is a
-    # downgrade of exactly the kind losing a required_role is.
-    lost_reserved = set(baseline.get("human_reserved_roles") or []) - set(current.get("human_reserved_roles") or [])
-    if lost_reserved:
-        downgrades.append("human_reserved_roles lost: " + ", ".join(sorted(lost_reserved)))
-
-    lost_actions = set(baseline.get("reserved_actions", [])) - set(current.get("reserved_actions", []))
-    if lost_actions:
-        downgrades.append("reserved action(s) removed: " + ", ".join(sorted(lost_actions)))
-
-    b_rules = {r["action"]: r for r in baseline.get("rules", []) if "action" in r}
-    c_rules = {r["action"]: r for r in current.get("rules", []) if "action" in r}
-    for action, rule in b_rules.items():
-        if action not in c_rules:
-            downgrades.append(f"rule for action {action!r} removed")
-            continue
-        was, now = rule.get("minimum_class"), c_rules[action].get("minimum_class")
-        if was in rank and now in rank and rank[now] < rank[was]:
-            downgrades.append(f"rule {action!r} minimum_class lowered {was} -> {now}")
-        elif was in rank and now not in rank:
-            downgrades.append(f"rule {action!r} minimum_class became invalid: {now!r}")
-
+    downgrades = authority_downgrades(baseline, current)
     if not downgrades:
         return
     _admit_downgrade(downgrades)
@@ -1611,6 +1629,8 @@ def instance_patterns(inst: Path) -> list[str]:
     """AGENTS.md is locked only when BADF generated it; a preserved one is the
     project's file. The decision is read from state.json, which is itself locked."""
     patterns = list(INSTANCE_INTEGRITY)
+    if any((inst / "badf/authority").glob("*.json")):
+        patterns.append("badf/authority/*.json")
     state_path = inst / "badf/state.json"
     if state_path.is_file():
         state = load_json(state_path)
@@ -1624,7 +1644,8 @@ def write_instance_lock(inst: Path) -> int:
 
 
 def derive_state(project_id: str, framework_revision: str, wp_id: str, target: str,
-                 entrypoint: str, baseline_commit: str, receipt_rel: str) -> dict[str, Any]:
+                 entrypoint: str, baseline_commit: str, receipt_rel: str,
+                 charter: str | None = None) -> dict[str, Any]:
     """The ONLY way a state.json comes to exist. init writes derive_state(...);
     validation recomputes it from the receipt and refuses a stored state that
     differs -- so a hand-typed state, even re-signed, is refused."""
@@ -1632,7 +1653,7 @@ def derive_state(project_id: str, framework_revision: str, wp_id: str, target: s
         "schema_version": "1.0.0", "project_id": project_id, "framework_revision": framework_revision,
         "lifecycle": {"current_gate": "G00", "state": "INITIALIZED", "target": target.upper()},
         "active_work_package": wp_id, "active_session": None,
-        "authority": {"status": "UNRESOLVED"},
+        "authority": {"status": "RESOLVED", "charter": charter} if charter else {"status": "UNRESOLVED"},
         "entrypoint": entrypoint,
         "readiness": {"product": "NOT_STARTED", "architecture": "NOT_STARTED", "engineering": "NOT_STARTED",
                       "security": "NOT_STARTED", "release": "NOT_STARTED", "production": "NOT_READY"},
@@ -1647,6 +1668,95 @@ def _flat(d: Any, prefix: str = "") -> dict[str, Any]:
             out.update(_flat(v, f"{prefix}{k}."))
         return out
     return {prefix.rstrip("."): d}
+
+
+CHARTER = "badf/authority/charter.json"
+CHARTER_KEYS = ("change_classes", "human_reserved_roles", "reserved_actions", "rules")
+
+
+def framework_matrix_at(rev: str) -> tuple[dict[str, Any], str]:
+    """The framework's authority matrix at a pinned commit, and the digest of
+    that exact blob. The instance's floor is what it pinned, not what HEAD says."""
+    raw = _git_bytes("show", f"{rev}:{MATRIX}")
+    if raw is None:
+        raise ValidationError(f"framework matrix at {rev[:7]} cannot be read from this framework")
+    try:
+        matrix = json.loads(raw.decode("utf-8"), object_pairs_hook=_no_duplicate_keys)
+    except ValueError as exc:
+        raise ValidationError(f"framework matrix at {rev[:7]} is not valid JSON: {exc}")
+    return matrix, _digest_bytes(raw)
+
+
+def validate_charter(inst: Path, project: dict[str, Any], framework_revision: str) -> tuple[str | None, list[str]]:
+    """(charter path or None, notes). A charter may only ADD to the floor.
+    There is deliberately no acknowledgement path here: an instance cannot
+    ack itself below the framework (BADF-DEC-0006)."""
+    path = inst / CHARTER
+    policy = project["authority"].get("policy")
+    if not path.is_file():
+        if policy is not None:
+            raise ValidationError(f"project.yaml names authority policy {policy!r} but no charter exists")
+        return None, []
+    charter = load_json(path)
+    check_schema("charter", charter)
+    if policy != CHARTER:
+        raise ValidationError(f"documents disagree on authority policy: project.yaml says {policy!r}, charter exists at {CHARTER}")
+    if charter["framework_revision"] != framework_revision:
+        raise ValidationError(f"charter pins framework {charter['framework_revision'][:7]} but the instance pins {framework_revision[:7]}")
+    if charter["framework_repository"] != self_repository():
+        raise ValidationError(f"charter names framework {charter['framework_repository']!r}; this is {self_repository()!r}")
+    floor, digest = framework_matrix_at(framework_revision)
+    if charter["framework_matrix_digest"] != digest:
+        raise ValidationError(f"charter is bound to a different framework matrix ({charter['framework_matrix_digest'][:19]}...) "
+                              f"than the one at the pinned revision ({digest[:19]}...)")
+    floor_classes, charter_classes = set(floor.get("change_classes", {})), set(charter.get("change_classes", {}))
+    if charter_classes - floor_classes:   # an extra class is not a downgrade, so the comparison below cannot see it
+        raise ValidationError("charter declares unknown change class(es): " + ", ".join(sorted(charter_classes - floor_classes)))
+    # a MISSING class is a downgrade ("change class X removed") and is refused by authority_downgrades below
+    downgrades = authority_downgrades(floor, charter)
+    if downgrades:
+        raise ValidationError("charter lowers the framework floor -- " + "; ".join(downgrades)
+                              + ". An instance may add constraints, never remove them; there is no acknowledgement path for instances.")
+    notes = []
+    current = sha256(ROOT / MATRIX)
+    if current != digest:
+        notes.append(f"BADF INSTANCE NOTE: framework authority matrix has moved since the pin "
+                     f"(pinned {digest[7:14]}, current {current[7:14]}); re-pin to adopt it")
+    return CHARTER, notes
+
+
+def write_charter(path: Path) -> str:
+    """`badf_gate.py charter <path>`: the default charter -- floor = ceiling --
+    and the re-derived state. Refuses unless the instance validates first."""
+    inst = instance_root(path)
+    validate_instance(inst)   # deny unless established: a drifted or inconsistent instance gets no charter
+    if (inst / CHARTER).exists():
+        raise ValidationError(f"{inst} already has a charter at {CHARTER}; narrow it by editing and re-signing, never by regenerating")
+    project = parse_yaml_subset((inst / "badf/project.yaml").read_text(encoding="utf-8"))
+    state = load_json(inst / "badf/state.json")
+    rev = state["framework_revision"]
+    floor, digest = framework_matrix_at(rev)
+    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    charter = {"schema_version": "1.0.0", "framework_repository": self_repository(), "framework_revision": rev,
+               "framework_matrix_digest": digest, **{k: json.loads(json.dumps(floor.get(k, []))) for k in CHARTER_KEYS},
+               "generated_by": "badf-charter", "generated_at": now}
+    check_schema("charter", charter)
+    new_state = derive_state(state["project_id"], rev, state["active_work_package"], project["delivery"]["target"],
+                             state["entrypoint"], state["derived_from"]["baseline_commit"], state["derived_from"]["receipt"],
+                             charter=CHARTER)
+    check_schema("state", new_state)
+    project["authority"]["policy"] = CHARTER
+    check_schema("project", project)
+    yaml_text = emit_yaml(project)
+    if parse_yaml_subset(yaml_text) != project:
+        raise ValidationError("project.yaml does not round-trip through the YAML subset; refusing to write it")
+    (inst / "badf/authority").mkdir(exist_ok=True)
+    (inst / CHARTER).write_text(json.dumps(charter, indent=2) + "\n", encoding="utf-8")
+    (inst / "badf/state.json").write_text(json.dumps(new_state, indent=2) + "\n", encoding="utf-8")
+    (inst / "badf/project.yaml").write_text(yaml_text, encoding="utf-8")
+    write_instance_lock(inst)
+    return (f"BADF CHARTER: {state['project_id']} bound to framework matrix {digest[7:14]} at {rev[:7]}; "
+            f"authority RESOLVED (floor = ceiling; narrow by adding, never by removing)")
 
 
 def validate_instance(path: Path) -> list[str]:
@@ -1689,15 +1799,16 @@ def validate_instance(path: Path) -> list[str]:
     if _git("cat-file", "-e", f"{framework_revision}^{{commit}}") is None:
         raise ValidationError(f"framework_revision {framework_revision[:7]} is unknown to this framework")
 
+    charter_rel, charter_notes = validate_charter(inst, project, framework_revision)
     expected = derive_state(project_id, framework_revision, wp_id, project["delivery"]["target"],
-                            state["entrypoint"], baseline, receipt_rel)
+                            state["entrypoint"], baseline, receipt_rel, charter=charter_rel)
     if state != expected:
         have, want = _flat(state), _flat(expected)
         diffs = sorted(k for k in set(have) | set(want) if have.get(k) != want.get(k))
         raise ValidationError("state.json disagrees with the derived state on " + ", ".join(diffs)
                               + "; only init has run, so a state the receipt cannot corroborate is refused")
 
-    notes: list[str] = []
+    notes: list[str] = list(charter_notes)
     agents = inst / "AGENTS.md"
     if state["entrypoint"] == "EXISTING_AGENTS_MD_PRESERVED":
         recorded = next((p["digest"] for p in receipt["preserved"] if p["path"] == "AGENTS.md"), None)
@@ -1711,7 +1822,8 @@ def validate_instance(path: Path) -> list[str]:
         raise ValidationError("state says BADF generated AGENTS.md but it is absent")
     notes.append(f"BADF INSTANCE PASS: {project_id} ({receipt['repository']}) at "
                  f"{state['lifecycle']['current_gate']} / {state['lifecycle']['state']}; "
-                 f"framework {framework_revision[:7]}; baseline {baseline[:7]}; work package {wp_id}")
+                 f"authority {state['authority']['status']}; framework {framework_revision[:7]}; "
+                 f"baseline {baseline[:7]}; work package {wp_id}")
     return notes
 
 
@@ -2104,6 +2216,8 @@ def main() -> int:
     lock_parser.add_argument("--instance", type=Path, default=None, help="re-sign a project instance's badf/lockfile.json instead")
     inst_parser = subparsers.add_parser("instance", help="validate a project instance at <path>; writes nothing")
     inst_parser.add_argument("path", type=Path)
+    charter_parser = subparsers.add_parser("charter", help="bind an instance to the framework's authority floor at its pinned revision")
+    charter_parser.add_argument("path", type=Path)
     dossier_parser = subparsers.add_parser("dossier", help="validate a gate dossier and its evidence")
     dossier_parser.add_argument("path", type=Path)
     init_parser = subparsers.add_parser("init", help="intake a project from a four-line intent; writes only under BADF's tree")
@@ -2123,6 +2237,9 @@ def main() -> int:
         elif args.command == "instance":
             for line in validate_instance(args.path):
                 print(line)
+            return 0
+        elif args.command == "charter":
+            print(write_charter(args.path))
             return 0
         elif args.command == "init":
             print(init_project(args.intent))
