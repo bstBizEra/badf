@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0009",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 35,
+    "url": "https://github.com/bstBizEra/badf/issues/35",
+    "exported_at": "2026-08-27T17:03:50Z",
+    "body_digest": "sha256:ff54e6b7793ec2c60b5ad8472b55f9d62468dbe75931702675f37b0114a1e495"
+  },
+  "title": "GOV-0012: a project's badf/ control plane is decorative -- nothing validates an instance",
+  "problem": "## Observed\nSince BADF-WP-0021 (`369d67a`), `badf init` writes `AGENTS.md`, `badf/project.yaml`, `badf/state.json` and an init receipt into the target. Nothing reads them back. There is no command that checks an instance's documents against their schemas, no corroboration that `state.json` and the receipt agree with each other and with the instance's git history, no check that the pinned `framework_revision` is a commit this framework actually has, and no integrity over `badf/` in the project \u2014 the framework's lockfile covers the framework only. A hand-edited `state.json` claiming `G12 / APPROVED` is indistinguishable from a derived one.\n\n## Expected\n`badf_gate.py instance <path>` \u2014 deterministic, offline: the three documents parse and pass their schemas; ids, work package and commits agree across `project.yaml`, `state.json` and the receipt; `baseline_commit` exists in the instance and is an ancestor of its HEAD; `framework_revision` is a commit known to this framework; a per-instance `badf/lockfile.json` (written by init, same format as the framework's) corroborates every file under `badf/` plus a generated `AGENTS.md`; a preserved `AGENTS.md` that changed since baseline is reported, not refused (it is the project's file). Deny unless established; the framework itself is refused as an instance.\n\n## Evidence\n`grep -n '\"instance\"' scripts/badf_gate.py` \u2192 only the registry entry and WP record written by init; no reader. `ls <target>/badf` after init \u2192 `evidence/ project.yaml state.json` \u2014 no lockfile.\n\n## Unknowns\nWhether the receipt's `generated` digests must still match once governed state transitions exist (later WP). For now the instance lockfile is the current integrity and the receipt is the day-0 record; both are checked.\n\n## Proposed work package\n`BADF-WP-0022` \u2014 `instance <path>` subcommand; per-instance lockfile written by init and verified by `instance`; the framework's lock/verify parameterised by root and patterns so there is ONE lockfile implementation; tests in scratch instances only (no project is touched); mutation; post-merge simulation.\n\ndiscovered-by: BADF-WP-0021 \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-27T17:03:50Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. Authority: the operator's pick of WP-0022 in session 2026-08-28 ('Do not focus to any project yet, only focus on BADF'). Worked as BADF-WP-0022."
+}

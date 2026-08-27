@@ -53,6 +53,29 @@ is the framework itself · the demand names another repository.
 the framework emits and parses without a dependency; anything outside the subset is
 refused, not guessed.
 
+## Validating an instance (`BADF-WP-0022`, Issue #35)
+
+`badf_gate.py instance <path>` is what makes `badf/` governed rather than decorative. It
+runs from the framework, reads the instance at `<path>`, writes nothing, and refuses
+unless every one of these is established:
+
+- `badf/project.yaml` parses in the subset and, with `badf/state.json` and the receipt,
+  passes its schema;
+- the three documents **agree**: project id, work package, baseline commit, framework
+  revision, repository, classification;
+- the **baseline commit exists in the instance and is an ancestor of its HEAD** — a project
+  keeps committing; the baseline is where BADF entered, not where the project must stay;
+- the pinned **`framework_revision` is a commit this framework has** — an instance cannot
+  claim a framework that does not exist;
+- `badf/lockfile.json` — written by init with the same implementation as the framework's
+  own lockfile — corroborates `project.yaml`, `state.json`, every receipt, and `AGENTS.md`
+  **when BADF generated it**. A preserved `AGENTS.md` is the project's file: a change since
+  baseline is *reported*, never refused.
+
+A hand-edited `state.json` is drift. Re-signing (`lock --instance <path>`) makes the edit
+visible, and the corroboration then refuses what the receipt cannot support — re-signing
+does not launder a state; only a governed transition (later work package) may move it.
+
 ## Not on day 0 — each arrives with its first record
 
 `badf/authority/` (BADF-WP-0023: an instance charter may **narrow** the framework's
