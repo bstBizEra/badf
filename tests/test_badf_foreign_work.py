@@ -22,6 +22,25 @@ import scripts.badf_gate as gate
 from tests._scratch import seed_clone
 
 WP = gate.ROOT / "work/WP-2026-0010"
+
+
+def mirror_status():
+    """Where is secb_pf, according to the registry, and is it HERE?
+
+    The registry is the same source the gate reads. A test that hard-coded
+    the path would drift from it. Returns (present, reason)."""
+    reg = json.loads((gate.ROOT / gate.REPOSITORIES).read_text())
+    entry = reg["repositories"]["bstBizEra/secb_pf"]
+    path = Path(entry["local_path"])
+    if entry.get("resolution") != "LOCAL_MIRROR":
+        return False, f"secb_pf resolution is {entry.get('resolution')!r}, not LOCAL_MIRROR"
+    top = subprocess.run(["git", "-C", str(path), "rev-parse", "--show-toplevel"], capture_output=True)
+    if top.returncode != 0:
+        return False, f"LOCAL_MIRROR {path} is not present on this host (UNRESOLVABLE_HERE by design: a CI runner)"
+    return True, "present"
+
+
+MIRROR_PRESENT, MIRROR_REASON = mirror_status()
 DOSSIER = WP / "gate-dossier.G07.json"
 ZEROS = "0" * 40
 
@@ -63,7 +82,11 @@ class ScratchCloneMixin:
                               cwd=str(self.root), capture_output=True, text=True, env=self.env)
 
 
+@unittest.skipUnless(MIRROR_PRESENT, MIRROR_REASON)
 class ForeignWorkTests(ScratchCloneMixin, unittest.TestCase):
+    """Skipped, with the reason named, on any host where the secb_pf mirror is
+    absent -- every CI runner. That is not a gap: it is the UNRESOLVABLE_HERE
+    contract, and ResolutionScopeTests below proves CI reports it as such."""
 
     def rewrite_revision(self, sha):
         d = json.loads(self.dossier.read_text()); d["source_revision"] = sha
@@ -160,6 +183,16 @@ class ResolutionScopeTests(ScratchCloneMixin, unittest.TestCase):
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("UNRESOLVABLE_HERE", r.stderr)
         self.assertNotIn("not a git repository", r.stderr)
+
+    def test_mirror_absence_is_declared_not_silent(self):
+        """On a host without the mirror, the skip above must be for the registry's
+        stated reason. A skip with any other reason -- or none -- is a silent
+        green, which is the failure mode this framework exists to refuse."""
+        present, reason = mirror_status()
+        if present:
+            self.skipTest("mirror present: the foreign suite ran instead")
+        self.assertIn("UNRESOLVABLE_HERE", reason)
+        self.assertIn("not present on this host", reason)
 
     def test_repository_without_resolution_field_is_refused(self):
         reg = json.loads(self.registry.read_text())
