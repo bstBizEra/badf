@@ -43,6 +43,33 @@ def schema(name):
     return json.loads((gate.ROOT / "schemas" / f"{name}.schema.json").read_text())
 
 
+def enum_violations(props, inst, trail=""):
+    """Every enum-constrained property, at any depth, whose shipped value is not
+    in the enum. Module-level so instance tests can hold GENERATED files to the
+    same bar as shipped ones."""
+    out = []
+    for key, spec in props.items():
+        if key not in inst:
+            continue
+        val = inst[key]
+        if "enum" in spec and val not in spec["enum"]:
+            out.append((trail + key, val, spec["enum"]))
+        if spec.get("type") == "object" and "properties" in spec and isinstance(val, dict):
+            out += enum_violations(spec["properties"], val, trail + key + ".")
+        if spec.get("type") == "array" and "properties" in spec.get("items", {}) and isinstance(val, list):
+            for i, item in enumerate(val):
+                if isinstance(item, dict):
+                    out += enum_violations(spec["items"]["properties"], item, f"{trail}{key}[{i}].")
+    return out
+
+
+def unknown_keys(sch, inst):
+    """Keys the instance carries that the schema does not define (additionalProperties: false)."""
+    if sch.get("additionalProperties", True) is not False:
+        return set()
+    return set(inst) - set(sch.get("properties", {}))
+
+
 class SchemaMirrorsCodeTests(unittest.TestCase):
     """Schemas the gate reads: required[] must equal the gate's field set."""
 
@@ -82,7 +109,7 @@ class SchemaInternalConsistencyTests(unittest.TestCase):
     """Every schema, read or not: a required property must be defined."""
 
     def test_no_schema_requires_an_undefined_property(self):
-        for name in ("gate-dossier", "evidence", "lifecycle", "memory", "session", "work-package", "demand"):
+        for name in ("gate-dossier", "evidence", "lifecycle", "memory", "session", "work-package", "demand", "project", "state", "init-receipt"):
             with self.subTest(schema=name):
                 s = schema(name)
                 undefined = set(s.get("required", [])) - set(s.get("properties", {}))

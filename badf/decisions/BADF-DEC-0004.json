@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0.0",
+  "status": "DECIDED",
+  "decided_at": "2026-08-27T16:25:54Z",
+  "decided_at_provenance": "RECORDED AT DECISION TIME. The AGREE was given in the operator session (AskUserQuestion, 2026-08-28) and this record was written in the same turn, before any implementation.",
+  "decision_authority": {
+    "role": "human_sponsor",
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "work_package_id": "BADF-WP-0021",
+  "change_class": "C3",
+  "ballot": "AGREE",
+  "authority_downgrade": {
+    "permits_downgrade": false,
+    "note": "Not an authority-matrix change. No role removed, no class lowered, no reserved action changed."
+  },
+  "binding": {
+    "authority_matrix_digest_before": "sha256:75d3e0216212ea7611c36b69bbea8d3835d32841e102561ea2ca4e1383208b43",
+    "policy_epoch": "BADF-2026-08-25",
+    "enacting_commit": null,
+    "enacting_pr": null,
+    "binding_note": "enacting_commit/pr are filled by reconciliation when BADF-WP-0021 lands; null means not yet landed, never 'unknown'."
+  },
+  "supersedes": null,
+  "superseded_by": null,
+  "decision_id": "BADF-DEC-0004",
+  "title": "badf init writes a BOUNDED namespace into the target project: AGENTS.md if absent, plus badf/**; never overwrites; receipts what it did",
+  "options_considered": {
+    "A": "AGREE -- bounded namespace write: <project>/AGENTS.md only if absent, <project>/badf/** always; existing AGENTS.md preserved and recorded as a conflict; existing badf/ refuses; receipt lists generated/preserved/conflicts -- SELECTED",
+    "B": "NOT_AGREE -- keep the WP-0015 invariant (init never writes to the target); instance records stay inside bstBizEra/badf -- REJECTED by the operator",
+    "C": "unbounded write (copy the framework tree into the project) -- REJECTED: copied docs/registries drift; the framework is consumed by reference"
+  },
+  "authorizes": {
+    "summary": "Reverse the WP-0015 invariant 'init never writes to the target project' into 'init writes ONLY inside <project>/badf/ and <project>/AGENTS.md-if-absent'. Everything outside that namespace must be byte-identical before and after, proven by digest. Directories materialise with their first record; no skeleton.",
+    "scope": [
+      "scripts/badf_gate.py (init_project, discover/classify/baseline, receipt)",
+      "schemas/project.schema.json, schemas/state.schema.json, schemas/init-receipt.schema.json",
+      "templates/AGENTS.instance.md",
+      "tests/test_badf_instance.py, tests/test_badf_init.py",
+      "docs/governance/GITHUB_CONTROL_PLANE.md (framework vs instance)",
+      "README.md (init contract)"
+    ],
+    "excluded": [
+      "no write to bstBizEra/proptech until the operator says so for PropTech specifically (tests use scratch clones)",
+      "no copy of the framework's docs/, registries, skills or policies into a project",
+      "no instance validation yet (BADF-WP-0022), no authority instance yet (BADF-WP-0023)",
+      "no .badf/ rename unless a collision is demonstrated"
+    ]
+  },
+  "proven_defect": "On main 66672f3: init produces a G00 work package inside bstBizEra/badf and nothing in the project; a project 'governed by BADF' carries no entrypoint, no project.yaml, no state, no receipt, and nothing can validate it (ROOT is the framework's own tree).",
+  "residual_risk": "The bounded write is proven by a tree digest outside the namespace. AGENTS.md compatibility analysis and merge are NOT in this decision: an existing AGENTS.md is preserved untouched and the conflict is recorded HUMAN_REQUIRED.",
+  "evidence": [
+    "operator architecture memo, session 2026-08-28 (framework vs project instance)",
+    "AskUserQuestion AGREE: 'bounded namespace write'",
+    "Issue #33 / BADF-DEM-0008"
+  ],
+  "invalidation": "Widening the namespace, overwriting an existing AGENTS.md, or copying framework documents into a project invalidates this decision; a new decision is required."
+}

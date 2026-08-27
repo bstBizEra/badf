@@ -55,15 +55,22 @@ class InitScratchMixin:
         self.tmp = tempfile.mkdtemp()
         self.root = Path(self.tmp) / "badf"
         subprocess.run(["git", "clone", "-q", str(gate.ROOT), str(self.root)], check=True)
-        for rel in ("scripts/badf_gate.py", "badf/repositories.json", "badf/decisions", "badf/demands", "schemas", "work"):
+        for rel in ("scripts/badf_gate.py", "badf/repositories.json", "badf/decisions", "badf/demands", "schemas", "templates", "work"):
             src, dst = gate.ROOT / rel, self.root / rel
             if src.is_dir():
                 shutil.rmtree(dst, ignore_errors=True); shutil.copytree(src, dst)
             else:
                 shutil.copy2(src, dst)
         self.env = {k: v for k, v in os.environ.items() if not k.startswith("BADF_")}
+        # Since BADF-DEC-0004 init WRITES into the target (bounded to AGENTS.md-if-absent
+        # and badf/). The real PropTech clone stays untouched until the operator says
+        # otherwise for PropTech, so every test targets a scratch clone of it.
+        self.target = Path(self.tmp) / "proptech"
+        if HAVE_PROPTECH:
+            subprocess.run(["git", "clone", "-q", str(PROPTECH), str(self.target)], check=True)
+        self.INTENT = {"project": dict(INTENT["project"], local_path=str(self.target))}
         self.intent = self.root / "intent.yaml"
-        self.intent.write_text(json.dumps(INTENT))   # JSON is valid YAML; no new dependency
+        self.intent.write_text(json.dumps(self.INTENT))   # JSON is valid YAML; no new dependency
         self._wps_before = {q.name for q in (self.root / "work").glob("WP-*")}
 
     def new_wp(self):
@@ -85,11 +92,20 @@ class InitScratchMixin:
 @unittest.skipUnless(HAVE_PROPTECH, "PropTech clone not present on this host")
 class InitOnRealProjectTests(InitScratchMixin, unittest.TestCase):
 
-    def test_init_never_writes_to_the_target_project(self):
-        before = tree_digest(PROPTECH)
+    def test_init_writes_only_inside_the_namespace_and_never_touches_the_real_clone(self):
+        """BADF-DEC-0004 narrowed 'never writes to the target' to 'writes only inside
+        <target>/badf/ and <target>/AGENTS.md-if-absent'. Outside that namespace the
+        scratch clone is byte-identical; the REAL PropTech clone is untouched entirely."""
+        real_before = tree_digest(PROPTECH)
+        outside_before = {p: p.read_bytes() for p in self.target.rglob("*")
+                          if p.is_file() and ".git" not in p.parts and p.relative_to(self.target).parts[0] not in ("badf", "AGENTS.md")}
         r = self.init()
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        self.assertEqual(tree_digest(PROPTECH), before, "init modified the target project's tree")
+        outside_after = {p: p.read_bytes() for p in self.target.rglob("*")
+                         if p.is_file() and ".git" not in p.parts and p.relative_to(self.target).parts[0] not in ("badf", "AGENTS.md")}
+        self.assertEqual(outside_after, outside_before, "init wrote outside its namespace")
+        self.assertTrue((self.target / "badf/project.yaml").is_file(), "no instance was written")
+        self.assertEqual(tree_digest(PROPTECH), real_before, "a test touched the REAL PropTech clone")
 
     def test_init_creates_a_work_package_with_judgment_fields_declared_missing(self):
         before = set((self.root / "work").glob("WP-*/work-package.json"))
@@ -255,7 +271,7 @@ class InitGuardsAreIndependentTests(InitScratchMixin, unittest.TestCase):
         registry entry added by hand): the registry guard must fire."""
         reg = self.root / gate.REPOSITORIES
         r = json.loads(reg.read_text()); r["repositories"]["bstBizEra/proptech"] = {
-            "local_path": str(PROPTECH), "default_branch": "main", "resolution": "LOCAL_MIRROR"}
+            "local_path": str(self.target), "default_branch": "main", "resolution": "LOCAL_MIRROR"}
         reg.write_text(json.dumps(r))
         subprocess.run([sys.executable, "scripts/badf_gate.py", "lock"], cwd=self.root, env=self.env, capture_output=True)
         out = self.init()
@@ -270,6 +286,12 @@ class InitGuardsAreIndependentTests(InitScratchMixin, unittest.TestCase):
         r = json.loads(reg.read_text()); del r["repositories"]["bstBizEra/proptech"]
         reg.write_text(json.dumps(r))
         subprocess.run([sys.executable, "scripts/badf_gate.py", "lock"], cwd=self.root, env=self.env, capture_output=True)
+        # Since BADF-DEC-0004 the first init wrote an instance into the target, and an
+        # existing instance is the most specific refusal. To prove the WP guard fires
+        # on its own, the second init targets a FRESH clone of the same repository.
+        fresh = Path(self.tmp) / "proptech2"
+        subprocess.run(["git", "clone", "-q", str(PROPTECH), str(fresh)], check=True)
+        self.intent.write_text(json.dumps({"project": dict(self.INTENT["project"], local_path=str(fresh))}))
         out = self.init()
         self.assertNotEqual(out.returncode, 0)
         self.assertIn("already has work package", out.stderr)

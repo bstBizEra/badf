@@ -2,128 +2,284 @@
   "$schema": "../schemas/lifecycle.schema.json",
   "schema_version": "1.0.0",
   "policy_epoch": "BADF-2026-08-25",
-  "default_dispositions": ["PASS", "PASS_WITH_CONDITIONS", "FAIL", "BLOCKED", "HUMAN_REQUIRED"],
+  "default_dispositions": [
+    "PASS",
+    "PASS_WITH_CONDITIONS",
+    "FAIL",
+    "BLOCKED",
+    "HUMAN_REQUIRED"
+  ],
   "gates": [
     {
       "id": "G00",
-      "name": "Intake and authority",
+      "name": "Intake, authority and project definition",
       "owner_role": "work_authority",
       "minimum_change_class": "C0",
-      "required_evidence": ["authority", "scope", "risk-classification"],
-      "exit_criteria": ["owner assigned", "scope and non-goals explicit", "change and data classes assigned", "authority current"]
+      "required_evidence": [
+        "authority",
+        "scope",
+        "risk-classification"
+      ],
+      "exit_criteria": [
+        "project instance initialised: AGENTS.md entrypoint, badf/project.yaml, badf/state.json, init receipt (BADF-DEC-0004)",
+        "product definition stated: name, intent, owner, target -- the PRD itself is G01",
+        "owner assigned",
+        "scope and non-goals explicit",
+        "change and data classes assigned",
+        "authority current"
+      ]
     },
     {
       "id": "G01",
       "name": "PRD baseline",
       "owner_role": "product_owner",
       "minimum_change_class": "C1",
-      "required_evidence": ["prd", "acceptance-criteria", "product-approval"],
-      "exit_criteria": ["problem and users defined", "outcomes and KPIs measurable", "constraints and exclusions explicit", "baseline approved"]
+      "required_evidence": [
+        "prd",
+        "acceptance-criteria",
+        "product-approval"
+      ],
+      "exit_criteria": [
+        "problem and users defined",
+        "outcomes and KPIs measurable",
+        "constraints and exclusions explicit",
+        "baseline approved"
+      ]
     },
     {
       "id": "G02",
       "name": "Requirement decomposition",
       "owner_role": "product_owner",
       "minimum_change_class": "C1",
-      "required_evidence": ["requirements", "nfr", "traceability", "definition-of-ready"],
-      "exit_criteria": ["priority requirements testable", "NFRs quantified", "dependencies mapped", "bidirectional traceability established"]
+      "required_evidence": [
+        "requirements",
+        "nfr",
+        "traceability",
+        "definition-of-ready"
+      ],
+      "exit_criteria": [
+        "priority requirements testable",
+        "NFRs quantified",
+        "dependencies mapped",
+        "bidirectional traceability established"
+      ]
     },
     {
       "id": "G03",
       "name": "UX and service design",
       "owner_role": "product_owner",
       "minimum_change_class": "C1",
-      "required_evidence": ["journeys", "service-blueprint", "accessibility", "user-validation"],
-      "exit_criteria": ["happy and unhappy paths designed", "accessibility addressed", "support operations defined", "design validated"]
+      "required_evidence": [
+        "journeys",
+        "service-blueprint",
+        "accessibility",
+        "user-validation"
+      ],
+      "exit_criteria": [
+        "happy and unhappy paths designed",
+        "accessibility addressed",
+        "support operations defined",
+        "design validated"
+      ]
     },
     {
       "id": "G04",
       "name": "Architecture data and API",
       "owner_role": "architecture_authority",
       "minimum_change_class": "C1",
-      "required_evidence": ["architecture", "adr", "data-model", "api-contract", "operability-design"],
-      "exit_criteria": ["boundaries and dependencies coherent", "contracts versioned", "data lifecycle defined", "failure and recovery modes designed"]
+      "required_evidence": [
+        "architecture",
+        "adr",
+        "data-model",
+        "api-contract",
+        "operability-design"
+      ],
+      "exit_criteria": [
+        "boundaries and dependencies coherent",
+        "contracts versioned",
+        "data lifecycle defined",
+        "failure and recovery modes designed"
+      ]
     },
     {
       "id": "G05",
       "name": "Security privacy and AI safety",
       "owner_role": "security_authority",
       "minimum_change_class": "C2",
-      "required_evidence": ["threat-model", "privacy-assessment", "supply-chain-plan", "security-approval"],
-      "exit_criteria": ["threats and abuse cases controlled", "privacy obligations addressed", "dependency and secret controls planned", "residual risk owned"]
+      "required_evidence": [
+        "threat-model",
+        "privacy-assessment",
+        "supply-chain-plan",
+        "security-approval"
+      ],
+      "exit_criteria": [
+        "threats and abuse cases controlled",
+        "privacy obligations addressed",
+        "dependency and secret controls planned",
+        "residual risk owned"
+      ]
     },
     {
       "id": "G06",
       "name": "Implementation planning",
       "owner_role": "engineering_owner",
       "minimum_change_class": "C1",
-      "required_evidence": ["work-breakdown", "test-plan", "release-plan", "rollback-plan"],
-      "exit_criteria": ["work packages bounded", "composition order defined", "environments and resources ready", "rollback and stop conditions executable"]
+      "required_evidence": [
+        "work-breakdown",
+        "test-plan",
+        "release-plan",
+        "rollback-plan"
+      ],
+      "exit_criteria": [
+        "work packages bounded",
+        "composition order defined",
+        "environments and resources ready",
+        "rollback and stop conditions executable"
+      ]
     },
     {
       "id": "G07",
       "name": "Build complete",
       "owner_role": "engineering_owner",
       "minimum_change_class": "C1",
-      "required_evidence": ["source-change", "build", "unit-test", "documentation"],
-      "exit_criteria": ["acceptance implemented", "tests and telemetry included", "migrations and configuration versioned", "author verification passes"]
+      "required_evidence": [
+        "source-change",
+        "build",
+        "unit-test",
+        "documentation"
+      ],
+      "exit_criteria": [
+        "acceptance implemented",
+        "tests and telemetry included",
+        "migrations and configuration versioned",
+        "author verification passes"
+      ]
     },
     {
       "id": "G08",
       "name": "Engineering verification",
       "owner_role": "quality_authority",
       "minimum_change_class": "C1",
-      "required_evidence": ["independent-review", "integration-test", "contract-test", "composed-tree-test"],
-      "exit_criteria": ["review blockers resolved", "integration and contract checks pass", "composed result verified", "non-coverage declared"]
+      "required_evidence": [
+        "independent-review",
+        "integration-test",
+        "contract-test",
+        "composed-tree-test"
+      ],
+      "exit_criteria": [
+        "review blockers resolved",
+        "integration and contract checks pass",
+        "composed result verified",
+        "non-coverage declared"
+      ]
     },
     {
       "id": "G09",
       "name": "Independent quality and security validation",
       "owner_role": "quality_authority",
       "minimum_change_class": "C2",
-      "required_evidence": ["quality-validation", "security-validation", "performance-test", "resilience-test"],
-      "exit_criteria": ["risk-based validation independent", "security thresholds met", "performance within budget", "recovery behavior verified"]
+      "required_evidence": [
+        "quality-validation",
+        "security-validation",
+        "performance-test",
+        "resilience-test"
+      ],
+      "exit_criteria": [
+        "risk-based validation independent",
+        "security thresholds met",
+        "performance within budget",
+        "recovery behavior verified"
+      ]
     },
     {
       "id": "G10",
       "name": "UAT and release readiness",
       "owner_role": "release_authority",
       "minimum_change_class": "C2",
-      "required_evidence": ["uat", "release-packet", "operational-readiness", "go-no-go"],
-      "exit_criteria": ["product acceptance recorded", "immutable candidate identified", "operations and support ready", "go-no-go authorized"]
+      "required_evidence": [
+        "uat",
+        "release-packet",
+        "operational-readiness",
+        "go-no-go"
+      ],
+      "exit_criteria": [
+        "product acceptance recorded",
+        "immutable candidate identified",
+        "operations and support ready",
+        "go-no-go authorized"
+      ]
     },
     {
       "id": "G11",
       "name": "Deployment and change control",
       "owner_role": "release_authority",
       "minimum_change_class": "C2",
-      "required_evidence": ["change-approval", "artifact-attestation", "deployment-record", "migration-record"],
-      "exit_criteria": ["approved artifact promoted", "change window and identity valid", "deployment stages recorded", "rollback remains executable"]
+      "required_evidence": [
+        "change-approval",
+        "artifact-attestation",
+        "deployment-record",
+        "migration-record"
+      ],
+      "exit_criteria": [
+        "approved artifact promoted",
+        "change window and identity valid",
+        "deployment stages recorded",
+        "rollback remains executable"
+      ]
     },
     {
       "id": "G12",
       "name": "Production verification",
       "owner_role": "service_owner",
       "minimum_change_class": "C2",
-      "required_evidence": ["production-smoke", "telemetry", "business-control", "security-signal"],
-      "exit_criteria": ["critical journeys pass", "data and integrations reconcile", "telemetry within thresholds", "no rollback trigger active"]
+      "required_evidence": [
+        "production-smoke",
+        "telemetry",
+        "business-control",
+        "security-signal"
+      ],
+      "exit_criteria": [
+        "critical journeys pass",
+        "data and integrations reconcile",
+        "telemetry within thresholds",
+        "no rollback trigger active"
+      ]
     },
     {
       "id": "G13",
       "name": "Operational acceptance",
       "owner_role": "service_owner",
       "minimum_change_class": "C2",
-      "required_evidence": ["slo-window", "on-call-acceptance", "capacity-cost", "recovery-readiness"],
-      "exit_criteria": ["stabilization window complete", "SLO and error budget accepted", "on-call and runbooks active", "capacity cost and recovery accepted"]
+      "required_evidence": [
+        "slo-window",
+        "on-call-acceptance",
+        "capacity-cost",
+        "recovery-readiness"
+      ],
+      "exit_criteria": [
+        "stabilization window complete",
+        "SLO and error budget accepted",
+        "on-call and runbooks active",
+        "capacity cost and recovery accepted"
+      ]
     },
     {
       "id": "G14",
       "name": "Assurance closure and learning",
       "owner_role": "assurance_authority",
       "minimum_change_class": "C1",
-      "required_evidence": ["outcome-reconciliation", "evidence-index", "residual-debt", "learning-record"],
-      "exit_criteria": ["PRD outcomes reconciled", "evidence sealed", "residual debt owned", "validated learning promoted"]
+      "required_evidence": [
+        "outcome-reconciliation",
+        "evidence-index",
+        "residual-debt",
+        "learning-record"
+      ],
+      "exit_criteria": [
+        "PRD outcomes reconciled",
+        "evidence sealed",
+        "residual debt owned",
+        "validated learning promoted"
+      ]
     }
   ]
 }
-

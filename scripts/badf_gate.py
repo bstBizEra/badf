@@ -1411,6 +1411,176 @@ def load_demand(demand_id: str) -> dict[str, Any]:
     return rec
 
 
+
+# ---- project instance: YAML subset, schema check, classification (BADF-WP-0021, BADF-DEC-0004) ----
+_YAML_KEY = re.compile(r"^[A-Za-z_][A-Za-z0-9_-]*$")
+MATURITY = {"EMPTY", "IDEA", "PRD", "DESIGN", "BUILD", "TEST", "RELEASE", "PRODUCTION"}
+PROJECT_ID = re.compile(r"^[A-Z0-9][A-Z0-9-]{1,63}$")
+GREENFIELD_ALLOWED = {"README.md", "LICENSE", ".gitignore", ".gitattributes"}
+INSTANCE_NAMESPACE = ("AGENTS.md", "badf")
+
+
+def _yaml_scalar(value: Any) -> str:
+    if value is None:
+        return "null"
+    if value is True:
+        return "true"
+    if value is False:
+        return "false"
+    if isinstance(value, int):
+        return str(value)
+    if isinstance(value, str):
+        return json.dumps(value, ensure_ascii=False)   # double-quoted; JSON escapes are valid YAML double-quoted escapes
+    raise ValidationError(f"YAML subset cannot represent {type(value).__name__}")
+
+
+def emit_yaml(doc: dict[str, Any], indent: int = 0) -> str:
+    """A strict YAML subset the framework can emit AND parse without a
+    dependency: block mappings, block sequences of scalars, double-quoted
+    strings, ints, booleans, null. Nothing else, so nothing is guessed."""
+    if not isinstance(doc, dict) or not doc:
+        raise ValidationError("YAML subset: a mapping must be non-empty")
+    pad = " " * indent
+    lines: list[str] = []
+    for key, value in doc.items():
+        if not isinstance(key, str) or not _YAML_KEY.match(key):
+            raise ValidationError(f"YAML subset: key {key!r} is not a plain identifier")
+        if isinstance(value, dict):
+            lines.append(f"{pad}{key}:")
+            lines.append(emit_yaml(value, indent + 2).rstrip("\n"))
+        elif isinstance(value, list):
+            if not value or any(isinstance(item, (dict, list)) for item in value):
+                raise ValidationError(f"YAML subset: {key} must be a non-empty list of scalars")
+            lines.append(f"{pad}{key}:")
+            lines.extend(f"{pad}  - {_yaml_scalar(item)}" for item in value)
+        else:
+            lines.append(f"{pad}{key}: {_yaml_scalar(value)}")
+    return "\n".join(lines) + "\n"
+
+
+def parse_yaml_subset(text: str) -> dict[str, Any]:
+    """Parses exactly what emit_yaml produces. Comments, flow style, anchors,
+    tags, multi-documents, tabs, unquoted strings and duplicate keys are
+    refused -- a file outside the subset is a refusal, never a guess."""
+    lines = text.split("\n")
+    if lines and lines[-1] == "":
+        lines.pop()
+    items: list[tuple[int, str, str | None, str | None]] = []
+    for n, line in enumerate(lines, 1):
+        if not line.strip():
+            raise ValidationError(f"YAML subset: blank line {n}")
+        if "\t" in line:
+            raise ValidationError(f"YAML subset: tab at line {n}")
+        indent = len(line) - len(line.lstrip(" "))
+        if indent % 2:
+            raise ValidationError(f"YAML subset: odd indentation at line {n}")
+        body = line[indent:]
+        if body[0] in "#-&*{[!%|>" and not body.startswith("- "):
+            raise ValidationError(f"YAML subset: construct at line {n} is outside the subset")
+        if body.startswith("- "):
+            items.append((indent, "item", None, body[2:]))
+            continue
+        m = re.match(r"^([A-Za-z_][A-Za-z0-9_-]*):(?: (.*))?$", body)
+        if not m:
+            raise ValidationError(f"YAML subset: line {n} is not `key: value`, `key:` or `- item`")
+        items.append((indent, "key", m.group(1), m.group(2)))
+
+    def scalar(raw: str, n: int) -> Any:
+        if raw == "null":
+            return None
+        if raw == "true":
+            return True
+        if raw == "false":
+            return False
+        if re.fullmatch(r"-?[0-9]+", raw):
+            return int(raw)
+        if len(raw) >= 2 and raw[0] == raw[-1] == '"':
+            try:
+                return json.loads(raw)
+            except ValueError as exc:
+                raise ValidationError(f"YAML subset: bad string at item {n}: {exc}")
+        raise ValidationError(f"YAML subset: unquoted or unsupported scalar {raw!r}")
+
+    pos = 0
+
+    def mapping(indent: int) -> dict[str, Any]:
+        nonlocal pos
+        out: dict[str, Any] = {}
+        while pos < len(items) and items[pos][0] == indent and items[pos][1] == "key":
+            _, _, key, raw = items[pos]; pos += 1
+            if key in out:
+                raise ValidationError(f"YAML subset: duplicate key {key}")
+            if raw is not None:
+                out[key] = scalar(raw, pos)
+            elif pos < len(items) and items[pos][0] == indent + 2 and items[pos][1] == "key":
+                out[key] = mapping(indent + 2)
+            elif pos < len(items) and items[pos][0] == indent + 2 and items[pos][1] == "item":
+                seq = []
+                while pos < len(items) and items[pos][0] == indent + 2 and items[pos][1] == "item":
+                    seq.append(scalar(items[pos][3] or "", pos)); pos += 1
+                out[key] = seq
+            else:
+                raise ValidationError(f"YAML subset: key {key} has no value")
+        return out
+
+    doc = mapping(0)
+    if pos != len(items):
+        raise ValidationError(f"YAML subset: unexpected structure at item {pos + 1}")
+    if not doc:
+        raise ValidationError("YAML subset: empty document")
+    return doc
+
+
+def check_schema(name: str, inst: Any) -> None:
+    """Structural conformance to schemas/<name>.schema.json: required keys,
+    enum values at any depth, additionalProperties: false, string patterns.
+    Deterministic and dependency-free; runs BEFORE anything is written."""
+    sch = load_json(ROOT / "schemas" / f"{name}.schema.json")
+
+    def walk(spec: dict[str, Any], val: Any, where: str) -> None:
+        label = where or "document"
+        if spec.get("type") == "object" or "properties" in spec:
+            if not isinstance(val, dict):
+                raise ValidationError(f"{name}: {label} must be a mapping")
+            props = spec.get("properties", {})
+            missing = sorted(set(spec.get("required", [])) - set(val))
+            if missing:
+                raise ValidationError(f"{name}: {label} missing {', '.join(missing)}")
+            if spec.get("additionalProperties", True) is False:
+                extra = sorted(set(val) - set(props))
+                if extra:
+                    raise ValidationError(f"{name}: {label} carries undefined key(s) {', '.join(extra)}")
+            for key, sub in props.items():
+                if key in val:
+                    walk(sub, val[key], f"{where}.{key}" if where else key)
+            return
+        if "enum" in spec and val not in spec["enum"]:
+            raise ValidationError(f"{name}: {label}={val!r} is not one of {spec['enum']}")
+        if "pattern" in spec and isinstance(val, str) and not re.fullmatch(spec["pattern"], val):
+            raise ValidationError(f"{name}: {label}={val!r} does not match {spec['pattern']}")
+        if spec.get("type") == "array" and isinstance(val, list) and "items" in spec:
+            for i, item in enumerate(val):
+                walk(spec["items"], item, f"{where}[{i}]")
+
+    walk(sch, inst, "")
+
+
+def classify_project(root: Path) -> str:
+    tracked = {t for t in _foreign_git(root, "ls-files").stdout.decode().split("\n") if t}
+    return "GREENFIELD" if tracked <= GREENFIELD_ALLOWED else "BROWNFIELD"
+
+
+def derive_project_id(owner: str, name: str) -> str:
+    pid = re.sub(r"[^A-Z0-9]+", "-", f"{owner}-{name}".upper()).strip("-")
+    if not PROJECT_ID.match(pid):
+        raise ValidationError(f"cannot derive a project id from owner {owner!r} and name {name!r}; declare project_id in the intent")
+    return pid
+
+
+def _digest_bytes(data: bytes) -> str:
+    return "sha256:" + hashlib.sha256(data).hexdigest()
+
+
 def load_intent(path: Path) -> dict[str, Any]:
     """The four-line intent (plus where the project lives). JSON is accepted
     as YAML's strict subset -- no new dependency. A document that is not a
@@ -1475,19 +1645,21 @@ def next_wp_id() -> str:
 
 
 def init_project(intent_path: Path) -> str:
-    """`badf init <intent>`: intake of a project into BADF at G00.
+    """`badf init <intent>`: intake of a project into BADF at G00, and the
+    project's own control plane (BADF-DEC-0004):
 
-    Mandate section 4 says init 'autonomously determines what is missing'.
-    Measured against the WP schema, 5 of 17 required fields are JUDGMENT:
-    objective, business_value, in_scope, out_of_scope, acceptance_criteria.
-    init does NOT fill them. It records them DECLARED_MISSING, prepares the
-    three G00 declarations as agent-produced evidence, and writes a dossier
-    at HUMAN_REQUIRED. The gate renders HELD until a human supplies the
-    judgment fields and signs the declarations. AUTHORIZE is a gate
-    outcome, not a chat message.
+      DISCOVER  what the project states about itself
+      CLASSIFY  GREENFIELD | BROWNFIELD; type / maturity from the intent or DECLARED_MISSING
+      BASELINE  target HEAD; the tree must be CLEAN; digest of an existing AGENTS.md
+      GENERATE  <project>/AGENTS.md (only if absent) · badf/project.yaml · badf/state.json
+      VALIDATE  every document against its schema BEFORE the first byte is written
+      REGISTER  the receipt in the project, bound by digest into BADF's G00 evidence;
+                the work package, dossier (HUMAN_REQUIRED), registry entry, ledger event
 
-    init writes ONLY under BADF's tree: work/<WP>/ and badf/repositories.json.
-    It reads the target project and never writes to it.
+    The write is BOUNDED to <project>/AGENTS.md-if-absent and <project>/badf/.
+    Judgment fields stay DECLARED_MISSING; the dossier renders HELD until a
+    human supplies them and signs the declarations. An instance is a request
+    for authority, not a grant of it.
     """
     proj = load_intent(intent_path)
     dem = load_demand(proj["demand"])
@@ -1495,14 +1667,19 @@ def init_project(intent_path: Path) -> str:
         raise ValidationError(
             f"demand {proj['demand']} belongs to {dem['source']['repository']}, but the intent targets "
             f"{proj['repository']}; a demand authorizes work on ONE repository")
-    root = Path(proj["local_path"])
+    root = Path(proj["local_path"]).resolve()
+    if root == ROOT.resolve():
+        raise ValidationError("intent.project.local_path is the BADF framework itself; the framework is not a project instance")
     top = _foreign_git(root, "rev-parse", "--show-toplevel")
     if top.returncode != 0:
         raise ValidationError(f"intent.project.local_path {root} is not a git repository")
-    head = _foreign_git(root, "rev-parse", "HEAD").stdout.decode().strip()
-    remote = _foreign_git(root, "remote", "get-url", "origin")
-    remote_url = remote.stdout.decode().strip() if remote.returncode == 0 else None
-
+    if Path(top.stdout.decode().strip()).resolve() != root:
+        raise ValidationError(f"intent.project.local_path {root} is not the repository root")
+    # The most specific fact refuses first: an existing instance, a duplicate
+    # registry entry or a duplicate work package are stronger facts than the
+    # dirty tree they may have caused. Nothing is written before any of these.
+    if (root / "badf").exists():
+        raise ValidationError(f"{root} already has a badf/ control plane; init refuses to overwrite an instance")
     registry_path = ROOT / REPOSITORIES
     registry = load_json(registry_path)
     repos = registry.setdefault("repositories", {})
@@ -1512,13 +1689,101 @@ def init_project(intent_path: Path) -> str:
                 if load_json(d).get("repository") == proj["repository"]]
     if existing:
         raise ValidationError(f"{proj['repository']} already has work package {existing[0].parent.name}; init refuses to duplicate")
+    dirty = _foreign_git(root, "status", "--porcelain").stdout.decode()
+    if dirty.strip():
+        raise ValidationError(f"target working tree is not clean ({len(dirty.splitlines())} change(s)); "
+                              "a baseline requires a clean tree -- commit or stash first")
+    head = _foreign_git(root, "rev-parse", "HEAD").stdout.decode().strip()
+    remote = _foreign_git(root, "remote", "get-url", "origin")
+    remote_url = remote.stdout.decode().strip() if remote.returncode == 0 else None
+    framework_revision = _git("rev-parse", "HEAD")
+    if not framework_revision or not re.fullmatch(r"[0-9a-f]{40}", framework_revision):
+        raise ValidationError("framework revision cannot be established; an instance must pin the framework commit")
+    framework_repository = self_repository()
 
+    # DISCOVER / CLASSIFY -- read, never invent
+    discovered = discover_project(root)
+    classification = classify_project(root)
+    ptype = proj.get("type") or "DECLARED_MISSING"
+    maturity = proj.get("maturity") or "DECLARED_MISSING"
+    if maturity != "DECLARED_MISSING" and maturity not in MATURITY:
+        raise ValidationError(f"intent.project.maturity {maturity!r} is not one of {sorted(MATURITY)}")
+    project_id = proj.get("project_id") or derive_project_id(proj["owner"], proj["name"])
+    if not PROJECT_ID.match(str(project_id)):
+        raise ValidationError(f"intent.project.project_id {project_id!r} must match {PROJECT_ID.pattern}")
+
+    # BASELINE
     wp_id = next_wp_id()
+    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    stamp = now.replace("-", "").replace(":", "")
+    agents_path = root / "AGENTS.md"
+    agents_exists = agents_path.is_file()
+    agents_digest = _digest_bytes(agents_path.read_bytes()) if agents_exists else None
+    receipt_rel = f"badf/evidence/receipts/init-{stamp}.json"
+
+    project_doc: dict[str, Any] = {
+        "badf": {"schema_version": "1.0.0", "framework_repository": framework_repository, "framework_revision": framework_revision},
+        "project": {"id": project_id, "name": proj["name"], "repository": proj["repository"],
+                    "classification": classification, "type": ptype, "maturity": maturity},
+        "ownership": {"organization": proj["owner"], "product_owner": None, "service_owner": None},
+        "mission": {"intent": proj["intent"]},
+        "delivery": {"target": proj["target"], "lifecycle": "G00-G14", "work_package": wp_id},
+        "authority": {"mode": "bounded-autonomous", "fail_closed": True, "policy": None},
+        "evidence": {"root": "badf/evidence", "receipts": "badf/evidence/receipts"},
+        "state": {"file": "badf/state.json"},
+    }
+    state_doc: dict[str, Any] = {
+        "schema_version": "1.0.0", "project_id": project_id, "framework_revision": framework_revision,
+        "lifecycle": {"current_gate": "G00", "state": "INITIALIZED", "target": proj["target"].upper()},
+        "active_work_package": wp_id, "active_session": None,
+        "authority": {"status": "UNRESOLVED"},
+        "entrypoint": "EXISTING_AGENTS_MD_PRESERVED" if agents_exists else "AGENTS_MD_GENERATED",
+        "readiness": {"product": "NOT_STARTED", "architecture": "NOT_STARTED", "engineering": "NOT_STARTED",
+                      "security": "NOT_STARTED", "release": "NOT_STARTED", "production": "NOT_READY"},
+        "derived_from": {"baseline_commit": head, "receipt": receipt_rel},
+    }
+    template_path = ROOT / "templates/AGENTS.instance.md"
+    if not template_path.is_file():
+        raise ValidationError("templates/AGENTS.instance.md is missing from the framework; refusing to invent an entrypoint")
+    template = template_path.read_text(encoding="utf-8")
+    agents_text = template
+    for key, value in {"PROJECT_NAME": proj["name"], "FRAMEWORK_REPOSITORY": framework_repository,
+                       "FRAMEWORK_REVISION": framework_revision, "WORK_PACKAGE": wp_id, "RECEIPT": receipt_rel}.items():
+        agents_text = agents_text.replace("{{" + key + "}}", value)
+    if "{{" in agents_text:
+        raise ValidationError("templates/AGENTS.instance.md carries a placeholder init does not fill")
+    contents: list[tuple[str, bytes]] = []
+    if not agents_exists:
+        contents.append(("AGENTS.md", agents_text.encode("utf-8")))
+    contents.append(("badf/project.yaml", emit_yaml(project_doc).encode("utf-8")))
+    contents.append(("badf/state.json", (json.dumps(state_doc, indent=2) + "\n").encode("utf-8")))
+    receipt: dict[str, Any] = {
+        "schema_version": "1.0.0", "operation": "badf.init", "project_id": project_id, "repository": proj["repository"],
+        "baseline_commit": head, "baseline_tree": "CLEAN",
+        "framework_repository": framework_repository, "framework_revision": framework_revision,
+        "classification": classification, "maturity": maturity,
+        "generated": [{"path": rel, "digest": _digest_bytes(data)} for rel, data in contents],
+        "preserved": [{"path": "AGENTS.md", "digest": agents_digest}] if agents_exists else [],
+        "conflicts": [{"path": "AGENTS.md", "disposition": "PRESERVED_MERGE_PLAN_REQUIRED"}] if agents_exists else [],
+        "validation": "PASS", "recorded_at": now, "work_package": wp_id,
+    }
+    # VALIDATE -- all four documents, before the first byte is written
+    check_schema("project", project_doc)
+    check_schema("state", state_doc)
+    check_schema("init-receipt", receipt)
+    if parse_yaml_subset(emit_yaml(project_doc)) != project_doc:
+        raise ValidationError("project.yaml does not round-trip through the YAML subset; refusing to write it")
+    receipt_bytes = (json.dumps(receipt, indent=2) + "\n").encode("utf-8")
+
+    # GENERATE -- the bounded write
+    (root / "badf/evidence/receipts").mkdir(parents=True)
+    for rel, data in contents:
+        (root / rel).write_bytes(data)
+    (root / receipt_rel).write_bytes(receipt_bytes)
+
+    # REGISTER -- BADF's side
     wp_dir = ROOT / "work" / wp_id
     wp_dir.mkdir(parents=True)
-    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-    discovered = discover_project(root)
-
     wp: dict[str, Any] = {
         "$schema": "../../schemas/work-package.schema.json", "schema_version": "1.0.0",
         "id": wp_id, "title": f"{proj['name']}: {proj['intent']}", "owner": proj["owner"],
@@ -1528,26 +1793,28 @@ def init_project(intent_path: Path) -> str:
         "declared_missing": list(JUDGMENT_FIELDS),
         "target_gate": "G00",
         "change_class": "C3",
-        "change_class_rationale": "a new product targeting " + proj["target"] + " is high blast radius under the matrix's own C3 definition; lowering it is a human decision",
+        "change_class_rationale": "a new product targeting " + proj["target"] + " is high blast radius under the matrix's own C3 definition; lowering it is a human judgment, recorded in a dossier",
         "data_classification": "restricted",
         "data_classification_rationale": "deny-unless-established: the most restrictive class until the owner declares otherwise",
-        "permissions": [f"read: {proj['repository']}", "write: none -- BADF governs; it does not write to the target"],
-        "tests": ["DECLARED_MISSING"], "evidence": ["authority", "scope", "risk-classification"],
-        "rollback": {"reversible": True, "method": "a project at G00 has started nothing; withdrawing the work package is the rollback"},
+        "permissions": [f"read: {proj['repository']}",
+                        f"write: {proj['repository']} bounded to AGENTS.md-if-absent and badf/ (BADF-DEC-0004); nothing else"],
+        "tests": ["DECLARED_MISSING"], "evidence": ["authority", "scope", "risk-classification", "init-receipt"],
+        "rollback": {"reversible": True, "method": "a project at G00 has started nothing; withdrawing the work package and removing the instance namespace is the rollback"},
         "status": "DRAFT",
         "discovered": discovered,
+        "instance": {"project_id": project_id, "classification": classification, "entrypoint": state_doc["entrypoint"],
+                     "receipt": receipt_rel, "framework_revision": framework_revision},
         "external_target": {"repository": proj["repository"], "branch": "main", "base_revision": head,
                             "remote_url": remote_url, "remote_verified": remote_url is not None},
         "intent": {k: proj[k] for k in ("name", "intent", "owner", "target")},
         "initialized_at": now,
     }
     (wp_dir / "work-package.json").write_text(json.dumps(wp, indent=2) + "\n", encoding="utf-8")
-
     ev_dir = wp_dir / "evidence/G00"; ev_dir.mkdir(parents=True)
     decls = {
-        "authority": f"PREPARED, UNSIGNED. {proj['owner']} must authorize {proj['name']} for BADF governance at G00. An agent prepared this declaration; only a human signature (producer.type=human) makes it authority.",
+        "authority": f"PREPARED, UNSIGNED. {proj['owner']} must authorize {proj['name']} for BADF governance at G00. An agent prepared this declaration; only a human signature makes it evidence.",
         "scope": f"PREPARED, UNSIGNED. Intent as given: {proj['intent']}. in_scope / out_of_scope are DECLARED_MISSING and must be supplied by the owner.",
-        "risk-classification": f"PREPARED, UNSIGNED. Derived C3 (new {proj['target']} product) and data_classification restricted, both deny-unless-established. The owner may lower either; that is a human decision recorded as an approval.",
+        "risk-classification": f"PREPARED, UNSIGNED. Derived C3 (new {proj['target']} product) and data_classification restricted, both deny-unless-established; the owner may lower either in a dossier, never here.",
     }
     index = []
     for t, text in decls.items():
@@ -1561,7 +1828,18 @@ def init_project(intent_path: Path) -> str:
              "artifact": f"work/{wp_id}/evidence/G00/{art.name}", "digest": sha256(art)}
         (ev_dir / f"{t}.json").write_text(json.dumps(e, indent=2) + "\n", encoding="utf-8")
         index.append({"type": t, "path": f"work/{wp_id}/evidence/G00/{t}.json"})
-
+    # the receipt, byte-identical, bound as G00 evidence: the first link of the chain
+    art = ev_dir / "init-receipt.receipt.json"; art.write_bytes(receipt_bytes)
+    e = {"schema_version": "1.0.0", "id": f"EVD-{wp_id}-G00-init-receipt", "work_package_id": wp_id, "gate": "G00",
+         "claim": f"init wrote a bounded instance into {proj['repository']} at {head[:12]}: {len(contents)} generated, "
+                  f"{1 if agents_exists else 0} preserved; the receipt is the same bytes as {receipt_rel} in the project",
+         "evidence_type": "init-receipt", "producer": {"id": "badf-init", "type": "controller"},
+         "source_revision": head, "target": f"{proj['repository']}:main",
+         "toolchain": {"name": "badf-init", "version": "2"}, "operation": "initialise instance",
+         "started_at": now, "completed_at": now, "outcome": "PASS",
+         "artifact": f"work/{wp_id}/evidence/G00/{art.name}", "digest": sha256(art)}
+    (ev_dir / "init-receipt.json").write_text(json.dumps(e, indent=2) + "\n", encoding="utf-8")
+    index.append({"type": "init-receipt", "path": f"work/{wp_id}/evidence/G00/init-receipt.json"})
     dossier = {
         "schema_version": "1.0.0", "id": f"DOS-{wp_id}-G00-v1", "work_package_id": wp_id, "gate": "G00",
         "policy_epoch": load_json(ROOT / "badf/lifecycle.json")["policy_epoch"],
@@ -1570,22 +1848,24 @@ def init_project(intent_path: Path) -> str:
         "evidence": index, "approvals": [], "conditions": [], "non_coverage": [], "exceptions": [],
         "risks": [], "council": None,
         "disposition": "HUMAN_REQUIRED", "created_at": now,
-        "held_because": f"demand {proj['demand']} ({dem['kind']}); 5 judgment fields DECLARED_MISSING; 3 G00 declarations PREPARED but UNSIGNED; C3 requires " +
-                        ", ".join(load_json(ROOT / MATRIX)["change_classes"]["C3"]["required_roles"]) + " approvals",
+        "held_because": f"demand {proj['demand']} ({dem['kind']}); 5 judgment fields DECLARED_MISSING; 3 G00 declarations PREPARED but UNSIGNED; C3 requires "
+                        + ", ".join(load_json(ROOT / MATRIX)["change_classes"]["C3"]["required_roles"]) + " approvals"
+                        + ("; existing AGENTS.md preserved -- merge plan required" if agents_exists else ""),
     }
     (wp_dir / "gate-dossier.G00.json").write_text(json.dumps(dossier, indent=2) + "\n", encoding="utf-8")
-
     repos[proj["repository"]] = {"local_path": str(root), "default_branch": "main", "resolution": "LOCAL_MIRROR",
                                  "remote_url": remote_url, "remote_verified": remote_url is not None,
-                                 "registered_by": "badf-init", "registered_at": now}
+                                 "registered_by": "badf-init", "registered_at": now, "work_package": wp_id,
+                                 "instance": {"entrypoint": state_doc["entrypoint"], "receipt": receipt_rel}}
     registry_path.write_text(json.dumps(registry, indent=2) + "\n", encoding="utf-8")
-
     append_event(wp_dir, "init", "COMMITTED", "badf-init", "controller", effect_id="intake",
                  output_digest=sha256(wp_dir / "work-package.json"),
-                 note=f"intake of {proj['repository']} at {head[:12]}; {len(discovered)} facts discovered; "
-                      f"{len(JUDGMENT_FIELDS)} judgment fields DECLARED_MISSING; dossier HUMAN_REQUIRED")
+                 note=f"intake of {proj['repository']} at {head[:12]} ({classification}); instance {receipt_rel}; "
+                      f"{len(discovered)} facts discovered; {len(JUDGMENT_FIELDS)} judgment fields DECLARED_MISSING; dossier HUMAN_REQUIRED")
     write_lockfile()
-    return wp_id
+    written = ", ".join(rel for rel, _ in contents) + f", {receipt_rel}"
+    return (f"BADF INIT: {wp_id} created at G00, disposition HUMAN_REQUIRED; instance written to {root}: {written}"
+            + ("; AGENTS.md preserved (merge plan required)" if agents_exists else ""))
 
 
 def validate_dossier(dossier_path: Path) -> str:
@@ -1706,8 +1986,7 @@ def main() -> int:
         elif args.command == "lock":
             write_lockfile()
         elif args.command == "init":
-            wp_id = init_project(args.intent)
-            print(f"BADF INIT: {wp_id} created at G00, disposition HUMAN_REQUIRED; nothing written to the target project")
+            print(init_project(args.intent))
             return 0
         elif args.command == "reconcile":
             print(reconcile_work_package(args.work_package))

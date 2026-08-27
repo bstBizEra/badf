@@ -9,7 +9,7 @@ Each gate is a decision, not a folder-completeness check. Entry criteria authori
 
 | Gate | Stage | Decision outcome |
 | --- | --- | --- |
-| G00 | Intake and authority | Work is legitimate, owned, classified, and bounded |
+| G00 | Intake, authority and project definition | A project may enter from nothing: the instance exists (`AGENTS.md`, `badf/project.yaml`, `badf/state.json`, receipt), the product is defined, and work is legitimate, owned, classified, and bounded |
 | G01 | PRD baseline | Problem, users, value, outcomes, constraints, and acceptance are approved |
 | G02 | Requirement decomposition | Stories, NFRs, traceability, dependencies, and DoR are complete |
 | G03 | UX and service design | Journeys, accessibility, service operations, and user validation are ready |

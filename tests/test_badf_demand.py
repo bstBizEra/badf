@@ -106,12 +106,16 @@ class InitRequiresDemandTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp(); self.root = Path(self.tmp) / "badf"
         subprocess.run(["git", "clone", "-q", str(gate.ROOT), str(self.root)], check=True)
-        for rel in ("scripts/badf_gate.py", "badf", "work", "schemas"):
+        for rel in ("scripts/badf_gate.py", "badf", "work", "schemas", "templates"):
             src, dst = gate.ROOT / rel, self.root / rel
             if src.is_dir(): shutil.rmtree(dst, ignore_errors=True); shutil.copytree(src, dst)
             else: shutil.copy2(src, dst)
         self.env = {k: v for k, v in os.environ.items() if not k.startswith("BADF_")}
         self.intent = self.root / "intent.json"
+        self.target = Path(self.tmp) / "proptech"      # BADF-DEC-0004: init writes; never into the real clone
+        if PROPTECH.is_dir():
+            subprocess.run(["git", "clone", "-q", str(PROPTECH), str(self.target)], check=True)
+        self.BASE = dict(self.BASE, local_path=str(self.target))
 
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)

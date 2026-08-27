@@ -1,0 +1,69 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0021",
+  "title": "Project instance contract: badf init writes AGENTS.md + badf/{project.yaml,state.json,receipt} into the project, bounded and receipted",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0008",
+  "objective": "Make 'a project governed by BADF' a real artefact: init runs DISCOVER -> CLASSIFY -> BASELINE -> GENERATE -> VALIDATE -> REGISTER and writes only inside <project>/badf/ plus <project>/AGENTS.md if absent; an init receipt is the first link of the evidence chain, digest-bound to BADF's own G00 evidence.",
+  "business_value": "Without a project-side control plane, BADF governance exists only inside bstBizEra/badf; a project cannot be told what governs it, and nothing in it can be validated. Framework vs instance becomes an architectural distinction (BADF-DEC-0004).",
+  "in_scope": [
+    "schemas: project, state, init-receipt (locked)",
+    "templates/AGENTS.instance.md",
+    "init: classification GREENFIELD|BROWNFIELD, baseline (SHA, clean tree, existing AGENTS.md digest), bounded write, receipt, state.json derived",
+    "refusals: dirty tree, existing badf/, the framework itself as target",
+    "existing AGENTS.md preserved and recorded as a conflict",
+    "BADF-side evidence init-receipt bound by digest",
+    "lifecycle G00 amended (BADF-DEC-0005)",
+    "doctrine: framework vs instance; README: init contract",
+    "tests in scratch repos; PropTech only as a scratch clone"
+  ],
+  "out_of_scope": [
+    "instance validation and per-instance lockfile (BADF-WP-0022)",
+    "authority instance with a framework floor (BADF-WP-0023)",
+    "AGENTS.md compatibility analysis / merge plan",
+    "agents/ councils/ sessions/ memory/ knowledge/ skills/ tools/ mcp/ policies/ releases/ operations/ learning/ -- each with its first record",
+    "any write to the real PropTech repository",
+    "#25 drift test for the documented intent fields"
+  ],
+  "target_gate": "G07",
+  "change_class": "C3",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "greenfield: exactly AGENTS.md, badf/project.yaml, badf/state.json, badf/evidence/receipts/init-*.json appear; nothing else changes (digest outside the namespace equal)",
+    "brownfield with AGENTS.md: AGENTS.md byte-identical; receipt lists it as preserved with a conflict; badf/ still created",
+    "existing badf/ -> refused, nothing written",
+    "dirty working tree -> refused, nothing written",
+    "local_path == the framework -> refused",
+    "receipt.generated equals exactly the files that appeared, each with a digest",
+    "state.json is derived: baseline_commit == target HEAD, current_gate G00, authority UNRESOLVED",
+    "project.yaml round-trips through the gate's subset parser and through PyYAML where present",
+    "BADF-side evidence init-receipt.json digest == the instance receipt",
+    "no mutation of the real PropTech clone by any test"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR",
+    "write: scratch git repositories under the test tmpdir only"
+  ],
+  "tests": [
+    "tests/test_badf_instance.py",
+    "tests/test_badf_init.py",
+    "tests/test_badf_schema_drift.py"
+  ],
+  "evidence": [
+    "mutation on classify/baseline/namespace/receipt, unique anchors",
+    "post-merge simulation cited in the PR"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR; instances created meanwhile keep their files (they are the project's)"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "66672f3"
+  },
+  "note": "Lands IN_PROGRESS by design; reconciled by the next WP's branch."
+}

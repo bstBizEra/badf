@@ -1,0 +1,219 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "badf/project.schema.json",
+  "title": "BADF project instance descriptor (badf/project.yaml)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "badf",
+    "project",
+    "ownership",
+    "mission",
+    "delivery",
+    "authority",
+    "evidence",
+    "state"
+  ],
+  "properties": {
+    "badf": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "framework_repository",
+        "framework_revision"
+      ],
+      "properties": {
+        "schema_version": {
+          "type": "string",
+          "enum": [
+            "1.0.0"
+          ]
+        },
+        "framework_repository": {
+          "type": "string"
+        },
+        "framework_revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "description": "The framework commit that produced this instance. Exact and corroborable; there is no framework version number yet."
+        }
+      }
+    },
+    "project": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "repository",
+        "classification",
+        "type",
+        "maturity"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[A-Z0-9][A-Z0-9-]{1,63}$"
+        },
+        "name": {
+          "type": "string"
+        },
+        "repository": {
+          "type": "string"
+        },
+        "classification": {
+          "type": "string",
+          "enum": [
+            "GREENFIELD",
+            "BROWNFIELD"
+          ]
+        },
+        "type": {
+          "type": "string",
+          "description": "Declared by the intent or DECLARED_MISSING. init reads; it never invents."
+        },
+        "maturity": {
+          "type": "string",
+          "enum": [
+            "EMPTY",
+            "IDEA",
+            "PRD",
+            "DESIGN",
+            "BUILD",
+            "TEST",
+            "RELEASE",
+            "PRODUCTION",
+            "DECLARED_MISSING"
+          ]
+        }
+      }
+    },
+    "ownership": {
+      "type": "object",
+      "required": [
+        "organization",
+        "product_owner",
+        "service_owner"
+      ],
+      "properties": {
+        "organization": {
+          "type": "string"
+        },
+        "product_owner": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "service_owner": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "mission": {
+      "type": "object",
+      "required": [
+        "intent"
+      ],
+      "properties": {
+        "intent": {
+          "type": "string"
+        }
+      }
+    },
+    "delivery": {
+      "type": "object",
+      "required": [
+        "target",
+        "lifecycle",
+        "work_package"
+      ],
+      "properties": {
+        "target": {
+          "type": "string",
+          "enum": [
+            "production",
+            "sandbox"
+          ]
+        },
+        "lifecycle": {
+          "type": "string",
+          "enum": [
+            "G00-G14"
+          ]
+        },
+        "work_package": {
+          "type": "string",
+          "pattern": "^WP-2026-[0-9]{4}$",
+          "description": "The BADF-side work package that governs this instance."
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "required": [
+        "mode",
+        "fail_closed",
+        "policy"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "bounded-autonomous"
+          ]
+        },
+        "fail_closed": {
+          "type": "boolean",
+          "enum": [
+            true
+          ]
+        },
+        "policy": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "badf/authority/charter.yaml once BADF-WP-0023 exists; null until then, never a path that does not exist."
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": [
+        "root",
+        "receipts"
+      ],
+      "properties": {
+        "root": {
+          "type": "string",
+          "enum": [
+            "badf/evidence"
+          ]
+        },
+        "receipts": {
+          "type": "string",
+          "enum": [
+            "badf/evidence/receipts"
+          ]
+        }
+      }
+    },
+    "state": {
+      "type": "object",
+      "required": [
+        "file"
+      ],
+      "properties": {
+        "file": {
+          "type": "string",
+          "enum": [
+            "badf/state.json"
+          ]
+        }
+      }
+    }
+  }
+}
