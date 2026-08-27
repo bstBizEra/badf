@@ -120,7 +120,8 @@ it rather than trusting the record.
   the suite. Fixtures normalise inherited debt and add only what they assert on. Since
   `BADF-WP-0024` (#21) this is a **named gate**: `scripts/badf_compose.py` does it
   deterministically and CI runs it on every pull request with the PR body as the squash
-  message — the gate refuses a message the ledger would not see, refuses to nest, and
+  message — the gate refuses a message the ledger would not see, nests exactly one level
+  (its own tests run in the composed world; `0b88c74` went red because they did not), and
   writes nothing to the source repository. Run it locally before pushing:
   `python3 scripts/badf_compose.py --message-file <pr-body> [--ci-shape]`.
 

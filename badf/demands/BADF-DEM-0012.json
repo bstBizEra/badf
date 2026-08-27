@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0012",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 40,
+    "url": "https://github.com/bstBizEra/badf/issues/40",
+    "exported_at": "2026-08-27T18:47:18Z",
+    "body_digest": "sha256:2515e6db7ad8215fab024277bd2d46a26144ebb4f53cd21eb9a1100a6284d2ae"
+  },
+  "title": "GOV-0014: main is red at 0b88c74 -- the composed-tree gate cannot see its own tests",
+  "problem": "## Observed\nThe push-to-`main` run for `0b88c74` (run 33104985912) fails 8 tests in `tests/test_badf_compose.py`, all with the same shape: the fixture commits the working tree as the candidate, and on `main` after the merge the working tree **is** `origin/main` \u2014 `git commit` has nothing to commit and raises. PR #39's runs were green twice over: the normal suite ran on a branch whose tree differed from `main`, and the **composed-tree gate skipped the compose tests inside the composed run** (it refuses to nest), so the one place that reproduces the post-merge world could not see the tests that break there.\n\n## Expected\n1. The compose fixture must produce a candidate that differs from its base **by construction**, whatever the relationship between the working tree and `origin/main`.\n2. The composed-tree gate must run its own tests in the composed world. Refusing to nest was one level too strict: allow depth 1 (the composed suite runs the compose tests, each of which composes with a restricted pattern at depth 2, where the compose tests are skipped). A gate that skips itself has a blind spot exactly the size of itself.\n\n## Evidence\n`gh api repos/bstBizEra/badf/actions/runs/33104985912 --jq .conclusion` \u2192 `failure`. Pristine clone of `0b88c74`: `unittest` \u2192 306 run, 8 errors (`test_ci_shape\u2026`, `test_composed_clone_carries\u2026`, `test_green_candidate\u2026`, `test_message_naming\u2026`, `test_message_without\u2026`, `test_refuses_to_nest`, `test_unreachable_candidate\u2026`, `test_writes_nothing\u2026`). The three compose tests that pass are the three whose candidate edits a file before committing.\n\n## Unknowns\nNone. Second occurrence of the \"fixture depends on ledger state\" class after #31; the first was the state the merge itself changes, this one is the tree being equal to it.\n\n## Proposed work package\n`BADF-WP-0025` \u2014 hot-fix through the loop: fixture adds a marker file to every candidate; `BADF_COMPOSE_DEPTH` replaces `BADF_COMPOSE_INNER` (refuse at depth \u2265 2); the branch's own composed run, now exercising the compose tests in the composed world, is the regression proof.\n\ndiscovered-by: BADF-WP-0024 (post-merge) \u00b7 status: DISCOVERED \u00b7 severity: main red\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-27T18:47:18Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. Hot-fix for a red main caused by BADF-WP-0024's own fixture and its refuse-to-nest rule; authority: the operator's standing in-session delegation. Worked as BADF-WP-0025."
+}

@@ -12,7 +12,10 @@ Rules it holds itself to:
   - clone by SHA (a detached runner checkout has no local branches to copy);
   - refuse a message without a Work-Package line: the composed ledger would
     not see the landing, and a green run would prove nothing;
-  - refuse to nest: the composed suite contains this script's own tests;
+  - nest ONE level: the composed suite runs this script's own tests (depth 1),
+    each composing with a restricted pattern at depth 2, where they skip.
+    Refusing to nest at all (WP-0024) left the gate blind to exactly its own
+    tests -- and those broke on main at 0b88c74 (#40);
   - print any restriction of the suite; never a silent cap;
   - write nothing to the source repository; work in a scratch directory.
 
@@ -46,8 +49,9 @@ def fail(reason: str) -> int:
 
 
 def compose(args: argparse.Namespace) -> int:
-    if os.environ.get("BADF_COMPOSE_INNER"):
-        return fail("refusing to nest: this is already a composed-tree run (BADF_COMPOSE_INNER is set)")
+    depth = int(os.environ.get("BADF_COMPOSE_DEPTH", "0") or 0)
+    if depth >= 2:
+        return fail(f"refusing to nest beyond depth 2 (BADF_COMPOSE_DEPTH={depth}); the composed world is verified one level deep")
     message = Path(args.message_file).read_text(encoding="utf-8")
     m = WP_LINE.search(message)
     if not m:
@@ -102,7 +106,7 @@ def compose(args: argparse.Namespace) -> int:
         print(f"BADF COMPOSE: base {base[:7]} + candidate {cand[:7]} -> composed {composed[:7]} (tree {tree[:7]})")
 
         env = {k: v for k, v in os.environ.items() if not k.startswith("BADF_")}
-        env["BADF_COMPOSE_INNER"] = "1"
+        env["BADF_COMPOSE_DEPTH"] = str(depth + 1)
         shape = "host"
         if args.ci_shape:
             shape = "CI"
@@ -120,15 +124,25 @@ def compose(args: argparse.Namespace) -> int:
         print(f"  shape: {shape}")
         print(f"  suite pattern: {args.tests}" + ("" if args.tests == FULL_PATTERN else "   (RESTRICTED -- not the full suite)"))
 
+        # No material code without a Work Package: the WP the message names must
+        # have a record in the composed tree. Whether the ledger then reports it
+        # LANDED_UNRECONCILED (the usual case) or finds it already reconciled (a
+        # follow-up under a closed WP) is informational -- the first version keyed
+        # on the LANDED_UNRECONCILED line and broke the moment a record was
+        # reconciled, a third fixture-vs-ledger dependence in one session.
+        if not (work / "work" / wp / "work-package.json").is_file():
+            return fail(f"no work package record for {wp} in the composed tree; the message names a work package the candidate does not carry")
+        landed_body = g("log", "-1", "--format=%B", f"origin/{DEFAULT_BRANCH}").stdout
+        if not WP_LINE.search(landed_body) or f"{m.group(1)}" not in (WP_LINE.search(landed_body).group(1)):
+            return fail("the composed commit on origin/main does not carry the candidate's Work-Package line")
         r = sh([sys.executable, "scripts/badf_gate.py", "repo"], work, env=env)
         if r.returncode != 0:
             last = ((r.stdout + r.stderr).strip().splitlines() or ["(no output)"])[-1]
             print(f"  repo: FAIL -- {last}")
             return fail("the composed tree fails the repository contract")
-        if not any(f"{wp} LANDED_UNRECONCILED" in line for line in r.stdout.splitlines()):
-            print(f"  repo: PASS, but the composed ledger does not show {wp} as landed")
-            return fail(f"the composed ledger does not see {wp} landing; the message's Work-Package line does not match the candidate's record")
-        print(f"  repo: PASS -- {wp} LANDED_UNRECONCILED (the composed ledger sees the landing)")
+        debt = any(f"{wp} LANDED_UNRECONCILED" in line for line in r.stdout.splitlines())
+        print(f"  repo: PASS -- {wp} " + ("LANDED_UNRECONCILED on the composed ledger (reconciled by the next work package)"
+                                         if debt else "record present and already reconciled (a follow-up under a closed work package)"))
 
         r = sh([sys.executable, "-m", "unittest", "discover", "-s", "tests", "-p", args.tests, "-q"], work, env=env)
         text = r.stdout + r.stderr

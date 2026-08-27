@@ -1,0 +1,51 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0025",
+  "title": "Hot-fix: compose fixture makes every candidate distinct; the composed-tree gate runs its own tests at depth 1",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0012",
+  "objective": "Make main green again and close the gate's blind spot on itself: candidates differ from base by construction, and the composed run exercises the compose tests (depth 1), refusing only at depth 2.",
+  "business_value": "A gate that skips its own tests inside the composed world cannot protect the merge that ships it. Twice now a fixture assumed something about origin/main that the merge changed.",
+  "in_scope": [
+    "tests/test_badf_compose.py fixture marker file",
+    "scripts/badf_compose.py: BADF_COMPOSE_DEPTH (refuse at >= 2) replacing BADF_COMPOSE_INNER",
+    "docs",
+    "this branch's own composed run as the regression proof"
+  ],
+  "out_of_scope": [
+    "any other gate change",
+    "any project"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "compose tests pass when the working tree equals origin/main (the composed run of this branch proves it: HEAD == origin/main there)",
+    "depth-2 nesting is refused; depth-1 runs the compose tests inside the composed suite",
+    "push-to-main run for the squash is green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR",
+    "write: scratch clones under tmp only"
+  ],
+  "tests": [
+    "tests/test_badf_compose.py"
+  ],
+  "evidence": [
+    "composed run output for this branch",
+    "push-to-main run conclusion"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "0b88c74"
+  },
+  "note": "Lands IN_PROGRESS by design; reconciled by the next WP's branch."
+}
