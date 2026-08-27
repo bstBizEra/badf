@@ -1,7 +1,7 @@
 {
   "digests": {
     "AGENTS.md": "sha256:96ec65d051a790abf7a5516ff310c2b1dfae5a9e58805cfeef4a64eb6043d86b",
-    "badf/authority-matrix.json": "sha256:007dd9151ec95d7b75851e4a397b6f9b0ba8e537b7884eb756429a226b814ff8",
+    "badf/authority-matrix.json": "sha256:fdea22d4198a33819e796df1bf46de3417384196776a7a6b8b3e13fba38463f1",
     "badf/lifecycle.json": "sha256:1e9fa682c333c3b2101c8769d8411b762ef32114fe4c1b16e8f0e97420a6ce4d",
     "badf/mcp-registry.json": "sha256:cf93976e41ccd3bc8f8e918da96e42ffac10bce601d0c859f2639aedbb3fc85e",
     "badf/skill-registry.json": "sha256:e9c57b24af48a68aec6d1a27e02cc2cbed7a38c91df55c6b64b90acfa0534bd4",
