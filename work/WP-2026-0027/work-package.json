@@ -1,0 +1,51 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0027",
+  "title": "Intent contract cannot drift: documented fields == code, an example intent that loads, unknown keys refused",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0014",
+  "objective": "Bind the documented badf init intent contract to the code: a drift test compares README's table to INTENT_REQUIRED / INTENT_OPTIONAL / INTENT_TARGETS; examples/intent.json loads; load_intent refuses unknown keys so a typo cannot silently become DECLARED_MISSING.",
+  "business_value": "The README section (WP-0021) can fall behind the code silently; a mistyped optional key today is ignored and the value invented as DECLARED_MISSING.",
+  "in_scope": [
+    "INTENT_OPTIONAL constant; load_intent refuses unknown keys",
+    "examples/intent.json",
+    "tests/test_badf_intent_docs.py (README table vs code; example loads; unknown key refused; the gate reads exactly INTENT_OPTIONAL)",
+    "README note on unknown keys"
+  ],
+  "out_of_scope": [
+    "locking examples/ (separate Issue)",
+    "any change to the intent fields themselves"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "README rows == INTENT_REQUIRED (yes) and INTENT_OPTIONAL (no); target row names every INTENT_TARGETS value",
+    "examples/intent.json passes load_intent and uses exactly the documented keys",
+    "an intent with an unknown key is refused naming the key",
+    "mutation: removing the unknown-key check or drifting a README row is caught"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_intent_docs.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "8f193cc"
+  },
+  "note": "Lands IN_PROGRESS by design. Carries the withdrawal of WP-2026-0026 / rejection of BADF-DEM-0013 (#24, false premise)."
+}

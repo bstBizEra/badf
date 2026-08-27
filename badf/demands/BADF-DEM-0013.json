@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0013",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 24,
+    "url": "https://github.com/bstBizEra/badf/issues/24",
+    "exported_at": "2026-08-27T19:11:02Z",
+    "body_digest": "sha256:f894463592cfcda7771bd0604b274707960de3168f25a924197e54e87b1a128e"
+  },
+  "title": "GOV-0004: schemas/ is not under INTEGRITY_PATHS although schemas are applied",
+  "problem": "## Observed\n`INTEGRITY_PATHS` locks `scripts/*.py`, the workflow, `AGENTS.md`, `docs/**`, `tests/*.py`, `skills/**`, `templates/*`, every `badf/*.json`, `badf/decisions`, `badf/demands`, and `work/**`. It does **not** lock `schemas/*.json`. The schema-drift tests validate every shipped dossier, evidence, lifecycle, demand and work-package record against the schemas read from the working tree \u2014 so a schema edit that loosens a `required` set or widens an `enum` changes what the walker accepts, with no re-sign in the diff and no drift reported.\n\n## Expected\nThe decision on record is that `schemas/` are **applied, not documentation**. Anything the gate or CI applies is locked; the lockfile's stated purpose is that every edit to a file that decides carries a visible re-sign in the same diff.\n\n## Evidence\n`python3 -c \"import scripts.badf_gate as g; print([p for p in g.INTEGRITY_PATHS if 'schema' in p])\"` \u2192 `[]`. Observed while extending the walker under BADF-WP-0018.\n\n## Unknowns\nNone of substance. `tests/_scratch.seed_clone` and the init test mixin already carry working-tree state into scratch clones; `schemas/` must join that carry list in the same PR or the clone-based tests error on the empty glob (the exact failure BADF-WP-0018 hit with `badf/demands/`).\n\n## Proposed work package\nSmall, patch tier: add `schemas/*.json` to `INTEGRITY_PATHS`; re-sign; a test that a schema edit without re-sign is drift and that an added or removed schema file is drift; carry `schemas/` in both scratch helpers.\n\ndiscovered-by: BADF-WP-0018 \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-27T19:11:02Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "REJECTED",
+  "note": "Body exported verbatim and digest-bound. DISCOVERED by BADF-WP-0018; authority: the operator's pick of #24 + #25 (2026-08-28). Worked as BADF-WP-0026. REJECTED 2026-08-27T19:13:13Z: premise false -- schemas/*.json was already locked (e0ddf29); the Issue's evidence line was not the output of a command run in that step."
+}
