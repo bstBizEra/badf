@@ -5,10 +5,16 @@
   "gate": "G00",
   "claim": "Example scope is explicit and excludes external and production mutation",
   "evidence_type": "scope",
-  "producer": {"id": "badf-example-authority", "type": "human-template"},
+  "producer": {
+    "id": "badf-example-authority",
+    "type": "human"
+  },
   "source_revision": "BADF-BASELINE-1.0.0",
   "target": "badf-repository-baseline",
-  "toolchain": {"name": "BADF example generator", "version": "1.0.0"},
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
   "operation": "record example scope",
   "started_at": "2026-08-25T00:00:00Z",
   "completed_at": "2026-08-25T00:00:01Z",
@@ -17,4 +23,3 @@
   "digest": "sha256:de1c80ea4028142aea4fa5e600406ff93be2e060d24123ac00968f2bc4455c75",
   "sanitization": "No secrets or personal data"
 }
-
