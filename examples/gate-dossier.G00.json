@@ -2,7 +2,7 @@
   "schema_version": "1.0.0",
   "id": "DOS-WP-2026-0001-G00-v1",
   "work_package_id": "WP-2026-0001",
-  "gate": "G00",
+  "gate": "G09",
   "policy_epoch": "BADF-2026-08-25",
   "source_revision": "BADF-BASELINE-1.0.0",
   "target": "badf-repository-baseline",
