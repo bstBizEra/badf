@@ -210,11 +210,32 @@
       "format": "date-time"
     },
     "external_target": {
-      "type": "object"
+      "type": "object",
+      "description": "Where the work lands. For a self work package, landed_as is a CLAIM the gate corroborates against the ledger: the commit must be on first-parent origin/main and carry this record's Work-Package line, and status must then be CLOSED.",
+      "properties": {
+        "repository": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "string"
+        },
+        "base_revision": {
+          "type": "string"
+        },
+        "landed_as": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,40}$"
+        }
+      }
     },
     "demand": {
       "type": "string",
       "pattern": "^BADF-DEM-[0-9]{4,}$"
+    },
+    "landing_not_on_ledger": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Required when status is CLOSED and no commit on the first-parent history of origin/main carries this record's Work-Package line (withdrawn before landing, or landed before the trailer discipline existed). Refused when the ledger does show a landing: that would be a false statement."
     }
   }
 }

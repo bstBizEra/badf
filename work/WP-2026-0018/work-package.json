@@ -51,11 +51,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR; demand records are additive"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "12f5056"
+    "base_revision": "12f5056",
+    "landed_as": "c510516ac82e3778c83c6ac247efb77eab85c496"
   },
   "note": "Deviation from Issue #22's proposal: it said the PropTech intake 'must cite a PropTech Issue'. PropTech has zero Issues and its [WP-NNNN] tokens are its own work, so the intake demand is recorded as an operator decision (BADF-DEM-0003, RECONSTRUCTED). Demand IDs are allocated sequentially and never encode the Issue number; the first export (#19) was renamed from DEM-0019 to DEM-0004 in this WP before it ever landed."
 }

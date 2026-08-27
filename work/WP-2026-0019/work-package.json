@@ -1,0 +1,58 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0019",
+  "title": "Post-merge reconciliation: landing is derived from the ledger, claims are corroborated, silence is named",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0006",
+  "objective": "Stop main from carrying work-package records that are false about landing. The gate derives each self-WP's landing from git log --first-parent origin/main (commit bodies carrying the WP's Work-Package line); a record may claim landed_as/CLOSED only if the ledger corroborates it; a landed-but-silent record is reported as LANDED_UNRECONCILED; a branch that adds a new WP record while any self-WP is LANDED_UNRECONCILED is refused.",
+  "business_value": "WP-2026-0018 landed as c510516 and its record on main says IN_PROGRESS. Without a rule, every WP lands that way and the ledger lies by construction. Deriving landing from git needs no network, no per-WP autonomous PR, and no change to traceability.",
+  "in_scope": [
+    "verify_work_ledger() in badf_gate.py repo",
+    "reconcile <WP> subcommand (offline; refuses unless the ledger shows the landing)",
+    "work-package.schema.json: closed_without_landing",
+    "GITHUB_CONTROL_PLANE.md: Reconciliation paragraph",
+    "first application: reconcile WP-2026-0018 to c510516",
+    "tests"
+  ],
+  "out_of_scope": [
+    "autonomous reconciliation PRs",
+    "any change to check_pr_traceability.py",
+    "Issue/PR templates (#27)",
+    "self-WP dossiers (#28)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C3",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "record claiming landed_as not on first-parent origin/main is refused",
+    "record claiming landed_as whose commit body lacks its Work-Package line is refused",
+    "CLOSED without landed_as and without closed_without_landing is refused",
+    "landed but IN_PROGRESS is reported LANDED_UNRECONCILED and repo still passes",
+    "a new WP record while any LANDED_UNRECONCILED exists is refused",
+    "reconcile refuses a WP the ledger does not show as landed",
+    "WP-2026-0018 is CLOSED with landed_as c510516 on this branch"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_reconcile.py"
+  ],
+  "evidence": [
+    "mutation on verify_work_ledger + reconcile, unique anchors",
+    "negative control on real CI"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "c510516"
+  },
+  "note": "This record will itself land IN_PROGRESS -- by design. It becomes LANDED_UNRECONCILED on main, is reported by repo, and is reconciled by the first branch that opens the next WP. Silence is named, never hidden."
+}

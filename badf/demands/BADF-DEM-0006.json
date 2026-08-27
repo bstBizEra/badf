@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0006",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 26,
+    "url": "https://github.com/bstBizEra/badf/issues/26",
+    "exported_at": "2026-08-27T15:30:32Z",
+    "body_digest": "sha256:6e4299da1364339e7a9dfc858e5f465271ff898896265956c25f07ef3a414d5c"
+  },
+  "title": "GOV-0006: merged Work Packages stay IN_PROGRESS on main -- no post-merge reconciliation",
+  "problem": "## Observed\nOn `main` at `c510516`, `work/WP-2026-0018/work-package.json` reads `status: IN_PROGRESS` with no `external_target.landed_as` \u2014 for a WP that merged **as** `c510516` and whose Issue (#22) is closed. The record was necessarily written before the squash SHA existed, and nothing updates it after the merge. `main` is PR-only, so the correction itself needs a PR, which needs a WP and a demand. `WP-2026-0016` avoided this only by being written late. From here on, **every** WP lands on the ledger as `IN_PROGRESS`.\n\n## Expected\n> `main` is the accepted state ledger.\nA ledger that says `IN_PROGRESS` for landed work is a false claim on the surface that carries it. After merge the record must state `CLOSED` and `landed_as = <squash SHA>`, and the gate must be able to catch the inconsistent states offline: a record with `landed_as` must be `CLOSED` and its SHA an ancestor of `HEAD`; a `CLOSED` record must carry `landed_as`.\n\n## Evidence\n`python3 -c \"import json;w=json.load(open('work/WP-2026-0018/work-package.json'));print(w['status'],w['external_target'].get('landed_as'))\"` \u2192 `IN_PROGRESS None` on `c510516`.\n\n## Unknowns\n- Whether the reconciliation PR may be opened autonomously. It is a status transition on the ledger, not new code; the merge stays ruleset-gated.\n- Whether `Closes #N` against an already-closed Issue is the right trailer, or whether traceability needs a `Reconciles: BADF-WP-NNNN` form so the chain reads honestly.\n\n## Proposed work package\n`BADF-WP-0019` \u2014 a deterministic, offline `reconcile <WP> <sha>` subcommand: sets `CLOSED` + `landed_as`; refuses unless the SHA is an ancestor of `origin/main` and its commit body carries the WP's own `Work-Package:` line. `repo` gains the two invariants above. Traceability accepts `Reconciles:`. First run closes `WP-2026-0018`.\n\ndiscovered-by: BADF-WP-0018 \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-27T15:30:32Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim from the GitHub Issue and digest-bound. DISCOVERED by BADF-WP-0018 (the false claim is WP-0018's own record on main c510516). Authority to act: the operator's standing in-session delegation ('Proceed on your call'). Worked as BADF-WP-0019."
+}
