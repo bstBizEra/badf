@@ -4,6 +4,7 @@
   "id": "WP-2026-0001",
   "title": "BADF repository baseline v1.0.0 -- the shipped G00 example",
   "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
   "objective": "Import the BADF baseline unmodified as commit 3f6119b, tagged BADF-BASELINE-1.0.0. The example dossier at examples/gate-dossier.G00.json governs this.",
   "business_value": "Every control in the repository is measured against a known baseline. This record exists so the example dossier can be classified honestly rather than special-cased.",
   "in_scope": [
