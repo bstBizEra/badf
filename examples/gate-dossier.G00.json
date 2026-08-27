@@ -36,5 +36,6 @@
   "risks": [],
   "disposition": "PASS",
   "created_at": "2026-08-25T00:00:02Z",
-  "author": "example-author"
+  "author": "example-author",
+  "conditions": []
 }

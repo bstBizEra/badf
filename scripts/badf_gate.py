@@ -65,6 +65,12 @@ APPROVAL_FIELDS = {
     "role", "decision", "by", "revision", "policy_epoch", "approved_at",
 }
 APPROVAL_DECISIONS = {"APPROVED", "REJECTED", "ABSTAIN"}
+CONDITION_FIELDS = {
+    "condition_id", "statement", "status", "severity", "blocking_scope",
+    "owner", "closure_predicate", "closure_authority",
+}
+CONDITION_STATUSES = {"OPEN", "CLOSED", "SUPERSEDED", "WAIVED"}
+CONDITION_SEVERITIES = {"Critical", "Major", "Minor"}
 EVIDENCE_FIELDS = {
     "schema_version", "id", "work_package_id", "gate", "claim",
     "evidence_type", "producer", "source_revision", "target", "toolchain",
@@ -339,6 +345,76 @@ def validate_authority(dossier: dict[str, Any]) -> None:
         raise ValidationError(f"{change_class} requires approvals from: {', '.join(unmet)}")
 
 
+def validate_conditions(dossier: dict[str, Any], known_roles: set[str]) -> None:
+    """A conditional pass must carry conditions that can actually be closed.
+
+    Ported from secb_pf's CONDITION_REGISTER.md, whose rule is: a condition
+    changes state only by an explicit disposition event carrying an authority,
+    a rationale and evidence -- not being mentioned is not a state. Before
+    this function, `PASS_WITH_CONDITIONS` required only that `conditions` be
+    non-empty; `["later"]` satisfied it. A condition nobody owns, with no
+    closure predicate and no closure authority, is a wish.
+
+    Deny-unless-established. Every condition on a conditional pass must be:
+      - an object carrying all CONDITION_FIELDS,
+      - OPEN (a CLOSED/SUPERSEDED/WAIVED condition is history, not an obligation),
+      - owned by a role the authority matrix knows,
+      - closable by an authority the matrix knows, who is not the dossier author,
+      - unique by condition_id within the dossier.
+    A bare PASS with open conditions attached is refused: either the
+    conditions are real, in which case the disposition is conditional, or they
+    are not, in which case they must not be recorded as obligations.
+    """
+    raw = dossier.get("conditions", [])
+    if not isinstance(raw, list):
+        raise ValidationError("dossier conditions must be an array")
+    disposition = dossier["disposition"]
+    author = dossier.get("author")
+
+    if disposition == "PASS_WITH_CONDITIONS" and not raw and not dossier["exceptions"]:
+        raise ValidationError("conditional pass requires conditions or exceptions")
+    if disposition == "PASS" and any(isinstance(c, dict) and c.get("status") == "OPEN" for c in raw):
+        raise ValidationError(
+            "a bare PASS may not carry OPEN conditions -- use PASS_WITH_CONDITIONS "
+            "so the obligation is visible in the disposition")
+
+    seen: set[str] = set()
+    open_count = 0
+    for index, cond in enumerate(raw):
+        label = f"conditions[{index}]"
+        if not isinstance(cond, dict):
+            raise ValidationError(f"{label} must be an object, not a bare string")
+        absent = sorted(CONDITION_FIELDS - set(cond))
+        if absent:
+            raise ValidationError(f"{label} missing required fields: {', '.join(absent)}")
+        cid = cond["condition_id"]
+        if not isinstance(cid, str) or not re.fullmatch(r"C-[0-9]+", cid):
+            raise ValidationError(f"{label} condition_id must match C-<n>, got {cid!r}")
+        if cid in seen:
+            raise ValidationError(f"{label} duplicate condition_id {cid}")
+        seen.add(cid)
+        for field in ("statement", "closure_predicate", "blocking_scope"):
+            if not isinstance(cond[field], str) or not cond[field].strip():
+                raise ValidationError(f"{label} {field} is empty")
+        if cond["status"] not in CONDITION_STATUSES:
+            raise ValidationError(f"{label} invalid status {cond['status']!r}")
+        if cond["severity"] not in CONDITION_SEVERITIES:
+            raise ValidationError(f"{label} invalid severity {cond['severity']!r}")
+        if cond["owner"] not in known_roles:
+            raise ValidationError(f"{label} owner {cond['owner']!r} is not a role in the authority matrix")
+        if cond["closure_authority"] not in known_roles:
+            raise ValidationError(
+                f"{label} closure_authority {cond['closure_authority']!r} is not a role in the authority matrix")
+        if cond.get("closed_by") is not None and cond["closed_by"] == author:
+            raise ValidationError(f"{label} closed by the dossier author -- closure is not self-certified")
+        if cond["status"] == "OPEN":
+            open_count += 1
+
+    if disposition == "PASS_WITH_CONDITIONS" and raw and open_count == 0:
+        raise ValidationError(
+            "conditional pass carries no OPEN condition -- nothing is actually owed; use PASS")
+
+
 def validate_dossier(dossier_path: Path) -> None:
     validate_repo()
     dossier = load_json(dossier_path.resolve())
@@ -377,8 +453,10 @@ def validate_dossier(dossier_path: Path) -> None:
         missing = sorted(set(gate["required_evidence"]) - set(indexed))
         if missing:
             raise ValidationError("passing dossier missing evidence: " + ", ".join(missing))
-        if dossier["disposition"] == "PASS_WITH_CONDITIONS" and not dossier["exceptions"] and not dossier.get("conditions"):
-            raise ValidationError("conditional pass requires conditions or exceptions")
+
+    matrix_classes = load_json(ROOT / "badf/authority-matrix.json")["change_classes"]
+    known_roles = {role for entry in matrix_classes.values() for role in entry["required_roles"]}
+    validate_conditions(dossier, known_roles)
 
     for evidence_type, path_value in indexed.items():
         validate_evidence(safe_repo_path(path_value, "evidence path"), dossier, evidence_type)
