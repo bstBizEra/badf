@@ -61,31 +61,60 @@
       ]
     },
     "objective": {
-      "type": "string",
-      "minLength": 1
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        }
+      ]
     },
     "business_value": {
-      "type": "string",
-      "minLength": 1
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        }
+      ]
     },
     "in_scope": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "const": "DECLARED_MISSING"
+        }
+      ]
     },
     "out_of_scope": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "const": "DECLARED_MISSING"
+        }
+      ]
     },
     "acceptance_criteria": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        {
+          "const": "DECLARED_MISSING"
+        }
+      ]
     },
     "tests": {
       "type": "array",
@@ -127,6 +156,60 @@
           "type": "string"
         }
       }
+    },
+    "declared_missing": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "objective",
+          "business_value",
+          "in_scope",
+          "out_of_scope",
+          "acceptance_criteria"
+        ]
+      }
+    },
+    "discovered": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "kind",
+          "source",
+          "value"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "repository": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+    },
+    "change_class_rationale": {
+      "type": "string"
+    },
+    "data_classification_rationale": {
+      "type": "string"
+    },
+    "intent": {
+      "type": "object"
+    },
+    "initialized_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "external_target": {
+      "type": "object"
     }
   }
 }

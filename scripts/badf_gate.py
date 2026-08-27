@@ -986,11 +986,21 @@ def verify_foreign_revision(dossier: dict[str, Any], indexed: dict[str, str]) ->
     if exists.returncode != 0:
         raise ValidationError(f"source_revision {revision[:12]} cannot be resolved: no such commit in {repo_name} at {repo_root}")
 
-    # The work package declares what this revision is built on.
+    # The work package declares what this revision is built on -- and WHICH
+    # repository it belongs to. A second governed project made the id
+    # namespace ambiguous: PropTech's own WP-0042 is a syntactically valid
+    # BADF work_package_id. If the WP names a repository, it must be the one
+    # the dossier targets; a dossier cannot borrow another project's WP.
     wp_path = ROOT / "work" / dossier["work_package_id"] / "work-package.json"
     base = None
     if wp_path.is_file():
-        base = ((load_json(wp_path).get("external_target") or {}).get("base_revision"))
+        wp_rec = load_json(wp_path)
+        wp_repo = wp_rec.get("repository")
+        if wp_repo and wp_repo != repo_name:
+            raise ValidationError(
+                f"work package {dossier['work_package_id']} belongs to {wp_repo}, but this dossier targets "
+                f"{repo_name}; a work package is bound to one repository")
+        base = ((wp_rec.get("external_target") or {}).get("base_revision"))
     if base:
         base_ok = _foreign_git(repo_root, "cat-file", "-e", f"{base}^{{commit}}")
         if base_ok.returncode != 0:
@@ -1225,6 +1235,183 @@ def verify_council(dossier: dict[str, Any], work_package: dict[str, Any] | None)
     return result
 
 
+INTENT_REQUIRED = {"name", "intent", "owner", "target", "repository", "local_path"}
+INTENT_TARGETS = {"production", "sandbox"}
+JUDGMENT_FIELDS = ["objective", "business_value", "in_scope", "out_of_scope", "acceptance_criteria"]
+
+
+def load_intent(path: Path) -> dict[str, Any]:
+    """The four-line intent (plus where the project lives). JSON is accepted
+    as YAML's strict subset -- no new dependency. A document that is not a
+    single mapping with a `project` key is refused."""
+    if not path.is_file():
+        raise ValidationError(f"intent file not found: {path}")
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=_no_duplicate_keys)
+    except ValueError as exc:
+        raise ValidationError(f"intent must be a JSON/YAML mapping: {exc}")
+    proj = doc.get("project") if isinstance(doc, dict) else None
+    if not isinstance(proj, dict):
+        raise ValidationError("intent must carry a top-level `project` mapping")
+    missing = sorted(INTENT_REQUIRED - set(proj))
+    if missing:
+        raise ValidationError(f"intent.project missing required field(s): {', '.join(missing)}")
+    for k in INTENT_REQUIRED:
+        expect_str(proj[k], f"intent.project.{k}")
+        if not proj[k].strip():
+            raise ValidationError(f"intent.project.{k} is empty")
+    if proj["target"] not in INTENT_TARGETS:
+        raise ValidationError(f"intent.project.target {proj['target']!r} is not one of {sorted(INTENT_TARGETS)}")
+    return proj
+
+
+def discover_project(root: Path) -> list[dict[str, str]]:
+    """What the target project STATES about itself. init reads; it never
+    invents. Each finding is attributed to the file it came from."""
+    found: list[dict[str, str]] = []
+    agents = root / "AGENTS.md"
+    if agents.is_file():
+        text = agents.read_text(encoding="utf-8", errors="replace")
+        first = next((l.lstrip("# ").strip() for l in text.splitlines() if l.startswith("#")), "")
+        found.append({"kind": "mandate", "source": "AGENTS.md", "value": first[:200]})
+        for l in text.splitlines():
+            if l.startswith("## ") and "Mission" in l:
+                found.append({"kind": "mission_heading", "source": "AGENTS.md", "value": l.strip("# ").strip()})
+                break
+    readme = root / "README.md"
+    if readme.is_file():
+        for l in readme.read_text(encoding="utf-8", errors="replace").splitlines():
+            if "Boundary" in l and "binding" in l.lower():
+                found.append({"kind": "binding_boundary", "source": "README.md", "value": l.strip("> ").strip()[:200]})
+                break
+    for cand in root.glob(".github/scripts/*admission*"):
+        found.append({"kind": "existing_wp_admission", "source": str(cand.relative_to(root)),
+                      "value": "the project already enforces its own work-package reference on commits; BADF ids must not collide"})
+    ci = root / ".github/workflows/ci.yml"
+    if ci.is_file():
+        found.append({"kind": "existing_ci", "source": ".github/workflows/ci.yml", "value": "present"})
+    return found
+
+
+def next_wp_id() -> str:
+    nums = []
+    for d in (ROOT / "work").glob("WP-2026-*"):
+        try:
+            nums.append(int(d.name.split("-")[-1]))
+        except ValueError:
+            pass
+    return f"WP-2026-{(max(nums) + 1 if nums else 1):04d}"
+
+
+def init_project(intent_path: Path) -> str:
+    """`badf init <intent>`: intake of a project into BADF at G00.
+
+    Mandate section 4 says init 'autonomously determines what is missing'.
+    Measured against the WP schema, 5 of 17 required fields are JUDGMENT:
+    objective, business_value, in_scope, out_of_scope, acceptance_criteria.
+    init does NOT fill them. It records them DECLARED_MISSING, prepares the
+    three G00 declarations as agent-produced evidence, and writes a dossier
+    at HUMAN_REQUIRED. The gate renders HELD until a human supplies the
+    judgment fields and signs the declarations. AUTHORIZE is a gate
+    outcome, not a chat message.
+
+    init writes ONLY under BADF's tree: work/<WP>/ and badf/repositories.json.
+    It reads the target project and never writes to it.
+    """
+    proj = load_intent(intent_path)
+    root = Path(proj["local_path"])
+    top = _foreign_git(root, "rev-parse", "--show-toplevel")
+    if top.returncode != 0:
+        raise ValidationError(f"intent.project.local_path {root} is not a git repository")
+    head = _foreign_git(root, "rev-parse", "HEAD").stdout.decode().strip()
+    remote = _foreign_git(root, "remote", "get-url", "origin")
+    remote_url = remote.stdout.decode().strip() if remote.returncode == 0 else None
+
+    registry_path = ROOT / REPOSITORIES
+    registry = load_json(registry_path)
+    repos = registry.setdefault("repositories", {})
+    if proj["repository"] in repos:
+        raise ValidationError(f"{proj['repository']} is already registered; init refuses to overwrite a registry entry")
+    existing = [d for d in (ROOT / "work").glob("WP-2026-*/work-package.json")
+                if load_json(d).get("repository") == proj["repository"]]
+    if existing:
+        raise ValidationError(f"{proj['repository']} already has work package {existing[0].parent.name}; init refuses to duplicate")
+
+    wp_id = next_wp_id()
+    wp_dir = ROOT / "work" / wp_id
+    wp_dir.mkdir(parents=True)
+    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    discovered = discover_project(root)
+
+    wp: dict[str, Any] = {
+        "$schema": "../../schemas/work-package.schema.json", "schema_version": "1.0.0",
+        "id": wp_id, "title": f"{proj['name']}: {proj['intent']}", "owner": proj["owner"],
+        "repository": proj["repository"],
+        "objective": "DECLARED_MISSING", "business_value": "DECLARED_MISSING",
+        "in_scope": "DECLARED_MISSING", "out_of_scope": "DECLARED_MISSING", "acceptance_criteria": "DECLARED_MISSING",
+        "declared_missing": list(JUDGMENT_FIELDS),
+        "target_gate": "G00",
+        "change_class": "C3",
+        "change_class_rationale": "a new product targeting " + proj["target"] + " is high blast radius under the matrix's own C3 definition; lowering it is a human decision",
+        "data_classification": "restricted",
+        "data_classification_rationale": "deny-unless-established: the most restrictive class until the owner declares otherwise",
+        "permissions": [f"read: {proj['repository']}", "write: none -- BADF governs; it does not write to the target"],
+        "tests": ["DECLARED_MISSING"], "evidence": ["authority", "scope", "risk-classification"],
+        "rollback": {"reversible": True, "method": "a project at G00 has started nothing; withdrawing the work package is the rollback"},
+        "status": "DRAFT",
+        "discovered": discovered,
+        "external_target": {"repository": proj["repository"], "branch": "main", "base_revision": head,
+                            "remote_url": remote_url, "remote_verified": remote_url is not None},
+        "intent": {k: proj[k] for k in ("name", "intent", "owner", "target")},
+        "initialized_at": now,
+    }
+    (wp_dir / "work-package.json").write_text(json.dumps(wp, indent=2) + "\n", encoding="utf-8")
+
+    ev_dir = wp_dir / "evidence/G00"; ev_dir.mkdir(parents=True)
+    decls = {
+        "authority": f"PREPARED, UNSIGNED. {proj['owner']} must authorize {proj['name']} for BADF governance at G00. An agent prepared this declaration; only a human signature (producer.type=human) makes it authority.",
+        "scope": f"PREPARED, UNSIGNED. Intent as given: {proj['intent']}. in_scope / out_of_scope are DECLARED_MISSING and must be supplied by the owner.",
+        "risk-classification": f"PREPARED, UNSIGNED. Derived C3 (new {proj['target']} product) and data_classification restricted, both deny-unless-established. The owner may lower either; that is a human decision recorded as an approval.",
+    }
+    index = []
+    for t, text in decls.items():
+        art = ev_dir / f"{t}.txt"; art.write_text(text + "\n", encoding="utf-8")
+        e = {"schema_version": "1.0.0", "id": f"EVD-{wp_id}-G00-{t}", "work_package_id": wp_id, "gate": "G00",
+             "claim": text.split(". ", 1)[1][:160], "evidence_type": t,
+             "producer": {"id": "badf-init", "type": "controller"},
+             "source_revision": head, "target": f"{proj['repository']}:main",
+             "toolchain": {"name": "badf-init", "version": "1"}, "operation": "prepare declaration",
+             "started_at": now, "completed_at": now, "outcome": "NOT_RUN",
+             "artifact": f"work/{wp_id}/evidence/G00/{art.name}", "digest": sha256(art)}
+        (ev_dir / f"{t}.json").write_text(json.dumps(e, indent=2) + "\n", encoding="utf-8")
+        index.append({"type": t, "path": f"work/{wp_id}/evidence/G00/{t}.json"})
+
+    dossier = {
+        "schema_version": "1.0.0", "id": f"DOS-{wp_id}-G00-v1", "work_package_id": wp_id, "gate": "G00",
+        "policy_epoch": load_json(ROOT / "badf/lifecycle.json")["policy_epoch"],
+        "source_revision": head, "target": f"{proj['repository']}:main", "change_class": "C3",
+        "author": "badf-init", "author_type": "controller",
+        "evidence": index, "approvals": [], "conditions": [], "non_coverage": [], "exceptions": [],
+        "risks": [], "council": None,
+        "disposition": "HUMAN_REQUIRED", "created_at": now,
+        "held_because": "5 judgment fields DECLARED_MISSING; 3 G00 declarations PREPARED but UNSIGNED; C3 requires " +
+                        ", ".join(load_json(ROOT / MATRIX)["change_classes"]["C3"]["required_roles"]) + " approvals",
+    }
+    (wp_dir / "gate-dossier.G00.json").write_text(json.dumps(dossier, indent=2) + "\n", encoding="utf-8")
+
+    repos[proj["repository"]] = {"local_path": str(root), "default_branch": "main", "resolution": "LOCAL_MIRROR",
+                                 "remote_url": remote_url, "remote_verified": remote_url is not None,
+                                 "registered_by": "badf-init", "registered_at": now}
+    registry_path.write_text(json.dumps(registry, indent=2) + "\n", encoding="utf-8")
+
+    append_event(wp_dir, "init", "COMMITTED", "badf-init", "controller", effect_id="intake",
+                 output_digest=sha256(wp_dir / "work-package.json"),
+                 note=f"intake of {proj['repository']} at {head[:12]}; {len(discovered)} facts discovered; "
+                      f"{len(JUDGMENT_FIELDS)} judgment fields DECLARED_MISSING; dossier HUMAN_REQUIRED")
+    write_lockfile()
+    return wp_id
+
+
 def validate_dossier(dossier_path: Path) -> str:
     validate_repo()
     dossier = load_json(dossier_path.resolve())
@@ -1299,6 +1486,27 @@ def validate_dossier(dossier_path: Path) -> str:
     dossier["council_disposition"] = {"disposition": council["disposition"], "triggers": council["triggers"]}
     rendered = verify_two_plane(dossier)
 
+    if dossier["disposition"] == "HUMAN_REQUIRED":
+        # A HUMAN_REQUIRED dossier is a REQUEST for authority, not a CLAIM of
+        # it (badf init produces one). Its evidence is PREPARED and unsigned;
+        # validating prepared declarations as if they were proven claims is a
+        # category error. So: the evidence index must be well-formed and each
+        # file must exist and be digest-bound (a request cannot point at
+        # nothing), but outcome is not required to be PASS. The dossier can
+        # never render above HELD from here -- render_verdict maps
+        # HUMAN_REQUIRED to HUMAN_REQUIRED and main() exits 3. Flipping the
+        # disposition to PASS re-enters full evidence validation and the
+        # unsigned declarations are refused. A test proves both.
+        for evidence_type, path_value in indexed.items():
+            ev_path = safe_repo_path(path_value, "evidence path")
+            ev = load_json(ev_path)
+            require_fields(ev, EVIDENCE_FIELDS, f"evidence {ev_path}")
+            if ev["evidence_type"] != evidence_type:
+                raise ValidationError(f"evidence {ev_path} type does not match index")
+            artifact = safe_repo_path(ev["artifact"], f"evidence {ev_path} artifact")
+            if ev["digest"] != sha256(artifact):
+                raise ValidationError(f"evidence {ev_path} artifact digest mismatch")
+        return rendered
     for evidence_type, path_value in indexed.items():
         validate_evidence(safe_repo_path(path_value, "evidence path"), dossier, evidence_type)
     return rendered
@@ -1311,12 +1519,18 @@ def main() -> int:
     subparsers.add_parser("lock", help="re-sign badf/lockfile.json from current content")
     dossier_parser = subparsers.add_parser("dossier", help="validate a gate dossier and its evidence")
     dossier_parser.add_argument("path", type=Path)
+    init_parser = subparsers.add_parser("init", help="intake a project from a four-line intent; writes only under BADF's tree")
+    init_parser.add_argument("intent", type=Path)
     args = parser.parse_args()
     try:
         if args.command == "repo":
             validate_repo()
         elif args.command == "lock":
             write_lockfile()
+        elif args.command == "init":
+            wp_id = init_project(args.intent)
+            print(f"BADF INIT: {wp_id} created at G00, disposition HUMAN_REQUIRED; nothing written to the target project")
+            return 0
         else:
             args._rendered = validate_dossier(args.path)
     except ValidationError as exc:
