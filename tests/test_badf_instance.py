@@ -22,6 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import badf_gate as gate  # noqa: E402
 from tests.test_badf_schema_drift import schema, enum_violations, unknown_keys  # noqa: E402
+from tests._scratch import pin_origin_main  # noqa: E402
 
 PROPTECH = Path(os.environ.get("BADF_PROPTECH_PATH", "/mnt/c/laragon/www/proptech"))   # CI shape: point it at nothing
 HAVE_PROPTECH = PROPTECH.is_dir() and (PROPTECH / ".git").exists()
@@ -56,6 +57,7 @@ class InstanceScratch(unittest.TestCase):
         self.tmp = tempfile.mkdtemp()
         self.root = Path(self.tmp) / "badf"
         subprocess.run(["git", "clone", "-q", str(gate.ROOT), str(self.root)], check=True)
+        pin_origin_main(self.root)
         for rel in ("scripts/badf_gate.py", "badf", "schemas", "templates", "work"):
             src, dst = gate.ROOT / rel, self.root / rel
             if src.is_dir():

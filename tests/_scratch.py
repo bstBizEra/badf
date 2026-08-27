@@ -20,6 +20,21 @@ from pathlib import Path
 import scripts.badf_gate as gate
 
 
+def pin_origin_main(dest: Path) -> str:
+    """A `git clone` of a detached checkout (every pull_request runner) copies
+    no local branches, so the clone has no origin/main and every gate path
+    that resolves the authorized baseline refuses. Pin the clone's
+    refs/remotes/origin/<default> to the SHA the source checkout knows; the
+    object is reachable from the checkout's HEAD. WP-0029's advance tests
+    were the first instance fixtures to run `dossier` inside such a clone
+    and failed 13/13 on the runner while the composed-tree gate -- whose
+    world always has a main branch -- passed."""
+    base = subprocess.run(["git", "-C", str(gate.ROOT), "rev-parse", f"origin/{gate.DEFAULT_BRANCH}"],
+                          capture_output=True, text=True, check=True).stdout.strip()
+    subprocess.run(["git", "-C", str(dest), "update-ref", f"refs/remotes/origin/{gate.DEFAULT_BRANCH}", base], check=True)
+    return base
+
+
 def seed_clone(dest: Path, *, carry_working_state: bool = False) -> str:
     base = subprocess.run(["git", "-C", str(gate.ROOT), "rev-parse", f"origin/{gate.DEFAULT_BRANCH}"],
                           capture_output=True, text=True, check=True).stdout.strip()

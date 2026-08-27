@@ -106,6 +106,8 @@ class InitRequiresDemandTests(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.mkdtemp(); self.root = Path(self.tmp) / "badf"
         subprocess.run(["git", "clone", "-q", str(gate.ROOT), str(self.root)], check=True)
+        from tests._scratch import pin_origin_main
+        pin_origin_main(self.root)
         for rel in ("scripts/badf_gate.py", "badf", "work", "schemas", "templates"):
             src, dst = gate.ROOT / rel, self.root / rel
             if src.is_dir(): shutil.rmtree(dst, ignore_errors=True); shutil.copytree(src, dst)
