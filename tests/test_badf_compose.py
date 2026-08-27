@@ -135,6 +135,16 @@ class ComposeVerdictTests(ComposeScratch):
         self.assertIn("repo: FAIL", r.stdout)
         self.assertIn("integrity drift", r.stdout + r.stderr)
 
+    def test_ci_shape_cannot_be_greener_than_host_shape_on_drift(self):
+        """--ci-shape re-signs the scratch lockfile to point the mirror at nothing.
+        The first version ran `repo` AFTER that re-sign, so a candidate with
+        integrity drift passed under --ci-shape and failed under host shape."""
+        (self.repo / "AGENTS.md").write_text((self.repo / "AGENTS.md").read_text() + "\n<!-- unsigned edit -->\n")
+        self.commit_candidate()
+        r = self.compose("--ci-shape")
+        self.assertNotEqual(r.returncode, 0, "--ci-shape masked integrity drift")
+        self.assertIn("repo: FAIL", r.stdout)
+
     def test_message_without_a_work_package_line_is_refused_before_any_work(self):
         self.commit_candidate()
         bad = Path(self.tmp) / "bad.txt"; bad.write_text("just a title\n\nCloses #21\n")
