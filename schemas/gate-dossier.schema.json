@@ -17,7 +17,8 @@
     "risks",
     "disposition",
     "created_at",
-    "author"
+    "author",
+    "author_type"
   ],
   "properties": {
     "schema_version": {
@@ -66,7 +67,8 @@
           "by",
           "revision",
           "policy_epoch",
-          "approved_at"
+          "approved_at",
+          "principal_type"
         ],
         "properties": {
           "role": {
@@ -95,6 +97,14 @@
           "approved_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "principal_type": {
+            "enum": [
+              "human",
+              "agent",
+              "service",
+              "controller"
+            ]
           }
         }
       }
@@ -201,6 +211,14 @@
         "REWORK_REQUIRED",
         "BLOCKED",
         "HUMAN_REQUIRED"
+      ]
+    },
+    "author_type": {
+      "enum": [
+        "human",
+        "agent",
+        "service",
+        "controller"
       ]
     }
   }
