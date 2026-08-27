@@ -2,18 +2,42 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://bizera.la/badf/schemas/lifecycle.schema.json",
   "type": "object",
-  "required": ["schema_version", "policy_epoch", "gates"],
+  "required": [
+    "schema_version",
+    "policy_epoch",
+    "gates"
+  ],
   "properties": {
-    "schema_version": {"type": "string"},
-    "policy_epoch": {"type": "string"},
+    "schema_version": {
+      "type": "string"
+    },
+    "policy_epoch": {
+      "type": "string"
+    },
     "gates": {
       "type": "array",
       "minItems": 15,
       "items": {
         "type": "object",
-        "required": ["id", "name", "owner_role", "required_evidence", "exit_criteria"]
+        "required": [
+          "id",
+          "name",
+          "owner_role",
+          "required_evidence",
+          "exit_criteria",
+          "minimum_change_class"
+        ],
+        "properties": {
+          "minimum_change_class": {
+            "enum": [
+              "C0",
+              "C1",
+              "C2",
+              "C3"
+            ]
+          }
+        }
       }
     }
   }
 }
-

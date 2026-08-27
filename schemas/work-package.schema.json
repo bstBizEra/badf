@@ -2,15 +2,131 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://bizera.la/badf/schemas/work-package.schema.json",
   "type": "object",
-  "required": ["schema_version", "id", "title", "owner", "objective", "business_value", "in_scope", "out_of_scope", "target_gate", "change_class", "data_classification", "acceptance_criteria", "permissions", "tests", "evidence", "rollback", "status"],
+  "required": [
+    "schema_version",
+    "id",
+    "title",
+    "owner",
+    "objective",
+    "business_value",
+    "in_scope",
+    "out_of_scope",
+    "target_gate",
+    "change_class",
+    "data_classification",
+    "acceptance_criteria",
+    "permissions",
+    "tests",
+    "evidence",
+    "rollback",
+    "status"
+  ],
   "properties": {
-    "schema_version": {"const": "1.0.0"},
-    "id": {"type": "string", "pattern": "^WP-[A-Za-z0-9._-]+$"},
-    "title": {"type": "string", "minLength": 1},
-    "owner": {"type": "string", "minLength": 1},
-    "target_gate": {"type": "string", "pattern": "^G(0[0-9]|1[0-4])$"},
-    "change_class": {"enum": ["C0", "C1", "C2", "C3"]},
-    "status": {"enum": ["DRAFT", "READY", "IN_PROGRESS", "BLOCKED", "APPROVED", "CLOSED", "SUPERSEDED"]}
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^WP-[A-Za-z0-9._-]+$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "owner": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target_gate": {
+      "type": "string",
+      "pattern": "^G(0[0-9]|1[0-4])$"
+    },
+    "change_class": {
+      "enum": [
+        "C0",
+        "C1",
+        "C2",
+        "C3"
+      ]
+    },
+    "status": {
+      "enum": [
+        "DRAFT",
+        "READY",
+        "IN_PROGRESS",
+        "BLOCKED",
+        "APPROVED",
+        "CLOSED",
+        "SUPERSEDED"
+      ]
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1
+    },
+    "business_value": {
+      "type": "string",
+      "minLength": 1
+    },
+    "in_scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "out_of_scope": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "permissions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "data_classification": {
+      "enum": [
+        "public",
+        "internal",
+        "confidential",
+        "restricted"
+      ]
+    },
+    "rollback": {
+      "type": "object",
+      "required": [
+        "reversible",
+        "method"
+      ],
+      "properties": {
+        "reversible": {
+          "type": "boolean"
+        },
+        "method": {
+          "type": "string"
+        }
+      }
+    }
   }
 }
-

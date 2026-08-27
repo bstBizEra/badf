@@ -5,10 +5,16 @@
   "gate": "G00",
   "claim": "Example work is authorized for repository-baseline validation only",
   "evidence_type": "authority",
-  "producer": {"id": "badf-example-authority", "type": "human-template"},
+  "producer": {
+    "id": "badf-example-authority",
+    "type": "human"
+  },
   "source_revision": "BADF-BASELINE-1.0.0",
   "target": "badf-repository-baseline",
-  "toolchain": {"name": "BADF example generator", "version": "1.0.0"},
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
   "operation": "record scoped example authority",
   "started_at": "2026-08-25T00:00:00Z",
   "completed_at": "2026-08-25T00:00:01Z",
@@ -17,4 +23,3 @@
   "digest": "sha256:37a6799ccdc866f34b9eea3899e633d9a864550139b9d514b70a1b2a23a0a681",
   "sanitization": "No secrets or personal data"
 }
-
