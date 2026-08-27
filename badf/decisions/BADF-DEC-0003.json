@@ -43,14 +43,16 @@
   "binding": {
     "authority_matrix_digest_before": "sha256:007dd9151ec95d7b75851e4a397b6f9b0ba8e537b7884eb756429a226b814ff8",
     "policy_epoch": "BADF-2026-08-25",
-    "enacting_commit": "the merge commit of BADF-WP-0011 onto main (set post-merge; a self-referencing pre-merge SHA cannot be stable)"
+    "enacting_commit": "32c486d0864efbb13d482d945aacb5a02ed89937",
+    "enacting_pr": "bstBizEra/badf#12"
   },
   "evidence": [
     "tests/test_badf_principal_type.py written before implementation: 7 of 9 failed on origin/main",
     "CLI proof BEFORE: author orchestrator-agent + four agent approvers incl. human_sponsor -> APPROVED exit 0",
     "CLI proof AFTER: same, typed honestly as agent -> 'role human_sponsor is human-reserved; a principal of type agent may not supply it' exit 1",
     "RESIDUE MEASURED: same agents declaring principal_type 'human' -> APPROVED exit 0. The declaration is self-asserted; this control makes a false one explicit and attributable, not impossible. Structural remedy remains a second identity (secb_pf C-7).",
-    "monotonic guard extended: removing a human_reserved_role is a refused downgrade (2 tests failed first)"
+    "monotonic guard extended: removing a human_reserved_role is a refused downgrade (2 tests failed first)",
+    "post-merge: the two skipped monotonic tests RAN and PASSED on canonical main 32c486d; pristine 158 OK"
   ],
   "supersedes": null,
   "superseded_by": null,
