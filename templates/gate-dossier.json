@@ -8,11 +8,25 @@
   "source_revision": "full-source-revision",
   "target": "repository-or-environment-identity",
   "change_class": "C1",
-  "evidence": [{"type": "required-type", "path": "evidence/path.json"}],
-  "approvals": [],
+  "evidence": [
+    {
+      "type": "required-type",
+      "path": "evidence/path.json"
+    }
+  ],
+  "approvals": [
+    {
+      "role": "<role-from-badf/authority-matrix.json>",
+      "decision": "APPROVED",
+      "by": "<principal-id-not-equal-to-author>",
+      "revision": "<must-equal-source_revision>",
+      "policy_epoch": "<must-equal-policy_epoch>",
+      "approved_at": "<ISO-8601-at-or-after-created_at>"
+    }
+  ],
   "exceptions": [],
   "risks": [],
   "disposition": "BLOCKED",
-  "created_at": "YYYY-MM-DDTHH:MM:SSZ"
+  "created_at": "YYYY-MM-DDTHH:MM:SSZ",
+  "author": "<principal-id-of-the-author>"
 }
-

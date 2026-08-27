@@ -7,7 +7,7 @@
     "badf/skill-registry.json": "sha256:e9c57b24af48a68aec6d1a27e02cc2cbed7a38c91df55c6b64b90acfa0534bd4",
     "badf/tool-registry.json": "sha256:7a5e7c6e39dcf2eb40f166d128e91adead9c90ee51c72b6837890500d133a852",
     "schemas/evidence.schema.json": "sha256:644d1a427288ce49a1c64a4a5e7e89c9b251b2bff5f99e8885771211b0349a70",
-    "schemas/gate-dossier.schema.json": "sha256:71a1e9c241ae4964cb11d1d5a0fe64448e1df12df64d2b868b3076e24f96bc81"
+    "schemas/gate-dossier.schema.json": "sha256:ca72c9c713f818993bac272874f577e52ca2c71c6985d2f50b14014d7b4f5ed8"
   },
   "schema_version": "1.0.0"
 }
