@@ -24,7 +24,8 @@ import badf_gate as gate  # noqa: E402
 from tests._scratch import seed_clone  # noqa: E402
 
 COMPOSE = ["python3", "scripts/badf_compose.py"]
-MSG = "candidate: exercise the composed-tree gate\n\nWork-Package: BADF-WP-0024\nCloses #21\n"
+WP = "WP-2026-0900"   # the fixture ships its OWN record: never a real WP whose status the ledger may change
+MSG = "candidate: exercise the composed-tree gate\n\nWork-Package: BADF-WP-0900\nCloses #21\n"
 FAST = "test_badf_traceability.py"   # the inner suite is restricted; compose must SAY so
 
 
@@ -40,7 +41,11 @@ def tree_state(root: Path) -> dict:
     return {"files": files, "refs": refs}
 
 
-@unittest.skipIf(os.environ.get("BADF_COMPOSE_INNER"), "inside a composed-tree run; compose does not nest")
+DEPTH = int(os.environ.get("BADF_COMPOSE_DEPTH", "0") or 0)
+MARKER = "badf-compose-candidate.txt"
+
+
+@unittest.skipIf(DEPTH >= 2, "depth 2 inside a composed-tree run; compose nests one level only")
 class ComposeScratch(unittest.TestCase):
     """A scratch framework: origin/main = the real authorized ledger; a
     candidate branch = one commit of the current working tree."""
@@ -59,8 +64,21 @@ class ComposeScratch(unittest.TestCase):
                 shutil.copytree(item, dst, ignore=shutil.ignore_patterns("__pycache__", ".git"))
             else:
                 shutil.copy2(item, dst)
+        # On main after a merge the working tree IS origin/main and there is
+        # nothing to commit (0b88c74, run 33104985912). Every candidate differs
+        # from its base by construction.
+        (self.repo / MARKER).write_text("this candidate differs from its base by construction\n")
+        # its own work-package record, so the ledger has something to see whatever
+        # the real records say (WP-0024's was reconciled and broke the first version)
+        src = sorted((self.repo / "work").glob("WP-2026-*/work-package.json"))[-1]
+        rec = json.loads(src.read_text()); rec["id"] = WP; rec["status"] = "IN_PROGRESS"
+        rec["external_target"] = {k: v for k, v in rec.get("external_target", {}).items() if k != "landed_as"}
+        rec.pop("landing_not_on_ledger", None)
+        (self.repo / "work" / WP).mkdir(); (self.repo / "work" / WP / "work-package.json").write_text(json.dumps(rec, indent=2) + "\n")
+        subprocess.run(["python3", "scripts/badf_gate.py", "lock"], cwd=self.repo, capture_output=True, check=True)
         self.msg = Path(self.tmp) / "msg.txt"; self.msg.write_text(MSG)
-        self.env = {k: v for k, v in os.environ.items() if not k.startswith("BADF_")}
+        # keep the depth: stripping it would restart at depth 0 inside the composed run and recurse
+        self.env = {k: v for k, v in os.environ.items() if not k.startswith("BADF_") or k == "BADF_COMPOSE_DEPTH"}
 
     def tearDown(self):
         shutil.rmtree(self.tmp, ignore_errors=True)
@@ -86,7 +104,7 @@ class ComposeVerdictTests(ComposeScratch):
         r = self.compose()
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         self.assertIn("BADF COMPOSE PASS", r.stdout)
-        self.assertIn("WP-2026-0024 LANDED_UNRECONCILED", r.stdout, "the composed ledger did not see the landing")
+        self.assertIn(f"{WP} LANDED_UNRECONCILED", r.stdout, "the composed ledger did not see the landing")
         self.assertIn(f"suite pattern: {FAST}", r.stdout, "a restricted suite must be printed, never silent")
         self.assertIn("shape: host", r.stdout)
 
@@ -131,8 +149,8 @@ class ComposeVerdictTests(ComposeScratch):
         self.commit_candidate()
         other = Path(self.tmp) / "other.txt"; other.write_text("title\n\nWork-Package: BADF-WP-0099\nCloses #21\n")
         r = self.compose(message=other)
-        self.assertNotEqual(r.returncode, 0, "a landing the ledger cannot see passed")
-        self.assertIn("does not see WP-2026-0099", r.stdout)
+        self.assertNotEqual(r.returncode, 0, "a work package with no record passed")
+        self.assertIn("no work package record for WP-2026-0099", r.stdout)
 
     def test_candidate_that_does_not_compose_fails(self):
         (self.repo / "README.md").write_text("# candidate's README\n")
@@ -144,10 +162,18 @@ class ComposeVerdictTests(ComposeScratch):
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("does not compose", r.stdout + r.stderr)
 
-    def test_refuses_to_nest(self):
+    def test_refuses_to_nest_beyond_depth_two(self):
         self.commit_candidate()
-        r = self.compose(BADF_COMPOSE_INNER="1")
+        r = self.compose(BADF_COMPOSE_DEPTH="2")
         self.assertNotEqual(r.returncode, 0); self.assertIn("nest", r.stdout + r.stderr)
+
+    def test_candidate_differs_from_base_even_when_the_tree_equals_it(self):
+        """The fixture with NOTHING copied: the marker alone must make a commit."""
+        bare = Path(self.tmp) / "bare"; base = seed_clone(bare)
+        git(bare, "checkout", "-q", "-B", "cand", base)
+        (bare / MARKER).write_text("marker\n"); git(bare, "add", "-A")
+        subprocess.run(["git", "-C", str(bare), "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "-m", "cand"], check=True)
+        self.assertEqual(git(bare, "diff", "--name-only", base, "cand").splitlines(), [MARKER])
 
     def test_writes_nothing_to_the_source_repository(self):
         self.commit_candidate(); before = tree_state(self.repo)
