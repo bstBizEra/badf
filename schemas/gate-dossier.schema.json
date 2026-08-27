@@ -342,6 +342,30 @@
           }
         }
       }
+    },
+    "non_coverage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "evidence_type",
+          "reason",
+          "declared_by"
+        ],
+        "properties": {
+          "evidence_type": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "declared_by": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
     }
   }
 }

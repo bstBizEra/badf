@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0010",
+  "gate": "G08",
+  "source_revision": "99fc25997225adfee9843f0ccfba1eefe8f41d2c",
+  "target": "bstBizEra/secb_pf:main",
+  "started_at": "2026-08-27T17:00:00Z",
+  "completed_at": "2026-08-27T17:20:00Z",
+  "id": "EVD-WP-2026-0010-G08-integration-test",
+  "claim": "41 secb_pf tests touching docs/governance/control-graph/links pass on the composed tree e40c93f",
+  "evidence_type": "integration-test",
+  "producer": {
+    "id": "claude-opus-5",
+    "type": "agent"
+  },
+  "toolchain": {
+    "name": "pytest",
+    "version": "8.x"
+  },
+  "operation": "pytest -k",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0010/evidence/G08/integration-test.txt",
+  "digest": "sha256:a5ce0b44e9b267c2be389716751582c9a12c3bdb6d5c2b5196f283c5852f8fb6"
+}

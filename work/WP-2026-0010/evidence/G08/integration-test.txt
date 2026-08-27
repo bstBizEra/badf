@@ -1,0 +1,7 @@
+integration-test
+tree: e40c93ff27459a940247c27860198192f3fa33ed
+the changed file is governance prose; secb_pf's integration surface for it is the docs-link and control-graph checks in its suite.
+---- targeted: every test that reads docs/00-governance ----
+.........................................                                [100%]
+41 passed, 378 deselected in 1.09s
+exit=0

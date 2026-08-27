@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0010",
+  "gate": "G08",
+  "source_revision": "99fc25997225adfee9843f0ccfba1eefe8f41d2c",
+  "target": "bstBizEra/secb_pf:main",
+  "started_at": "2026-08-27T17:00:00Z",
+  "completed_at": "2026-08-27T17:20:00Z",
+  "id": "EVD-WP-2026-0010-G08-contract-test",
+  "claim": "no consumer contract exists for governance prose; non-coverage declared",
+  "evidence_type": "contract-test",
+  "producer": {
+    "id": "claude-opus-5",
+    "type": "agent"
+  },
+  "toolchain": {
+    "name": "n/a",
+    "version": "n/a"
+  },
+  "operation": "n/a",
+  "outcome": "NOT_APPLICABLE",
+  "artifact": "work/WP-2026-0010/evidence/G08/contract-test.txt",
+  "digest": "sha256:2a7dcd0da6150e98ddcf7def87bb1ac34fc0874c29a93a4a2e58b64b41bfd13e"
+}

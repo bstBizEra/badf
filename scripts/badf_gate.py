@@ -601,6 +601,27 @@ def validate_repo() -> None:
     verify_integrity()
     verify_monotonic_authority()
 
+def check_non_coverage(dossier: dict[str, Any], evidence_type: str, outcome: str) -> None:
+    """G08 exit criterion: 'non-coverage declared'. Before WP-0014 nothing on a
+    dossier could declare it, and validate_evidence required PASS for every
+    type -- so a contract test that honestly did not apply could only be
+    recorded by lying. NOT_APPLICABLE is admitted ONLY when the dossier's
+    non_coverage[] names that evidence type with a reason and an owner who
+    stands behind the declaration. Absence of a declaration is not
+    non-coverage; it is a missing test.
+    """
+    declared = dossier.get("non_coverage") or []
+    if not isinstance(declared, list):
+        raise ValidationError("dossier.non_coverage must be an array")
+    for i, n in enumerate(declared):
+        if not isinstance(n, dict) or not {"evidence_type", "reason", "declared_by"} <= set(n):
+            raise ValidationError(f"non_coverage[{i}] must carry evidence_type, reason, declared_by")
+    if not any(n["evidence_type"] == evidence_type for n in declared):
+        raise ValidationError(
+            f"evidence type {evidence_type!r} is {outcome} but the dossier's non_coverage does not declare it; "
+            f"an undeclared non-applicability is a missing test, not a non-coverage")
+
+
 def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -> None:
     evidence = load_json(path)
     require_fields(evidence, EVIDENCE_FIELDS, f"evidence {path}")
@@ -612,7 +633,10 @@ def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -
         raise ValidationError(f"evidence {path} source or target drift")
     if evidence["evidence_type"] != expected_type:
         raise ValidationError(f"evidence {path} type does not match index")
-    if evidence["outcome"] != "PASS":
+    outcome = expect_str(evidence["outcome"], f"evidence {path} outcome")
+    if outcome == "NOT_APPLICABLE":
+        check_non_coverage(dossier, expected_type, outcome)
+    elif outcome != "PASS":
         raise ValidationError(f"evidence {path} outcome is not PASS")
     if not isinstance(evidence["producer"], dict) or not {"id", "type"} <= set(evidence["producer"]):
         raise ValidationError(f"evidence {path} producer is incomplete")

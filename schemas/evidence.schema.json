@@ -97,7 +97,8 @@
         "PASS",
         "FAIL",
         "BLOCKED",
-        "NOT_RUN"
+        "NOT_RUN",
+        "NOT_APPLICABLE"
       ]
     },
     "artifact": {

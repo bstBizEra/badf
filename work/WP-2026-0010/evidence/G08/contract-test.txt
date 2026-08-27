@@ -1,0 +1,6 @@
+contract-test: NOT_APPLICABLE -- declared non-coverage
+The change is governance prose (docs/00-governance/SPECIFICATION_CONFLICT_PROTOCOL.md).
+No consumer contract exists for it: nothing in secb_pf scripts/, tests/, or .github/ reads
+this document (verified by the independent reviewer: git grep for the doc name, "three sets",
+"eight sets", "three tokens" -> no hits). A contract test of prose would be evidence-shaped nothing.
+G08 exit criterion "non-coverage declared" is satisfied by THIS declaration, not by a fabricated PASS.

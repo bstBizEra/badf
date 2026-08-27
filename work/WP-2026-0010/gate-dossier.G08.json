@@ -1,0 +1,98 @@
+{
+  "schema_version": "1.0.0",
+  "id": "DOS-WP-2026-0010-G08-v1",
+  "work_package_id": "WP-2026-0010",
+  "gate": "G08",
+  "policy_epoch": "BADF-2026-08-25",
+  "source_revision": "99fc25997225adfee9843f0ccfba1eefe8f41d2c",
+  "target": "bstBizEra/secb_pf:main",
+  "change_class": "C1",
+  "author": "claude-opus-5",
+  "author_type": "agent",
+  "evidence": [
+    {
+      "type": "independent-review",
+      "path": "work/WP-2026-0010/evidence/G08/independent-review.json"
+    },
+    {
+      "type": "integration-test",
+      "path": "work/WP-2026-0010/evidence/G08/integration-test.json"
+    },
+    {
+      "type": "contract-test",
+      "path": "work/WP-2026-0010/evidence/G08/contract-test.json"
+    },
+    {
+      "type": "composed-tree-test",
+      "path": "work/WP-2026-0010/evidence/G08/composed-tree-test.json"
+    }
+  ],
+  "approvals": [
+    {
+      "role": "engineering_owner",
+      "decision": "APPROVED",
+      "by": "operator",
+      "principal_type": "human",
+      "revision": "99fc25997225adfee9843f0ccfba1eefe8f41d2c",
+      "policy_epoch": "BADF-2026-08-25",
+      "approved_at": "2026-08-27T17:25:00Z"
+    },
+    {
+      "role": "independent_reviewer",
+      "decision": "APPROVED",
+      "by": "g08-independent-reviewer",
+      "principal_type": "agent",
+      "revision": "99fc25997225adfee9843f0ccfba1eefe8f41d2c",
+      "policy_epoch": "BADF-2026-08-25",
+      "approved_at": "2026-08-27T17:22:00Z"
+    }
+  ],
+  "conditions": [
+    {
+      "condition_id": "C-1",
+      "statement": "Delete SPECIFICATION_CONFLICT_PROTOCOL.md L118 so the rendered GFM table carries the eight rows the heading claims",
+      "status": "OPEN",
+      "severity": "Major",
+      "blocking_scope": "G09, G10",
+      "owner": "engineering_owner",
+      "closure_predicate": "rendered table row count == 8; reviewer re-check",
+      "closure_authority": "quality_authority"
+    },
+    {
+      "condition_id": "C-2",
+      "statement": "Correct DELIVERY_LIFECYCLE.md:123 ('three verdict vocabularies') and TWO_PLANE_DECISION_MODEL.md:92 ('three shared tokens across six sets') or file one referenced issue",
+      "status": "OPEN",
+      "severity": "Major",
+      "blocking_scope": "G09, G10",
+      "owner": "engineering_owner",
+      "closure_predicate": "both lines corrected in-tree, or an issue linked from the PR body",
+      "closure_authority": "quality_authority"
+    },
+    {
+      "condition_id": "C-3",
+      "statement": "PR description and squash title disclose the L187 'name the set' edit and its impact level (C0 by effect)",
+      "status": "OPEN",
+      "severity": "Major",
+      "blocking_scope": "G09, G10",
+      "owner": "engineering_owner",
+      "closure_predicate": "PR body contains the disclosure; reviewer confirms",
+      "closure_authority": "quality_authority"
+    }
+  ],
+  "non_coverage": [
+    {
+      "evidence_type": "contract-test",
+      "reason": "governance prose has no consumer contract; nothing in secb_pf reads this document (git grep: no hits)",
+      "declared_by": "claude-opus-5"
+    }
+  ],
+  "exceptions": [],
+  "risks": [],
+  "council": null,
+  "disposition": "PASS_WITH_CONDITIONS",
+  "created_at": "2026-08-27T17:00:00Z",
+  "council_disposition": {
+    "disposition": "CHALLENGE_NOT_REQUIRED",
+    "triggers": []
+  }
+}

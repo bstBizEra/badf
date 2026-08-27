@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0010",
+  "gate": "G08",
+  "source_revision": "99fc25997225adfee9843f0ccfba1eefe8f41d2c",
+  "target": "bstBizEra/secb_pf:main",
+  "started_at": "2026-08-27T17:00:00Z",
+  "completed_at": "2026-08-27T17:20:00Z",
+  "id": "EVD-WP-2026-0010-G08-independent-review",
+  "claim": "blind review by a non-author principal: APPROVE_WITH_CONDITIONS, 3 conditions",
+  "evidence_type": "independent-review",
+  "producer": {
+    "id": "g08-independent-reviewer",
+    "type": "agent"
+  },
+  "toolchain": {
+    "name": "agent-review",
+    "version": "code-reviewer persona"
+  },
+  "operation": "review",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0010/evidence/G08/independent-review.md",
+  "digest": "sha256:ea1038733a2f76c4260e684c51dad469b6d88477656a042408fe6349774e83f0"
+}
