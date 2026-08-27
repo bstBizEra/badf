@@ -41,11 +41,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "30186c5"
+    "base_revision": "30186c5",
+    "landed_as": "66672f3a74af398f17595cd13a3fbcf77948cb67"
   },
   "note": "Lands IN_PROGRESS by design; LANDED_UNRECONCILED on main until the next WP reconciles it."
 }

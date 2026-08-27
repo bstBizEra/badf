@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0.0",
+  "status": "DECIDED",
+  "decided_at": "2026-08-27T16:25:54Z",
+  "decided_at_provenance": "RECORDED AT DECISION TIME. The AGREE was given in the operator session (AskUserQuestion, 2026-08-28) and this record was written in the same turn, before any implementation.",
+  "decision_authority": {
+    "role": "human_sponsor",
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "work_package_id": "BADF-WP-0021",
+  "change_class": "C3",
+  "ballot": "AGREE",
+  "authority_downgrade": {
+    "permits_downgrade": false,
+    "note": "Not an authority-matrix change. No role removed, no class lowered, no reserved action changed."
+  },
+  "binding": {
+    "authority_matrix_digest_before": "sha256:75d3e0216212ea7611c36b69bbea8d3835d32841e102561ea2ca4e1383208b43",
+    "policy_epoch": "BADF-2026-08-25",
+    "enacting_commit": null,
+    "enacting_pr": null,
+    "binding_note": "enacting_commit/pr are filled by reconciliation when BADF-WP-0021 lands; null means not yet landed, never 'unknown'."
+  },
+  "supersedes": null,
+  "superseded_by": null,
+  "decision_id": "BADF-DEC-0005",
+  "title": "Keep the canonical lifecycle G00-G14; amend G00 to represent bootstrap and project definition explicitly",
+  "options_considered": {
+    "A": "keep G00-G14 ids and names; amend G00's definition and exit criteria to cover bootstrap / project definition; PRD stays G01 -- SELECTED",
+    "B": "adopt the memo's 15 names (G00 PROJECT_INITIALIZED ... G14 STABILIZED), shifting by one -- REJECTED: WP-2026-0010's G07/G08 dossiers and evidence are bound to the current ids and would need re-issue"
+  },
+  "authorizes": {
+    "summary": "Amend badf/lifecycle.json gate G00 (name and exit_criteria only). required_evidence is unchanged and exit_criteria are not machine-checked, so the policy epoch does not move and no shipped dossier goes stale.",
+    "scope": [
+      "badf/lifecycle.json (G00 name + exit_criteria)"
+    ],
+    "excluded": [
+      "no gate id changes",
+      "no required_evidence change",
+      "no policy_epoch bump"
+    ]
+  },
+  "proven_defect": "G00 'Intake and authority' does not state that a project may enter BADF from nothing; the memo's concern is that init cannot assume a PRD exists.",
+  "residual_risk": "None beyond wording: exit criteria are read by humans and councils, not enforced by the gate.",
+  "evidence": [
+    "AskUserQuestion AGREE: 'Keep G00-G14, amend G00'",
+    "badf/lifecycle.json G00 before amendment: exit_criteria = owner assigned; scope and non-goals explicit; change and data classes assigned; authority current"
+  ],
+  "invalidation": "Renumbering or renaming any gate id invalidates this decision."
+}

@@ -1,0 +1,157 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "badf/init-receipt.schema.json",
+  "title": "BADF initialisation receipt -- the first link of the evidence chain",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "operation",
+    "project_id",
+    "repository",
+    "baseline_commit",
+    "baseline_tree",
+    "framework_repository",
+    "framework_revision",
+    "classification",
+    "maturity",
+    "generated",
+    "preserved",
+    "conflicts",
+    "validation",
+    "recorded_at",
+    "work_package"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": [
+        "1.0.0"
+      ]
+    },
+    "operation": {
+      "type": "string",
+      "enum": [
+        "badf.init"
+      ]
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "repository": {
+      "type": "string"
+    },
+    "baseline_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "baseline_tree": {
+      "type": "string",
+      "enum": [
+        "CLEAN"
+      ],
+      "description": "init refuses a dirty tree, so a receipt can only ever say CLEAN."
+    },
+    "framework_repository": {
+      "type": "string"
+    },
+    "framework_revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "classification": {
+      "type": "string",
+      "enum": [
+        "GREENFIELD",
+        "BROWNFIELD"
+      ]
+    },
+    "maturity": {
+      "type": "string",
+      "enum": [
+        "EMPTY",
+        "IDEA",
+        "PRD",
+        "DESIGN",
+        "BUILD",
+        "TEST",
+        "RELEASE",
+        "PRODUCTION",
+        "DECLARED_MISSING"
+      ]
+    },
+    "generated": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "digest"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "preserved": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "digest"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          }
+        }
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "disposition"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "disposition": {
+            "type": "string",
+            "enum": [
+              "PRESERVED_MERGE_PLAN_REQUIRED"
+            ]
+          }
+        }
+      }
+    },
+    "validation": {
+      "type": "string",
+      "enum": [
+        "PASS"
+      ],
+      "description": "A receipt is written only after validation passed; a failed init writes nothing."
+    },
+    "recorded_at": {
+      "type": "string"
+    },
+    "work_package": {
+      "type": "string",
+      "pattern": "^WP-2026-[0-9]{4}$"
+    }
+  }
+}

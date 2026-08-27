@@ -1,0 +1,176 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "badf/state.schema.json",
+  "title": "BADF project control state (badf/state.json) -- derived, never hand-maintained",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "project_id",
+    "framework_revision",
+    "lifecycle",
+    "active_work_package",
+    "active_session",
+    "authority",
+    "entrypoint",
+    "readiness",
+    "derived_from"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": [
+        "1.0.0"
+      ]
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "framework_revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "lifecycle": {
+      "type": "object",
+      "required": [
+        "current_gate",
+        "state",
+        "target"
+      ],
+      "properties": {
+        "current_gate": {
+          "type": "string",
+          "pattern": "^G(0[0-9]|1[0-4])$"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "INITIALIZED",
+            "HELD",
+            "APPROVED",
+            "BLOCKED"
+          ]
+        },
+        "target": {
+          "type": "string",
+          "enum": [
+            "PRODUCTION",
+            "SANDBOX"
+          ]
+        }
+      }
+    },
+    "active_work_package": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^WP-2026-[0-9]{4}$"
+    },
+    "active_session": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "authority": {
+      "type": "object",
+      "required": [
+        "status"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "UNRESOLVED",
+            "RESOLVED"
+          ]
+        }
+      }
+    },
+    "entrypoint": {
+      "type": "string",
+      "enum": [
+        "AGENTS_MD_GENERATED",
+        "EXISTING_AGENTS_MD_PRESERVED"
+      ]
+    },
+    "readiness": {
+      "type": "object",
+      "required": [
+        "product",
+        "architecture",
+        "engineering",
+        "security",
+        "release",
+        "production"
+      ],
+      "properties": {
+        "product": {
+          "type": "string",
+          "enum": [
+            "NOT_STARTED",
+            "IN_PROGRESS",
+            "READY"
+          ]
+        },
+        "architecture": {
+          "type": "string",
+          "enum": [
+            "NOT_STARTED",
+            "IN_PROGRESS",
+            "READY"
+          ]
+        },
+        "engineering": {
+          "type": "string",
+          "enum": [
+            "NOT_STARTED",
+            "IN_PROGRESS",
+            "READY"
+          ]
+        },
+        "security": {
+          "type": "string",
+          "enum": [
+            "NOT_STARTED",
+            "IN_PROGRESS",
+            "READY"
+          ]
+        },
+        "release": {
+          "type": "string",
+          "enum": [
+            "NOT_STARTED",
+            "IN_PROGRESS",
+            "READY"
+          ]
+        },
+        "production": {
+          "type": "string",
+          "enum": [
+            "NOT_READY",
+            "READY"
+          ]
+        }
+      }
+    },
+    "derived_from": {
+      "type": "object",
+      "required": [
+        "baseline_commit",
+        "receipt"
+      ],
+      "properties": {
+        "baseline_commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "receipt": {
+          "type": "string",
+          "pattern": "^badf/evidence/receipts/init-.+\\.json$"
+        }
+      }
+    }
+  }
+}

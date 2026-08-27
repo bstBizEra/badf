@@ -23,6 +23,32 @@ python3 scripts/badf_gate.py dossier examples/gate-dossier.G00.json
 
 Start new work from `templates/work-package.json`, use `templates/session.md` for execution continuity, and create a gate dossier from `templates/gate-dossier.json` when requesting advancement.
 
+## Initialising a project (`badf init`)
+
+BADF governs **other** repositories. `badf init <intent>` takes a project in at G00 and
+writes a bounded control plane into it — `AGENTS.md` (only if absent) and `badf/`
+(`project.yaml`, `state.json`, `evidence/receipts/init-<ts>.json`) — and nothing else; the
+rest of the target is byte-identical before and after. Framework vs instance is defined in
+[`docs/governance/PROJECT_INSTANCE.md`](docs/governance/PROJECT_INSTANCE.md).
+
+The intent is a JSON/YAML mapping under `project`:
+
+| Field | Required | Meaning |
+| :--- | :---: | :--- |
+| `name` | yes | product name |
+| `intent` | yes | one sentence: what is being built |
+| `owner` | yes | the organisation or person accountable |
+| `target` | yes | `production` or `sandbox` |
+| `repository` | yes | `owner/name` on GitHub; must equal the demand's `source.repository` |
+| `local_path` | yes | a clean git checkout of that repository (never the framework itself) |
+| `demand` | yes | `BADF-DEM-NNNN` — the record in `badf/demands/` that authorises intake |
+| `project_id` | no | e.g. `BST-PROPTECH`; derived from owner and name when absent |
+| `type`, `maturity` | no | recorded as given, else `DECLARED_MISSING` — never guessed |
+
+The G00 dossier renders `HUMAN_REQUIRED`: an instance is a request for authority, not a
+grant of it. Refusals write nothing: dirty tree, existing `badf/`, the framework as target,
+a demand for another repository.
+
 ## Repository map
 
 | Path | Purpose |
