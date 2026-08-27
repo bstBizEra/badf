@@ -136,3 +136,47 @@ class IntegrityRefusalTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class GlobCoverageTests(unittest.TestCase):
+    """The lockfile was extended to lock directories by glob (BADF-WP-0007).
+
+    A glob that matches nothing is a hole shaped exactly like the directory it
+    was meant to cover; it must refuse, not skip. And a file ADDED inside a
+    locked directory without a re-sign is drift, not an unnoticed extra.
+    """
+
+    def test_empty_glob_is_refused_not_skipped(self):
+        saved = list(gate.INTEGRITY_PATHS)
+        gate.INTEGRITY_PATHS.append("no-such-dir/*.md")
+        try:
+            with self.assertRaisesRegex(gate.ValidationError, "matches no files"):
+                gate.compute_integrity()
+        finally:
+            gate.INTEGRITY_PATHS[:] = saved
+
+    def test_file_added_inside_locked_dir_is_drift(self):
+        rogue = gate.ROOT / "docs" / "rogue-unsigned.md"
+        rogue.write_text("x")
+        try:
+            with self.assertRaisesRegex(gate.ValidationError, "absent from lockfile"):
+                gate.verify_integrity()
+        finally:
+            rogue.unlink()
+
+    def test_policy_doc_edit_is_drift(self):
+        doc = gate.ROOT / "docs" / "03-authority-and-agent-councils.md"
+        keep = doc.read_bytes()
+        doc.write_bytes(keep + b"\n<!-- silent -->\n")
+        try:
+            with self.assertRaisesRegex(gate.ValidationError, "changed: docs/03-authority"):
+                gate.verify_integrity()
+        finally:
+            doc.write_bytes(keep)
+
+    def test_lockfile_covers_every_governed_directory(self):
+        """The analysis that motivated this: 0 of 16 docs were locked."""
+        digests = json.loads((gate.ROOT / gate.LOCKFILE).read_text())["digests"]
+        for prefix, minimum in {"docs/": 16, "tests/": 7, "skills/": 2, "templates/": 5, "schemas/": 6}.items():
+            with self.subTest(prefix=prefix):
+                self.assertGreaterEqual(sum(1 for k in digests if k.startswith(prefix)), minimum)
