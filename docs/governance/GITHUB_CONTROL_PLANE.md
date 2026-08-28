@@ -130,6 +130,21 @@ it rather than trusting the record.
   shape (WP-0029: 13 advance tests red there, green in the composed run). Scratch clones pin
   `origin/main` explicitly (`tests/_scratch.pin_origin_main`).
 
+## Research conclusion integrity and traceability (`BADF-WP-0038`, RSR-004)
+
+Four more controls, about whether a record's conclusion holds together and traces back:
+a disposition other than the in-flight `RESEARCH_BLOCKED` means the research **concluded**, so
+the state must be `RECONCILED` — an invalid state fails closed (control 16); a `CHALLENGED`
+state requires a council; a claim that cites contradicting sources must be **recorded** in
+`contradictions[]`, not buried in the claim (control 8, RSR-I04); only `RESEARCH_SUFFICIENT`
+may name a downstream work package (control 15); and the chain **Issue → demand → research →
+decision → work package** must reconstruct — the demand resolves, a named decision resolves and
+governs the named work package, and a named work package has a record (control 18). **Fourteen
+of the eighteen controls are now enforced.** The three remaining need machinery beyond a record
+check and are their own later work: baseline git-resolution (control 3, when a
+repository-research subskill lands), source-digest staleness (control 6), and the record's
+`evidence_digest` recomputation (control 17). `badf-research` stays `DESIGNED` until all pass.
+
 ## Research challenge and independence (`BADF-WP-0037`, RSR-003)
 
 Four more of the 18 controls, about who challenges research and how independence is counted:

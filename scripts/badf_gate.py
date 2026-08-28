@@ -2547,6 +2547,48 @@ def validate_research_record(path: Path) -> str:
         if len(distinct) < 2:
             raise ValidationError(f"a required independent challenge needs at least two distinct reviewers; found {len(distinct)}")
 
+    # ---- conclusion integrity + traceability (RSR-004, BADF-WP-0038) ----
+    disposition = rec["disposition"]["state"]
+    state = rec["state"]
+    # 16: a disposition other than the in-flight RESEARCH_BLOCKED means the record
+    # concluded, which is the RECONCILED state -- an invalid state fails closed.
+    if disposition != "RESEARCH_BLOCKED" and state != "RECONCILED":
+        raise ValidationError(f"disposition {disposition} means the research concluded, but state is {state}, not RECONCILED; a state that the content does not support is refused")
+    if state == "CHALLENGED" and not isinstance(council, dict):
+        raise ValidationError("state is CHALLENGED but no council record is present")
+    # 8: contradictory evidence is preserved -- a contradictions[] entry references
+    # real claims, and a claim that cites contradicting sources is recorded there,
+    # not buried in the claim (RSR-I04).
+    contradicted = set()
+    for x in rec["contradictions"]:
+        bad = sorted(set(x["claim_refs"]) - claim_ids)
+        if bad:
+            raise ValidationError(f"contradiction {x['id']} references claim(s) the record does not carry: {', '.join(bad)}")
+        contradicted.update(x["claim_refs"])
+    for c in rec["claims"]:
+        if c["contradicting_sources"] and c["id"] not in contradicted:
+            raise ValidationError(f"claim {c['id']} cites contradicting sources but no contradictions[] entry records it; contradictory evidence is preserved, not buried")
+    # 15: only RESEARCH_SUFFICIENT makes a work package eligible downstream; a
+    # not-sufficient disposition cannot have spawned an implementation work package.
+    down = rec["downstream"]
+    if disposition != "RESEARCH_SUFFICIENT" and down["work_package_id"] is not None:
+        raise ValidationError(f"disposition {disposition} names downstream work package {down['work_package_id']}, but only RESEARCH_SUFFICIENT makes a work package eligible")
+    # 18: the chain Issue -> demand -> research -> decision -> work package can be
+    # reconstructed. The demand resolves; a named decision resolves; a named work
+    # package has a record; and a named decision governs the named work package.
+    load_demand(rec["demand"])
+    if down["decision_id"] is not None:
+        dec = load_decision(down["decision_id"])
+        if down["work_package_id"] is not None:
+            dec_wp = re.search(r"([0-9]{4})$", str(dec.get("work_package_id") or ""))
+            this_wp = re.search(r"([0-9]{4})$", down["work_package_id"])
+            if not dec_wp or not this_wp or dec_wp.group(1) != this_wp.group(1):
+                raise ValidationError(f"decision {down['decision_id']} governs {dec.get('work_package_id')!r}, not {down['work_package_id']}; the Research -> Decision -> Work Package chain does not reconstruct")
+    if down["work_package_id"] is not None:
+        wp_path = ROOT / "work" / down["work_package_id"] / "work-package.json"
+        if not wp_path.is_file():
+            raise ValidationError(f"downstream work package {down['work_package_id']} has no record; the chain cannot be reconstructed")
+
     return f"BADF RESEARCH PASS: {rec['id']} ({rec['type']}/{rec['depth']}) -- {len(rec['claims'])} claims, disposition {rec['disposition']['state']}; grants no implementation authority"
 
 
