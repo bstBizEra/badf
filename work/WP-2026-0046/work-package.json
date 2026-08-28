@@ -1,0 +1,59 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0046",
+  "title": "problem-framing: P0 research subskill 2/9 + control 20 (pre-evidence guard)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0033",
+  "objective": "Build the entry research subskill problem-framing (mirroring repository-research): a concise SKILL.md that converts a demand into a bounded, machine-readable research admission (the record's framing fields from WP-0045), whose invariant is that it sharpens the question but never researches or answers it. Add control 20: a record in a pre-evidence state (PROPOSED/FRAMED/BASELINED) carries no claims, sources, or findings. Register it IMPLEMENTED; badf-research stays DESIGNED.",
+  "business_value": "problem-framing is the canonical entry point for almost every R01-R09 route; giving it a SKILL.md and a deterministic 'framing != answering' guard means a research run starts from a bounded, reviewable admission rather than an accumulation of links, and cannot smuggle premature conclusions into a framing record.",
+  "in_scope": [
+    "skills/badf-research/subskills/problem-framing/SKILL.md (concise, declarative; invariant: does not research the answer)",
+    "skill-registry entry problem-framing IMPLEMENTED with a real digest",
+    "control 20 in validate_research_record: pre-evidence state => no claims/sources/findings",
+    "acceptance.md control 20 row; root SKILL.md routing + stale 'nothing here runs yet' fix",
+    "tests/test_badf_research.py failing-first + mutation; contract-test coverage; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "control 6 (source freshness -- deferred until deep-research owns source acquisition)",
+    "the other 7 P0 subskills -- one WP each",
+    "#77's reference-file refactor (structural churn, deferred)",
+    "the R08/R09 router ambiguity (filed as a separate DISCOVERED issue)",
+    "any move of badf-research off DESIGNED"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "problem-framing/SKILL.md exists, is concise, and its registry digest == sha256(source), status IMPLEMENTED",
+    "a research record in state PROPOSED/FRAMED/BASELINED with any claim, source, or finding is refused naming it",
+    "the three shipped examples (RECONCILED) still pass `research` unchanged",
+    "root SKILL.md no longer says 'nothing here runs yet' and routes problem-framing as the entry subskill",
+    "acceptance.md documents control 20 (research controls 18 of 20)",
+    "mutation kills; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research.py",
+    "tests/test_badf_research_contract.py",
+    "tests/test_badf_registry_digest.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "e8fa8ce"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Second P0 research subskill (repository-research was first). Reuses the frozen contract + WP-0045 framing fields -- no new validator module. badf-research stays DESIGNED (2 of 9 P0). Research controls to 18 of 20; control 6 (freshness) still open."
+}

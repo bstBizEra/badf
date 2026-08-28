@@ -36,7 +36,7 @@
       "risk_class": "C1",
       "allowed_tools": [],
       "status": "DESIGNED",
-      "digest": "sha256:638866d82f2d37f03b8ec70f796b9b035411dd0b34026f7f22efe2a272c41678"
+      "digest": "sha256:48468e6b475f46afb8903045d5ecc58e643935c4a4b4fdc76b3d49e242363392"
     },
     {
       "name": "repository-research",
@@ -60,6 +60,19 @@
       "allowed_tools": [],
       "status": "IMPLEMENTED",
       "digest": "sha256:99f9bbe8111d4346b78b34c235b1ce06ba85ffe5ee9bf6db1d2a841e0486b56f"
+    },
+    {
+      "name": "problem-framing",
+      "source": "skills/badf-research/subskills/problem-framing/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem",
+        "local-shell"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:0dd049400f54f2c4cf9296bc27bf72a298891de8ab4d9e26b3e8b02c824e2a6a"
     }
   ]
 }

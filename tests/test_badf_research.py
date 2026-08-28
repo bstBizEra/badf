@@ -416,5 +416,39 @@ class ScopeContractTests(ResearchRecordTests):
         self.assertIn("RESEARCH PASS", r.stdout)
 
 
+class PreEvidenceGuardTests(ResearchRecordTests):
+    """Control 20 (BADF-WP-0046, problem-framing): a record in a pre-evidence state
+    carries no claims, sources, or findings -- framing precedes evidence collection."""
+
+    def test_a_framed_record_with_claims_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE); rec["state"] = "FRAMED"
+        self.refused(rec, "pre-evidence state FRAMED but carries")
+
+    def test_a_proposed_record_with_evidence_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE); rec["state"] = "PROPOSED"
+        self.refused(rec, "pre-evidence state PROPOSED but carries")
+
+    def test_a_baselined_record_with_evidence_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE); rec["state"] = "BASELINED"
+        self.refused(rec, "pre-evidence state BASELINED but carries")
+
+    def test_the_reconciled_example_with_claims_still_passes(self):
+        # control 20 only guards pre-evidence states; a RECONCILED record carries evidence.
+        r = self.run_cli(copy.deepcopy(EXAMPLE))
+        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
+
+
+class ProblemFramingRegistrationTests(unittest.TestCase):
+
+    def test_problem_framing_is_registered_implemented_with_a_real_digest(self):
+        import hashlib
+        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
+        entry = next((e for e in reg["skills"] if e["name"] == "problem-framing"), None)
+        self.assertIsNotNone(entry, "problem-framing is not registered")
+        self.assertEqual(entry["status"], "IMPLEMENTED")
+        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
+        self.assertTrue((gate.ROOT / "skills/badf-research/subskills/problem-framing/SKILL.md").is_file())
+
+
 if __name__ == "__main__":
     unittest.main()

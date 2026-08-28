@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0033",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 81,
+    "url": "https://github.com/bstBizEra/badf/issues/81",
+    "exported_at": "2026-08-28T17:37:34Z",
+    "body_digest": "sha256:adb15a4eb60143505847e632eaa0ea4c84e1f83d92f43c9f6d6bc29a09488901"
+  },
+  "title": "GOV-0029: badf-research has no problem-framing entry subskill, and pre-evidence states are unguarded (P0 subskill 2/9 + control 20)",
+  "problem": "## Observed\n`badf-research` is `DESIGNED`; the frozen admission rule requires all nine P0 subskills to exist before the family reaches `IMPLEMENTED`, and only **1 of 9** is present (`repository-research`). The **entry** subskill \u2014 `problem-framing` \u2014 does not exist, even though the root skill already instructs resolving the question/type/depth/scope/stop-conditions before research begins, and WP-0045 just gave those a complete machine-readable target (`question`, `scope`, `known`, `unknown`, `hypotheses`, `stop_conditions`, `assumptions`, `decision_context`). Separately, the state machine defines pre-evidence states (`PROPOSED`, `FRAMED`, `BASELINED`) but the gate does not enforce that a record in those states carries **no** claims/sources/findings \u2014 so a \"framing\" record could smuggle in premature conclusions, violating framing's core invariant.\n\n## Expected\nBuild `problem-framing` as P0 subskill **2 of 9**, mirroring `repository-research`:\n- `skills/badf-research/subskills/problem-framing/SKILL.md` \u2014 a concise declarative workflow that converts a demand/Issue into a bounded, machine-readable research **admission** (the record's framing fields), and whose invariant is that it **sharpens the question but never researches or answers it** (RSR-I01; framing precedes evidence).\n- A registry entry `IMPLEMENTED` with a real digest.\n- **Control 20** in `validate_research_record`: a record in a pre-evidence `state` (`PROPOSED`/`FRAMED`/`BASELINED`) carries no `claims`, `sources`, or `findings` \u2014 evidence appears only from `EVIDENCE_COLLECTING` onward. This makes \"framing \u2260 answering\" a deterministic refusal.\n- Opportunistic doc fix: the root `SKILL.md` still says *\"nothing here runs yet\"*, which is stale (the `research` gate command and `repository-research` exist); `DESIGNED` stays correct.\n\n## Evidence\n- `ls skills/badf-research/subskills` \u2192 only `repository-research` (1 of 9 P0)\n- state enum includes `PROPOSED`/`FRAMED`/`BASELINED`; the three shipped examples are all `RECONCILED`, so the pre-evidence guard does not touch them\n- root `SKILL.md` line: `Status: DESIGNED (... nothing here runs yet)` \u2014 stale\n\n## Unknowns\nNone for this subskill. **Not in scope:** control 6 (source freshness \u2014 deferred until `deep-research` owns source acquisition), the other 7 P0 subskills, and #77's reference-file refactor (structural churn, deferred). A separate follow-up issue will record the R08/R09 router ambiguity.\n\n## Proposed work package\n`BADF-WP-0046`. `problem-framing/SKILL.md` + registry entry; control 20 + acceptance.md row; root SKILL.md routing + stale-sentence fix; `tests/test_badf_research.py` failing-first + mutation; own G07 self-dossier. C2. Research controls -> 18 of 20; `badf-research` stays `DESIGNED` (2 of 9 P0 subskills).\n\ndiscovered-by: BADF-WP-0045 (the framing substrate) + operator research sequencing (2026-08-29) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T17:37:34Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. problem-framing = P0 research subskill 2/9 + control 20 (pre-evidence guard), on the frozen contract hardened by WP-0045. Authority: operator research sequencing 'build problem-framing next' (2026-08-29). Worked as BADF-WP-0046."
+}

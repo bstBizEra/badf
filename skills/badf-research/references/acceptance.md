@@ -25,10 +25,11 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows 
 | 17 | the record digest changes when material evidence changes |
 | 18 | Research → Decision → Work Package traceability can be reconstructed |
 | 19 | the research scope is bounded and machine-readable: a material run declares non-empty `stop_conditions`, `assumptions` distinct from evidence, and a `decision_context` naming the decision it serves (framing, excluded from the `evidence_digest`) |
+| 20 | framing precedes evidence: a record in a pre-evidence state (`PROPOSED`/`FRAMED`/`BASELINED`) carries no `claims`, `sources`, or `findings` (the `problem-framing` invariant — sharpen the question, do not answer it) |
 
 ## Admission
 
-- `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time).
-- `VALIDATED`: the 19 controls above pass as gate tests with mutation. Enforced today: 1–5, 7–14, 16–19 (17 of 19); control 6 (source-digest freshness) awaits a source-fetch mechanism, control 15 rides the state machine.
+- `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time). Present: `repository-research`, `problem-framing` (2 of 9).
+- `VALIDATED`: the 20 controls above pass as gate tests with mutation. Enforced today: 1–5, 7–14, 16–20 (18 of 20); control 6 (source-digest freshness) awaits a source-fetch mechanism, control 15 rides the state machine.
 - `SHADOWED`: the family is run retrospectively on historical BADF findings (the authority-downgrade defect, schema drift, foreign-revision resolution, the composed-tree reds of 2026-08-28) without knowing the answer; `examples/research-record.json` is the first such shadow record.
 - `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. Until then the registry entry stays `DESIGNED`.
