@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0043-G07-source-change",
+  "work_package_id": "WP-2026-0043",
+  "gate": "G07",
+  "claim": "the change WP-2026-0043 makes to this repository, outside its own directory and the lockfile",
+  "evidence_type": "source-change",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-08-28T16:13:45Z",
+  "completed_at": "2026-08-28T16:13:45Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0043/evidence/G07/source-change.diff",
+  "digest": "sha256:0f92062c23d0d5f0937ea06f0a748e678a77216d4c147fc6bfb2f73921ecc5ac"
+}

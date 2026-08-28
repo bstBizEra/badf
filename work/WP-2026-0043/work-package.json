@@ -1,0 +1,58 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0043",
+  "title": "WP-ARCH-A: badf-architecture capability contract freeze (DESIGN/ASSURE, DESIGNED only, no G04 authority change)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0030",
+  "objective": "Freeze the badf-architecture capability contract at DESIGNED -- analogous to the badf-research freeze (WP-0031). Ship skills/badf-architecture/SKILL.md + references/ (DESIGN/ASSURE, canonical model vs diagram, C4-as-views, ADR vs BADF-DEC, NFR allocation, fitness obligations, G04 mapping, external methodology, acceptance), a registry entry DESIGNED with a real digest, and a doc-structural contract test. No executable, no schemas, no gate code, no G04 authority change.",
+  "business_value": "Establishes architecture as an engineering + assurance capability (not a diagram skill) before G04 enforcement is built, so the later G04 gate contract and the ASSURE substrate have a frozen, machine-referenceable meaning to implement against -- and so C4 stays a view, never the architecture source of truth.",
+  "in_scope": [
+    "skills/badf-architecture/SKILL.md (concise, declarative; DESIGN/ASSURE modes; authority boundary; routing)",
+    "skills/badf-architecture/references/{design-mode,assure-mode,architecture-model,c4-contract,adr-contract,architecture-fitness,g04-contract,external-methodology,acceptance}.md",
+    "the twelve invariants ARCH-I01..ARCH-I12 stated verbatim",
+    "badf/skill-registry.json entry: badf-architecture DESIGNED, allowed_tools [], real digest",
+    "tests/test_badf_architecture_contract.py (doc-structural, failing-first) + registry-digest coverage",
+    "doctrine section in GITHUB_CONTROL_PLANE.md; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "WP-ARCH-B: deterministic G04 DESIGN evidence semantics inside the canonical gate (schemas + check_* rules)",
+    "WP-ARCH-C: the ASSURE substrate (dependency graph, cycles, boundary rules, ADR compliance, baseline/observed binding)",
+    "any change to G04 in lifecycle.json or any G04 authority",
+    "any scripts/badf_architecture.py executable (ARCH-I11: no second gate)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "skills/badf-architecture/SKILL.md exists, is concise, names every reference, and states the fundamental rule + authority boundary (does not approve G04, does not advance lifecycle)",
+    "the DESIGN and ASSURE modes and the canonical-model-vs-diagram distinction are documented",
+    "ARCH-I01..ARCH-I12 are stated verbatim in the references",
+    "g04-contract.md maps all five G04 evidence types (architecture/adr/data-model/api-contract/operability-design)",
+    "the registry entry is DESIGNED and its digest == sha256(SKILL.md); `repo` passes",
+    "no scripts/*architecture* executable exists; 'architecture' is not in EVIDENCE_RULES (still DESIGNED, not IMPLEMENTED)",
+    "compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_architecture_contract.py",
+    "tests/test_badf_registry_digest.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "42520a6"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Docs + registry only -- no new gate branch, so mutation is N/A; the contract test guards the meaning. Mirrors the badf-research freeze WP-0031 (C2/G07)."
+}

@@ -1,0 +1,28 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 331ca4f..29dc2a9 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -278,6 +278,23 @@ resolution (an unresolved major finding means the design is not validated). Ship
+ `examples/gate-dossier.G03.json` and a G02→G03 pair-acceptance. Same lean substrate as G01/G02 —
+ no design-authoring skill, no vendored UX toolkit.
+ 
++## Architecture capability freeze (`BADF-WP-0043`, Issue #74)
++
++`badf-architecture` is frozen at `DESIGNED` — an architecture **engineering + assurance** capability,
++not a diagram skill — the same way `badf-research` was frozen (#50): a `SKILL.md` + `references/`
++contract, a registry entry with a real digest, and a doc-structural test, with **no executable and
++no G04 authority change**. The four distinctions that never collapse: architecture documentation ≠
++assurance ≠ gate authority ≠ implementation authorization. Two modes — DESIGN (a canonical,
++machine-readable architecture **baseline** from which C4/Mermaid are rendered as *views*, plus
++boundaries, trust boundaries, data flows, ADRs, NFR allocation, operability, fitness obligations)
++and ASSURE (dependency direction, cycles, boundary violations, ADR compliance, drift, non-coverage —
++read-only, bound to one baseline + one observed revision). Twelve invariants `ARCH-I01`..`ARCH-I12`
++pin the meaning: views are projections (a diagram never adds a claim absent from the baseline), no
++inferred compliance (`NO BASELINE ≠ COMPLIANT`), drift is evidence not authority, `ADR-*` ≠
++`BADF-DEC-*`, and **no second gate** (no `scripts/badf_architecture.py` — deterministic G04 semantics
++belong in the canonical gate). G04 is *mapped* (its five evidence types) but left exactly as declared;
++the G04 DESIGN semantics (WP-ARCH-B) and the ASSURE substrate (WP-ARCH-C) are separate, later WPs.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
