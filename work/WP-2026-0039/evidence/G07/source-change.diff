@@ -1,0 +1,204 @@
+diff --git a/badf/demands/BADF-DEM-0026.json b/badf/demands/BADF-DEM-0026.json
+new file mode 100644
+index 0000000..0f4b496
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0026.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0026",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 65,
++    "url": "https://github.com/bstBizEra/badf/issues/65",
++    "exported_at": "2026-08-28T13:46:03Z",
++    "body_digest": "sha256:1b85326ad3649df716f63bf47bae23f17aecf33122f780f37064211b8bbe7c06"
++  },
++  "title": "GOV-0022: a research record's evidence_digest is not computed or checked (RSR-005 control 17)",
++  "problem": "## Observed\n`schemas/research-record.schema.json` carries an `evidence_digest` field, but nothing computes or checks it \u2014 both shipped examples had it `null`. A claim or source can be edited and the record still validate, so `evidence_digest` is decorative: the acceptance-control \"the record digest changes when material evidence changes\" (control 17) is not enforced.\n\n## Expected\n`badf_gate.py research` computes the digest from the record's material evidence (sources, claims, contradictions, experiments) in canonical JSON and refuses a record whose `evidence_digest` does not match \u2014 computed, not asserted, like the two-plane verdict. Editing interpretation (findings, recommendation, disposition) does not change it.\n\n## Evidence\n`grep -n \"evidence_digest\" scripts/badf_gate.py` \u2192 absent on `main` at `e7ea929`; `python3 -c \"import json;print(json.load(open('examples/research-record.json'))['evidence_digest'])\"` \u2192 `None`.\n\n## Unknowns\nNone. Controls 3 (baseline git-resolution, `repository-research` subskill territory) and 6 (source-digest staleness, needs a source fetch) need machinery beyond a record check and are separate later work; `badf-research` stays `DESIGNED` until all 18 pass.\n\n## Proposed work package\n`BADF-WP-0039` (RSR-005). `compute_research_evidence_digest` + control 17; both examples digest-bound; tests + mutation. C2. Brings 15 of 18 to enforced.\n\ndiscovered-by: BADF-WP-0031 (frozen-contract roadmap) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T13:46:03Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Body exported verbatim and digest-bound. Roadmap item RSR-005 (control 17 only) under the frozen research contract (#50); authority: the operator's direction to finish the record-pure controls (2026-08-28). Worked as BADF-WP-0039."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index d322f31..dd84688 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -130,6 +130,16 @@ it rather than trusting the record.
+   shape (WP-0029: 13 advance tests red there, green in the composed run). Scratch clones pin
+   `origin/main` explicitly (`tests/_scratch.pin_origin_main`).
+ 
++## Research evidence digest (`BADF-WP-0039`, RSR-005 control 17)
++
++A record's `evidence_digest` is the sha256 of its **material evidence** — sources, claims,
++contradictions, experiments — in canonical JSON, **computed by the gate, not asserted**. A
++claim or source edited without re-digesting is stale and refused; editing interpretation
++(findings, recommendation, disposition) does not change it. **Fifteen of the eighteen controls
++are now enforced.** The last three need machinery beyond a record check: baseline
++git-resolution (3, `repository-research` subskill territory), source-digest staleness detection
++(6), which need a subskill and a source-fetch respectively. `badf-research` stays `DESIGNED`.
++
+ ## Research conclusion integrity and traceability (`BADF-WP-0038`, RSR-004)
+ 
+ Four more controls, about whether a record's conclusion holds together and traces back:
+diff --git a/examples/research-record-challenged.json b/examples/research-record-challenged.json
+index 4a959e1..4d8e189 100644
+--- a/examples/research-record-challenged.json
++++ b/examples/research-record-challenged.json
+@@ -148,6 +148,6 @@
+   "authority": {
+     "implementation_authority": false
+   },
+-  "evidence_digest": null,
++  "evidence_digest": "sha256:35c4a47ed7179b74b40e85574ed6ee9e7be02482498cffe3bcbbb768bf23d005",
+   "recorded_at": "2026-08-28T14:20:00Z"
+ }
+diff --git a/examples/research-record.json b/examples/research-record.json
+index 349c5c1..2878af1 100644
+--- a/examples/research-record.json
++++ b/examples/research-record.json
+@@ -145,6 +145,6 @@
+   "authority": {
+     "implementation_authority": false
+   },
+-  "evidence_digest": null,
++  "evidence_digest": "sha256:8a2fe9ea6b48901aeac588cc2aaed22dceaf794872f12dee49cf7d66297c58bf",
+   "recorded_at": "2026-08-28T13:50:00Z"
+ }
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 08ab591..21dd0c9 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -2470,6 +2470,17 @@ def derive_confidence(basis: dict[str, Any]) -> str:
+     return "HIGH" if contra > 0 else "VERY_HIGH"
+ 
+ 
++def compute_research_evidence_digest(rec: dict[str, Any]) -> str:
++    """The digest of a record's MATERIAL evidence -- its sources, claims,
++    contradictions and experiments. Interpretation (findings, recommendation,
++    disposition) is deliberately excluded: the digest changes when the
++    evidence changes, not when its reading does (RSR-002 control 17). Canonical
++    JSON so the same evidence always yields the same digest."""
++    material = {k: rec[k] for k in ("sources", "claims", "contradictions", "experiments")}
++    blob = json.dumps(material, sort_keys=True, separators=(",", ":")).encode("utf-8")
++    return "sha256:" + hashlib.sha256(blob).hexdigest()
++
++
+ def validate_research_record(path: Path) -> str:
+     """`badf_gate.py research <path>`: the deterministic record/source/claim
+     controls of the frozen research contract (RSR-002). Schema conformance,
+@@ -2576,6 +2587,11 @@ def validate_research_record(path: Path) -> str:
+     # 18: the chain Issue -> demand -> research -> decision -> work package can be
+     # reconstructed. The demand resolves; a named decision resolves; a named work
+     # package has a record; and a named decision governs the named work package.
++    # 17: the evidence_digest is computed from the material evidence, not
++    # asserted; a claim or source edited without re-digesting is stale.
++    want_digest = compute_research_evidence_digest(rec)
++    if rec["evidence_digest"] != want_digest:
++        raise ValidationError(f"evidence_digest {rec['evidence_digest']} is not the digest of this record's sources/claims/contradictions/experiments ({want_digest[:19]}...); it is computed, not asserted -- re-digest when the evidence changes")
+     load_demand(rec["demand"])
+     if down["decision_id"] is not None:
+         dec = load_decision(down["decision_id"])
+diff --git a/skills/badf-research/references/evidence-contract.md b/skills/badf-research/references/evidence-contract.md
+index 2c1f4c8..fc5cfed 100644
+--- a/skills/badf-research/references/evidence-contract.md
++++ b/skills/badf-research/references/evidence-contract.md
+@@ -52,4 +52,4 @@ Confidence is **derived** from `basis` — `independent_primary_sources` (`ips`)
+ 
+ ## Findings, alternatives, experiments
+ 
+-`findings[]` reference claims; `alternatives[]` reference evidence; `experiments[]` reference a hypothesis and state method and result. `evidence_digest` is the sha256 over the sources and claims and changes when material evidence changes.
++`findings[]` reference claims; `alternatives[]` reference evidence; `experiments[]` reference a hypothesis and state method and result. `evidence_digest` is the sha256 over the record's material evidence -- its sources, claims, contradictions and experiments -- in canonical JSON; it is computed by the gate, not asserted, and changes when the evidence changes but not when its reading (findings, recommendation, disposition) does (`badf_gate.py research` refuses a mismatch).
+diff --git a/tests/test_badf_research.py b/tests/test_badf_research.py
+index ed55b66..78bd484 100644
+--- a/tests/test_badf_research.py
++++ b/tests/test_badf_research.py
+@@ -232,6 +232,7 @@ class ConclusionAndTraceabilityTests(unittest.TestCase):
+         rec["claims"][0]["confidence"]["basis"]["contradictions"] = 1
+         rec["claims"][0]["confidence"]["level"] = "HIGH"
+         rec["contradictions"] = [{"id": "X-001", "claim_refs": ["C-001"], "statement": "S-002 pointed the other way, examined"}]
++        rec["evidence_digest"] = gate.compute_research_evidence_digest(rec)   # material evidence changed -> re-digest (control 17)
+         r = self.run_cli(rec)
+         self.assertEqual(r.returncode, 0, r.stderr)
+ 
+@@ -264,5 +265,55 @@ class ConclusionAndTraceabilityTests(unittest.TestCase):
+         self.assertEqual(r.returncode, 0, r.stderr)
+ 
+ 
++class EvidenceDigestTests(unittest.TestCase):
++    def run_cli(self, rec):
++        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
++            json.dump(rec, f); path = Path(f.name)
++        try:
++            return subprocess.run([sys.executable, "scripts/badf_gate.py", "research", str(path)],
++                                  cwd=str(gate.ROOT), capture_output=True, text=True)
++        finally:
++            path.unlink()
++
++    def rebind(self, rec):
++        rec["evidence_digest"] = gate.compute_research_evidence_digest(rec); return rec
++
++    def test_shipped_examples_carry_the_computed_digest(self):
++        for name in ("research-record.json", "research-record-challenged.json"):
++            rec = json.loads((gate.ROOT / "examples" / name).read_text())
++            self.assertEqual(rec["evidence_digest"], gate.compute_research_evidence_digest(rec), name)
++
++    def test_a_null_evidence_digest_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); rec["evidence_digest"] = None
++        r = self.run_cli(rec)
++        self.assertNotEqual(r.returncode, 0); self.assertIn("computed, not asserted", r.stderr)
++
++    def test_a_claim_edited_without_re_digesting_is_stale(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["claims"][0]["statement"] = "a different claim"   # material evidence changed; digest not updated
++        r = self.run_cli(rec)
++        self.assertNotEqual(r.returncode, 0); self.assertIn("not the digest", r.stderr)
++
++    def test_a_source_edited_without_re_digesting_is_stale(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["sources"][0]["uri"] = "https://example.invalid/moved"
++        r = self.run_cli(rec)
++        self.assertNotEqual(r.returncode, 0); self.assertIn("not the digest", r.stderr)
++
++    def test_editing_interpretation_does_not_change_the_evidence_digest(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["recommendation"] = "a different recommendation, same evidence"
++        rec["findings"][0]["statement"] = "reworded finding"
++        r = self.run_cli(rec)   # evidence_digest unchanged and still correct -> passes
++        self.assertEqual(r.returncode, 0, r.stderr)
++
++    def test_re_digesting_after_a_real_edit_passes(self):
++        rec = self.rebind(copy.deepcopy(EXAMPLE))
++        rec["claims"][0]["statement"] = "a new, honestly re-digested claim"
++        self.rebind(rec)
++        r = self.run_cli(rec)
++        self.assertEqual(r.returncode, 0, r.stderr)
++
++
+ if __name__ == "__main__":
+     unittest.main()
+diff --git a/work/WP-2026-0038/work-package.json b/work/WP-2026-0038/work-package.json
+index aeec205..e639b73 100644
+--- a/work/WP-2026-0038/work-package.json
++++ b/work/WP-2026-0038/work-package.json
+@@ -40,11 +40,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "bcb9d6d"
++    "base_revision": "bcb9d6d",
++    "landed_as": "e7ea929a2cf586fd3201667304220ebe761ea9fc"
+   },
+   "note": "Lands IN_PROGRESS by design. Own G07 self-dossier. 14 of 18 controls enforced; 3/6/17 deferred with reasons; badf-research stays DESIGNED."
+ }
