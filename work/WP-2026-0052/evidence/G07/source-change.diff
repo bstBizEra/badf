@@ -1,0 +1,238 @@
+diff --git a/badf/demands/BADF-DEM-0039.json b/badf/demands/BADF-DEM-0039.json
+new file mode 100644
+index 0000000..2e15473
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0039.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0039",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 95,
++    "url": "https://github.com/bstBizEra/badf/issues/95",
++    "exported_at": "2026-08-28T20:18:45Z",
++    "body_digest": "sha256:7592d0b3a0457ea006c778aa54fa5c475e5d4c47d4da29c4db0188d456c1b9c8"
++  },
++  "title": "GOV-0036: badf-research has no comparative-evaluation subskill; R07 passes with <2 alternatives (P0 7/9 + earned control 24)",
++  "problem": "## Observed\n`badf-research` has 6 of 9 P0 subskills; `comparative-evaluation` \u2014 which weighs the alternatives against explicit criteria and produces an evidence-backed trade-off \u2014 does not exist. Failing-first probe: a `COMPARATIVE` (R07) record passes the gate with **zero or one** alternative \u2014 a comparison of fewer than two options is not a comparison.\n\n## Expected\nBuild `comparative-evaluation` as P0 subskill **7 of 9**: a concise `SKILL.md` that scores alternatives on explicit comparable dimensions, identifies dominance/non-dominance, and **surfaces non-dominance rather than manufacturing a winner** (a null `recommendation` is valid); a recommendation carries epistemic weight, never authorization. Register `IMPLEMENTED`. **Control 24 (earned):** a `COMPARATIVE` (R07) record carries \u22652 `alternatives`.\n\n## Evidence\n- probe: `R07 + 0 alternatives` \u2192 PASS (gap); `R07 + 1 alternative` \u2192 PASS (gap)\n- the shipped challenged example is R07 with 2 alternatives (control 24 does not break it)\n\n## Unknowns\nNone. Non-dominance-vs-manufactured-winner is not deterministically enforceable (the gate cannot judge whether evidence justifies a winner); a null recommendation is allowed. Not in scope: adversarial-research, research-reconciliation (later), #77/#83/#84.\n\n## Proposed work package\n`BADF-WP-0052`. `comparative-evaluation/SKILL.md` + registry; control 24 (earned) + acceptance row; root router (7/9); tests + mutation; own G07 self-dossier. C2. Controls -> 23 of 24; `badf-research` stays `DESIGNED` (7 of 9 P0).\n\ndiscovered-by: operator research sequencing (2026-08-29) + BADF-WP-0051 \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T20:18:45Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "comparative-evaluation P0 7/9 + control 24 (R07 needs >=2 alternatives, earned). /loop research build. Worked as BADF-WP-0052."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 2734f3e..a02f915 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -36,7 +36,7 @@
+       "risk_class": "C1",
+       "allowed_tools": [],
+       "status": "DESIGNED",
+-      "digest": "sha256:0a42206045ae3c924180da9f4a4c88cfb047786ac55c912024a50cbc8153c48f"
++      "digest": "sha256:0eece10f963900c31c8440b5ddc57a0c0574f93b215e4f8471e792e85f24f5a1"
+     },
+     {
+       "name": "repository-research",
+@@ -125,6 +125,19 @@
+       ],
+       "status": "IMPLEMENTED",
+       "digest": "sha256:7b5e4db5c9df5e40310c6ba49a1fe6b3628615faeb001e7d0ea34029b75e2a61"
++    },
++    {
++      "name": "comparative-evaluation",
++      "source": "skills/badf-research/subskills/comparative-evaluation/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [
++        "local-filesystem",
++        "local-shell"
++      ],
++      "status": "IMPLEMENTED",
++      "digest": "sha256:3a32d09b0efbe6589b8af57f7140a7e976ca0c42d58a98ae44ba095cbf1c0fa3"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index fb1d02b..16fbb0c 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -409,6 +409,18 @@ alternative's `evidence_refs` must resolve to a claim, finding or source the rec
+ is proposed on the strength of gathered evidence, not asserted. Research controls: **22 of 23**.
+ `badf-research` stays `DESIGNED` (6 of 9 P0).
+ 
++## comparative-evaluation — a comparison weighs two (`BADF-WP-0052`, Issue #95)
++
++The seventh P0 research subskill: `skills/badf-research/subskills/comparative-evaluation/SKILL.md`
++weighs the `alternatives` `technical-research` produced against explicit comparable dimensions and
++records the trade-off, **surfacing non-dominance rather than manufacturing a winner** (a null
++`recommendation` is valid) — a recommendation is epistemic weight, never authorization. **Control 24,
++earned by failing-first**: a probe showed a `COMPARATIVE` (R07) record passed with zero or one
++alternative, so an R07 run must now carry ≥2 alternatives — a comparison of one option is not a
++comparison. What the gate does *not* enforce is whether the evidence justifies a winner (it cannot),
++so honest non-dominance stays a null recommendation. Research controls: **23 of 24** — only control 15
++remains, for `research-reconciliation`, the last P0 subskill. `badf-research` stays `DESIGNED` (7 of 9).
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 32a6d47..8dcb2d0 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -2929,6 +2929,10 @@ def validate_research_record(path: Path) -> str:
+         for ref in alt.get("evidence_refs") or []:
+             if re.fullmatch(r"[CFS]-[0-9]{3,}", ref) and ref not in grounded:
+                 raise ValidationError(f"alternative {alt['id']} cites in-record evidence {ref} that is absent; an id-shaped evidence_ref must resolve to a claim, finding or source it holds (control 23)")
++    # 24: a comparison needs at least two options to weigh (comparative-evaluation).
++    # A COMPARATIVE (R07) run of one alternative is not a comparison.
++    if rec["type"] == "R07" and len(rec["alternatives"]) < 2:
++        raise ValidationError("comparative research (R07) carries fewer than two alternatives; a comparison needs at least two options to weigh (control 24)")
+ 
+     # ---- challenge / independence controls (RSR-003, BADF-WP-0037) ----
+     # 10: source count is not source independence -- the basis cannot claim more
+diff --git a/skills/badf-research/SKILL.md b/skills/badf-research/SKILL.md
+index 27e7d61..88e6350 100644
+--- a/skills/badf-research/SKILL.md
++++ b/skills/badf-research/SKILL.md
+@@ -5,7 +5,7 @@ description: Govern evidence-based research for BADF questions, issues, defects,
+ 
+ # BADF Research
+ 
+-Status: `DESIGNED` (contract frozen by `BADF-WP-0031`). The `research` gate command enforces the record contract, and the `problem-framing`, `repository-research`, `fact-checking`, `evidence-synthesis`, `deep-research` and `technical-research` subskills exist; the family is not yet activated for autonomous use (6 of 9 P0 subskills). Research determines what the evidence supports; `badf-delivery` governs what authorised actors may do with that conclusion.
++Status: `DESIGNED` (contract frozen by `BADF-WP-0031`). The `research` gate command enforces the record contract, and the `problem-framing`, `repository-research`, `fact-checking`, `evidence-synthesis`, `deep-research`, `technical-research` and `comparative-evaluation` subskills exist; the family is not yet activated for autonomous use (7 of 9 P0 subskills). Research determines what the evidence supports; `badf-delivery` governs what authorised actors may do with that conclusion.
+ 
+ 1. Read the repository `AGENTS.md` and the documents it marks required.
+ 2. Resolve the research question, the originating Issue and its demand record, the research type and depth (`references/research-types.md`), scope and non-goals, source and data boundaries, authority and mutation constraints, required evidence, and the bounded scope contract — non-empty **stop conditions** (when the run stops), the **assumptions** it rests on (kept distinct from evidence), and the **decision it serves** — all first-class in the record (`schemas/research-record.schema.json`, control 19).
+diff --git a/skills/badf-research/references/acceptance.md b/skills/badf-research/references/acceptance.md
+index accf949..042ecd5 100644
+--- a/skills/badf-research/references/acceptance.md
++++ b/skills/badf-research/references/acceptance.md
+@@ -28,11 +28,12 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows
+ | 20 | framing precedes evidence: a record in a pre-evidence state (`PROPOSED`/`FRAMED`/`BASELINED`) carries no `claims`, `sources`, or `findings` (the `problem-framing` invariant — sharpen the question, do not answer it) |
+ | 21 | a claim's status is consistent with its evidence (the `fact-checking` invariant): a `FALSIFIED` claim carries a contradicting source (no evidence ≠ false), and a `DISPUTED` claim carries both supporting and contradicting sources (support and contradiction coexist). Whether a source's *content* entails the claim is not machine-checkable here — the source carries no content locator — and is tracked separately |
+ | 22 | a finding is grounded (the `evidence-synthesis` invariant): every finding references at least one claim — a synthesis conclusion rests on adjudicated evidence, not free assertion |
+-| 23 | a technical-solution run yields grounded options (the `technical-research` invariant): an `R04` record carries at least one `alternative`, and every alternative's `evidence_refs` resolves to a claim, finding or source the record holds |
++| 23 | a technical-solution run yields grounded options (the `technical-research` invariant): an `R04` record carries at least one `alternative`, and every id-shaped `evidence_ref` resolves to a claim, finding or source the record holds |
++| 24 | a comparison weighs at least two options (the `comparative-evaluation` invariant): a `COMPARATIVE` (R07) record carries two or more `alternatives` |
+ 
+ ## Admission
+ 
+-- `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time). Present: `repository-research`, `problem-framing`, `fact-checking`, `evidence-synthesis`, `deep-research`, `technical-research` (6 of 9).
+-- `VALIDATED`: the 23 controls above pass as gate tests with mutation. Enforced today: 1–14, 16–23 (22 of 23); only control 15 remains (it rides the state machine, earned by `research-reconciliation`).
++- `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time). Present: `repository-research`, `problem-framing`, `fact-checking`, `evidence-synthesis`, `deep-research`, `technical-research`, `comparative-evaluation` (7 of 9).
++- `VALIDATED`: the 24 controls above pass as gate tests with mutation. Enforced today: 1–14, 16–24 (23 of 24); only control 15 remains (it rides the state machine, earned by `research-reconciliation`).
+ - `SHADOWED`: the family is run retrospectively on historical BADF findings (the authority-downgrade defect, schema drift, foreign-revision resolution, the composed-tree reds of 2026-08-28) without knowing the answer; `examples/research-record.json` is the first such shadow record.
+ - `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. Until then the registry entry stays `DESIGNED`.
+diff --git a/skills/badf-research/subskills/comparative-evaluation/SKILL.md b/skills/badf-research/subskills/comparative-evaluation/SKILL.md
+new file mode 100644
+index 0000000..21fbd27
+--- /dev/null
++++ b/skills/badf-research/subskills/comparative-evaluation/SKILL.md
+@@ -0,0 +1,32 @@
++---
++name: comparative-evaluation
++description: Evaluate the candidate alternatives against explicit, comparable criteria and produce an evidence-backed trade-off -- surfacing non-dominance rather than manufacturing a winner. For research type R07 (comparative). It compares; it does not gather evidence (deep-research), decide, or authorise. A recommendation is epistemic weight, never execution authority.
++---
++
++# comparative-evaluation
++
++A subskill of `badf-research` (`../../SKILL.md`). It takes the `alternatives` an earlier
++`technical-research` run produced and weighs them against explicit criteria, recording the outcome
++in the research record at `work/research/<BADF-RSR-NNNN>/research-record.json` against
++`schemas/research-record.schema.json`. It has no authority; a `recommendation` is evidence for a
++decision, never a decision (RSR-I01).
++
++**Research gathers; comparison decides between.** A `COMPARATIVE` (R07) run weighs **at least two**
++alternatives — a comparison of one option is not a comparison (control 24). It scores them on
++explicit, comparable dimensions (correctness, deterministic behaviour, security, maintainability,
++auditability, agent-compatibility, operational complexity, cost, vendor lock-in, reversibility),
++each backed by the record's evidence.
++
++**It surfaces non-dominance rather than manufacturing a winner.** When the evidence does not justify a
++single choice, that is the finding — the `recommendation` may be null and the trade-off stands. A
++recommendation carries epistemic weight, never authorization: `RESEARCH_SUFFICIENT` still hands off to
++a separate decision authority, and `implementation_authority` stays `false`.
++
++## Do
++
++1. Read the `alternatives` (`technical-research`) and the record's evidence.
++2. Fix the **criteria** before scoring — explicit, comparable dimensions the decision actually turns on.
++3. Score each alternative on each criterion from the bound evidence; record the trade-off, not a bare verdict.
++4. Identify **dominance / non-dominance**: an alternative that is at least as good on every criterion and better on one dominates; where none dominates, say so.
++5. Write a `recommendation` only where the evidence justifies one; otherwise leave it null and let the non-dominance stand.
++6. Hand the trade-off to `adversarial-research` (challenge) and `research-reconciliation`; grant no downstream authority.
+diff --git a/tests/test_badf_research.py b/tests/test_badf_research.py
+index 8c36b9f..5d019bb 100644
+--- a/tests/test_badf_research.py
++++ b/tests/test_badf_research.py
+@@ -350,7 +350,7 @@ class RepositoryResearchTests(unittest.TestCase):
+ 
+     def test_control_3_does_not_apply_to_non_repository_research(self):
+         rec = copy.deepcopy(REPO)
+-        rec["type"] = "R07"; rec["baseline"]["revision"] = "0" * 40   # bogus, but R07 is not repo-type
++        rec["type"] = "R10"; rec["baseline"]["revision"] = "0" * 40   # bogus, but R10 is not repo-type (and needs no alternatives)
+         r = self.run_cli(self.rebind(rec))
+         self.assertEqual(r.returncode, 0, r.stderr)
+ 
+@@ -540,6 +540,35 @@ class TechnicalResearchTests(ResearchRecordTests):
+         self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
+ 
+ 
++class ComparativeEvaluationTests(ResearchRecordTests):
++    """Control 24 (BADF-WP-0052, comparative-evaluation): a COMPARATIVE (R07) run
++    weighs at least two alternatives. type/alternatives are not in the evidence_digest."""
++
++    def test_r07_with_one_alternative_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); rec["type"] = "R07"
++        rec["alternatives"] = [{"id": "A-001", "mechanism": "only one option", "evidence_refs": []}]
++        self.refused(rec, "fewer than two alternatives")
++
++    def test_r07_with_zero_alternatives_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); rec["type"] = "R07"; rec["alternatives"] = []
++        self.refused(rec, "fewer than two alternatives")
++
++    def test_r07_with_two_alternatives_passes(self):
++        rec = copy.deepcopy(EXAMPLE); rec["type"] = "R07"
++        rec["alternatives"] = [{"id": "A-001", "mechanism": "option one", "evidence_refs": []},
++                               {"id": "A-002", "mechanism": "option two", "evidence_refs": []}]
++        r = self.run_cli(rec)
++        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
++
++    def test_comparative_evaluation_is_registered_implemented(self):
++        import hashlib
++        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
++        entry = next((e for e in reg["skills"] if e["name"] == "comparative-evaluation"), None)
++        self.assertIsNotNone(entry, "comparative-evaluation is not registered")
++        self.assertEqual(entry["status"], "IMPLEMENTED")
++        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
++
++
+ class ProblemFramingRegistrationTests(unittest.TestCase):
+ 
+     def test_problem_framing_is_registered_implemented_with_a_real_digest(self):
+diff --git a/work/WP-2026-0051/work-package.json b/work/WP-2026-0051/work-package.json
+index 22098a1..286a208 100644
+--- a/work/WP-2026-0051/work-package.json
++++ b/work/WP-2026-0051/work-package.json
+@@ -45,11 +45,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "873acaa"
++    "base_revision": "873acaa",
++    "landed_as": "003afbd7fa954d37d1a8df9f98a035c5aafa87a2"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Sixth P0 research subskill. Control 23 earned by a failing-first probe (R04-zero-alternatives + ungrounded-option both passed the gate). Reconciles WP-2026-0050. badf-research stays DESIGNED (6 of 9 P0); research controls to 22 of 23."
+ }
