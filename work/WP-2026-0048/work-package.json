@@ -1,0 +1,56 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0048",
+  "title": "evidence-synthesis: P0 research subskill 4/9 + control 22 (grounded findings, earned)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0035",
+  "objective": "Build the evidence-synthesis research subskill: a concise SKILL.md that reduces adjudicated claims, contradictions and non-coverage into decision-relevant findings organised by consensus/strength/dispute/gap, surfacing contradictions and declaring gaps, with no acquisition/decision/authority. Add control 22 (earned by failing-first): every finding references at least one claim. Register IMPLEMENTED; badf-research stays DESIGNED (4 of 9 P0).",
+  "business_value": "Synthesis is where 50 sources become a decision-relevant conclusion or a bad decision; grounding every finding in adjudicated claims makes a synthesis conclusion a function of the evidence rather than free assertion, and keeps contradictions and gaps visible to the later challenge and reconciliation steps.",
+  "in_scope": [
+    "skills/badf-research/subskills/evidence-synthesis/SKILL.md (organise, not accumulate; grounded findings)",
+    "skill-registry entry evidence-synthesis IMPLEMENTED with a real digest",
+    "control 22 in validate_research_record (earned): a finding references >=1 claim",
+    "acceptance.md control 22 row; root SKILL.md router (4 of 9)",
+    "tests/test_badf_research.py failing-first + mutation; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "the RESEARCH_SUFFICIENT-requires-findings gap (disposition owner -- left for research-reconciliation to earn)",
+    "source acquisition (deep-research), control 6 freshness, the other 5 P0 subskills",
+    "#77 refactor, the R08/R09 router (#83), the semantic support check (#84)",
+    "any move of badf-research off DESIGNED; any new validator module"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "evidence-synthesis/SKILL.md exists, is concise, registry digest == sha256(source), status IMPLEMENTED",
+    "a finding with empty claim_refs is refused naming it",
+    "the three shipped examples still pass `research` unchanged",
+    "root SKILL.md routes evidence-synthesis (4 of 9); acceptance.md documents control 22 (20 of 22)",
+    "mutation kills; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research.py",
+    "tests/test_badf_registry_digest.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "c62c32a"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Fourth P0 research subskill. Control 22 earned by a failing-first probe. Reconciles WP-2026-0047. badf-research stays DESIGNED (4 of 9 P0); research controls to 20 of 22."
+}

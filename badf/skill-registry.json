@@ -36,7 +36,7 @@
       "risk_class": "C1",
       "allowed_tools": [],
       "status": "DESIGNED",
-      "digest": "sha256:71e2fe9825be4ddcd8891763a230d51013f59760ec93d15dc116d8b78c470f18"
+      "digest": "sha256:f84f34f80bbe622629efbce51a5e355e8e906ea15840933eba3e418bf4dcc446"
     },
     {
       "name": "repository-research",
@@ -86,6 +86,19 @@
       ],
       "status": "IMPLEMENTED",
       "digest": "sha256:fa87749db7df5512f1f3cfdddba25e4b1f9f19ed9b56fdb8f01ee0a12c8669f8"
+    },
+    {
+      "name": "evidence-synthesis",
+      "source": "skills/badf-research/subskills/evidence-synthesis/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem",
+        "local-shell"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:7911b15caacfbd8724317ad8c2451613f4a42eb966c9ce7c09ac6d85b721ec92"
     }
   ]
 }

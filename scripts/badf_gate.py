@@ -2897,6 +2897,10 @@ def validate_research_record(path: Path) -> str:
         if c["status"] == "DISPUTED" and not (c["supporting_sources"] and c["contradicting_sources"]):
             raise ValidationError(f"claim {cid} is DISPUTED but does not carry both supporting and contradicting evidence; a dispute is support and contradiction coexisting (control 21)")
     for f in rec["findings"]:
+        # 22: a finding is grounded in the claims it synthesises (evidence-synthesis).
+        # A synthesis conclusion rests on adjudicated claims, not free assertion.
+        if not f["claim_refs"]:
+            raise ValidationError(f"finding {f['id']} rests on no claim; a finding is synthesis of adjudicated evidence, not a free assertion (control 22)")
         missing = sorted(set(f["claim_refs"]) - claim_ids)
         if missing:
             raise ValidationError(f"finding {f['id']} references claim(s) the record does not carry: {', '.join(missing)}")
