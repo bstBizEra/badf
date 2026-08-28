@@ -5,17 +5,18 @@ description: Govern evidence-based research for BADF questions, issues, defects,
 
 # BADF Research
 
-Status: `DESIGNED` (contract frozen by `BADF-WP-0031`; nothing here runs yet). Research determines what the evidence supports; `badf-delivery` governs what authorised actors may do with that conclusion.
+Status: `DESIGNED`. The contract was frozen by `BADF-WP-0031` and normalized by `WP-2026-0041`. Deterministic research-record controls and individually registered subskills may exist, but the root family is not `ACTIVE` and grants no execution or implementation authority.
 
-1. Read the repository `AGENTS.md` and the documents it marks required.
-2. Resolve the research question, the originating Issue and its demand record, the research type and depth (`references/research-types.md`), scope and non-goals, source and data boundaries, authority and mutation constraints, required evidence, stop conditions.
-3. Establish the baseline — repository, revision, observation time — before drawing any conclusion.
-4. Route only the subskills the type and depth require; this file is the only router.
+1. Read repository `AGENTS.md`, `docs/14-research-capability.md`, and the other documents that `AGENTS.md` marks required for the task.
+2. Frame one primary research question from the originating Issue/discovery and its demand record. Record type (`references/research-types.md`), depth (`references/research-depth.md`), scope/non-goals, assumptions, decision context, source/data boundaries, authority/mutation constraints, required evidence and non-empty stop conditions (`references/research-contract.md`).
+3. Establish the applicable baseline — repository, revision and observation time — before drawing conclusions.
+4. Route only the subskills required by type and depth; this root `SKILL.md` is the only router.
 5. Keep `OBSERVED`, `REPORTED`, `INFERRED`, `HYPOTHESIS` and `DECIDED` distinct (`references/evidence-contract.md`).
-6. Bind every consequential claim to retrievable, digest-bound evidence; derive confidence from its basis, never assert it.
-7. Seek contradictory evidence and preserve it; declare every surface not inspected.
-8. Require independent challenge proportional to risk through the framework's council (`references/routing-and-authority.md`); never ballot on your own research.
-9. Reconcile and return a controlled disposition (`references/lifecycle.md`); record it in `work/research/<BADF-RSR-NNNN>/research-record.json` against `schemas/research-record.schema.json`.
-10. Never translate `RESEARCH_SUFFICIENT` into implementation authority. The next object is a decision record, then a work package — authored by their own authorities.
+6. Bind every consequential claim to retrievable evidence; digest retrievable bytes; derive confidence from its basis and never assert agent self-confidence.
+7. Seek contradictory evidence and preserve it. Declare every material surface not inspected.
+8. Stop collection when a declared stop condition or governed boundary is reached; stopping collection does not imply sufficiency.
+9. Require independent challenge proportional to type/depth/risk through BADF's existing council (`references/routing-authority.md`); never ballot on your own required challenge.
+10. Reconcile through the research state machine (`references/research-state-machine.md`) and write one record to `work/research/<BADF-RSR-NNNN>/research-record.json` against `schemas/research-record.schema.json`.
+11. Never translate `RESEARCH_SUFFICIENT` into implementation authority. The next governed object is a decision record and, if authorized, a separate work package.
 
-Admission and the controls required before this skill may run: `references/acceptance.md`.
+Admission and deterministic controls: `references/acceptance-controls.md`.
