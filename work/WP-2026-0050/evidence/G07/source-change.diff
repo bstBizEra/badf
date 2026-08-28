@@ -1,0 +1,311 @@
+diff --git a/badf/demands/BADF-DEM-0037.json b/badf/demands/BADF-DEM-0037.json
+new file mode 100644
+index 0000000..bfd808f
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0037.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0037",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 91,
++    "url": "https://github.com/bstBizEra/badf/issues/91",
++    "exported_at": "2026-08-28T19:34:23Z",
++    "body_digest": "sha256:cfbd755b265fc7ecc12ca0223207133358cfb089953683c1e0aee428555febcf"
++  },
++  "title": "GOV-0034: implement control 6 \u2014 source-digest freshness (a claim cannot rest on a STALE/UNKNOWN source), now that deep-research owns acquisition",
++  "problem": "## Observed\nAcceptance control 6 (\"a changed source digest makes dependent claims stale\") has been the long-deferred research control \u2014 it awaited a source-fetch mechanism, which `deep-research` (WP-0049) now provides. Today a source carries `uri, source_type, retrieved_at, digest` but **no freshness / re-resolution outcome**, so a claim can rest on a source whose bytes have since changed or that can no longer be resolved, and the gate accepts it.\n\n## Expected\nImplement control 6 (not a new control number \u2014 the long-pending one):\n- Add a source-receipt field `freshness` (`CURRENT` / `STALE` / `UNKNOWN`), required, and an optional `resolved_revision` (an immutable revision \u2014 a commit, DOI, versioned URL). `deep-research` sets `freshness` on re-resolution: `CURRENT` when an immutable revision resolves or the digest is unchanged; `STALE` when the bytes changed; `UNKNOWN` when it could not be resolved.\n- **Control 6 (gate enforcement):** a claim may not rest on a `STALE` or `UNKNOWN` source (fail closed) \u2014 the gate reads the receipt; it does not itself fetch. A stale/unavailable source can remain in the record as documented non-coverage, but it cannot support a claim.\n- `freshness` is part of the material evidence, so it is inside the `evidence_digest` (a source going stale is an evidence change \u2014 control 17 stays coherent); the three examples are migrated with recomputed digests.\n\n## Evidence\n- source schema today: `uri, source_type, retrieved_at, digest` \u2014 no freshness/receipt field\n- `deep-research` (#89 / WP-0049) established the read-only acquisition contract; control 6 is its named consumer\n\n## Unknowns\nNone. The gate cannot re-fetch (deterministic, no network) \u2014 freshness is `deep-research`'s verdict; the gate enforces the consequence. Not in scope: the other 4 P0 subskills, #77/#83/#84.\n\n## Proposed work package\n`BADF-WP-0050`. `freshness`/`resolved_revision` source fields; control 6 in `validate_research_record`; examples migrated + re-digested; acceptance.md marks control 6 enforced (21 of 22); tests + mutation; own G07 self-dossier. C2. `badf-research` stays `DESIGNED` (5 of 9 P0).\n\ndiscovered-by: operator research sequencing (2026-08-29) + BADF-WP-0049 (deep-research) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T19:34:23Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "control 6 source-digest freshness (freshness receipt field + fail-closed on STALE/UNKNOWN), enabled by deep-research (#89). Long-deferred acceptance control, not a new number. /loop research build. Worked as BADF-WP-0050."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 7d79fed..76e6a4c 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -111,7 +111,7 @@
+         "local-shell"
+       ],
+       "status": "IMPLEMENTED",
+-      "digest": "sha256:1f77a93450a55e7888da673c1d4abede92bfea514b9df93a432bae0b2d2d8bc1"
++      "digest": "sha256:517725564d6faf36b11a79a54dc9c820d9f6f07fb24334f36e5996a7dd81cacb"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index bd9ed7a..63454fb 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -384,6 +384,19 @@ deliberate demonstration of the discipline that not every subskill lands with a
+ is earned by a measured, enforceable gap, not by precedent. Research controls unchanged at **20 of
+ 22**. `badf-research` stays `DESIGNED` (5 of 9 P0).
+ 
++## Control 6 — source-digest freshness (`BADF-WP-0050`, Issue #91)
++
++The long-deferred acceptance control 6, unblocked now that `deep-research` owns acquisition. A source
++carries a receipt field `freshness` (`CURRENT` / `STALE` / `UNKNOWN`) and an optional
++`resolved_revision`; `deep-research` sets `freshness` on re-resolution — `CURRENT` when an immutable
++revision resolves or the digest is unchanged, `STALE` when the bytes changed, `UNKNOWN` when it could
++not be resolved. **Control 6 fails closed: a claim may not rest on a `STALE` or `UNKNOWN` source.** The
++gate reads the receipt; it does not fetch (deterministic, no network) — the re-fetch is
++`deep-research`'s, the consequence is the gate's. `freshness` is inside the `evidence_digest` (a source
++going stale *is* an evidence change, so control 17 stays coherent); the three examples were migrated
++with recomputed digests. This distinguishes *a URL still exists* from *the evidence is current*.
++Research controls: **21 of 22** — only control 15 remains, owned by `research-reconciliation`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/examples/research-record-challenged.json b/examples/research-record-challenged.json
+index 981b372..dcbf2f6 100644
+--- a/examples/research-record-challenged.json
++++ b/examples/research-record-challenged.json
+@@ -57,14 +57,16 @@
+       "uri": "git:bstBizEra/badf reconciliation design (WP-0019)",
+       "source_type": "PRIMARY",
+       "retrieved_at": "2026-08-28T14:01:00Z",
+-      "digest": null
++      "digest": null,
++      "freshness": "CURRENT"
+     },
+     {
+       "id": "S-002",
+       "uri": "git:bstBizEra/badf composed-tree gate (WP-0024)",
+       "source_type": "PRIMARY",
+       "retrieved_at": "2026-08-28T14:02:00Z",
+-      "digest": null
++      "digest": null,
++      "freshness": "CURRENT"
+     }
+   ],
+   "claims": [
+@@ -158,6 +160,6 @@
+   "authority": {
+     "implementation_authority": false
+   },
+-  "evidence_digest": "sha256:35c4a47ed7179b74b40e85574ed6ee9e7be02482498cffe3bcbbb768bf23d005",
++  "evidence_digest": "sha256:c383942cfc87ae7fa9d4850207da45936c86e275ad102bc844de7006ba9b2328",
+   "recorded_at": "2026-08-28T14:20:00Z"
+ }
+diff --git a/examples/research-record-repo.json b/examples/research-record-repo.json
+index 50d33a0..af978e4 100644
+--- a/examples/research-record-repo.json
++++ b/examples/research-record-repo.json
+@@ -58,14 +58,16 @@
+       "uri": "git:bstBizEra/badf@39dc6d9:work/",
+       "source_type": "PRIMARY",
+       "retrieved_at": "2026-08-28T15:01:00Z",
+-      "digest": null
++      "digest": null,
++      "freshness": "CURRENT"
+     },
+     {
+       "id": "S-002",
+       "uri": "git:bstBizEra/badf log --first-parent main",
+       "source_type": "PRIMARY",
+       "retrieved_at": "2026-08-28T15:02:00Z",
+-      "digest": null
++      "digest": null,
++      "freshness": "CURRENT"
+     }
+   ],
+   "claims": [
+@@ -124,6 +126,6 @@
+   "authority": {
+     "implementation_authority": false
+   },
+-  "evidence_digest": "sha256:41c6419c15accafd929c161c98c69face235f4704b23d05d7f6d1ff77a32db51",
++  "evidence_digest": "sha256:ba2e21525579f2f347be6d2686f5594421e5e6c4e7d7de10e8a83c72851a75b0",
+   "recorded_at": "2026-08-28T15:10:00Z"
+ }
+diff --git a/examples/research-record.json b/examples/research-record.json
+index 8bb7144..c58fd33 100644
+--- a/examples/research-record.json
++++ b/examples/research-record.json
+@@ -63,21 +63,24 @@
+       "uri": "https://github.com/bstBizEra/badf/actions/runs/33104985912",
+       "source_type": "PRIMARY",
+       "retrieved_at": "2026-08-28T13:41:00Z",
+-      "digest": null
++      "digest": null,
++      "freshness": "CURRENT"
+     },
+     {
+       "id": "S-002",
+       "uri": "git:bstBizEra/badf@0b88c74:tests/test_badf_compose.py",
+       "source_type": "PRIMARY",
+       "retrieved_at": "2026-08-28T13:42:00Z",
+-      "digest": null
++      "digest": null,
++      "freshness": "CURRENT"
+     },
+     {
+       "id": "S-003",
+       "uri": "local reproduction: pristine clone of 0b88c74, one compose test verbose (CalledProcessError: nothing to commit)",
+       "source_type": "PRIMARY",
+       "retrieved_at": "2026-08-28T13:45:00Z",
+-      "digest": null
++      "digest": null,
++      "freshness": "CURRENT"
+     }
+   ],
+   "claims": [
+@@ -159,6 +162,6 @@
+   "authority": {
+     "implementation_authority": false
+   },
+-  "evidence_digest": "sha256:8a2fe9ea6b48901aeac588cc2aaed22dceaf794872f12dee49cf7d66297c58bf",
++  "evidence_digest": "sha256:12ae90b55958f069d210a8407a6c6aff3e8c45a2c64bb6f05d350fe2b88f0af5",
+   "recorded_at": "2026-08-28T13:50:00Z"
+ }
+diff --git a/schemas/research-record.schema.json b/schemas/research-record.schema.json
+index 6e4d9c8..f332ae3 100644
+--- a/schemas/research-record.schema.json
++++ b/schemas/research-record.schema.json
+@@ -236,7 +236,8 @@
+           "uri",
+           "source_type",
+           "retrieved_at",
+-          "digest"
++          "digest",
++          "freshness"
+         ],
+         "additionalProperties": false,
+         "properties": {
+@@ -244,6 +245,18 @@
+             "type": "string",
+             "pattern": "^S-[0-9]{3,}$"
+           },
++          "freshness": {
++            "type": "string",
++            "enum": [
++              "CURRENT",
++              "STALE",
++              "UNKNOWN"
++            ]
++          },
++          "resolved_revision": {
++            "type": "string",
++            "minLength": 1
++          },
+           "uri": {
+             "type": "string",
+             "minLength": 1
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 4ad2408..dab34f1 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -2896,6 +2896,14 @@ def validate_research_record(path: Path) -> str:
+             raise ValidationError(f"claim {cid} is FALSIFIED but cites no contradicting source; no evidence is not falsification (control 21)")
+         if c["status"] == "DISPUTED" and not (c["supporting_sources"] and c["contradicting_sources"]):
+             raise ValidationError(f"claim {cid} is DISPUTED but does not carry both supporting and contradicting evidence; a dispute is support and contradiction coexisting (control 21)")
++        # 6: a changed source digest makes dependent claims stale. deep-research
++        # re-resolves a source and sets its freshness (CURRENT when an immutable
++        # revision resolves or the digest is unchanged; STALE when the bytes
++        # changed; UNKNOWN when it could not be resolved). A claim may not rest on
++        # a STALE or UNKNOWN source -- source unavailable/changed fails closed.
++        for ref in c["supporting_sources"] + c["contradicting_sources"]:
++            if sources[ref]["freshness"] != "CURRENT":
++                raise ValidationError(f"claim {cid} rests on source {ref} whose freshness is {sources[ref]['freshness']}; a stale or unresolvable source cannot support a claim (control 6)")
+     for f in rec["findings"]:
+         # 22: a finding is grounded in the claims it synthesises (evidence-synthesis).
+         # A synthesis conclusion rests on adjudicated claims, not free assertion.
+diff --git a/skills/badf-research/references/acceptance.md b/skills/badf-research/references/acceptance.md
+index 5bf64b4..632630b 100644
+--- a/skills/badf-research/references/acceptance.md
++++ b/skills/badf-research/references/acceptance.md
+@@ -11,7 +11,7 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows
+ | 3 | baseline is bound to a repository revision when repository research applies |
+ | 4 | every VERIFIED material claim has evidence |
+ | 5 | a missing source cannot silently resolve |
+-| 6 | a changed source digest makes dependent claims stale |
++| 6 | a changed source digest makes dependent claims stale: `deep-research` sets each source's `freshness` (CURRENT / STALE / UNKNOWN) on re-resolution, and a claim may not rest on a STALE or UNKNOWN source (fail closed) |
+ | 7 | an inference cannot be serialised as an observation |
+ | 8 | contradictory evidence is preserved |
+ | 9 | confidence has an explainable, derived basis |
+@@ -32,6 +32,6 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows
+ ## Admission
+ 
+ - `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time). Present: `repository-research`, `problem-framing`, `fact-checking`, `evidence-synthesis`, `deep-research` (5 of 9).
+-- `VALIDATED`: the 22 controls above pass as gate tests with mutation. Enforced today: 1–5, 7–14, 16–22 (20 of 22); control 6 (source-digest freshness) awaits a source-fetch mechanism, control 15 rides the state machine.
++- `VALIDATED`: the 22 controls above pass as gate tests with mutation. Enforced today: 1–14, 16–22 (21 of 22); only control 15 remains (it rides the state machine, earned by `research-reconciliation`).
+ - `SHADOWED`: the family is run retrospectively on historical BADF findings (the authority-downgrade defect, schema drift, foreign-revision resolution, the composed-tree reds of 2026-08-28) without knowing the answer; `examples/research-record.json` is the first such shadow record.
+ - `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. Until then the registry entry stays `DESIGNED`.
+diff --git a/skills/badf-research/subskills/deep-research/SKILL.md b/skills/badf-research/subskills/deep-research/SKILL.md
+index 2342b4f..b97f7f0 100644
+--- a/skills/badf-research/subskills/deep-research/SKILL.md
++++ b/skills/badf-research/subskills/deep-research/SKILL.md
+@@ -23,7 +23,7 @@ source_type         PRIMARY | AUTHORITATIVE_SECONDARY | SECONDARY | COMMUNITY |
+ retrieved_at        when the bytes were captured
+ digest              content digest of the captured bytes
+ (resolved revision) an immutable revision where one exists (a commit, a DOI, a versioned URL)
+-(retrieval outcome) whether the fetch resolved, was unavailable, or was partial
++freshness            CURRENT | STALE | UNKNOWN -- the re-resolution verdict (control 6)
+ ```
+ 
+ The last two are the receipt fields the **staleness** control (control 6, the next work package)
+diff --git a/tests/test_badf_research.py b/tests/test_badf_research.py
+index e7ef020..e3933c5 100644
+--- a/tests/test_badf_research.py
++++ b/tests/test_badf_research.py
+@@ -476,6 +476,34 @@ class FactCheckStatusTests(ResearchRecordTests):
+         self.passes_redigest(rec)
+ 
+ 
++class SourceFreshnessTests(ResearchRecordTests):
++    """Control 6 (BADF-WP-0050): a claim may not rest on a STALE or UNKNOWN source.
++    deep-research sets each source's freshness on re-resolution; the gate fails
++    closed. freshness is part of the evidence_digest, so records are re-digested."""
++
++    def refused_redigest(self, rec, needle):
++        rec["evidence_digest"] = gate.compute_research_evidence_digest(rec)
++        self.refused(rec, needle)
++
++    def test_a_claim_on_a_stale_source_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); cited = rec["claims"][0]["supporting_sources"][0]
++        for s in rec["sources"]:
++            if s["id"] == cited:
++                s["freshness"] = "STALE"
++        self.refused_redigest(rec, "freshness is STALE")
++
++    def test_a_claim_on_an_unknown_source_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); cited = rec["claims"][0]["supporting_sources"][0]
++        for s in rec["sources"]:
++            if s["id"] == cited:
++                s["freshness"] = "UNKNOWN"
++        self.refused_redigest(rec, "freshness is UNKNOWN")
++
++    def test_all_current_sources_pass(self):
++        r = self.run_cli(copy.deepcopy(EXAMPLE))
++        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
++
++
+ class ProblemFramingRegistrationTests(unittest.TestCase):
+ 
+     def test_problem_framing_is_registered_implemented_with_a_real_digest(self):
+diff --git a/work/WP-2026-0049/work-package.json b/work/WP-2026-0049/work-package.json
+index b2c68e7..490f267 100644
+--- a/work/WP-2026-0049/work-package.json
++++ b/work/WP-2026-0049/work-package.json
+@@ -44,11 +44,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "af1f239"
++    "base_revision": "af1f239",
++    "landed_as": "4f80a406099c7c20c00b445af65eee06f620f0c0"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Fifth P0 research subskill. Earns NO gate control by design (its enforcement is control 6, the next unit) -- a deliberate demonstration that not every subskill lands with a control. Reconciles WP-2026-0048. badf-research stays DESIGNED (5 of 9 P0); research controls unchanged at 20 of 22."
+ }
