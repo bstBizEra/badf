@@ -1,0 +1,58 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0041",
+  "title": "G02: requirement-decomposition gate contract (requirements / nfr / traceability / definition-of-ready), planned fresh from #46",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0028",
+  "objective": "Enforce Gate 02, already declared in lifecycle.json but unbacked: give its four required_evidence types per-type rules in validate_evidence, exactly as G01's check_prd / check_acceptance_criteria / check_product_approval, so the gate OPENS each artifact. Ship examples/gate-dossier.G02.json (validated in CI) and prove an instance advances G01->G02 on a valid G02 dossier.",
+  "business_value": "Without per-type rules a G02 dossier passes on names alone -- the G01 defect class (a name is not evidence) one gate downstream. This makes 'NFRs quantified' and 'bidirectional traceability established' deterministic gate refusals rather than prose.",
+  "in_scope": [
+    "check_requirements / check_nfr / check_traceability / check_definition_of_ready in badf_gate.py + registration in EVIDENCE_RULES",
+    "schemas/requirements.schema.json, nfr.schema.json, traceability.schema.json, definition-of-ready.schema.json",
+    "examples/gate-dossier.G02.json + its four evidence/artifact pairs; CI validates it",
+    "tests/test_badf_g02.py (failing-first) + a G01->G02 pair-acceptance in tests/test_badf_advance.py",
+    "mutation; own G07 self-dossier; doctrine section in GITHUB_CONTROL_PLANE.md"
+  ],
+  "out_of_scope": [
+    "the badf-requirements authoring skill (a later WP)",
+    "the capability/epic identity hierarchy from #46's fuller scope",
+    "any vendored Spec-Kit; any competing scripts/badf_requirements.py validator",
+    "PR #47's branch -- untouched; it gets a separate REV verdict"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "examples/gate-dossier.G02.json renders APPROVED via `dossier`",
+    "an RTM with an orphan requirement or an uncovered acceptance criterion is refused, naming it",
+    "an unquantified NFR (no numeric target value) is refused",
+    "a requirement whose objective_refs miss the RTM's objective universe is refused",
+    "a definition-of-ready missing one of the four G02 exit criteria is refused",
+    "an instance at G01/APPROVED advances to G02/APPROVED on a valid G02 dossier",
+    "mutation kills; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_g02.py",
+    "tests/test_badf_advance.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "8896a37"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Reuses the G01 substrate -- no new validator module. G02's own minimum_change_class for instances is C1 (lifecycle.json); this WP that BUILDS the G02 gate is C2, mirroring WP-0030 which built G01."
+}

@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "badf/traceability.schema.json",
+  "title": "G02 traceability evidence artifact -- the RTM: bidirectional map objective <- requirement <- acceptance criterion",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "prd_id",
+    "objectives",
+    "acceptance_criteria",
+    "requirement_to_objective",
+    "criterion_to_requirement"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": [
+        "1.0.0"
+      ]
+    },
+    "prd_id": {
+      "type": "string",
+      "pattern": "^PRD-[A-Za-z0-9._-]+$"
+    },
+    "objectives": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^OBJ-[0-9]{3,}$"
+      }
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^AC-[0-9]{3,}$"
+      }
+    },
+    "requirement_to_objective": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "requirement",
+          "objectives"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "requirement": {
+            "type": "string",
+            "pattern": "^REQ-[0-9]{3,}$"
+          },
+          "objectives": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^OBJ-[0-9]{3,}$"
+            }
+          }
+        }
+      }
+    },
+    "criterion_to_requirement": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "criterion",
+          "requirements"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "criterion": {
+            "type": "string",
+            "pattern": "^AC-[0-9]{3,}$"
+          },
+          "requirements": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^REQ-[0-9]{3,}$"
+            }
+          }
+        }
+      }
+    }
+  }
+}

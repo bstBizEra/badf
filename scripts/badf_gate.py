@@ -916,7 +916,118 @@ def check_product_approval(artifact: Path, dossier: dict[str, Any], evidence: di
         raise ValidationError("product-approval: prd_digest does not match the prd artifact in this dossier (the PRD changed after approval, or the approval is for other bytes)")
 
 
-EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_criteria, "product-approval": check_product_approval}
+# ---- G02 evidence contract: requirement decomposition, NFRs, the RTM, definition of ready (BADF-WP-0041, #70) ----
+def check_requirements(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("requirements", doc)
+    _no_placeholders(doc, "requirements")
+    reqs = doc["requirements"]
+    if not reqs:
+        raise ValidationError("requirements: no requirements; an empty list does not decompose a product")
+    ids = [r["id"] for r in reqs]
+    dupes = sorted({i for i in ids if ids.count(i) > 1})
+    if dupes:
+        raise ValidationError(f"requirements: duplicate requirement id(s): {', '.join(dupes)}")
+    _, rtm = _sibling_artifact(dossier, "traceability", "requirements")
+    objectives = set(rtm.get("objectives") or [])
+    for r in reqs:
+        refs = r.get("objective_refs") or []
+        if not refs:
+            raise ValidationError(f"requirements: {r['id']} decomposes no objective; a requirement must trace to at least one PRD objective")
+        unknown = sorted(set(refs) - objectives)
+        if unknown:
+            raise ValidationError(f"requirements: {r['id']} references objective(s) absent from the RTM's objective universe: {', '.join(unknown)}")
+
+
+def check_nfr(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("nfr", doc)
+    _no_placeholders(doc, "nfr")
+    nfrs = doc["nfrs"]
+    if not nfrs:
+        raise ValidationError("nfr: no NFRs; 'NFRs quantified' cannot be established from an empty list")
+    ids = [n["id"] for n in nfrs]
+    dupes = sorted({i for i in ids if ids.count(i) > 1})
+    if dupes:
+        raise ValidationError(f"nfr: duplicate NFR id(s): {', '.join(dupes)}")
+    for n in nfrs:
+        value = n["target"]["value"]
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValidationError(f"nfr: {n['id']} is not quantified; target value {value!r} is not a number")
+
+
+def check_traceability(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("traceability", doc)
+    _no_placeholders(doc, "traceability")
+    objectives = set(doc["objectives"])
+    criteria = set(doc["acceptance_criteria"])
+    if not objectives or not criteria:
+        raise ValidationError("traceability: an RTM must declare at least one objective and one acceptance criterion")
+    _, req_art = _sibling_artifact(dossier, "requirements", "traceability")
+    req_ids = {r["id"] for r in (req_art.get("requirements") or [])}
+
+    r2o: dict[str, set] = {}
+    for row in doc["requirement_to_objective"]:
+        req = row["requirement"]
+        if req in r2o:
+            raise ValidationError(f"traceability: requirement {req} mapped twice in requirement_to_objective")
+        r2o[req] = set(row["objectives"])
+    c2r: dict[str, set] = {}
+    for row in doc["criterion_to_requirement"]:
+        crit = row["criterion"]
+        if crit in c2r:
+            raise ValidationError(f"traceability: criterion {crit} mapped twice in criterion_to_requirement")
+        c2r[crit] = set(row["requirements"])
+
+    # requirement -> objective: no dangling map entry; every requirement mapped to >=1 declared objective
+    dangling_req = sorted(set(r2o) - req_ids)
+    if dangling_req:
+        raise ValidationError(f"traceability: requirement_to_objective names requirement(s) absent from the requirements artifact: {', '.join(dangling_req)}")
+    for req in sorted(req_ids):
+        objs = r2o.get(req)
+        if not objs:
+            raise ValidationError(f"traceability: orphan requirement {req}: not mapped to any objective")
+        unknown = sorted(objs - objectives)
+        if unknown:
+            raise ValidationError(f"traceability: requirement {req} maps to undeclared objective(s): {', '.join(unknown)}")
+
+    # criterion -> requirement: every declared criterion covered by >=1 existing requirement; no dangling map entry
+    for crit in sorted(criteria):
+        mapped = c2r.get(crit)
+        if not mapped:
+            raise ValidationError(f"traceability: uncovered acceptance criterion {crit}: not mapped to any requirement")
+        unknown = sorted(mapped - req_ids)
+        if unknown:
+            raise ValidationError(f"traceability: criterion {crit} maps to unknown requirement(s): {', '.join(unknown)}")
+    dangling_crit = sorted(set(c2r) - criteria)
+    if dangling_crit:
+        raise ValidationError(f"traceability: criterion_to_requirement names criterion(s) not declared in acceptance_criteria: {', '.join(dangling_crit)}")
+
+
+def check_definition_of_ready(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("definition-of-ready", doc)
+    _no_placeholders(doc, "definition-of-ready")
+    if evidence["producer"].get("type") != "human":
+        raise ValidationError("definition-of-ready must be produced by a human; readiness is a human judgment, not a generated artifact")
+    lifecycle = load_json(ROOT / "badf/lifecycle.json")
+    g02 = next((g for g in lifecycle["gates"] if g["id"] == "G02"), None)
+    if g02 is None:
+        raise ValidationError("definition-of-ready: lifecycle.json declares no G02")
+    required = list(g02["exit_criteria"])
+    checked = {item["criterion"]: item["met"] for item in doc["checklist"]}
+    missing = [c for c in required if c not in checked]
+    if missing:
+        raise ValidationError(f"definition-of-ready: missing G02 exit-criterion checklist item(s): {'; '.join(missing)}")
+    unmet = [c for c in required if checked.get(c) is not True]
+    if unmet:
+        raise ValidationError(f"definition-of-ready: G02 exit criterion not met: {'; '.join(unmet)}")
+
+
+EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_criteria, "product-approval": check_product_approval,
+                  "requirements": check_requirements, "nfr": check_nfr, "traceability": check_traceability,
+                  "definition-of-ready": check_definition_of_ready}
 
 
 def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -> None:

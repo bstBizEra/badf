@@ -47,11 +47,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "39dc6d9"
+    "base_revision": "39dc6d9",
+    "landed_as": "8896a37fc53af32ad690e36c55d9c5430994adff"
   },
   "note": "Lands IN_PROGRESS by design. Own G07 self-dossier. First P0 subskill; 16 of 18 controls; badf-research stays DESIGNED."
 }

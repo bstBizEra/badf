@@ -115,8 +115,50 @@ class AdvanceScratch(ValidatedInstance):
         assert r.returncode == 0 and "APPROVED" in r.stdout, r.stdout + r.stderr
         return f"work/{self.wp()}/gate-dossier.G01.json"
 
+    def make_g02(self):
+        """A G02 dossier for the same WP at the G02/C1 floor: requirements, NFRs,
+        the RTM and a human definition-of-ready, modelled on the shipped G02
+        example and bound to this instance's scratch PRD."""
+        d = self.wp_dir(); ev_dir = d / "evidence/G02"; ev_dir.mkdir(parents=True, exist_ok=True)
+        g01 = json.loads((d / "gate-dossier.G01.json").read_text())
+        ex = gate.ROOT / "examples/evidence/G02"
+        producers = {"requirements": HUMAN, "nfr": HUMAN, "traceability": HUMAN,
+                     "definition-of-ready": {"id": "scratch-product-owner", "type": "human"}}
+        index = []
+        for t in ("requirements", "nfr", "traceability", "definition-of-ready"):
+            art = json.loads((ex / f"{t}.artifact.json").read_text()); art["prd_id"] = "PRD-SCRATCH-0001"
+            (ev_dir / f"{t}.artifact.json").write_text(json.dumps(art, indent=2) + "\n")
+            e = {"schema_version": "1.0.0", "id": f"EVD-{self.wp()}-G02-{t}", "work_package_id": self.wp(), "gate": "G02",
+                 "claim": f"{t} present", "evidence_type": t, "producer": producers[t],
+                 "source_revision": g01["source_revision"], "target": g01["target"],
+                 "toolchain": {"name": "human-review", "version": "1"}, "operation": "review",
+                 "started_at": g01["created_at"], "completed_at": g01["created_at"], "outcome": "PASS",
+                 "artifact": f"work/{self.wp()}/evidence/G02/{t}.artifact.json", "digest": gate.sha256(ev_dir / f"{t}.artifact.json")}
+            (ev_dir / f"{t}.json").write_text(json.dumps(e, indent=2) + "\n")
+            index.append({"type": t, "path": f"work/{self.wp()}/evidence/G02/{t}.json"})
+        doc = dict(g01, id=f"DOS-{self.wp()}-G02-v1", gate="G02", evidence=index)
+        (d / "gate-dossier.G02.json").write_text(json.dumps(doc, indent=2) + "\n")
+        self.framework_lock()
+        r = self.dossier_cli(f"work/{self.wp()}/gate-dossier.G02.json")
+        assert r.returncode == 0 and "APPROVED" in r.stdout, r.stdout + r.stderr
+        return f"work/{self.wp()}/gate-dossier.G02.json"
+
 
 class AdvanceTests(AdvanceScratch):
+
+    def test_g01_approved_instance_advances_to_g02(self):
+        self.approve_g00(); self.assertEqual(self.advance(f"work/{self.wp()}/gate-dossier.G00.json").returncode, 0)
+        g01 = self.make_g01(); self.assertEqual(self.advance(g01).returncode, 0)
+        g02 = self.make_g02()
+        r = self.advance(g02); self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+        self.assertEqual(self.state()["lifecycle"], {"current_gate": "G02", "state": "APPROVED", "target": "PRODUCTION"})
+        r = self.instance(); self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("G02 / APPROVED", r.stdout)
+
+    def test_g02_is_refused_before_g01_is_bound(self):
+        self.approve_g00(); self.assertEqual(self.advance(f"work/{self.wp()}/gate-dossier.G00.json").returncode, 0)
+        self.make_g01(); g02 = self.make_g02()   # G01 built but not advanced
+        r = self.advance(g02)
+        self.assertNotEqual(r.returncode, 0, "G02 bound before G01"); self.assertIn("next gate is G01", r.stderr)
 
     def test_held_init_dossier_cannot_advance(self):
         before = snapshot(self.t)

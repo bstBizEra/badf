@@ -1,0 +1,1105 @@
+diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
+index 366fb84..aa6569d 100644
+--- a/.github/workflows/badf-gates.yml
++++ b/.github/workflows/badf-gates.yml
+@@ -42,6 +42,7 @@ jobs:
+         run: |
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G00.json
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G01.json
++          python3 scripts/badf_gate.py dossier examples/gate-dossier.G02.json
+           python3 scripts/badf_gate.py research examples/research-record.json
+           python3 scripts/badf_gate.py research examples/research-record-challenged.json
+           python3 scripts/badf_gate.py research examples/research-record-repo.json
+diff --git a/badf/demands/BADF-DEM-0028.json b/badf/demands/BADF-DEM-0028.json
+new file mode 100644
+index 0000000..248e807
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0028.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0028",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 70,
++    "url": "https://github.com/bstBizEra/badf/issues/70",
++    "exported_at": "2026-08-28T14:53:33Z",
++    "body_digest": "sha256:bbf90e1e606a6083566f5d059fcb6354422635629cb3fec8cc319a4b2047c089"
++  },
++  "title": "GOV-0024: Gate 02 declared but unenforced \u2014 no per-type rules, schemas, or example for requirements/nfr/traceability/definition-of-ready",
++  "problem": "## Observed\nThe lifecycle already declares Gate 02, but the gate does not enforce it. `badf/lifecycle.json` lists G02's `required_evidence` as **requirements, nfr, traceability, definition-of-ready** with exit criteria \"priority requirements testable / NFRs quantified / dependencies mapped / bidirectional traceability established\" \u2014 yet `validate_evidence` has **no per-type rule** for any of the four, no G02 example dossier exists, and none of the four evidence schemas exist. A G02 dossier today would pass on names alone: the gate would never open a requirements artifact, never check an RTM for orphans or uncovered criteria, never reject an unquantified NFR. This is the G01 defect class (a name is not evidence) one gate downstream.\n\n## Expected\nThe four G02 evidence types get per-type rules in `validate_evidence`, exactly as G01's `check_prd` / `check_acceptance_criteria` / `check_product_approval` do \u2014 the gate OPENS each artifact:\n- `requirements` \u2014 unique `REQ-NNN`, each with a statement, a priority, a `testable` flag, and `objective_refs` that resolve against the RTM's declared objective universe (a requirement referencing an unknown objective is refused).\n- `nfr` \u2014 each `NFR-NNN` carries a **quantified** target (metric + numeric value + unit); an unquantified NFR is refused (the \"NFRs quantified\" exit criterion, enforced).\n- `traceability` \u2014 the **RTM**, bidirectional and complete: every requirement maps to \u22651 objective (no orphan requirement), every declared acceptance criterion maps to \u22651 requirement (no uncovered criterion), and every id referenced resolves.\n- `definition-of-ready` \u2014 a human-produced checklist asserting all four G02 exit criteria; a missing/unmet item is refused.\nPlus `examples/gate-dossier.G02.json` (validated in CI beside G00/G01), and a pair-acceptance test that an instance at G01/APPROVED **advances to G02/APPROVED** on a valid G02 dossier.\n\n## Evidence\n- `G02 required_evidence = ['requirements', 'nfr', 'traceability', 'definition-of-ready']` (badf/lifecycle.json)\n- `grep -cE 'def check_(requirements|nfr|traceability|definition_of_ready)' scripts/badf_gate.py` \u2192 `0` (no G02 rule exists)\n- `EVIDENCE_RULES = {\"prd\": check_prd, \"acceptance-criteria\": check_acceptance_criteria, \"product-approval\": check_product_approval}` (only the three G01 rules are registered)\n- `ls examples/gate-dossier.G02.json` \u2192 `No such file or directory`; the four G02 schemas absent \u2192 `4/4` missing\n\n## Unknowns\nNone for the gate contract. **Deferred, named:** the `badf-requirements` authoring skill; the capability/epic identity hierarchy \u2014 separate WPs if a real task needs them (Lean gate). This WP is the deterministic G02 evidence contract only \u2014 no competing `scripts/badf_requirements.py`, no vendored Spec-Kit.\n\n## Proposed work package\n`BADF-WP-0041` (G02). Four `check_*` functions + registration in `EVIDENCE_RULES`; four schemas; `examples/gate-dossier.G02.json` + its four evidence/artifact pairs; `tests/test_badf_g02.py` (failing-first) + a G01\u2192G02 pair-acceptance in `tests/test_badf_advance.py`; mutation; own G07 self-dossier. C1. Reuses the G01 substrate \u2014 no new validator module.\n\ndiscovered-by: #46 (the operator's \"plan G02 fresh from #46\") \u00b7 substrate: BADF-WP-0030 (G01), BADF-WP-0029 (advance) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T14:53:33Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Body exported verbatim and digest-bound. G02 gate contract, planned fresh from #46 on the merged G01 substrate (BADF-WP-0030) and advance (BADF-WP-0029); authority: the operator's 'proceed on your call' / 'why block G02' (2026-08-28). Independent of PR #47's branch. Worked as BADF-WP-0041."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index d83c343..3fc9954 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -245,6 +245,24 @@ downstream; a decision and a work package cite it. `RESEARCH_SUFFICIENT ≠ IMPL
+ fixed by the schema, not by discipline. The `badf-research` skill family is `DESIGNED` and does not run;
+ its contract lives in `skills/badf-research/references/`.
+ 
++## Gate 02 — requirement decomposition (`BADF-WP-0041`, Issue #70)
++
++`lifecycle.json` declared G02 (`requirements`, `nfr`, `traceability`, `definition-of-ready`)
++before anything enforced it — a G02 dossier would have passed on names alone, the G01 defect
++class one gate downstream. The four types now have per-type rules in `validate_evidence`, exactly
++like G01's: the gate **opens** each artifact. `requirements` — unique `REQ-NNN`, each tracing to
++at least one objective in the RTM's universe. `nfr` — each `NFR-NNN` target value must be a real
++number (`"fast"` and `true` are refused); "NFRs quantified" becomes a deterministic check.
++`traceability` — the RTM, bidirectional and complete: no orphan requirement, no uncovered
++acceptance criterion, no id that dangles off either side. `definition-of-ready` — a **human**
++sign-off whose checklist must cover every one of G02's own `exit_criteria`, read from
++`lifecycle.json` (the gate checks itself against its declared exits). The `advance` machinery was
++already generic over `GATE_ORDER`, so an instance at `G01/APPROVED` advances to `G02/APPROVED` on
++a valid G02 dossier with no new transition code. Planned **fresh from #46** on the merged G01
++substrate — reusing `validate_evidence`, no competing `scripts/badf_requirements.py`, no vendored
++Spec-Kit; the `badf-requirements` authoring skill and the capability/epic hierarchy are named,
++deferred WPs.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/examples/evidence/G02/definition-of-ready.artifact.json b/examples/evidence/G02/definition-of-ready.artifact.json
+new file mode 100644
+index 0000000..d392125
+--- /dev/null
++++ b/examples/evidence/G02/definition-of-ready.artifact.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "checklist": [
++    {
++      "criterion": "priority requirements testable",
++      "met": true
++    },
++    {
++      "criterion": "NFRs quantified",
++      "met": true
++    },
++    {
++      "criterion": "dependencies mapped",
++      "met": true
++    },
++    {
++      "criterion": "bidirectional traceability established",
++      "met": true
++    }
++  ]
++}
+diff --git a/examples/evidence/G02/definition-of-ready.json b/examples/evidence/G02/definition-of-ready.json
+new file mode 100644
+index 0000000..89f7d15
+--- /dev/null
++++ b/examples/evidence/G02/definition-of-ready.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G02",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G02-DEFINITION-OF-READY-v1",
++  "claim": "Example definition-of-ready bound to PRD-BADF-0001",
++  "evidence_type": "definition-of-ready",
++  "producer": {
++    "id": "example-product-owner",
++    "type": "human"
++  },
++  "operation": "sign off gate readiness",
++  "artifact": "examples/evidence/G02/definition-of-ready.artifact.json",
++  "digest": "sha256:6c4b55b10b2a14bea5adf8de653495a4b4fe725d59a97d1886a9d4b72b258268"
++}
+diff --git a/examples/evidence/G02/nfr.artifact.json b/examples/evidence/G02/nfr.artifact.json
+new file mode 100644
+index 0000000..dab5b40
+--- /dev/null
++++ b/examples/evidence/G02/nfr.artifact.json
+@@ -0,0 +1,28 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "nfrs": [
++    {
++      "id": "NFR-001",
++      "category": "performance",
++      "statement": "The composed-tree gate completes within a bounded time on the reference suite.",
++      "metric": "composed-tree gate wall-clock on the reference suite",
++      "target": {
++        "operator": "<=",
++        "value": 120,
++        "unit": "seconds"
++      }
++    },
++    {
++      "id": "NFR-002",
++      "category": "reliability",
++      "statement": "A push to main that is red must not be reported green.",
++      "metric": "red merges reported green",
++      "target": {
++        "operator": "=",
++        "value": 0,
++        "unit": "count"
++      }
++    }
++  ]
++}
+diff --git a/examples/evidence/G02/nfr.json b/examples/evidence/G02/nfr.json
+new file mode 100644
+index 0000000..6026406
+--- /dev/null
++++ b/examples/evidence/G02/nfr.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G02",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G02-NFR-v1",
++  "claim": "Example nfr bound to PRD-BADF-0001",
++  "evidence_type": "nfr",
++  "producer": {
++    "id": "example-author",
++    "type": "human"
++  },
++  "operation": "quantify the non-functional requirements",
++  "artifact": "examples/evidence/G02/nfr.artifact.json",
++  "digest": "sha256:66344facdc9c288ec20d67fc33aad8b304deecdc98f0102ff2fc1d6d63dc03dc"
++}
+diff --git a/examples/evidence/G02/requirements.artifact.json b/examples/evidence/G02/requirements.artifact.json
+new file mode 100644
+index 0000000..6b9ab5d
+--- /dev/null
++++ b/examples/evidence/G02/requirements.artifact.json
+@@ -0,0 +1,33 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "requirements": [
++    {
++      "id": "REQ-001",
++      "statement": "Every candidate PR is validated on its composed tree before it may merge.",
++      "priority": "Must Have",
++      "testable": true,
++      "objective_refs": [
++        "OBJ-001"
++      ]
++    },
++    {
++      "id": "REQ-002",
++      "statement": "No work package is opened without a digest-bound demand record.",
++      "priority": "Must Have",
++      "testable": true,
++      "objective_refs": [
++        "OBJ-002"
++      ]
++    },
++    {
++      "id": "REQ-003",
++      "statement": "A red composed tree makes the gate exit non-zero.",
++      "priority": "Should Have",
++      "testable": true,
++      "objective_refs": [
++        "OBJ-001"
++      ]
++    }
++  ]
++}
+diff --git a/examples/evidence/G02/requirements.json b/examples/evidence/G02/requirements.json
+new file mode 100644
+index 0000000..d6641b8
+--- /dev/null
++++ b/examples/evidence/G02/requirements.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G02",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G02-REQUIREMENTS-v1",
++  "claim": "Example requirements bound to PRD-BADF-0001",
++  "evidence_type": "requirements",
++  "producer": {
++    "id": "example-author",
++    "type": "human"
++  },
++  "operation": "decompose the product into requirements",
++  "artifact": "examples/evidence/G02/requirements.artifact.json",
++  "digest": "sha256:308599d5ab9a1fc47b2776876f590383657d1c6408e0116481d65f0a7903916b"
++}
+diff --git a/examples/evidence/G02/traceability.artifact.json b/examples/evidence/G02/traceability.artifact.json
+new file mode 100644
+index 0000000..608e200
+--- /dev/null
++++ b/examples/evidence/G02/traceability.artifact.json
+@@ -0,0 +1,47 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "objectives": [
++    "OBJ-001",
++    "OBJ-002"
++  ],
++  "acceptance_criteria": [
++    "AC-001",
++    "AC-002"
++  ],
++  "requirement_to_objective": [
++    {
++      "requirement": "REQ-001",
++      "objectives": [
++        "OBJ-001"
++      ]
++    },
++    {
++      "requirement": "REQ-002",
++      "objectives": [
++        "OBJ-002"
++      ]
++    },
++    {
++      "requirement": "REQ-003",
++      "objectives": [
++        "OBJ-001"
++      ]
++    }
++  ],
++  "criterion_to_requirement": [
++    {
++      "criterion": "AC-001",
++      "requirements": [
++        "REQ-001",
++        "REQ-003"
++      ]
++    },
++    {
++      "criterion": "AC-002",
++      "requirements": [
++        "REQ-002"
++      ]
++    }
++  ]
++}
+diff --git a/examples/evidence/G02/traceability.json b/examples/evidence/G02/traceability.json
+new file mode 100644
+index 0000000..e6366d3
+--- /dev/null
++++ b/examples/evidence/G02/traceability.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G02",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G02-TRACEABILITY-v1",
++  "claim": "Example traceability bound to PRD-BADF-0001",
++  "evidence_type": "traceability",
++  "producer": {
++    "id": "example-author",
++    "type": "human"
++  },
++  "operation": "author the requirements traceability matrix",
++  "artifact": "examples/evidence/G02/traceability.artifact.json",
++  "digest": "sha256:1b3d3db46d014f1e697ddaf69ac17424c0b126366cb46b8821e4e80426c59680"
++}
+diff --git a/examples/gate-dossier.G02.json b/examples/gate-dossier.G02.json
+new file mode 100644
+index 0000000..ada16f9
+--- /dev/null
++++ b/examples/gate-dossier.G02.json
+@@ -0,0 +1,58 @@
++{
++  "schema_version": "1.0.0",
++  "id": "DOS-WP-2026-0001-G02-v1",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G02",
++  "policy_epoch": "BADF-2026-08-25",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "change_class": "C1",
++  "evidence": [
++    {
++      "type": "requirements",
++      "path": "examples/evidence/G02/requirements.json"
++    },
++    {
++      "type": "nfr",
++      "path": "examples/evidence/G02/nfr.json"
++    },
++    {
++      "type": "traceability",
++      "path": "examples/evidence/G02/traceability.json"
++    },
++    {
++      "type": "definition-of-ready",
++      "path": "examples/evidence/G02/definition-of-ready.json"
++    }
++  ],
++  "approvals": [
++    {
++      "role": "engineering_owner",
++      "decision": "APPROVED",
++      "by": "example-engineering-owner",
++      "revision": "BADF-BASELINE-1.0.0",
++      "policy_epoch": "BADF-2026-08-25",
++      "approved_at": "2026-08-25T00:00:07Z",
++      "scope": "example-only",
++      "principal_type": "human"
++    },
++    {
++      "role": "independent_reviewer",
++      "decision": "APPROVED",
++      "by": "example-reviewer",
++      "revision": "BADF-BASELINE-1.0.0",
++      "policy_epoch": "BADF-2026-08-25",
++      "approved_at": "2026-08-25T00:00:07Z",
++      "scope": "example-only",
++      "principal_type": "human"
++    }
++  ],
++  "exceptions": [],
++  "risks": [],
++  "council": null,
++  "disposition": "PASS",
++  "created_at": "2026-08-25T00:00:06Z",
++  "author": "example-author",
++  "author_type": "human",
++  "conditions": []
++}
+diff --git a/schemas/definition-of-ready.schema.json b/schemas/definition-of-ready.schema.json
+new file mode 100644
+index 0000000..bc1e759
+--- /dev/null
++++ b/schemas/definition-of-ready.schema.json
+@@ -0,0 +1,48 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/definition-of-ready.schema.json",
++  "title": "G02 definition-of-ready evidence artifact -- a human sign-off that every G02 exit criterion is met",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "schema_version",
++    "prd_id",
++    "checklist"
++  ],
++  "properties": {
++    "schema_version": {
++      "type": "string",
++      "enum": [
++        "1.0.0"
++      ]
++    },
++    "prd_id": {
++      "type": "string",
++      "pattern": "^PRD-[A-Za-z0-9._-]+$"
++    },
++    "checklist": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "object",
++        "required": [
++          "criterion",
++          "met"
++        ],
++        "additionalProperties": false,
++        "properties": {
++          "criterion": {
++            "type": "string",
++            "minLength": 1
++          },
++          "met": {
++            "type": "boolean"
++          },
++          "note": {
++            "type": "string"
++          }
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/nfr.schema.json b/schemas/nfr.schema.json
+new file mode 100644
+index 0000000..c357d0f
+--- /dev/null
++++ b/schemas/nfr.schema.json
+@@ -0,0 +1,94 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/nfr.schema.json",
++  "title": "G02 non-functional requirements evidence artifact -- each NFR carries a quantified target",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "schema_version",
++    "prd_id",
++    "nfrs"
++  ],
++  "properties": {
++    "schema_version": {
++      "type": "string",
++      "enum": [
++        "1.0.0"
++      ]
++    },
++    "prd_id": {
++      "type": "string",
++      "pattern": "^PRD-[A-Za-z0-9._-]+$"
++    },
++    "nfrs": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "object",
++        "required": [
++          "id",
++          "category",
++          "statement",
++          "metric",
++          "target"
++        ],
++        "additionalProperties": false,
++        "properties": {
++          "id": {
++            "type": "string",
++            "pattern": "^NFR-[0-9]{3,}$"
++          },
++          "category": {
++            "type": "string",
++            "enum": [
++              "performance",
++              "availability",
++              "security",
++              "scalability",
++              "usability",
++              "maintainability",
++              "compliance",
++              "reliability"
++            ]
++          },
++          "statement": {
++            "type": "string",
++            "minLength": 1
++          },
++          "metric": {
++            "type": "string",
++            "minLength": 1
++          },
++          "target": {
++            "type": "object",
++            "required": [
++              "operator",
++              "value",
++              "unit"
++            ],
++            "additionalProperties": false,
++            "properties": {
++              "operator": {
++                "type": "string",
++                "enum": [
++                  "<",
++                  "<=",
++                  "=",
++                  ">=",
++                  ">"
++                ]
++              },
++              "value": {
++                "type": "number"
++              },
++              "unit": {
++                "type": "string",
++                "minLength": 1
++              }
++            }
++          }
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/requirements.schema.json b/schemas/requirements.schema.json
+new file mode 100644
+index 0000000..ab7e417
+--- /dev/null
++++ b/schemas/requirements.schema.json
+@@ -0,0 +1,68 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/requirements.schema.json",
++  "title": "G02 requirements evidence artifact -- the decomposed, prioritised, testable requirements",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "schema_version",
++    "prd_id",
++    "requirements"
++  ],
++  "properties": {
++    "schema_version": {
++      "type": "string",
++      "enum": [
++        "1.0.0"
++      ]
++    },
++    "prd_id": {
++      "type": "string",
++      "pattern": "^PRD-[A-Za-z0-9._-]+$"
++    },
++    "requirements": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "object",
++        "required": [
++          "id",
++          "statement",
++          "priority",
++          "testable",
++          "objective_refs"
++        ],
++        "additionalProperties": false,
++        "properties": {
++          "id": {
++            "type": "string",
++            "pattern": "^REQ-[0-9]{3,}$"
++          },
++          "statement": {
++            "type": "string",
++            "minLength": 1
++          },
++          "priority": {
++            "type": "string",
++            "enum": [
++              "Must Have",
++              "Should Have",
++              "Could Have",
++              "Won't Have"
++            ]
++          },
++          "testable": {
++            "type": "boolean"
++          },
++          "objective_refs": {
++            "type": "array",
++            "items": {
++              "type": "string",
++              "pattern": "^OBJ-[0-9]{3,}$"
++            }
++          }
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/traceability.schema.json b/schemas/traceability.schema.json
+new file mode 100644
+index 0000000..8d6bf66
+--- /dev/null
++++ b/schemas/traceability.schema.json
+@@ -0,0 +1,93 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/traceability.schema.json",
++  "title": "G02 traceability evidence artifact -- the RTM: bidirectional map objective <- requirement <- acceptance criterion",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "schema_version",
++    "prd_id",
++    "objectives",
++    "acceptance_criteria",
++    "requirement_to_objective",
++    "criterion_to_requirement"
++  ],
++  "properties": {
++    "schema_version": {
++      "type": "string",
++      "enum": [
++        "1.0.0"
++      ]
++    },
++    "prd_id": {
++      "type": "string",
++      "pattern": "^PRD-[A-Za-z0-9._-]+$"
++    },
++    "objectives": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "string",
++        "pattern": "^OBJ-[0-9]{3,}$"
++      }
++    },
++    "acceptance_criteria": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "string",
++        "pattern": "^AC-[0-9]{3,}$"
++      }
++    },
++    "requirement_to_objective": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "object",
++        "required": [
++          "requirement",
++          "objectives"
++        ],
++        "additionalProperties": false,
++        "properties": {
++          "requirement": {
++            "type": "string",
++            "pattern": "^REQ-[0-9]{3,}$"
++          },
++          "objectives": {
++            "type": "array",
++            "items": {
++              "type": "string",
++              "pattern": "^OBJ-[0-9]{3,}$"
++            }
++          }
++        }
++      }
++    },
++    "criterion_to_requirement": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "object",
++        "required": [
++          "criterion",
++          "requirements"
++        ],
++        "additionalProperties": false,
++        "properties": {
++          "criterion": {
++            "type": "string",
++            "pattern": "^AC-[0-9]{3,}$"
++          },
++          "requirements": {
++            "type": "array",
++            "items": {
++              "type": "string",
++              "pattern": "^REQ-[0-9]{3,}$"
++            }
++          }
++        }
++      }
++    }
++  }
++}
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index a93e004..a59729f 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -916,7 +916,118 @@ def check_product_approval(artifact: Path, dossier: dict[str, Any], evidence: di
+         raise ValidationError("product-approval: prd_digest does not match the prd artifact in this dossier (the PRD changed after approval, or the approval is for other bytes)")
+ 
+ 
+-EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_criteria, "product-approval": check_product_approval}
++# ---- G02 evidence contract: requirement decomposition, NFRs, the RTM, definition of ready (BADF-WP-0041, #70) ----
++def check_requirements(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("requirements", doc)
++    _no_placeholders(doc, "requirements")
++    reqs = doc["requirements"]
++    if not reqs:
++        raise ValidationError("requirements: no requirements; an empty list does not decompose a product")
++    ids = [r["id"] for r in reqs]
++    dupes = sorted({i for i in ids if ids.count(i) > 1})
++    if dupes:
++        raise ValidationError(f"requirements: duplicate requirement id(s): {', '.join(dupes)}")
++    _, rtm = _sibling_artifact(dossier, "traceability", "requirements")
++    objectives = set(rtm.get("objectives") or [])
++    for r in reqs:
++        refs = r.get("objective_refs") or []
++        if not refs:
++            raise ValidationError(f"requirements: {r['id']} decomposes no objective; a requirement must trace to at least one PRD objective")
++        unknown = sorted(set(refs) - objectives)
++        if unknown:
++            raise ValidationError(f"requirements: {r['id']} references objective(s) absent from the RTM's objective universe: {', '.join(unknown)}")
++
++
++def check_nfr(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("nfr", doc)
++    _no_placeholders(doc, "nfr")
++    nfrs = doc["nfrs"]
++    if not nfrs:
++        raise ValidationError("nfr: no NFRs; 'NFRs quantified' cannot be established from an empty list")
++    ids = [n["id"] for n in nfrs]
++    dupes = sorted({i for i in ids if ids.count(i) > 1})
++    if dupes:
++        raise ValidationError(f"nfr: duplicate NFR id(s): {', '.join(dupes)}")
++    for n in nfrs:
++        value = n["target"]["value"]
++        if isinstance(value, bool) or not isinstance(value, (int, float)):
++            raise ValidationError(f"nfr: {n['id']} is not quantified; target value {value!r} is not a number")
++
++
++def check_traceability(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("traceability", doc)
++    _no_placeholders(doc, "traceability")
++    objectives = set(doc["objectives"])
++    criteria = set(doc["acceptance_criteria"])
++    if not objectives or not criteria:
++        raise ValidationError("traceability: an RTM must declare at least one objective and one acceptance criterion")
++    _, req_art = _sibling_artifact(dossier, "requirements", "traceability")
++    req_ids = {r["id"] for r in (req_art.get("requirements") or [])}
++
++    r2o: dict[str, set] = {}
++    for row in doc["requirement_to_objective"]:
++        req = row["requirement"]
++        if req in r2o:
++            raise ValidationError(f"traceability: requirement {req} mapped twice in requirement_to_objective")
++        r2o[req] = set(row["objectives"])
++    c2r: dict[str, set] = {}
++    for row in doc["criterion_to_requirement"]:
++        crit = row["criterion"]
++        if crit in c2r:
++            raise ValidationError(f"traceability: criterion {crit} mapped twice in criterion_to_requirement")
++        c2r[crit] = set(row["requirements"])
++
++    # requirement -> objective: no dangling map entry; every requirement mapped to >=1 declared objective
++    dangling_req = sorted(set(r2o) - req_ids)
++    if dangling_req:
++        raise ValidationError(f"traceability: requirement_to_objective names requirement(s) absent from the requirements artifact: {', '.join(dangling_req)}")
++    for req in sorted(req_ids):
++        objs = r2o.get(req)
++        if not objs:
++            raise ValidationError(f"traceability: orphan requirement {req}: not mapped to any objective")
++        unknown = sorted(objs - objectives)
++        if unknown:
++            raise ValidationError(f"traceability: requirement {req} maps to undeclared objective(s): {', '.join(unknown)}")
++
++    # criterion -> requirement: every declared criterion covered by >=1 existing requirement; no dangling map entry
++    for crit in sorted(criteria):
++        mapped = c2r.get(crit)
++        if not mapped:
++            raise ValidationError(f"traceability: uncovered acceptance criterion {crit}: not mapped to any requirement")
++        unknown = sorted(mapped - req_ids)
++        if unknown:
++            raise ValidationError(f"traceability: criterion {crit} maps to unknown requirement(s): {', '.join(unknown)}")
++    dangling_crit = sorted(set(c2r) - criteria)
++    if dangling_crit:
++        raise ValidationError(f"traceability: criterion_to_requirement names criterion(s) not declared in acceptance_criteria: {', '.join(dangling_crit)}")
++
++
++def check_definition_of_ready(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("definition-of-ready", doc)
++    _no_placeholders(doc, "definition-of-ready")
++    if evidence["producer"].get("type") != "human":
++        raise ValidationError("definition-of-ready must be produced by a human; readiness is a human judgment, not a generated artifact")
++    lifecycle = load_json(ROOT / "badf/lifecycle.json")
++    g02 = next((g for g in lifecycle["gates"] if g["id"] == "G02"), None)
++    if g02 is None:
++        raise ValidationError("definition-of-ready: lifecycle.json declares no G02")
++    required = list(g02["exit_criteria"])
++    checked = {item["criterion"]: item["met"] for item in doc["checklist"]}
++    missing = [c for c in required if c not in checked]
++    if missing:
++        raise ValidationError(f"definition-of-ready: missing G02 exit-criterion checklist item(s): {'; '.join(missing)}")
++    unmet = [c for c in required if checked.get(c) is not True]
++    if unmet:
++        raise ValidationError(f"definition-of-ready: G02 exit criterion not met: {'; '.join(unmet)}")
++
++
++EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_criteria, "product-approval": check_product_approval,
++                  "requirements": check_requirements, "nfr": check_nfr, "traceability": check_traceability,
++                  "definition-of-ready": check_definition_of_ready}
+ 
+ 
+ def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -> None:
+diff --git a/tests/test_badf_advance.py b/tests/test_badf_advance.py
+index c546978..7984608 100644
+--- a/tests/test_badf_advance.py
++++ b/tests/test_badf_advance.py
+@@ -115,9 +115,51 @@ class AdvanceScratch(ValidatedInstance):
+         assert r.returncode == 0 and "APPROVED" in r.stdout, r.stdout + r.stderr
+         return f"work/{self.wp()}/gate-dossier.G01.json"
+ 
++    def make_g02(self):
++        """A G02 dossier for the same WP at the G02/C1 floor: requirements, NFRs,
++        the RTM and a human definition-of-ready, modelled on the shipped G02
++        example and bound to this instance's scratch PRD."""
++        d = self.wp_dir(); ev_dir = d / "evidence/G02"; ev_dir.mkdir(parents=True, exist_ok=True)
++        g01 = json.loads((d / "gate-dossier.G01.json").read_text())
++        ex = gate.ROOT / "examples/evidence/G02"
++        producers = {"requirements": HUMAN, "nfr": HUMAN, "traceability": HUMAN,
++                     "definition-of-ready": {"id": "scratch-product-owner", "type": "human"}}
++        index = []
++        for t in ("requirements", "nfr", "traceability", "definition-of-ready"):
++            art = json.loads((ex / f"{t}.artifact.json").read_text()); art["prd_id"] = "PRD-SCRATCH-0001"
++            (ev_dir / f"{t}.artifact.json").write_text(json.dumps(art, indent=2) + "\n")
++            e = {"schema_version": "1.0.0", "id": f"EVD-{self.wp()}-G02-{t}", "work_package_id": self.wp(), "gate": "G02",
++                 "claim": f"{t} present", "evidence_type": t, "producer": producers[t],
++                 "source_revision": g01["source_revision"], "target": g01["target"],
++                 "toolchain": {"name": "human-review", "version": "1"}, "operation": "review",
++                 "started_at": g01["created_at"], "completed_at": g01["created_at"], "outcome": "PASS",
++                 "artifact": f"work/{self.wp()}/evidence/G02/{t}.artifact.json", "digest": gate.sha256(ev_dir / f"{t}.artifact.json")}
++            (ev_dir / f"{t}.json").write_text(json.dumps(e, indent=2) + "\n")
++            index.append({"type": t, "path": f"work/{self.wp()}/evidence/G02/{t}.json"})
++        doc = dict(g01, id=f"DOS-{self.wp()}-G02-v1", gate="G02", evidence=index)
++        (d / "gate-dossier.G02.json").write_text(json.dumps(doc, indent=2) + "\n")
++        self.framework_lock()
++        r = self.dossier_cli(f"work/{self.wp()}/gate-dossier.G02.json")
++        assert r.returncode == 0 and "APPROVED" in r.stdout, r.stdout + r.stderr
++        return f"work/{self.wp()}/gate-dossier.G02.json"
++
+ 
+ class AdvanceTests(AdvanceScratch):
+ 
++    def test_g01_approved_instance_advances_to_g02(self):
++        self.approve_g00(); self.assertEqual(self.advance(f"work/{self.wp()}/gate-dossier.G00.json").returncode, 0)
++        g01 = self.make_g01(); self.assertEqual(self.advance(g01).returncode, 0)
++        g02 = self.make_g02()
++        r = self.advance(g02); self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
++        self.assertEqual(self.state()["lifecycle"], {"current_gate": "G02", "state": "APPROVED", "target": "PRODUCTION"})
++        r = self.instance(); self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("G02 / APPROVED", r.stdout)
++
++    def test_g02_is_refused_before_g01_is_bound(self):
++        self.approve_g00(); self.assertEqual(self.advance(f"work/{self.wp()}/gate-dossier.G00.json").returncode, 0)
++        self.make_g01(); g02 = self.make_g02()   # G01 built but not advanced
++        r = self.advance(g02)
++        self.assertNotEqual(r.returncode, 0, "G02 bound before G01"); self.assertIn("next gate is G01", r.stderr)
++
+     def test_held_init_dossier_cannot_advance(self):
+         before = snapshot(self.t)
+         r = self.advance(f"work/{self.wp()}/gate-dossier.G00.json")
+diff --git a/tests/test_badf_g02.py b/tests/test_badf_g02.py
+new file mode 100644
+index 0000000..c0c3b34
+--- /dev/null
++++ b/tests/test_badf_g02.py
+@@ -0,0 +1,162 @@
++"""G02 evidence contract (BADF-WP-0041, Issue #70; planned fresh from #46).
++
++G02's four required evidence types have semantics the gate enforces by opening
++the artifact, inside validate_evidence: requirements that are unique and each
++trace to a real objective; NFRs each carrying a quantified (numeric) target;
++an RTM that is bidirectional and complete -- no orphan requirement, no
++uncovered acceptance criterion, no dangling id; and a human definition-of-ready
++covering every G02 exit criterion. Every test runs the real CLI on the shipped
++G02 example, mutated in a scratch clone -- the faithful-runner shape.
++"""
++import hashlib
++import json
++import os
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++from tests._scratch import seed_clone  # noqa: E402
++
++DOSSIER = "examples/gate-dossier.G02.json"
++EV = "examples/evidence/G02"
++
++
++class G02Scratch(unittest.TestCase):
++    def setUp(self):
++        self.tmp = tempfile.mkdtemp(); self.root = Path(self.tmp) / "badf"
++        seed_clone(self.root, carry_working_state=True)
++        for rel in ("schemas", "tests"):   # the walker and the rules read the working schemas
++            shutil.rmtree(self.root / rel, ignore_errors=True); shutil.copytree(gate.ROOT / rel, self.root / rel)
++        self.env = {k: v for k, v in os.environ.items() if not k.startswith("BADF_")}
++
++    def tearDown(self):
++        shutil.rmtree(self.tmp, ignore_errors=True)
++
++    def cli(self):
++        subprocess.run([sys.executable, "scripts/badf_gate.py", "lock"], cwd=self.root, env=self.env, capture_output=True, check=True)
++        return subprocess.run([sys.executable, "scripts/badf_gate.py", "dossier", DOSSIER], cwd=self.root, env=self.env, capture_output=True, text=True)
++
++    def artifact(self, t):
++        return json.loads((self.root / EV / f"{t}.artifact.json").read_text())
++
++    def rewrite(self, t, obj):
++        """Rewrite an artifact and re-digest its evidence record (an honest edit)."""
++        p = self.root / EV / f"{t}.artifact.json"; p.write_text(json.dumps(obj, indent=2) + "\n")
++        rec_p = self.root / EV / f"{t}.json"; rec = json.loads(rec_p.read_text())
++        rec["digest"] = "sha256:" + hashlib.sha256(p.read_bytes()).hexdigest(); rec_p.write_text(json.dumps(rec, indent=2) + "\n")
++
++    def record(self, t, fn):
++        rec_p = self.root / EV / f"{t}.json"; rec = json.loads(rec_p.read_text()); fn(rec); rec_p.write_text(json.dumps(rec, indent=2) + "\n")
++
++    def refused(self, needle):
++        r = self.cli()
++        self.assertNotEqual(r.returncode, 0, "a defective G02 dossier rendered APPROVED")
++        self.assertIn(needle, r.stderr, r.stderr)
++
++
++class G02ExampleTests(G02Scratch):
++
++    def test_shipped_example_renders_approved(self):
++        r = self.cli(); self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("APPROVED", r.stdout)
++
++    def test_missing_required_evidence_is_still_refused(self):
++        d = json.loads((self.root / DOSSIER).read_text()); d["evidence"] = [e for e in d["evidence"] if e["type"] != "traceability"]
++        (self.root / DOSSIER).write_text(json.dumps(d, indent=2) + "\n")
++        self.refused("missing evidence")
++
++
++class TraceabilityRuleTests(G02Scratch):
++
++    def test_orphan_requirement_is_refused(self):
++        rtm = self.artifact("traceability")
++        rtm["requirement_to_objective"] = [r for r in rtm["requirement_to_objective"] if r["requirement"] != "REQ-003"]
++        self.rewrite("traceability", rtm)
++        self.refused("orphan requirement REQ-003")
++
++    def test_uncovered_acceptance_criterion_is_refused(self):
++        rtm = self.artifact("traceability")
++        rtm["criterion_to_requirement"] = [c for c in rtm["criterion_to_requirement"] if c["criterion"] != "AC-002"]
++        self.rewrite("traceability", rtm)
++        self.refused("uncovered acceptance criterion AC-002")
++
++    def test_a_requirement_mapped_to_an_undeclared_objective_is_refused(self):
++        rtm = self.artifact("traceability")
++        rtm["requirement_to_objective"][0]["objectives"] = ["OBJ-404"]
++        self.rewrite("traceability", rtm)
++        self.refused("undeclared objective")
++
++    def test_a_map_entry_for_an_unknown_requirement_is_refused(self):
++        rtm = self.artifact("traceability")
++        rtm["requirement_to_objective"].append({"requirement": "REQ-404", "objectives": ["OBJ-001"]})
++        self.rewrite("traceability", rtm)
++        self.refused("absent from the requirements artifact")
++
++    def test_a_criterion_mapped_to_an_unknown_requirement_is_refused(self):
++        rtm = self.artifact("traceability")
++        rtm["criterion_to_requirement"][0]["requirements"] = ["REQ-404"]
++        self.rewrite("traceability", rtm)
++        self.refused("maps to unknown requirement")
++
++
++class RequirementsRuleTests(G02Scratch):
++
++    def test_requirement_referencing_an_unknown_objective_is_refused(self):
++        reqs = self.artifact("requirements")
++        reqs["requirements"][0]["objective_refs"] = ["OBJ-999"]
++        self.rewrite("requirements", reqs)
++        self.refused("absent from the RTM's objective universe")
++
++    def test_a_requirement_that_traces_to_no_objective_is_refused(self):
++        reqs = self.artifact("requirements")
++        reqs["requirements"][0]["objective_refs"] = []
++        self.rewrite("requirements", reqs)
++        self.refused("decomposes no objective")
++
++    def test_duplicate_requirement_id_is_refused(self):
++        reqs = self.artifact("requirements")
++        reqs["requirements"][1]["id"] = reqs["requirements"][0]["id"]
++        self.rewrite("requirements", reqs)
++        self.refused("duplicate requirement id")
++
++
++class NfrRuleTests(G02Scratch):
++
++    def test_unquantified_nfr_is_refused(self):
++        nfr = self.artifact("nfr")
++        nfr["nfrs"][0]["target"]["value"] = "fast"
++        self.rewrite("nfr", nfr)
++        self.refused("is not quantified")
++
++    def test_a_boolean_nfr_target_is_not_a_quantity(self):
++        nfr = self.artifact("nfr")
++        nfr["nfrs"][0]["target"]["value"] = True
++        self.rewrite("nfr", nfr)
++        self.refused("is not quantified")
++
++
++class DefinitionOfReadyRuleTests(G02Scratch):
++
++    def test_missing_a_criterion_is_refused(self):
++        dor = self.artifact("definition-of-ready")
++        dor["checklist"] = [c for c in dor["checklist"] if c["criterion"] != "NFRs quantified"]
++        self.rewrite("definition-of-ready", dor)
++        self.refused("missing G02 exit-criterion")
++
++    def test_an_unmet_criterion_is_refused(self):
++        dor = self.artifact("definition-of-ready")
++        dor["checklist"][0]["met"] = False
++        self.rewrite("definition-of-ready", dor)
++        self.refused("not met")
++
++    def test_a_non_human_definition_of_ready_is_refused(self):
++        self.record("definition-of-ready", lambda rec: rec.__setitem__("producer", {"id": "bot", "type": "automation"}))
++        self.refused("must be produced by a human")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0040/work-package.json b/work/WP-2026-0040/work-package.json
+index 259a308..0b7920b 100644
+--- a/work/WP-2026-0040/work-package.json
++++ b/work/WP-2026-0040/work-package.json
+@@ -47,11 +47,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "39dc6d9"
++    "base_revision": "39dc6d9",
++    "landed_as": "8896a37fc53af32ad690e36c55d9c5430994adff"
+   },
+   "note": "Lands IN_PROGRESS by design. Own G07 self-dossier. First P0 subskill; 16 of 18 controls; badf-research stays DESIGNED."
+ }

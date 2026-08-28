@@ -1,0 +1,29 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index d83c343..3fc9954 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -245,6 +245,24 @@ downstream; a decision and a work package cite it. `RESEARCH_SUFFICIENT ≠ IMPL
+ fixed by the schema, not by discipline. The `badf-research` skill family is `DESIGNED` and does not run;
+ its contract lives in `skills/badf-research/references/`.
+ 
++## Gate 02 — requirement decomposition (`BADF-WP-0041`, Issue #70)
++
++`lifecycle.json` declared G02 (`requirements`, `nfr`, `traceability`, `definition-of-ready`)
++before anything enforced it — a G02 dossier would have passed on names alone, the G01 defect
++class one gate downstream. The four types now have per-type rules in `validate_evidence`, exactly
++like G01's: the gate **opens** each artifact. `requirements` — unique `REQ-NNN`, each tracing to
++at least one objective in the RTM's universe. `nfr` — each `NFR-NNN` target value must be a real
++number (`"fast"` and `true` are refused); "NFRs quantified" becomes a deterministic check.
++`traceability` — the RTM, bidirectional and complete: no orphan requirement, no uncovered
++acceptance criterion, no id that dangles off either side. `definition-of-ready` — a **human**
++sign-off whose checklist must cover every one of G02's own `exit_criteria`, read from
++`lifecycle.json` (the gate checks itself against its declared exits). The `advance` machinery was
++already generic over `GATE_ORDER`, so an instance at `G01/APPROVED` advances to `G02/APPROVED` on
++a valid G02 dossier with no new transition code. Planned **fresh from #46** on the merged G01
++substrate — reusing `validate_evidence`, no competing `scripts/badf_requirements.py`, no vendored
++Spec-Kit; the `badf-requirements` authoring skill and the capability/epic hierarchy are named,
++deferred WPs.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

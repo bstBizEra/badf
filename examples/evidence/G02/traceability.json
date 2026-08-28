@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G02",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G02-TRACEABILITY-v1",
+  "claim": "Example traceability bound to PRD-BADF-0001",
+  "evidence_type": "traceability",
+  "producer": {
+    "id": "example-author",
+    "type": "human"
+  },
+  "operation": "author the requirements traceability matrix",
+  "artifact": "examples/evidence/G02/traceability.artifact.json",
+  "digest": "sha256:1b3d3db46d014f1e697ddaf69ac17424c0b126366cb46b8821e4e80426c59680"
+}

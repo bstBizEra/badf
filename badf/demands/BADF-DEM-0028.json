@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0028",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 70,
+    "url": "https://github.com/bstBizEra/badf/issues/70",
+    "exported_at": "2026-08-28T14:53:33Z",
+    "body_digest": "sha256:bbf90e1e606a6083566f5d059fcb6354422635629cb3fec8cc319a4b2047c089"
+  },
+  "title": "GOV-0024: Gate 02 declared but unenforced \u2014 no per-type rules, schemas, or example for requirements/nfr/traceability/definition-of-ready",
+  "problem": "## Observed\nThe lifecycle already declares Gate 02, but the gate does not enforce it. `badf/lifecycle.json` lists G02's `required_evidence` as **requirements, nfr, traceability, definition-of-ready** with exit criteria \"priority requirements testable / NFRs quantified / dependencies mapped / bidirectional traceability established\" \u2014 yet `validate_evidence` has **no per-type rule** for any of the four, no G02 example dossier exists, and none of the four evidence schemas exist. A G02 dossier today would pass on names alone: the gate would never open a requirements artifact, never check an RTM for orphans or uncovered criteria, never reject an unquantified NFR. This is the G01 defect class (a name is not evidence) one gate downstream.\n\n## Expected\nThe four G02 evidence types get per-type rules in `validate_evidence`, exactly as G01's `check_prd` / `check_acceptance_criteria` / `check_product_approval` do \u2014 the gate OPENS each artifact:\n- `requirements` \u2014 unique `REQ-NNN`, each with a statement, a priority, a `testable` flag, and `objective_refs` that resolve against the RTM's declared objective universe (a requirement referencing an unknown objective is refused).\n- `nfr` \u2014 each `NFR-NNN` carries a **quantified** target (metric + numeric value + unit); an unquantified NFR is refused (the \"NFRs quantified\" exit criterion, enforced).\n- `traceability` \u2014 the **RTM**, bidirectional and complete: every requirement maps to \u22651 objective (no orphan requirement), every declared acceptance criterion maps to \u22651 requirement (no uncovered criterion), and every id referenced resolves.\n- `definition-of-ready` \u2014 a human-produced checklist asserting all four G02 exit criteria; a missing/unmet item is refused.\nPlus `examples/gate-dossier.G02.json` (validated in CI beside G00/G01), and a pair-acceptance test that an instance at G01/APPROVED **advances to G02/APPROVED** on a valid G02 dossier.\n\n## Evidence\n- `G02 required_evidence = ['requirements', 'nfr', 'traceability', 'definition-of-ready']` (badf/lifecycle.json)\n- `grep -cE 'def check_(requirements|nfr|traceability|definition_of_ready)' scripts/badf_gate.py` \u2192 `0` (no G02 rule exists)\n- `EVIDENCE_RULES = {\"prd\": check_prd, \"acceptance-criteria\": check_acceptance_criteria, \"product-approval\": check_product_approval}` (only the three G01 rules are registered)\n- `ls examples/gate-dossier.G02.json` \u2192 `No such file or directory`; the four G02 schemas absent \u2192 `4/4` missing\n\n## Unknowns\nNone for the gate contract. **Deferred, named:** the `badf-requirements` authoring skill; the capability/epic identity hierarchy \u2014 separate WPs if a real task needs them (Lean gate). This WP is the deterministic G02 evidence contract only \u2014 no competing `scripts/badf_requirements.py`, no vendored Spec-Kit.\n\n## Proposed work package\n`BADF-WP-0041` (G02). Four `check_*` functions + registration in `EVIDENCE_RULES`; four schemas; `examples/gate-dossier.G02.json` + its four evidence/artifact pairs; `tests/test_badf_g02.py` (failing-first) + a G01\u2192G02 pair-acceptance in `tests/test_badf_advance.py`; mutation; own G07 self-dossier. C1. Reuses the G01 substrate \u2014 no new validator module.\n\ndiscovered-by: #46 (the operator's \"plan G02 fresh from #46\") \u00b7 substrate: BADF-WP-0030 (G01), BADF-WP-0029 (advance) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T14:53:33Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. G02 gate contract, planned fresh from #46 on the merged G01 substrate (BADF-WP-0030) and advance (BADF-WP-0029); authority: the operator's 'proceed on your call' / 'why block G02' (2026-08-28). Independent of PR #47's branch. Worked as BADF-WP-0041."
+}

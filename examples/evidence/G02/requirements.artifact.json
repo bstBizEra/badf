@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "statement": "Every candidate PR is validated on its composed tree before it may merge.",
+      "priority": "Must Have",
+      "testable": true,
+      "objective_refs": [
+        "OBJ-001"
+      ]
+    },
+    {
+      "id": "REQ-002",
+      "statement": "No work package is opened without a digest-bound demand record.",
+      "priority": "Must Have",
+      "testable": true,
+      "objective_refs": [
+        "OBJ-002"
+      ]
+    },
+    {
+      "id": "REQ-003",
+      "statement": "A red composed tree makes the gate exit non-zero.",
+      "priority": "Should Have",
+      "testable": true,
+      "objective_refs": [
+        "OBJ-001"
+      ]
+    }
+  ]
+}
