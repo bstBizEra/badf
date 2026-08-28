@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0035",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 87,
+    "url": "https://github.com/bstBizEra/badf/issues/87",
+    "exported_at": "2026-08-28T18:53:35Z",
+    "body_digest": "sha256:9bf2116b13897d94b986b65560cccbd895b8494492d4d593cbf0f975ec99a1b9"
+  },
+  "title": "GOV-0032: badf-research has no evidence-synthesis subskill, and ungrounded findings pass (P0 4/9 + earned control 22)",
+  "problem": "## Observed\n`badf-research` has 3 of 9 P0 subskills; `evidence-synthesis` \u2014 which turns adjudicated claims + contradictions + non-coverage into decision-relevant findings \u2014 does not exist. A failing-first probe of the current gate shows a real, deterministically-enforceable defect: a **finding with empty `claim_refs`** (a synthesis conclusion grounded in no claim) passes the gate.\n\n## Expected\nBuild `evidence-synthesis` as P0 subskill **4 of 9**: a concise `SKILL.md` that organises evidence by consensus / strength / dispute / gap (not source-by-source), produces `findings`, surfaces contradictions and declares gaps, with no acquisition/decision/authority. Register `IMPLEMENTED`. **Control 22 (earned): every finding references at least one claim** \u2014 a synthesis conclusion rests on adjudicated evidence, not free assertion.\n\n## Evidence\n- `ls skills/badf-research/subskills` \u2192 `repository-research`, `problem-framing`, `fact-checking` (no `evidence-synthesis`)\n- probe: a finding with `claim_refs: []` \u2192 **PASS (gap)** on the current gate\n\n## Unknowns\nNone for this subskill. A second measured gap \u2014 `RESEARCH_SUFFICIENT` with zero findings \u2014 is the disposition owner's; left for `research-reconciliation` to earn. Not in scope: control 6, the other subskills, #77, #83.\n\n## Proposed work package\n`BADF-WP-0048`. `evidence-synthesis/SKILL.md` + registry entry; control 22 (earned) + acceptance.md row; root router; tests failing-first + mutation; own G07 self-dossier. C2. Research controls -> 20 of 22; `badf-research` stays `DESIGNED` (4 of 9 P0).\n\ndiscovered-by: operator research sequencing (2026-08-29) + BADF-WP-0047 \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T18:53:35Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "evidence-synthesis P0 subskill 4/9 + control 22 (grounded findings, earned failing-first). /loop research build. Worked as BADF-WP-0048."
+}

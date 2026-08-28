@@ -497,5 +497,28 @@ class ProblemFramingRegistrationTests(unittest.TestCase):
         self.assertTrue((gate.ROOT / "skills/badf-research/subskills/fact-checking/SKILL.md").is_file())
 
 
+class EvidenceSynthesisTests(ResearchRecordTests):
+    """Control 22 (BADF-WP-0048, evidence-synthesis): a finding is grounded in the
+    claims it synthesises -- a finding references at least one claim (findings are
+    not part of the evidence_digest, so no recompute is needed)."""
+
+    def test_a_finding_with_no_claim_refs_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE); rec["findings"][0]["claim_refs"] = []
+        self.refused(rec, "rests on no claim")
+
+    def test_a_grounded_finding_passes(self):
+        r = self.run_cli(copy.deepcopy(EXAMPLE))
+        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
+
+    def test_evidence_synthesis_is_registered_implemented_with_a_real_digest(self):
+        import hashlib
+        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
+        entry = next((e for e in reg["skills"] if e["name"] == "evidence-synthesis"), None)
+        self.assertIsNotNone(entry, "evidence-synthesis is not registered")
+        self.assertEqual(entry["status"], "IMPLEMENTED")
+        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
+        self.assertTrue((gate.ROOT / "skills/badf-research/subskills/evidence-synthesis/SKILL.md").is_file())
+
+
 if __name__ == "__main__":
     unittest.main()

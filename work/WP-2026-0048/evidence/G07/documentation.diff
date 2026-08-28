@@ -1,0 +1,23 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 48a96ab..aa5b098 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -359,6 +359,18 @@ source's content entails the claim — has no content locator in the machine con
+ **not** forced into a weak verifier here; it is filed as its own issue (RSR-I06 candidate). Research
+ controls: **19 of 21**. `badf-research` stays `DESIGNED` (3 of 9 P0).
+ 
++## evidence-synthesis — grounded findings (`BADF-WP-0048`, Issue #87)
++
++The fourth P0 research subskill: `skills/badf-research/subskills/evidence-synthesis/SKILL.md`
++reduces adjudicated `claims`, `contradictions` and `non_coverage` into decision-relevant `findings`
++organised by consensus / strength / dispute / gap — *organising* evidence, not accumulating it
++source-by-source. **Control 22, earned by failing-first**: a probe showed an *ungrounded* finding
++(empty `claim_refs`) passed the gate, so the gate now requires every finding to reference at least
++one claim — a synthesis conclusion rests on adjudicated evidence, not free assertion. (A second
++measured gap — `RESEARCH_SUFFICIENT` with zero findings — is genuinely the disposition owner's, and
++is left for `research-reconciliation` to earn rather than grabbed here.) Research controls: **20 of
++22**. `badf-research` stays `DESIGNED` (4 of 9 P0).
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

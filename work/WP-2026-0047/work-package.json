@@ -49,11 +49,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "936169f"
+    "base_revision": "936169f",
+    "landed_as": "c62c32a00d921e75822e74aebc0a33897a523641"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Third P0 research subskill. Control 21 was EARNED by a failing-first adversarial probe (not added because prior subskills happened to land with a control); the non-enforceable semantic half is issue #84. Reconciles WP-2026-0046. badf-research stays DESIGNED (3 of 9 P0); research controls to 19 of 21."
 }
