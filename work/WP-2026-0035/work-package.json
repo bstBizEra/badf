@@ -44,11 +44,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "f59c5c2"
+    "base_revision": "f59c5c2",
+    "landed_as": "d398e1011d31b6b9d299be3b10ce2db4ee014268"
   },
   "note": "Lands IN_PROGRESS by design. Carries its own G07 self-dossier. Closes the last of the original doctrine's discovered gaps."
 }

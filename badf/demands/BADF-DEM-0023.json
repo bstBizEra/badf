@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0023",
+  "kind": "token",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "token": "RSR-002",
+    "issue": null,
+    "url": "https://github.com/bstBizEra/badf/issues/50"
+  },
+  "title": "RSR-002: research record/source/claim checks in the gate (frozen-contract roadmap)",
+  "problem": "The research capability contract was frozen by BADF-WP-0031 (Issue #50) with a roadmap: RSR-002 = record/source/claim schemas as gate checks. This is the token admission for that roadmap item: implement the deterministic record/source/claim controls (schema, referential integrity, derived confidence, VERIFIED/OBSERVED primary-source invariants) as `badf_gate.py research`.",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T12:41:34Z",
+  "provenance": "RECONSTRUCTED",
+  "status": "AUTHORIZED",
+  "note": "RECONSTRUCTED: a roadmap admission from the frozen research contract (#50), authorised by the operator's pick of RSR-002 (2026-08-28). kind=token because RSR items are roadmap admissions under the contract, not new Issues; #50 is the umbrella Issue."
+}

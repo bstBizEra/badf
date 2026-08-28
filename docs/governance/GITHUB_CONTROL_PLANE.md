@@ -130,6 +130,19 @@ it rather than trusting the record.
   shape (WP-0029: 13 advance tests red there, green in the composed run). Scratch clones pin
   `origin/main` explicitly (`tests/_scratch.pin_origin_main`).
 
+## Research record checks (`BADF-WP-0036`, RSR-002)
+
+The frozen research contract (`BADF-WP-0031`) begins to be enforced. `badf_gate.py research
+<path>` validates a research record's deterministic **record/source/claim** controls: schema
+conformance, referential integrity (every claim's source refs and every finding's claim refs
+exist), **confidence derived not asserted** (`derive_confidence` recomputes the level from the
+basis and refuses a mismatch, like the two-plane verdict), and the invariants that a `VERIFIED`
+claim rests on an independent primary source (RSR-I02) and an `OBSERVED` claim on a primary
+source (RSR-I03). `RESEARCH_SUFFICIENT ≠ IMPLEMENTATION_AUTHORIZED` stays schema-fixed. CI runs
+it on `examples/research-record.json`. The challenge, state-transition and traceability controls
+(the rest of the 18 in `skills/badf-research/references/acceptance.md`) are later work packages;
+`badf-research` stays `DESIGNED`.
+
 ## Resolved Issues become learning (`BADF-WP-0035`, Issue #29)
 
 The Doctrine's last clause — *every resolved Issue becomes potential institutional learning* —

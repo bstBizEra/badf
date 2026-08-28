@@ -36,15 +36,15 @@ Every material statement is a claim with a classification, supporting and contra
 
 ## Confidence (`claims[].confidence`)
 
-Confidence is **derived** from `basis` — `independent_primary_sources`, `reproducible`, `contradictions` — by the table below. It is never self-reported, never a percentage, and it never enters authority or evidence semantics as an agent's own assessment (the mandate forbids "agent confidence" there by name).
+Confidence is **derived** from `basis` — `independent_primary_sources` (`ips`), `reproducible`, `contradictions` — by the table below, which is a pure function of those three fields (`badf_gate.py research` recomputes it and refuses a mismatch, like the two-plane verdict). It is never self-reported, never a percentage, and it never enters authority or evidence semantics as an agent's own assessment (the mandate forbids "agent confidence" there by name).
 
 | Level | Derived when |
 | :--- | :--- |
-| `VERY_LOW` | 0 independent primary sources, or contradictions ≥ supporting |
-| `LOW` | 1 primary source, not reproducible |
-| `MODERATE` | 1 primary source, reproducible, or 2 non-independent |
-| `HIGH` | ≥2 independent primary sources, reproducible, no contradiction |
-| `VERY_HIGH` | ≥2 independent primary sources, reproducible, contradictions examined and eliminated |
+| `VERY_LOW` | 0 independent primary sources |
+| `LOW` | 1 independent primary source, not reproducible |
+| `MODERATE` | 1 independent primary source reproducible, or ≥2 not reproducible |
+| `HIGH` | ≥2 independent primary sources, reproducible, with an unresolved contradiction |
+| `VERY_HIGH` | ≥2 independent primary sources, reproducible, no contradiction |
 
 ## Contradictions and non-coverage
 

@@ -2453,6 +2453,65 @@ def self_dossier(wp_id: str) -> str:
             f"Validate: python3 scripts/badf_gate.py dossier work/{wp_id}/gate-dossier.G07.json (exit 3 = HELD).")
 
 
+
+# ---- research record checks: record / source / claim (BADF-WP-0036, #29 research track, RSR-002) ----
+def derive_confidence(basis: dict[str, Any]) -> str:
+    """Confidence is computed from the basis, never self-reported (the mandate
+    forbids 'agent confidence' in evidence semantics). A pure function of
+    independent_primary_sources, reproducible and contradictions -- the table
+    in skills/badf-research/references/evidence-contract.md."""
+    ips = basis["independent_primary_sources"]; repro = basis["reproducible"]; contra = basis["contradictions"]
+    if ips == 0:
+        return "VERY_LOW"
+    if ips == 1:
+        return "MODERATE" if repro else "LOW"
+    if not repro:
+        return "MODERATE"
+    return "HIGH" if contra > 0 else "VERY_HIGH"
+
+
+def validate_research_record(path: Path) -> str:
+    """`badf_gate.py research <path>`: the deterministic record/source/claim
+    controls of the frozen research contract (RSR-002). Schema conformance,
+    referential integrity, derived confidence, and the invariants that a
+    VERIFIED claim rests on an independent primary source and an OBSERVED
+    claim on a primary source. Research output never grants implementation
+    authority. Later work packages add the challenge, state-transition and
+    traceability controls."""
+    rec = load_json(path)
+    # check_schema enforces implementation_authority == false (RSR-I01) via the
+    # schema's enum [false]; a separate check here would be dead code (a mutant
+    # proved the schema catches it first).
+    check_schema("research-record", rec)
+    source_ids = [src["id"] for src in rec["sources"]]
+    if len(source_ids) != len(set(source_ids)):
+        raise ValidationError("research record has duplicate source ids")
+    sources = {src["id"]: src for src in rec["sources"]}
+    claim_ids = set()
+    for c in rec["claims"]:
+        cid = c["id"]
+        if cid in claim_ids:
+            raise ValidationError(f"research record has duplicate claim id {cid}")
+        claim_ids.add(cid)
+        for ref in c["supporting_sources"] + c["contradicting_sources"]:
+            if ref not in sources:
+                raise ValidationError(f"claim {cid} references source {ref} that the record does not carry")
+        want = derive_confidence(c["confidence"]["basis"])
+        if c["confidence"]["level"] != want:
+            raise ValidationError(f"claim {cid} confidence {c['confidence']['level']} is not the derived level {want}; confidence is computed from its basis, not asserted")
+        supporting_primary = any(sources[r]["source_type"] == "PRIMARY" for r in c["supporting_sources"])
+        if c["status"] == "VERIFIED":
+            if c["confidence"]["basis"]["independent_primary_sources"] < 1 or not supporting_primary:
+                raise ValidationError(f"claim {cid} is VERIFIED but rests on no independent primary source (RSR-I02)")
+        if c["classification"] == "OBSERVED" and not supporting_primary:
+            raise ValidationError(f"claim {cid} is OBSERVED but cites no primary source; an observation is of the thing itself, not a report of it (RSR-I03)")
+    for f in rec["findings"]:
+        missing = sorted(set(f["claim_refs"]) - claim_ids)
+        if missing:
+            raise ValidationError(f"finding {f['id']} references claim(s) the record does not carry: {', '.join(missing)}")
+    return f"BADF RESEARCH PASS: {rec['id']} ({rec['type']}/{rec['depth']}) -- {len(rec['claims'])} claims, disposition {rec['disposition']['state']}; grants no implementation authority"
+
+
 def validate_dossier(dossier_path: Path) -> str:
     validate_repo()
     dossier = load_json(dossier_path.resolve())
@@ -2574,6 +2633,8 @@ def main() -> int:
     rec_parser.add_argument("work_package")
     self_parser = subparsers.add_parser("self-dossier", help="assemble a G07 dossier for one of BADF's own work packages from measured evidence (HUMAN_REQUIRED)")
     self_parser.add_argument("work_package")
+    research_parser = subparsers.add_parser("research", help="validate a research record's record/source/claim controls (RSR-002)")
+    research_parser.add_argument("path", type=Path)
     args = parser.parse_args()
     try:
         if args.command == "repo":
@@ -2602,6 +2663,9 @@ def main() -> int:
             return 0
         elif args.command == "self-dossier":
             print(self_dossier(args.work_package))
+            return 0
+        elif args.command == "research":
+            print(validate_research_record(args.path))
             return 0
         else:
             args._rendered = validate_dossier(args.path)

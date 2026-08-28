@@ -1,6 +1,6 @@
 {
   "digests": {
-    ".github/workflows/badf-gates.yml": "sha256:4ec54704dfe3f8dc2fb6d48243753ee9ef7d4671699d4d125612e3023739d410",
+    ".github/workflows/badf-gates.yml": "sha256:ad64ec882d209a4f804097b9ade75b54070a3d949ea2504c56977a54ca5f6883",
     "AGENTS.md": "sha256:7d09c88d62ef94cf3adfb3d6b68aa26d702767870b26fc3c173a5e57123f7607",
     "badf/authority-matrix.json": "sha256:75d3e0216212ea7611c36b69bbea8d3835d32841e102561ea2ca4e1383208b43",
     "badf/decisions/BADF-DEC-0001.json": "sha256:2448e4d33bc9a0069edd261e3421e1e590b7d37bd19d99baaa77b9ae56dcf12d",
@@ -32,6 +32,7 @@
     "badf/demands/BADF-DEM-0020.json": "sha256:c674d458f0c24c6fa452151d1b42a794c1f4f282ef5674a412626548085722bd",
     "badf/demands/BADF-DEM-0021.json": "sha256:b6572973c09ba2238a635d7a1c9b232e09a33d7576eeb92b76e41a74e655602f",
     "badf/demands/BADF-DEM-0022.json": "sha256:155c3a97f79facc629c683d30106d8b5c677f1814b9c0130d0302043bc90d112",
+    "badf/demands/BADF-DEM-0023.json": "sha256:217673b900699b71f3513a034973be4f2763ca6e5fec30d4e6df17de07b31eae",
     "badf/lifecycle.json": "sha256:9f5218c5ca7e94feafd62acec4d90b55ea39f52c21d7639b1984dc3676cb55f3",
     "badf/mcp-registry.json": "sha256:cf93976e41ccd3bc8f8e918da96e42ffac10bce601d0c859f2639aedbb3fc85e",
     "badf/repositories.json": "sha256:9fb7b51cc9ad822a7034794ace47b3702ad7c2aed6b66419b9228b99883bd3e8",
@@ -52,7 +53,7 @@
     "docs/12-operations-learning.md": "sha256:e4965d867f5ba3fab6a682efe026c2e78186aaacb13764dafab0a9bdebf20818",
     "docs/13-artifact-model.md": "sha256:5ded546597e70b6cd16d92b0adbe16de3faf0976ce82720374927634457169ff",
     "docs/errata/2026-08-28-wp-0015-commit-message.md": "sha256:c6e5151de9ec81bc459abd52b4109fdb91dc8a5b4eabe0dc60cac373e9f522d4",
-    "docs/governance/GITHUB_CONTROL_PLANE.md": "sha256:6ed26d45629ac65e329411285ee1f0184e579bc56d324bf643ec0dc7184e5b2b",
+    "docs/governance/GITHUB_CONTROL_PLANE.md": "sha256:54cba56e42512d202d0124c7333d6cf0fae795e2a843e4f3ad1bf5393d883e6b",
     "docs/governance/PROJECT_INSTANCE.md": "sha256:6191d54c015f24d37dd3a9aa48c49a9be805fb3fb9c26dd4a7c04cf233a9535d",
     "docs/governance/SELF_DEVELOPMENT_RULE.md": "sha256:1902557f1a59aa3104cca646e14b264b38facc3c74454985295a574c4e934f4c",
     "docs/governance/TWO_PLANE_VERDICT.md": "sha256:bf45f9b398b15a3c2b295a0403e608f9752082ed023b515f98a67a96c00c2bca",
@@ -75,7 +76,7 @@
     "examples/gate-dossier.G00.json": "sha256:c131e7a00189310449572f8aaeef53996882785bf88b79da58aa534f5a392968",
     "examples/gate-dossier.G01.json": "sha256:43910392b0b24f66a85bfb7af0a880f7b794cae18ea7543d805769adbc0d6090",
     "examples/intent.json": "sha256:56bd669373599ccf5004f47a752556642f1382e8c3bc5f4e94b827b346ba410a",
-    "examples/research-record.json": "sha256:773ad37d02b3ea7dc16e725dcd2744d3b2f502063e6bcefefa3f7b52dc073dba",
+    "examples/research-record.json": "sha256:51577b95ffa9a3af362d6fca53e6f9deb187f1a74565ce70fbd71277ed8f2bab",
     "schemas/acceptance-criteria.schema.json": "sha256:cbbf84c846e6e49d14b046506028d6eaee4fc899eb9edb6cd2ae33545c287be8",
     "schemas/charter.schema.json": "sha256:d79579d328adbe083059484605cc9452ea1d705d770ba99f4cfbbb7ccd0e7459",
     "schemas/demand.schema.json": "sha256:f83831e75d69378c0185d90188b16bb8e64f7a580cb1d46e8491a32f993a7586",
@@ -93,7 +94,7 @@
     "schemas/state.schema.json": "sha256:ec5f9c5214e0ff016397dc51257e99f6c820047d7ec865e62e319a30a547e46a",
     "schemas/work-package.schema.json": "sha256:e082c3f31626a9aa723dfeb635cf1afae482c1a36dd762f608bd8fab895d6c37",
     "scripts/badf_compose.py": "sha256:1a3d5e6ec6a2f3a187546141c1d764e9f6647d0aaa39bf0724cb62062a2515ff",
-    "scripts/badf_gate.py": "sha256:39b9c8f096819a891c48ab1d6a671244f67f7c49f7dfb6384c3e36372dfc766b",
+    "scripts/badf_gate.py": "sha256:9efae4e753613cd74e6ded3169d10d2d62f5ced243c60cfdb7291934e7985bff",
     "scripts/check_pr_traceability.py": "sha256:538165d6961ab0736525c712e059333235355271cfd9789a0efe6be281b0db07",
     "skills/badf-delivery/SKILL.md": "sha256:2370199aa8cc0b6c4c4d0c44eedceba41e645948acd8a65562b86040f97f9771",
     "skills/badf-delivery/references/routing.md": "sha256:cc3a4b2abc2a3f81a4443541e56fbfa568d0d8ee13d2f7e56319e74340eb8828",
@@ -102,7 +103,7 @@
     "skills/badf-prd/references/source-patterns.md": "sha256:ead8e9282db58f9537ae37f8012f11069b0be1a42a419f7cfd48e40f80322216",
     "skills/badf-research/SKILL.md": "sha256:71b58478ca0d8f55e051c994403a8045ff04db794c7181b20489ae3c8ad12bde",
     "skills/badf-research/references/acceptance.md": "sha256:fa3e54ac66378edd7d559655cf3f442bbc83261e32c3fc210d636484ffd736ad",
-    "skills/badf-research/references/evidence-contract.md": "sha256:15fb73781a4351a72dc80d4f42a01812a8418cd687219be363f7797d2e6a7bb8",
+    "skills/badf-research/references/evidence-contract.md": "sha256:bfaf6c66f4ccd8080d09a5f2cdaafb650c2dfb4278e2eb09e44dfd53a9d93ae9",
     "skills/badf-research/references/lifecycle.md": "sha256:d25d154513da789ee4de4919c423e61a3aafc6835aa5c72a6cf6b85bc05107d0",
     "skills/badf-research/references/research-types.md": "sha256:2d13b74cd03bb49e7c028e2d8b29c4cb84d3001eebb3edb7a502d6d0fe179a2c",
     "skills/badf-research/references/routing-and-authority.md": "sha256:359680276e8338a41e5ceb58203a6ce45781ed5bc2bd8913c52cb4f58d56138b",
@@ -140,6 +141,7 @@
     "tests/test_badf_qa_findings.py": "sha256:98b5fa4ea64f1045cbef0761439ecfa2919af2beaac9e65463af8352ef44041e",
     "tests/test_badf_reconcile.py": "sha256:2e1b7d8cb387199d4356fc37204ff15731db5a53324c0d3f3ea77c79195ea7de",
     "tests/test_badf_registry_digest.py": "sha256:267584a08a3420cb40259032b53cc1a635cc5a17867ee6b1931261c9a62be2fb",
+    "tests/test_badf_research.py": "sha256:64f1f7615013a7c45a016de7d690d9f0143edf617a019baa41ff0dfc9a80b7a8",
     "tests/test_badf_research_contract.py": "sha256:9a6680d5c53ba81ee3e9ad854d30ff879158043a74b60f361e13098ecef43e2c",
     "tests/test_badf_run_ledger.py": "sha256:2909f3f5887ef085e5428f66308b726203a74e8e9677eb2ee65e16d9d781d18a",
     "tests/test_badf_schema_drift.py": "sha256:cae47a6a869b26a3e4093ce9867b1d5790b5b08a73beb5a547fe649c2fef8e56",
@@ -219,7 +221,8 @@
     "work/WP-2026-0035/evidence/G07/unit-test.json": "sha256:be541685fba4a1c8012a194d9f7880e44f6d54953cb06c03c245569dad8b45a2",
     "work/WP-2026-0035/evidence/G07/unit-test.txt": "sha256:3ebfe5e512dfeda144788ffffd16868b94226c8875f266fe231350792fa89fbc",
     "work/WP-2026-0035/gate-dossier.G07.json": "sha256:fd00f3810d3a6519583add73b4e3163b38de670d300bbee89e1c087684375b5b",
-    "work/WP-2026-0035/work-package.json": "sha256:684639abd470803a3ee4fd8cc5ac661058aebb0913b012d2be3725d7c828a906"
+    "work/WP-2026-0035/work-package.json": "sha256:22ececa86dbd53401dd1150066368744541c660d1c1441babffd1b0be23265e5",
+    "work/WP-2026-0036/work-package.json": "sha256:329e7b4c272a2b983490300816e4276afa468f40d92c9663d91cafc9e14024aa"
   },
   "schema_version": "1.0.0"
 }

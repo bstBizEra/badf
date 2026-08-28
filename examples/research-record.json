@@ -96,7 +96,7 @@
       "contradicting_sources": [],
       "status": "VERIFIED",
       "confidence": {
-        "level": "HIGH",
+        "level": "MODERATE",
         "basis": {
           "independent_primary_sources": 1,
           "reproducible": true,
