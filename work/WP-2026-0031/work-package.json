@@ -1,0 +1,59 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0031",
+  "title": "Research capability contract freeze (BADF-WP-RSR-001): one stable meaning before any research subskill exists",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0018",
+  "objective": "Freeze the semantics of BADF Research -- types, depths, lifecycle, evidence contracts, routing and authority boundaries, acceptance controls -- as documents, one schema and a root skill at DESIGNED, so every later subskill, validator and council integration shares one foundation. Nothing runnable; nothing ACTIVE.",
+  "business_value": "Once nine research skills exist, changing the meaning of VERIFIED, RESEARCH_SUFFICIENT, source provenance, confidence, challenge independence or the research->authority boundary is expensive and dangerous. Freeze first.",
+  "in_scope": [
+    "skills/badf-research/SKILL.md (root, DESIGNED) + references: research-types, lifecycle, evidence-contract, routing-and-authority, acceptance",
+    "schemas/research-record.schema.json with implementation_authority machine-fixed to false",
+    "examples/research-record.json (a shadow record of a real 2026-08-28 finding) + templates/research-record.json",
+    "registry entry badf-research DESIGNED with a real digest",
+    "doctrine: Research records paragraph in GITHUB_CONTROL_PLANE.md",
+    "drift tests: documented taxonomy == schema enums; invariants RSR-I01..I05 stated; no competing research validator under scripts/"
+  ],
+  "out_of_scope": [
+    "the nine P0 subskills",
+    "any research runtime, router, council mechanism or validator script",
+    "MCP/web integrations",
+    "registry activation",
+    "automatic Issue or WP creation"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "research-types R01-R10, depths D0-D5, states, dispositions, claim classifications, claim statuses, source types and confidence levels documented and equal to the schema enums (drift test)",
+    "the example record passes check_schema and the drift walker; implementation_authority: true is refused by the schema",
+    "registry entry status DESIGNED, digest == sha256(SKILL.md)",
+    "RSR-I01..I05 present verbatim in the references",
+    "no scripts/*research* file exists",
+    "compose green both shapes"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research_contract.py",
+    "tests/test_badf_schema_drift.py"
+  ],
+  "evidence": [
+    "drift tests",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "6427327"
+  },
+  "note": "Lands IN_PROGRESS by design. Resulting capability state: DESIGN approved, CONTRACT frozen, IMPLEMENTED/VALIDATED/SHADOWED/APPROVED/ACTIVE all NO."
+}

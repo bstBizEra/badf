@@ -130,6 +130,15 @@ it rather than trusting the record.
   shape (WP-0029: 13 advance tests red there, green in the composed run). Scratch clones pin
   `origin/main` explicitly (`tests/_scratch.pin_origin_main`).
 
+## Research records (`BADF-WP-0031`, Issue #50)
+
+Research sits between discovery and decision: **Issue → demand → research record → decision → work
+package**. A run is `work/research/<BADF-RSR-NNNN>/research-record.json` (ids sequential; `source.issue`
+carries the Issue), under the lockfile, checked by the gate's schema. Its disposition creates nothing
+downstream; a decision and a work package cite it. `RESEARCH_SUFFICIENT ≠ IMPLEMENTATION_AUTHORIZED` is
+fixed by the schema, not by discipline. The `badf-research` skill family is `DESIGNED` and does not run;
+its contract lives in `skills/badf-research/references/`.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

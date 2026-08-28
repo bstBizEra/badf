@@ -23,6 +23,7 @@ SHIPPED = {
     "prd": [gate.ROOT / "examples/evidence/G01/prd.artifact.json"],
     "acceptance-criteria": [gate.ROOT / "examples/evidence/G01/acceptance-criteria.artifact.json"],
     "product-approval": [gate.ROOT / "examples/evidence/G01/product-approval.artifact.json"],
+    "research-record": [gate.ROOT / "examples/research-record.json"],
     "lifecycle": [gate.ROOT / "badf/lifecycle.json"],
     "demand": sorted((gate.ROOT / "badf/demands").glob("BADF-DEM-*.json")),
     "work-package": sorted(gate.ROOT.glob("work/WP-*/work-package.json")),
@@ -112,7 +113,7 @@ class SchemaInternalConsistencyTests(unittest.TestCase):
     """Every schema, read or not: a required property must be defined."""
 
     def test_no_schema_requires_an_undefined_property(self):
-        for name in ("gate-dossier", "evidence", "lifecycle", "memory", "session", "work-package", "demand", "project", "state", "init-receipt", "charter", "prd", "acceptance-criteria", "product-approval"):
+        for name in ("gate-dossier", "evidence", "lifecycle", "memory", "session", "work-package", "demand", "project", "state", "init-receipt", "charter", "prd", "acceptance-criteria", "product-approval", "research-record"):
             with self.subTest(schema=name):
                 s = schema(name)
                 undefined = set(s.get("required", [])) - set(s.get("properties", {}))

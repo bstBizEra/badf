@@ -1,0 +1,146 @@
+{
+  "schema_version": "1.0.0",
+  "id": "BADF-RSR-0001",
+  "demand": "BADF-DEM-0012",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 40
+  },
+  "type": "R03",
+  "depth": "D2",
+  "question": "Why was main red at 0b88c74 when PR #39 was green on every step, including the composed-tree gate?",
+  "scope": {
+    "include": [
+      "tests/test_badf_compose.py",
+      "scripts/badf_compose.py",
+      "the composed-tree run for PR #39"
+    ],
+    "exclude": [
+      "the content of G01/G02 PRs under the shared account"
+    ]
+  },
+  "baseline": {
+    "repository": "bstBizEra/badf",
+    "revision": "0b88c74",
+    "observed_at": "2026-08-28T13:40:00Z"
+  },
+  "known": [
+    "push run 33104985912 failed with 8 errors, all in test_badf_compose",
+    "PR #39's pull_request run 33091492097 passed all five steps"
+  ],
+  "unknown": [
+    "why the composed run, which reproduces the post-merge world, did not fail"
+  ],
+  "hypotheses": [
+    {
+      "id": "H-001",
+      "statement": "the fixture commits the working tree as the candidate; on main after the merge the tree equals origin/main and there is nothing to commit",
+      "status": "RETAINED"
+    },
+    {
+      "id": "H-002",
+      "statement": "a flaky runner",
+      "status": "ELIMINATED"
+    }
+  ],
+  "sources": [
+    {
+      "id": "S-001",
+      "uri": "https://github.com/bstBizEra/badf/actions/runs/33104985912",
+      "source_type": "PRIMARY",
+      "retrieved_at": "2026-08-28T13:41:00Z",
+      "digest": null
+    },
+    {
+      "id": "S-002",
+      "uri": "git:bstBizEra/badf@0b88c74:tests/test_badf_compose.py",
+      "source_type": "PRIMARY",
+      "retrieved_at": "2026-08-28T13:42:00Z",
+      "digest": null
+    },
+    {
+      "id": "S-003",
+      "uri": "local reproduction: pristine clone of 0b88c74, one compose test verbose (CalledProcessError: nothing to commit)",
+      "source_type": "PRIMARY",
+      "retrieved_at": "2026-08-28T13:45:00Z",
+      "digest": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "C-001",
+      "statement": "8 compose tests error on main at 0b88c74",
+      "classification": "OBSERVED",
+      "supporting_sources": [
+        "S-001",
+        "S-003"
+      ],
+      "contradicting_sources": [],
+      "status": "VERIFIED",
+      "confidence": {
+        "level": "VERY_HIGH",
+        "basis": {
+          "independent_primary_sources": 2,
+          "reproducible": true,
+          "contradictions": 0
+        }
+      }
+    },
+    {
+      "id": "C-002",
+      "statement": "the composed-tree gate skipped its own tests inside the composed run (refuse-to-nest), so it could not see them fail there",
+      "classification": "INFERRED",
+      "supporting_sources": [
+        "S-002"
+      ],
+      "contradicting_sources": [],
+      "status": "VERIFIED",
+      "confidence": {
+        "level": "HIGH",
+        "basis": {
+          "independent_primary_sources": 1,
+          "reproducible": true,
+          "contradictions": 0
+        }
+      }
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-001",
+      "statement": "a gate that skips its own tests inside has a blind spot exactly the size of itself",
+      "claim_refs": [
+        "C-001",
+        "C-002"
+      ]
+    }
+  ],
+  "alternatives": [],
+  "experiments": [],
+  "contradictions": [],
+  "non_coverage": [
+    {
+      "surface": "other actors' branches",
+      "reason": "out of scope; not this agent's work"
+    }
+  ],
+  "recommendation": "nest one level (BADF_COMPOSE_DEPTH) and make every fixture candidate differ from base by construction",
+  "challenge": {
+    "required": false,
+    "council": null
+  },
+  "state": "RECONCILED",
+  "disposition": {
+    "state": "RESEARCH_SUFFICIENT",
+    "reason": "root cause reproduced from primary sources; no contradictions"
+  },
+  "downstream": {
+    "decision_id": null,
+    "work_package_id": null
+  },
+  "authority": {
+    "implementation_authority": false
+  },
+  "evidence_digest": null,
+  "recorded_at": "2026-08-28T13:50:00Z"
+}

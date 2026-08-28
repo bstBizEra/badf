@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.0.0",
+  "id": "BADF-RSR-__REQUIRED__",
+  "demand": "__REQUIRED__",
+  "source": {
+    "repository": "__REQUIRED__",
+    "issue": 40
+  },
+  "type": "R03",
+  "depth": "D2",
+  "question": "__REQUIRED__",
+  "scope": {
+    "include": [
+      "__REQUIRED__"
+    ],
+    "exclude": [
+      "__REQUIRED__"
+    ]
+  },
+  "baseline": {
+    "repository": "__REQUIRED__",
+    "revision": "__REQUIRED__",
+    "observed_at": "__REQUIRED__"
+  },
+  "known": [
+    "__REQUIRED__"
+  ],
+  "unknown": [
+    "__REQUIRED__"
+  ],
+  "hypotheses": [
+    {
+      "id": "__REQUIRED__",
+      "statement": "__REQUIRED__",
+      "status": "RETAINED"
+    }
+  ],
+  "sources": [
+    {
+      "id": "__REQUIRED__",
+      "uri": "__REQUIRED__",
+      "source_type": "PRIMARY",
+      "retrieved_at": "__REQUIRED__",
+      "digest": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "__REQUIRED__",
+      "statement": "__REQUIRED__",
+      "classification": "OBSERVED",
+      "supporting_sources": [
+        "__REQUIRED__"
+      ],
+      "contradicting_sources": [],
+      "status": "VERIFIED",
+      "confidence": {
+        "level": "VERY_HIGH",
+        "basis": {
+          "independent_primary_sources": 2,
+          "reproducible": true,
+          "contradictions": 0
+        }
+      }
+    }
+  ],
+  "findings": [
+    {
+      "id": "__REQUIRED__",
+      "statement": "__REQUIRED__",
+      "claim_refs": [
+        "__REQUIRED__"
+      ]
+    }
+  ],
+  "alternatives": [],
+  "experiments": [],
+  "contradictions": [],
+  "non_coverage": [
+    {
+      "surface": "__REQUIRED__",
+      "reason": "__REQUIRED__"
+    }
+  ],
+  "recommendation": "__REQUIRED__",
+  "challenge": {
+    "required": false,
+    "council": null
+  },
+  "state": "PROPOSED",
+  "disposition": {
+    "state": "RESEARCH_BLOCKED",
+    "reason": "__REQUIRED__"
+  },
+  "downstream": {
+    "decision_id": null,
+    "work_package_id": null
+  },
+  "authority": {
+    "implementation_authority": false
+  },
+  "evidence_digest": null,
+  "recorded_at": "__REQUIRED__",
+  "$schema": "../schemas/research-record.schema.json"
+}
