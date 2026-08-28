@@ -36,7 +36,7 @@
       "risk_class": "C1",
       "allowed_tools": [],
       "status": "DESIGNED",
-      "digest": "sha256:0eece10f963900c31c8440b5ddc57a0c0574f93b215e4f8471e792e85f24f5a1"
+      "digest": "sha256:c7b88160969791e749051206a9380cdea3cdca73d8331ceac3aadc2010efbf92"
     },
     {
       "name": "repository-research",
@@ -138,6 +138,19 @@
       ],
       "status": "IMPLEMENTED",
       "digest": "sha256:3a32d09b0efbe6589b8af57f7140a7e976ca0c42d58a98ae44ba095cbf1c0fa3"
+    },
+    {
+      "name": "adversarial-research",
+      "source": "skills/badf-research/subskills/adversarial-research/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem",
+        "local-shell"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:148f961b89538e66b60f9cd25bca9c8f2d23d48b5d7fb1cb8ec58e60f7387306"
     }
   ]
 }

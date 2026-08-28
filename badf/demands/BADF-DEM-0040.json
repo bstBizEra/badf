@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0040",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 97,
+    "url": "https://github.com/bstBizEra/badf/issues/97",
+    "exported_at": "2026-08-28T20:41:10Z",
+    "body_digest": "sha256:545bda275061ee0f0461c3276765d58c2b7a971a4e347ca52f5be7561fb9cdf8"
+  },
+  "title": "GOV-0037: badf-research has no adversarial-research subskill; a REFUTED challenge still reconciles to RESEARCH_SUFFICIENT (P0 8/9 + earned control 25)",
+  "problem": "## Observed\n`badf-research` has 7 of 9 P0 subskills; `adversarial-research` \u2014 the independent challenge team that tries to refute the recommendation \u2014 does not exist. The challenge/independence machinery (controls 11\u201313) is enforced, but a failing-first probe shows a real gap: a challenge council can carry a **`REFUTED`** ballot while the record still reconciles to **`RESEARCH_SUFFICIENT`** \u2014 an independent refutation erased by declaring sufficiency.\n\n## Expected\nBuild `adversarial-research` as P0 subskill **8 of 9**: a concise `SKILL.md` for the **independent** challenge (attempt to refute; find omitted/non-independent evidence, counterexamples, unsupported assumptions, uninspected surface, confirmation bias), separate from the originating run, casting sealed `CONFIRMED`/`REFUTED`/`INCONCLUSIVE` ballots through the framework council. Register `IMPLEMENTED`. **Control 25 (earned):** a challenge council carrying a `REFUTED` ballot cannot reconcile to `RESEARCH_SUFFICIENT` \u2014 a critical contradiction is not overridden by a majority or the disposition.\n\n## Evidence\n- verdict vocabulary: `CONFIRMED` / `REFUTED` / `INCONCLUSIVE`\n- probe: `one REFUTED ballot + RESEARCH_SUFFICIENT` \u2192 PASS (gap); `all REFUTED + RESEARCH_SUFFICIENT` \u2192 PASS (gap)\n\n## Unknowns\nWhether the ballot actually *attempted* refutation is not machine-checkable (that is the reviewer's honesty, declared via non_coverage). The enforceable part is the outcome\u2194disposition consistency. Not in scope: research-reconciliation (final unit) + control 15; #77/#83/#84.\n\n## Proposed work package\n`BADF-WP-0053`. `adversarial-research/SKILL.md` + registry; control 25 (earned) + acceptance row; root router (8/9); tests + mutation; own G07 self-dossier. C2. Controls -> 24 of 25; `badf-research` stays `DESIGNED` (8 of 9 P0).\n\ndiscovered-by: operator research sequencing (2026-08-29) + BADF-WP-0052 \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T20:41:10Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "adversarial-research P0 8/9 + control 25 (REFUTED blocks RESEARCH_SUFFICIENT, earned). /loop research build. Worked as BADF-WP-0053."
+}

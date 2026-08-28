@@ -540,6 +540,40 @@ class TechnicalResearchTests(ResearchRecordTests):
         self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
 
 
+CHALLENGED = json.loads((gate.ROOT / "examples/research-record-challenged.json").read_text())
+
+
+class AdversarialResearchTests(ResearchRecordTests):
+    """Control 25 (BADF-WP-0053, adversarial-research): an independent refutation is
+    not erased by declaring sufficiency -- a challenge council carrying a REFUTED
+    ballot cannot reconcile to RESEARCH_SUFFICIENT. Challenge is not in the digest."""
+
+    def test_a_refuted_ballot_blocks_research_sufficient(self):
+        rec = copy.deepcopy(CHALLENGED)
+        rec["challenge"]["council"]["ballots"][0]["verdict"] = "REFUTED"
+        self.assertEqual(rec["disposition"]["state"], "RESEARCH_SUFFICIENT")
+        self.refused(rec, "REFUTED ballot but the disposition is RESEARCH_SUFFICIENT")
+
+    def test_a_refuted_ballot_with_a_non_sufficient_disposition_passes(self):
+        rec = copy.deepcopy(CHALLENGED)
+        rec["challenge"]["council"]["ballots"][0]["verdict"] = "REFUTED"
+        rec["disposition"]["state"] = "CONTRADICTORY_EVIDENCE"
+        r = self.run_cli(rec)
+        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
+
+    def test_confirmed_ballots_remain_sufficient(self):
+        r = self.run_cli(copy.deepcopy(CHALLENGED))
+        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
+
+    def test_adversarial_research_is_registered_implemented(self):
+        import hashlib
+        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
+        entry = next((e for e in reg["skills"] if e["name"] == "adversarial-research"), None)
+        self.assertIsNotNone(entry, "adversarial-research is not registered")
+        self.assertEqual(entry["status"], "IMPLEMENTED")
+        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
+
+
 class ComparativeEvaluationTests(ResearchRecordTests):
     """Control 24 (BADF-WP-0052, comparative-evaluation): a COMPARATIVE (R07) run
     weighs at least two alternatives. type/alternatives are not in the evidence_digest."""
