@@ -1,0 +1,617 @@
+diff --git a/badf/demands/BADF-DEM-0030.json b/badf/demands/BADF-DEM-0030.json
+new file mode 100644
+index 0000000..da3e108
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0030.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0030",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 74,
++    "url": "https://github.com/bstBizEra/badf/issues/74",
++    "exported_at": "2026-08-28T16:09:00Z",
++    "body_digest": "sha256:10d8c83311865e3d2b6b2fe39a2ceb98fceccf0db457564c64a437ea1edfbb31"
++  },
++  "title": "GOV-0026: no badf-architecture capability \u2014 freeze the DESIGN/ASSURE contract (WP-ARCH-A, DESIGNED only, no G04 authority change)",
++  "problem": "## Observed\nBADF has no architecture capability. `skills/badf-architecture` does not exist, the skill registry has no entry, and G04 (Architecture, Data and API \u2014 `architecture`, `adr`, `data-model`, `api-contract`, `operability-design`, owned by `architecture_authority`) has no per-type enforcement. There is no canonical, machine-readable architecture baseline and no separation between *documenting* architecture and *assuring* that reality conforms to it. Left unaddressed, a future G04 would either pass on names alone (the G01/G02/G03 defect class) or drift toward \"a Mermaid diagram is the architecture\".\n\n## Expected\nFreeze the `badf-architecture` capability **contract** \u2014 analogous to the badf-research contract freeze (#50) \u2014 at status `DESIGNED`, with **no executable and no G04 authority change**. It governs architecture engineering (DESIGN) and architecture assurance (ASSURE), not diagramming:\n\n- **Fundamental rule:** architecture documentation \u2260 architecture assurance \u2260 gate authority \u2260 implementation authorization. `badf-architecture` produces artifacts and assurance evidence; it does **not** approve G04 and does **not** advance lifecycle state.\n- **Two modes:** DESIGN (baseline, C4 views, boundaries, trust boundaries, data flows, ADRs, NFR allocation, operability, fitness obligations) and ASSURE (dependency direction, boundary/cycle checks, ADR compliance, drift, NFR coverage, non-coverage) \u2014 read-only unless separately authorized.\n- **Canonical model vs diagram:** a structured architecture baseline is the source of truth; C4/Mermaid/Structurizr are **views/projections** (Context + Container normally sufficient; Component/Code only when they add value). A diagram must never introduce a claim absent from the baseline.\n- **ADR \u2260 BADF-DEC:** `ADR-NNNN` is a product/system architecture decision; `BADF-DEC-NNNN` is a governance decision; neither substitutes for the other.\n- **Twelve invariants** `ARCH-I01`..`ARCH-I12` (single baseline; views are projections; explicit boundaries; direction matters; ADR binding; NFR traceability; no inferred compliance; drift is evidence not authority; exact-revision assurance; ADR/BADF-DEC separation; **no second gate** \u2014 no `scripts/badf_architecture.py`; assurance is read-only).\n- **External methodology (ADAPT):** `c4designer`, `adr-scribe`, architecture-review patterns \u2014 adopt the useful patterns, reject Mermaid-as-source-of-truth and inferred-compliance.\n\nDeliverables (this WP): `skills/badf-architecture/SKILL.md` + `references/` (design-mode, assure-mode, architecture-model, c4-contract, adr-contract, architecture-fitness, g04-contract, external-methodology, acceptance); a registry entry `DESIGNED` with a real digest; a doc-structural contract test; a doctrine section. **No schemas, no templates, no gate code, no G04 authority change.**\n\n## Evidence\n- `ls skills/badf-architecture` \u2192 No such file or directory\n- `grep -c '\"badf-architecture\"' badf/skill-registry.json` \u2192 0\n- `ls scripts/*architecture*` \u2192 No such file or directory\n- `'architecture' in EVIDENCE_RULES` \u2192 False\n\n## Unknowns\nNone for the contract. **Deferred, named as separate WPs:** WP-ARCH-B (deterministic G04 DESIGN evidence semantics inside the canonical gate) and WP-ARCH-C (the ASSURE substrate \u2014 dependency graph, cycles, boundary rules, ADR compliance, baseline/observed binding). The capability stays `DESIGNED` until those land with mutation-tested gate controls.\n\n## Proposed work package\n`BADF-WP-0043` (WP-ARCH-A / BADF-WP-ARCH-001: Architecture Capability Contract Freeze). C2. `DESIGNED` only; contract-structural test + registry digest; no executable.\n\ndiscovered-by: BADF-WP-0042 (the gate march reached G04's territory) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T16:09:00Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Body exported verbatim and digest-bound. badf-architecture capability contract freeze (WP-ARCH-A / BADF-WP-ARCH-001), analogous to the badf-research freeze (#50). Authority: the operator's frozen 'BADF Architecture Skill v0.1' contract + 'make the next controlled unit BADF-WP-ARCH-001 ... DESIGNED only, no executable, no G04 authority change' (2026-08-28). Worked as BADF-WP-0043."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index a5b4a81..5b96b67 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -50,6 +50,16 @@
+       ],
+       "status": "IMPLEMENTED",
+       "digest": "sha256:7f10d20688feeae30effcf5689c8552dd153202b0137297003446c2d13bcb7a8"
++    },
++    {
++      "name": "badf-architecture",
++      "source": "skills/badf-architecture/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [],
++      "status": "DESIGNED",
++      "digest": "sha256:84104fece7a76380ed1ba3e015598210475e649cbf670a4c752eae8a474d1a10"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 331ca4f..29dc2a9 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -278,6 +278,23 @@ resolution (an unresolved major finding means the design is not validated). Ship
+ `examples/gate-dossier.G03.json` and a G02→G03 pair-acceptance. Same lean substrate as G01/G02 —
+ no design-authoring skill, no vendored UX toolkit.
+ 
++## Architecture capability freeze (`BADF-WP-0043`, Issue #74)
++
++`badf-architecture` is frozen at `DESIGNED` — an architecture **engineering + assurance** capability,
++not a diagram skill — the same way `badf-research` was frozen (#50): a `SKILL.md` + `references/`
++contract, a registry entry with a real digest, and a doc-structural test, with **no executable and
++no G04 authority change**. The four distinctions that never collapse: architecture documentation ≠
++assurance ≠ gate authority ≠ implementation authorization. Two modes — DESIGN (a canonical,
++machine-readable architecture **baseline** from which C4/Mermaid are rendered as *views*, plus
++boundaries, trust boundaries, data flows, ADRs, NFR allocation, operability, fitness obligations)
++and ASSURE (dependency direction, cycles, boundary violations, ADR compliance, drift, non-coverage —
++read-only, bound to one baseline + one observed revision). Twelve invariants `ARCH-I01`..`ARCH-I12`
++pin the meaning: views are projections (a diagram never adds a claim absent from the baseline), no
++inferred compliance (`NO BASELINE ≠ COMPLIANT`), drift is evidence not authority, `ADR-*` ≠
++`BADF-DEC-*`, and **no second gate** (no `scripts/badf_architecture.py` — deterministic G04 semantics
++belong in the canonical gate). G04 is *mapped* (its five evidence types) but left exactly as declared;
++the G04 DESIGN semantics (WP-ARCH-B) and the ASSURE substrate (WP-ARCH-C) are separate, later WPs.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/skills/badf-architecture/SKILL.md b/skills/badf-architecture/SKILL.md
+new file mode 100644
+index 0000000..d9b0417
+--- /dev/null
++++ b/skills/badf-architecture/SKILL.md
+@@ -0,0 +1,35 @@
++---
++name: badf-architecture
++description: Govern architecture design, architectural decisions, architecture fitness and drift assurance for BADF-controlled delivery. Use when a system's structure, boundaries, decisions, NFR allocation or operability must be designed (DESIGN), or when an implementation, PR, branch or composed tree must be checked against declared architectural intent (ASSURE). Do not use to approve a gate, advance lifecycle state, or authorise implementation.
++---
++
++# BADF Architecture
++
++Status: `DESIGNED` (contract frozen by `BADF-WP-0043`; nothing here runs yet). This is an architecture **engineering + assurance** capability, not a diagram skill. Its primary lifecycle gate is **G04 — Architecture, Data and API**; it also feeds G05 (trust boundaries + data flows), G08/G09 verification and post-merge drift review.
++
++Fundamental rule — four distinctions that never collapse:
++
++```text
++Architecture documentation  ≠  Architecture assurance
++Architecture assurance      ≠  Gate authority
++Architecture approval       ≠  Implementation authorization
++```
++
++`badf-architecture` produces architecture artifacts and assurance evidence consumed by the canonical BADF gate. It does **not** approve G04 and does **not** advance lifecycle state. A human and the gate do that.
++
++## Two modes
++
++- **DESIGN** — create intended architecture: a canonical baseline, C4 views, boundaries, trust boundaries, data flows and ownership, interfaces, ADRs, NFR allocation, operability and architecture-fitness obligations. Workflow and contract: `references/design-mode.md`.
++- **ASSURE** — test whether reality conforms to that intent: dependency direction, boundary violations, cycles, ADR compliance, drift, NFR coverage, operability, declared non-coverage. **Read-only unless mutation is separately demanded and authorized.** Workflow and contract: `references/assure-mode.md`.
++
++## Do
++
++1. Read the repository `AGENTS.md` and the documents it marks required.
++2. Route DESIGN vs ASSURE from the request; this file is the only router ("design/C4/topology/create ADR" → DESIGN; "review/drift/boundaries/cycles/ADR compliance/fitness" → ASSURE).
++3. In DESIGN, treat the structured **architecture baseline** as the source of truth (`references/architecture-model.md`); C4/Mermaid/Structurizr are **views** (`references/c4-contract.md`). A diagram must never introduce a claim absent from the baseline.
++4. Give every material relationship a direction and intent; make every material system/module/data/trust boundary explicit; keep assumptions separate from facts, and route material uncertainty to `badf-research` rather than guessing.
++5. Record material decisions as `ADR-NNNN` (`references/adr-contract.md`) — never conflated with a governance `BADF-DEC-NNNN`; allocate every architecture-relevant NFR (ALLOCATED / DEFERRED_WITH_REASON / NOT_APPLICABLE_WITH_REASON) to a mechanism and a later fitness obligation (`references/architecture-fitness.md`).
++6. In ASSURE, bind every conclusion to one explicit baseline and one observed revision; never infer an architecture from code and declare that inference compliant; report drift as evidence, never authorise it; declare what you did not inspect.
++7. Package the five G04 evidence types coherently (`references/g04-contract.md`) without claiming a C4 diagram alone satisfies G04. The gate renders the verdict.
++
++Invariants `ARCH-I01`..`ARCH-I12`, the acceptance controls and the admission ladder: `references/acceptance.md`. External methodology disposition: `references/external-methodology.md`.
+diff --git a/skills/badf-architecture/references/acceptance.md b/skills/badf-architecture/references/acceptance.md
+new file mode 100644
+index 0000000..42f7c1a
+--- /dev/null
++++ b/skills/badf-architecture/references/acceptance.md
+@@ -0,0 +1,48 @@
++# Acceptance, invariants and admission
++
++Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows `docs/07-skills-governance.md`: `DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED → APPROVED → ACTIVE`.
++
++## Canonical invariants
++
++- **ARCH-I01 — Single baseline.** Every assurance conclusion is bound to one explicit architecture baseline and one observed revision.
++- **ARCH-I02 — Views are projections.** C4 and other diagrams cannot become independent architectural truth; a view must not add a claim absent from the baseline.
++- **ARCH-I03 — Explicit boundaries.** Material system, module, data and trust boundaries must be represented explicitly.
++- **ARCH-I04 — Direction matters.** Material dependencies carry a declared direction and intent.
++- **ARCH-I05 — ADR binding.** Material architectural decisions bind to their affected architecture elements and upstream drivers.
++- **ARCH-I06 — NFR traceability.** Architecture-relevant NFRs map to architectural mechanisms and to verification obligations.
++- **ARCH-I07 — No inferred compliance.** Missing architecture documentation may produce observations, never compliance (`NO BASELINE ≠ COMPLIANT`).
++- **ARCH-I08 — Drift is evidence, not authority.** ASSURE identifies drift; it does not authorize it.
++- **ARCH-I09 — Exact-revision assurance.** Assessment against an unpinned, moving repository state is invalid for gate evidence.
++- **ARCH-I10 — ADR and BADF decision separation.** `ADR-*` cannot replace `BADF-DEC-*`, and vice versa.
++- **ARCH-I11 — No second gate.** No standalone `badf_architecture.py` may become a competing validator; deterministic G04 evidence semantics belong in the canonical BADF gate.
++- **ARCH-I12 — Assurance is read-only.** ASSURE must not repair source, architecture or ADRs unless mutation is separately demanded and authorized.
++
++## Controls required before `VALIDATED` (deterministic, in the gate and its tests)
++
++| # | Control |
++| :--- | :--- |
++| 1 | a material relationship without a declared direction is refused |
++| 2 | a material relationship without an intent is refused |
++| 3 | an architecture element outside every declared boundary is refused |
++| 4 | a boundary crossing not through a declared interface is refused |
++| 5 | an ADR with no affected element or no decision driver is refused |
++| 6 | an ADR referencing an unknown requirement/NFR is refused |
++| 7 | an architecture-relevant NFR neither ALLOCATED nor DEFERRED/NOT_APPLICABLE with reason is refused |
++| 8 | an NFR allocation with no mechanism and no fitness obligation is refused |
++| 9 | a fitness obligation without a measurable property and scope is refused |
++| 10 | operability-design that omits failure/recovery/observability is refused |
++| 11 | a data flow across a trust boundary with no classification is refused |
++| 12 | a C4 view element absent from the baseline is refused |
++| 13 | an ASSURE run with no bound baseline + observed revision is refused |
++| 14 | an ASSURE conclusion of COMPLIANT with no baseline is refused (ARCH-I07) |
++| 15 | an `INDETERMINATE` ADR-compliance result cannot serialise as PASS |
++| 16 | a drift finding cannot classify itself as approved evolution |
++| 17 | an ASSURE run with no non-coverage declaration is incomplete |
++| 18 | architecture-baseline digest changes when a material element/relationship/boundary changes |
++
++## Admission
++
++- `IMPLEMENTED`: the G04 DESIGN evidence semantics (`architecture`, `adr`, `data-model`, `api-contract`, `operability-design`) exist as deterministic gate rules with schemas (WP-ARCH-B).
++- `VALIDATED`: the controls above pass as gate tests with mutation, and the ASSURE substrate is deterministic where feasible (WP-ARCH-C).
++- `SHADOWED`: ASSURE is run retrospectively on historical architecture-impacting PRs without knowing the answer (WP-ARCH-D); measured for true violations, false positives, non-coverage and stability across composed trees.
++- `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. Until then the registry entry stays `DESIGNED`.
+diff --git a/skills/badf-architecture/references/adr-contract.md b/skills/badf-architecture/references/adr-contract.md
+new file mode 100644
+index 0000000..fca21fe
+--- /dev/null
++++ b/skills/badf-architecture/references/adr-contract.md
+@@ -0,0 +1,42 @@
++# ADR contract
++
++Material architectural choices are recorded as Architecture Decision Records. BADF adapts the classic ADR core (Context / Decision / Alternatives / Consequences / Status) and extends it with traceability and architectural binding.
++
++## `ADR-NNNN` is not `BADF-DEC-NNNN` (ARCH-I10)
++
++```text
++ADR-NNNN      a product/system architecture decision (this contract)
++BADF-DEC-NNNN a BADF governance/authority decision (the framework's decision ledger)
++```
++
++They are different objects. Neither substitutes for the other, and an ADR never grants governance authority.
++
++## Canonical ADR shape
++
++```text
++ADR-NNNN
++├── title
++├── status
++├── context
++├── decision_drivers[]
++├── constraints[]
++├── alternatives[]
++├── decision
++├── positive_consequences[]
++├── negative_consequences[]
++├── risks[]
++├── affected_elements[]        (baseline elements this decision binds to -- ARCH-I05)
++├── requirement_refs[]
++├── nfr_refs[]
++├── evidence_refs[]
++├── supersedes
++└── superseded_by
++```
++
++## Decision vs constraint
++
++A material architectural choice with no real alternative distinguishes `DECISION` from `CONSTRAINT`: a mandatory external constraint (a platform mandate, a regulatory requirement) is recorded as a constraint, never dressed up as a choice that was weighed. `alternatives[]` for a genuine decision names what was actually considered and rejected, with the driver that rejected it.
++
++## Binding
++
++Every ADR binds to the baseline elements it affects (`affected_elements[]`) and to its upstream drivers (`requirement_refs[]`, `nfr_refs[]`). An ADR that affects nothing, or cites an unknown requirement/NFR, is not a governed decision. In ASSURE, an active ADR is checked against observable implementation rules and returns `CONFORMANT` / `NONCONFORMANT` / `INDETERMINATE` / `SUPERSEDED` / `NOT_OBSERVABLE` — and `INDETERMINATE` never becomes PASS.
+diff --git a/skills/badf-architecture/references/architecture-fitness.md b/skills/badf-architecture/references/architecture-fitness.md
+new file mode 100644
+index 0000000..94fd356
+--- /dev/null
++++ b/skills/badf-architecture/references/architecture-fitness.md
+@@ -0,0 +1,43 @@
++# Architecture fitness obligations
++
++DESIGN defines how important architectural properties will later be checked. At G04 a fitness obligation is a **specification**; at later lifecycle stages it can become executable verification evidence (G08/G09). This is the seam between "we intend this property" and "we proved it".
++
++## NFR allocation drives fitness (ARCH-I06)
++
++Every architecture-relevant NFR is consumed from the quantified upstream NFRs and traced:
++
++```text
++REQ/NFR → architecture element → architecture mechanism → fitness obligation → later verification evidence
++```
++
++Example:
++
++```text
++NFR-PERF-001 (p95 <= 300 ms)
++   → API container
++   → bounded synchronous dependency chain
++   → PERF-FIT-001
++   → G08/G09 performance evidence
++```
++
++Each architecture-relevant NFR resolves to exactly one of `ALLOCATED`, `DEFERRED_WITH_REASON`, `NOT_APPLICABLE_WITH_REASON` — never a silent omission. An allocation with no mechanism and no fitness obligation is incomplete.
++
++## Fitness obligation types
++
++```text
++STRUCTURAL   DEPENDENCY   BOUNDARY   CONTRACT   SECURITY_BOUNDARY
++DATA   OPERABILITY   PERFORMANCE   RESILIENCE   COST
++```
++
++## Fitness obligation shape
++
++```text
++FIT-ARCH-001
++property:     Domain code must not depend on infrastructure adapters.
++measurement:  dependency graph
++scope:        src/domain/**
++forbidden:    src/infrastructure/**
++evaluation:   zero violating edges
++```
++
++A fitness obligation without a measurable property and a declared scope is not an obligation — it is a wish. The obligation is what ASSURE and later verification execute against a pinned observed revision.
+diff --git a/skills/badf-architecture/references/architecture-model.md b/skills/badf-architecture/references/architecture-model.md
+new file mode 100644
+index 0000000..f242047
+--- /dev/null
++++ b/skills/badf-architecture/references/architecture-model.md
+@@ -0,0 +1,49 @@
++# Canonical architecture model
++
++BADF does not make a Mermaid file the architecture. The authoritative artifact is a structured **architecture baseline** from which C4 and other views are rendered (ARCH-I02).
++
++## Baseline shape
++
++```text
++Architecture Baseline
++├── identity                 (system/product id)
++├── baseline_revision        (the pinned revision this baseline describes)
++├── upstream_requirements    (PRD / requirement / NFR refs)
++├── elements                 (systems, containers, components)
++├── relationships            (directional, intent-bearing -- see design-mode.md)
++├── boundaries               (system / module / ownership / control-plane)
++├── topology                 (deployment / environment)
++├── trust_boundaries
++├── data_flows
++├── data_ownership
++├── interfaces               (declared public contracts)
++├── nfr_allocations
++├── adr_references
++├── operability_model
++├── fitness_obligations
++├── assumptions              (kept separate from facts)
++├── risks
++└── non_coverage
++```
++
++## Views are projections
++
++```text
++Architecture Baseline
++   ├── C4 Context          (required by default)
++   ├── C4 Container        (required by default)
++   ├── C4 Component        (optional; complex/high-risk containers only)
++   ├── Deployment
++   ├── Dynamic flows
++   ├── Data-flow view
++   └── Trust-boundary view
++```
++
++A view is a projection of the baseline. It renders elements, relationships and boundaries that already exist in the baseline; it never introduces an architectural claim absent from it. When a diagram and the baseline disagree, the baseline is authoritative and the diagram is the drift.
++
++## Element and boundary rules
++
++- Every material element belongs to at least one declared boundary (ARCH-I03).
++- Every material relationship has a direction and an intent (ARCH-I04); a bare `A → B` is not an architecture relationship.
++- Every legitimate boundary crossing is named as an interface; an undeclared crossing is a boundary violation, not an implicit allowance.
++- The baseline digest changes whenever a material element, relationship or boundary changes, so a stale baseline cannot silently pass as current.
+diff --git a/skills/badf-architecture/references/assure-mode.md b/skills/badf-architecture/references/assure-mode.md
+new file mode 100644
+index 0000000..98e4d4c
+--- /dev/null
++++ b/skills/badf-architecture/references/assure-mode.md
+@@ -0,0 +1,36 @@
++# ASSURE mode
++
++Determine whether an implementation, PR, branch, composed tree or running system still conforms to declared architectural intent. **Read-only unless mutation is separately demanded and authorized** (ARCH-I12).
++
++## Workflow
++
++```text
++BASELINE → OBSERVE → MODEL_ACTUAL → COMPARE → FITNESS → ADR_CHECK → NFR_CHECK → CHALLENGE → REPORT
++```
++
++## Baseline binding (ARCH-I01, ARCH-I09)
++
++Every run establishes, as immutable evidence: `architecture_baseline_digest`, `architecture_baseline_revision`, `observed_repository`, `observed_revision`, `observation_time`, `ADR_set`, `fitness_spec_set`. Never compare against "latest", "current architecture" or "what the repo seems to intend" without resolving those phrases to a pinned revision. `NO BASELINE ≠ COMPLIANT` (ARCH-I07): a missing baseline yields observations, never compliance.
++
++## Structural assurance
++
++- **Dependency direction** — rules derive from the declared architecture style, not universal assumptions (e.g. `domain → infrastructure` forbidden, `adapter → domain` allowed).
++- **Cycles** — across modules, components, and package/build dependencies; report the complete cycle.
++- **Boundary violations** — importing another module's internals, bypassing a public API, direct cross-context DB access, shared tables across ownership boundaries, dependency on a forbidden layer, hidden coupling via shared utilities.
++- **Public-surface leakage** — boundaries are crossed only through their declared public contracts.
++
++## ADR compliance
++
++For each active ADR: affected elements → observable implementation rules → actual implementation. Result is `CONFORMANT`, `NONCONFORMANT`, `INDETERMINATE`, `SUPERSEDED`, or `NOT_OBSERVABLE`. `INDETERMINATE` never converts to PASS. Intentional implementation drift with no corresponding ADR/baseline update is still drift.
++
++## Drift (DECLARED vs OBSERVED)
++
++Categories: `ELEMENT_DRIFT`, `DEPENDENCY_DRIFT`, `BOUNDARY_DRIFT`, `TOPOLOGY_DRIFT`, `DATA_OWNERSHIP_DRIFT`, `INTERFACE_DRIFT`, `TRUST_BOUNDARY_DRIFT`, `ADR_DRIFT`, `NFR_DRIFT`, `OPERABILITY_DRIFT`. Drift is not automatically a defect; it may be `UNAUTHORIZED_DRIFT`, `DOCUMENTATION_LAG`, `APPROVED_EVOLUTION_NOT_BASELINED`, `EXPECTED_VARIANCE` or `UNKNOWN` — but only independent evidence/authority may classify evolution as approved (ARCH-I08).
++
++## Finding contract
++
++Every material finding carries: `finding_id`, `kind`, `severity`, `baseline_ref`, `observed_ref`, `affected_elements[]`, `evidence_locations[]`, `expected`, `observed`, `impact`, `failure_scenario`, `recommendation_direction`, `status`, `non_coverage[]`. Evidence points to concrete files, lines, manifests, dependency edges, API versions or runtime evidence. Do not manufacture a failure scenario solely to raise severity.
++
++## Non-coverage
++
++Every run states what it did not inspect (e.g. runtime network policy not observed, production topology unavailable, generated-client edges excluded, dynamic plugin loading not statically resolvable). No non-coverage declaration means the result is incomplete.
+diff --git a/skills/badf-architecture/references/c4-contract.md b/skills/badf-architecture/references/c4-contract.md
+new file mode 100644
+index 0000000..89ec9ef
+--- /dev/null
++++ b/skills/badf-architecture/references/c4-contract.md
+@@ -0,0 +1,20 @@
++# C4 contract
++
++C4 (c4model.com) is abstraction-first and notation-independent: it prescribes a small set of nested abstractions (System Context → Container → Component → Code) and is deliberate that Context and Container diagrams are normally sufficient, while Component and Code views are created only when they add value. BADF adopts C4 as a **view system**, not as the architecture store.
++
++## Levels and when they are required
++
++```text
++Level 1 — System Context     required by default
++Level 2 — Container          required by default
++Level 3 — Component          optional; only for complex/high-risk containers where the decomposition adds assurance value
++Level 4 — Code               generated on demand only; not manually curated unless risk justifies its lifecycle cost
++```
++
++## Views project the baseline
++
++Every C4 element, relationship and boundary must already exist in the canonical architecture baseline (`architecture-model.md`). A C4 view element absent from the baseline is refused (ARCH-I02). Mermaid, Structurizr and any other notation are interchangeable renderings; none of them is the source of truth.
++
++## Why the baseline, not the diagram
++
++C4 conveys structure and communication well, but a diagram alone does not encode the trust-boundary, NFR-allocation, operability and compliance semantics BADF needs. Those live in the baseline and its sibling G04 artifacts; the diagram is a projection for humans. Storing intent only as a diagram would make architecture visible but neither governable nor evolvable.
+diff --git a/skills/badf-architecture/references/design-mode.md b/skills/badf-architecture/references/design-mode.md
+new file mode 100644
+index 0000000..0814870
+--- /dev/null
++++ b/skills/badf-architecture/references/design-mode.md
+@@ -0,0 +1,22 @@
++# DESIGN mode
++
++Create intended architecture. DESIGN produces the canonical baseline and the G04 evidence package; it does not approve G04.
++
++## Workflow
++
++```text
++FRAME → INGEST → BOUND → MODEL → FLOW → DECIDE → ALLOCATE → OPERATE → CHALLENGE → PACKAGE
++```
++
++- **FRAME / INGEST** — resolve system scope, the upstream PRD, requirements/RTM, NFRs, UX/service-design inputs, architecture constraints, legacy/external systems, data classifications, deployment constraints, non-goals, and unresolved research questions. Material uncertainty routes to `badf-research`; it is not silently guessed. What is unknown becomes an explicit assumption, open decision, research question or blocker according to authority and uncertainty — never a fabricated fact.
++- **BOUND** — define the system boundary and the container/service, module/bounded-context, ownership, data-ownership, trust and control-plane boundaries. Each boundary states what is inside, what is outside, and which crossings are legitimate.
++- **MODEL** — the C4 baseline: Level 1 (System Context) and Level 2 (Container) are required by default; Level 3 (Component) only for complex/high-risk containers where the decomposition adds assurance value; Level 4 (Code) generated on demand only. Views project the baseline (`c4-contract.md`); they never author it.
++- **FLOW** — trust boundaries and material data flows: for each crossing, source, destination, data classification, purpose, protocol, identity context, trust transition and storage/transit behaviour. This is what G05 analyses; G04 gives G05 something concrete rather than making it rediscover architecture.
++- **DECIDE** — record material choices as ADRs (`adr-contract.md`); distinguish a genuine `DECISION` from a mandatory `CONSTRAINT`.
++- **ALLOCATE** — consume the quantified upstream NFRs; allocate each to an element, a mechanism and a later fitness obligation (`architecture-fitness.md`). Every architecture-relevant NFR is `ALLOCATED`, `DEFERRED_WITH_REASON`, or `NOT_APPLICABLE_WITH_REASON` — never silently omitted.
++- **OPERATE** — operability beyond the happy path: failure modes, timeout/retry/idempotency, degradation, recovery, backup/restore implications, observability seams, health/readiness, capacity/scaling, operational ownership, dependency-outage behaviour. Feeds G04 `operability-design`.
++- **CHALLENGE / PACKAGE** — seek the ways the design fails; then package the five G04 evidence types coherently (`g04-contract.md`).
++
++## Relationship contract
++
++Every material relationship carries more than `A → B`. Minimum: `from`, `to`, `intent`, `direction`, `interaction_type`, `protocol`, `data_or_command`, `trust_boundary_crossing`, `criticality`. Where applicable also `authentication`, `authorization`, `encryption`, `retry_semantics`, `timeout`, `idempotency`, `consistency`, `failure_behavior`. This is what lets ASSURE compare declared architecture against implementation.
+diff --git a/skills/badf-architecture/references/external-methodology.md b/skills/badf-architecture/references/external-methodology.md
+new file mode 100644
+index 0000000..1611256
+--- /dev/null
++++ b/skills/badf-architecture/references/external-methodology.md
+@@ -0,0 +1,23 @@
++# External methodology disposition
++
++BADF adapts external architecture methods; it never adopts them wholesale. "Adopt, adapt, alias": keep the useful patterns, reject anything that would make a diagram the source of truth or let missing information become inferred compliance.
++
++## `muthub-ai/c4-skills/c4designer` — `ADAPT`
++
++Useful patterns adopted: Context → Container → optional Component/Code zoom; supporting Dynamic and Deployment views; explicit element responsibility; explicit technology; labelled directional relationships; assumptions separated from facts; an architecture review checklist; design / retro-document / review / update modes.
++
++Not adopted: Mermaid as the canonical storage format; mandatory human validation at each drafting phase; diagrams as the architecture source of truth. BADF is autonomous-capable — missing information becomes an explicit assumption, open decision, research question or blocker according to authority and uncertainty, not a stall.
++
++## `muthub-ai/c4-skills/adr-scribe` — `ADAPT`
++
++Useful ADR core adopted: Context / Decision / Alternatives / Consequences / Status. BADF extends it with traceability and architectural binding (`adr-contract.md`). Do not conflate `ADR-NNNN` (a system architecture decision) with `BADF-DEC-NNNN` (a governance decision) — ARCH-I10.
++
++## Architecture-review patterns — `ADAPT`
++
++Useful checks adopted: dependency direction, layer violations, module/bounded-context boundaries, circular dependencies, private/internal API leakage, shared-model pollution, ADR drift, cross-cutting concern placement.
++
++BADF tightens these by requiring a declared baseline. If architecture intent is missing, ASSURE may report observations, but it must not infer an architecture from code and then declare that inferred architecture compliant:
++
++```text
++NO BASELINE  ≠  COMPLIANT
++```
+diff --git a/skills/badf-architecture/references/g04-contract.md b/skills/badf-architecture/references/g04-contract.md
+new file mode 100644
+index 0000000..39668fc
+--- /dev/null
++++ b/skills/badf-architecture/references/g04-contract.md
+@@ -0,0 +1,28 @@
++# G04 mapping
++
++G04 (Architecture, Data and API; owner `architecture_authority`; minimum change class C1) already requires five evidence types. `badf-architecture` coordinates their coherence; it does not add a sixth gate and it does not approve G04 (ARCH-I11 — no `scripts/badf_architecture.py`; deterministic G04 evidence semantics belong in the canonical BADF gate, delivered by WP-ARCH-B).
++
++## Ownership of the five G04 evidence types
++
++| Evidence type | Owns |
++| :--- | :--- |
++| `architecture` | the canonical baseline: identity, system/context model, containers/topology, dependencies, boundaries, trust boundaries, material data flows, NFR allocations, fitness obligations, and references to the other four artifacts |
++| `adr` | material architecture decisions (`adr-contract.md`) |
++| `data-model` | data entities, ownership, lifecycle and persistence contract |
++| `api-contract` | external/internal interface contracts and versioning |
++| `operability-design` | failure, recovery, observability, capacity and operational behaviour |
++
++The `architecture` artifact is the spine; the other four are detailed views that must be consistent with it (a data-model entity's owner must be a declared ownership boundary; an api-contract interface must be a declared crossing; an operability failure mode must name a declared dependency).
++
++## How G04 feeds downstream
++
++```text
++G01 PRD → G02 requirements + NFRs → G03 UX/service design
++   → badf-architecture DESIGN → G04 architecture evidence package → canonical BADF gate → G04 decision
++```
++
++Trust boundaries and data flows declared here become G05's threat model / privacy assessment inputs, rather than making G05 rediscover the architecture. Later, `badf-architecture` ASSURE runs against the implementation/composed tree and yields architecture assurance evidence for G08/G09 and change review.
++
++## What this WP does and does not do
++
++This contract freeze (WP-ARCH-A) documents the mapping. It changes nothing in `lifecycle.json`, adds no schema and no `check_*` rule, and leaves G04 exactly as declared. The deterministic G04 DESIGN evidence semantics are WP-ARCH-B; the ASSURE substrate is WP-ARCH-C.
+diff --git a/tests/test_badf_architecture_contract.py b/tests/test_badf_architecture_contract.py
+new file mode 100644
+index 0000000..50a3171
+--- /dev/null
++++ b/tests/test_badf_architecture_contract.py
+@@ -0,0 +1,109 @@
++"""Architecture capability contract freeze (BADF-WP-0043, Issue #74).
++
++badf-architecture exists at DESIGNED and nothing runs. What must not drift is
++the MEANING: the two modes and the canonical-model-vs-diagram distinction are
++documented; the twelve invariants ARCH-I01..ARCH-I12 are stated verbatim; the
++ADR/BADF-DEC separation and the C4-views-are-projections rule are stated; the
++registry entry is DESIGNED with a real digest; G04 is mapped but UNCHANGED
++(no authority change); and nothing is IMPLEMENTED yet -- no architecture schema,
++no check_* rule, no validator script beside the gate (ARCH-I11).
++"""
++import hashlib
++import json
++import sys
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++SKILL = gate.ROOT / "skills/badf-architecture/SKILL.md"
++REF = gate.ROOT / "skills/badf-architecture/references"
++REFERENCES = ["design-mode.md", "assure-mode.md", "architecture-model.md", "c4-contract.md",
++              "adr-contract.md", "architecture-fitness.md", "g04-contract.md",
++              "external-methodology.md", "acceptance.md"]
++INVARIANTS = [f"ARCH-I{n:02d}" for n in range(1, 13)]
++G04_EVIDENCE = ["architecture", "adr", "data-model", "api-contract", "operability-design"]
++
++
++class StructureTests(unittest.TestCase):
++
++    def test_all_references_exist(self):
++        for r in REFERENCES:
++            self.assertTrue((REF / r).is_file(), f"missing reference {r}")
++
++    def test_root_skill_names_every_reference(self):
++        text = SKILL.read_text(encoding="utf-8")
++        for r in REFERENCES:
++            self.assertIn(r, text, f"SKILL.md does not name {r}")
++
++    def test_skill_is_designed_and_states_its_authority_boundary(self):
++        text = SKILL.read_text(encoding="utf-8")
++        self.assertIn("`DESIGNED`", text)
++        self.assertIn("does **not** approve G04", text)
++        self.assertIn("does **not** advance lifecycle", text)
++
++    def test_both_modes_and_the_model_vs_diagram_distinction_are_documented(self):
++        text = SKILL.read_text(encoding="utf-8")
++        self.assertIn("DESIGN", text)
++        self.assertIn("ASSURE", text)
++        model = (REF / "architecture-model.md").read_text(encoding="utf-8")
++        self.assertIn("never introduces an architectural claim absent from it", model)
++
++
++class InvariantTests(unittest.TestCase):
++
++    def test_twelve_invariants_stated_verbatim(self):
++        text = (REF / "acceptance.md").read_text(encoding="utf-8")
++        for inv in INVARIANTS:
++            self.assertIn(inv, text, f"{inv} not stated")
++
++    def test_c4_views_are_projections(self):
++        text = (REF / "c4-contract.md").read_text(encoding="utf-8")
++        self.assertIn("ARCH-I02", text)
++        self.assertIn("absent from the baseline is refused", text)
++
++    def test_adr_is_not_a_governance_decision(self):
++        text = (REF / "adr-contract.md").read_text(encoding="utf-8")
++        self.assertIn("ADR-NNNN", text)
++        self.assertIn("BADF-DEC-NNNN", text)
++        self.assertIn("ARCH-I10", text)
++
++
++class RegistryAndAuthorityTests(unittest.TestCase):
++
++    def test_registry_entry_is_designed_with_a_real_digest(self):
++        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
++        entry = next(e for e in reg["skills"] if e["name"] == "badf-architecture")
++        self.assertEqual(entry["status"], "DESIGNED")
++        self.assertEqual(entry["allowed_tools"], [], "a DESIGNED capability that does not run grants no tools")
++        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
++
++    def test_g04_is_mapped_but_unchanged(self):
++        g04text = (REF / "g04-contract.md").read_text(encoding="utf-8")
++        for t in G04_EVIDENCE:
++            self.assertIn(t, g04text, f"g04-contract.md does not map {t}")
++        lifecycle = json.loads((gate.ROOT / "badf/lifecycle.json").read_text())
++        g04 = next(g for g in lifecycle["gates"] if g["id"] == "G04")
++        self.assertEqual(g04["required_evidence"], G04_EVIDENCE, "the freeze must not change G04's evidence")
++        self.assertEqual(g04["owner_role"], "architecture_authority", "the freeze must not change G04 authority")
++
++
++class NothingImplementedYetTests(unittest.TestCase):
++
++    def test_no_architecture_validator_beside_the_gate(self):
++        self.assertEqual(sorted(p.name for p in (gate.ROOT / "scripts").glob("*architecture*")), [],
++                         "a competing architecture validator exists (ARCH-I11)")
++
++    def test_architecture_evidence_types_are_not_enforced_yet(self):
++        for t in G04_EVIDENCE:
++            self.assertNotIn(t, gate.EVIDENCE_RULES, f"{t} is enforced, but the capability is only DESIGNED")
++
++    def test_no_architecture_schema_yet(self):
++        for name in ("architecture", "adr", "data-model", "api-contract", "operability-design", "architecture-assurance"):
++            self.assertFalse((gate.ROOT / "schemas" / f"{name}.schema.json").exists(),
++                             f"schemas/{name}.schema.json exists, but WP-ARCH-A is DESIGNED-only")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0042/work-package.json b/work/WP-2026-0042/work-package.json
+index 597d9b7..e2428da 100644
+--- a/work/WP-2026-0042/work-package.json
++++ b/work/WP-2026-0042/work-package.json
+@@ -48,11 +48,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "9c934ef"
++    "base_revision": "9c934ef",
++    "landed_as": "42520a66f164633dd1ff78cf8f5faa32b41fb9e1"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Reuses the G01/G02 substrate -- no new validator module. Continues the one-gate-at-a-time march (G01 WP-0030, G02 WP-0041, G03 here)."
+ }
