@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0019",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 52,
+    "url": "https://github.com/bstBizEra/badf/issues/52",
+    "exported_at": "2026-08-28T05:27:38Z",
+    "body_digest": "sha256:6837019a3bc5954278c9d6146a23126b9805eb40679f18c0a517d16cc17ee6b6"
+  },
+  "title": "GOV-0018: registry entries carry a digest placeholder (GENERATED_AT_RELEASE) that nothing generates or checks",
+  "problem": "## Observed (measured 2026-08-28, branch wp/BADF-WP-0030-g01-contract)\n```\nbadf/skill-registry.json:    \"digest\": \"GENERATED_AT_RELEASE\"     (badf-delivery)\n```\n`grep -n GENERATED_AT_RELEASE badf/*.json` shows the placeholder in the skill registry; `grep -n digest scripts/badf_gate.py` shows the gate never compares a registry `digest` to the source it names. `docs/07-skills-governance.md` makes `ACTIVE` mean \"pinned version/digest in `badf/skill-registry.json`\" \u2014 a placeholder cannot pin anything. PR #44 copied the convention for `badf-prd`; BADF-WP-0030 writes a real sha256 for its entry, which leaves the two entries inconsistent until this is fixed.\n\n## Expected\nEvery registry entry's `digest` is the sha256 of the source it names, and `repo` refuses a mismatch (a skill edited without its registry re-pinned is drift twice over: lockfile and registry). `GENERATED_AT_RELEASE` is refused as a value.\n\n## Proposed work package\nPatch tier: compute the digest for `badf-delivery`; `validate_repo` checks `digest == sha256(source)` for every entry; test + mutation.\n\ndiscovered-by: BADF-WP-0023 review of PR #44 \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T05:27:38Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound (the Issue's evidence was measured in the step that filed it). Authority: the operator's 'proceed on your call' on the #52 pick (2026-08-28). Worked as BADF-WP-0032."
+}

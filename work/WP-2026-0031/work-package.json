@@ -49,11 +49,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "6427327"
+    "base_revision": "6427327",
+    "landed_as": "20633e333a522d90cf23511004ba3c105fb493f0"
   },
   "note": "Lands IN_PROGRESS by design. Resulting capability state: DESIGN approved, CONTRACT frozen, IMPLEMENTED/VALIDATED/SHADOWED/APPROVED/ACTIVE all NO."
 }

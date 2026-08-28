@@ -16,7 +16,7 @@ Canonical repository skill sources live under `skills/<skill-name>/`. Approved d
 4. `VALIDATED` — metadata/schema checks and deterministic script tests.
 5. `SHADOWED` — representative tasks observed without affecting gates.
 6. `APPROVED` — owner and security approval proportional to capability.
-7. `ACTIVE` — pinned version/digest in `badf/skill-registry.json`.
+7. `ACTIVE` — pinned version/digest in `badf/skill-registry.json`. Every entry's `digest` is the sha256 of its `source` at every status, and `badf_gate.py repo` refuses a mismatch or a placeholder (BADF-WP-0032): a skill edited without its registry re-pinned is drift twice over.
 8. `DEPRECATED`/`REVOKED` — removed from routing, with migration or incident record.
 
 ## Controls
