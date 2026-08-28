@@ -31,10 +31,11 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows 
 | 23 | a technical-solution run yields grounded options (the `technical-research` invariant): an `R04` record carries at least one `alternative`, and every id-shaped `evidence_ref` resolves to a claim, finding or source the record holds |
 | 24 | a comparison weighs at least two options (the `comparative-evaluation` invariant): a `COMPARATIVE` (R07) record carries two or more `alternatives` |
 | 25 | an independent refutation is not erased by declaring sufficiency (the `adversarial-research` invariant): a challenge council carrying a `REFUTED` ballot cannot reconcile to `RESEARCH_SUFFICIENT` |
+| 26 | sufficiency means synthesis (the `research-reconciliation` invariant): a `RESEARCH_SUFFICIENT` record carries at least one finding -- research declared sufficient on nothing synthesised is incoherent |
 
 ## Admission
 
-- `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time). Present: `repository-research`, `problem-framing`, `fact-checking`, `evidence-synthesis`, `deep-research`, `technical-research`, `comparative-evaluation`, `adversarial-research` (8 of 9).
-- `VALIDATED`: the 25 controls above pass as gate tests with mutation. Enforced today: 1–14, 16–25 (24 of 25); only control 15 remains (it rides the state machine, earned by `research-reconciliation`).
+- `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family. **Now met (9 of 9):** `repository-research`, `problem-framing`, `fact-checking`, `evidence-synthesis`, `deep-research`, `technical-research`, `comparative-evaluation`, `adversarial-research`, `research-reconciliation`.
+- `VALIDATED`: the 26 controls above pass as gate tests with mutation. **Now met: all 26 enforced (1–26).** (Control 15 landed with RSR-004/`BADF-WP-0038`; the earlier admission note that mistracked it as pending is corrected here.) The registry status advance DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED → APPROVED → ACTIVE is the operator's admission decision; the family stays `DESIGNED` until then.
 - `SHADOWED`: the family is run retrospectively on historical BADF findings (the authority-downgrade defect, schema drift, foreign-revision resolution, the composed-tree reds of 2026-08-28) without knowing the answer; `examples/research-record.json` is the first such shadow record.
 - `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. Until then the registry entry stays `DESIGNED`.

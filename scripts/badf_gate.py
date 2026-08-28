@@ -3005,6 +3005,11 @@ def validate_research_record(path: Path) -> str:
     down = rec["downstream"]
     if disposition != "RESEARCH_SUFFICIENT" and down["work_package_id"] is not None:
         raise ValidationError(f"disposition {disposition} names downstream work package {down['work_package_id']}, but only RESEARCH_SUFFICIENT makes a work package eligible")
+    # 26: sufficiency means the evidence was synthesised (research-reconciliation).
+    # A RESEARCH_SUFFICIENT record carries at least one finding -- research declared
+    # sufficient on the strength of nothing synthesised is incoherent.
+    if disposition == "RESEARCH_SUFFICIENT" and not rec["findings"]:
+        raise ValidationError("disposition is RESEARCH_SUFFICIENT but the record carries no findings; sufficiency means the evidence was synthesised into at least one finding (control 26)")
     # 18: the chain Issue -> demand -> research -> decision -> work package can be
     # reconstructed. The demand resolves; a named decision resolves; a named work
     # package has a record; and a named decision governs the named work package.

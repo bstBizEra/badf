@@ -543,6 +543,40 @@ class TechnicalResearchTests(ResearchRecordTests):
 CHALLENGED = json.loads((gate.ROOT / "examples/research-record-challenged.json").read_text())
 
 
+class ResearchReconciliationTests(ResearchRecordTests):
+    """Control 26 (BADF-WP-0054, research-reconciliation): sufficiency means synthesis
+    -- a RESEARCH_SUFFICIENT record carries at least one finding. findings are not in
+    the evidence_digest, so the record is re-digested defensively."""
+
+    def _run(self, rec):
+        rec["evidence_digest"] = gate.compute_research_evidence_digest(rec)
+        return self.run_cli(rec)
+
+    def test_research_sufficient_with_zero_findings_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE); rec["findings"] = []
+        rec["evidence_digest"] = gate.compute_research_evidence_digest(rec)
+        self.refused(rec, "RESEARCH_SUFFICIENT but the record carries no findings")
+
+    def test_a_non_sufficient_disposition_with_zero_findings_passes(self):
+        rec = copy.deepcopy(EXAMPLE); rec["findings"] = []
+        rec["disposition"]["state"] = "MORE_RESEARCH_REQUIRED"
+        rec["downstream"] = {"decision_id": None, "work_package_id": None}
+        r = self._run(rec)
+        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
+
+    def test_sufficient_with_a_finding_passes(self):
+        r = self.run_cli(copy.deepcopy(EXAMPLE))
+        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
+
+    def test_research_reconciliation_is_registered_implemented(self):
+        import hashlib
+        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
+        entry = next((e for e in reg["skills"] if e["name"] == "research-reconciliation"), None)
+        self.assertIsNotNone(entry, "research-reconciliation is not registered")
+        self.assertEqual(entry["status"], "IMPLEMENTED")
+        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
+
+
 class AdversarialResearchTests(ResearchRecordTests):
     """Control 25 (BADF-WP-0053, adversarial-research): an independent refutation is
     not erased by declaring sufficiency -- a challenge council carrying a REFUTED

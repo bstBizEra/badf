@@ -1,0 +1,245 @@
+diff --git a/badf/demands/BADF-DEM-0041.json b/badf/demands/BADF-DEM-0041.json
+new file mode 100644
+index 0000000..17e6db9
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0041.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0041",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 99,
++    "url": "https://github.com/bstBizEra/badf/issues/99",
++    "exported_at": "2026-08-28T21:03:01Z",
++    "body_digest": "sha256:77bf3115d0bcdf2da1a35f9e3c65f6b393fabe9c95e338638e756e228e35134a"
++  },
++  "title": "GOV-0038: badf-research has no research-reconciliation subskill; RESEARCH_SUFFICIENT passes with zero findings (P0 9/9 + earned control 26; control-15 accounting correction)",
++  "problem": "## Observed\n`badf-research` has 8 of 9 P0 subskills; `research-reconciliation` \u2014 the terminal disposition subskill \u2014 does not exist. A failing-first probe also shows a real gap I deferred from evidence-synthesis: a **`RESEARCH_SUFFICIENT`** record passes with **zero findings** \u2014 research declared sufficient on nothing synthesised. (Separately, an accounting correction: control 15, \"only RESEARCH_SUFFICIENT \u2192 downstream work package\", is **already enforced** since RSR-004/WP-0038; an earlier note that it \"remained\" was a tracking error.)\n\n## Expected\nBuild `research-reconciliation` as P0 subskill **9 of 9** (completing the family): a concise `SKILL.md` whose question is \"do we know enough?\" not \"what do we recommend?\", returning a controlled disposition (RESEARCH_SUFFICIENT / MORE_RESEARCH_REQUIRED / EXPERIMENT_REQUIRED / ... / RESEARCH_BLOCKED), never PASS/FAIL, and holding the RESEARCH_SUFFICIENT \u2260 IMPLEMENTATION_AUTHORIZED boundary. Register `IMPLEMENTED`. **Control 26 (earned, deferred from evidence-synthesis):** a `RESEARCH_SUFFICIENT` record carries at least one finding.\n\n## Evidence\n- probe: `RESEARCH_SUFFICIENT + zero findings` \u2192 PASS (gap)\n- `# 15:` already enforces `disposition != RESEARCH_SUFFICIENT and downstream.work_package_id is not None` \u2192 refused (control 15 present)\n\n## Unknowns\nNone. After this: all 9 P0 subskills present and all 26 controls enforced \u2014 the family MEETS the IMPLEMENTED and VALIDATED criteria; the status advance is the operator's admission decision, so `badf-research` stays `DESIGNED`.\n\n## Proposed work package\n`BADF-WP-0054`. `research-reconciliation/SKILL.md` + registry; control 26 (earned) + acceptance row; control-15 accounting correction; root router (9/9); tests + mutation; own G07 self-dossier. C2. Completes the P0 family; `badf-research` stays `DESIGNED`.\n\ndiscovered-by: operator research sequencing (2026-08-29) + BADF-WP-0053 + the evidence-synthesis deferral \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T21:03:01Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "research-reconciliation P0 9/9 (completes family) + control 26 (RESEARCH_SUFFICIENT needs findings, earned/deferred from evidence-synthesis) + control-15 accounting correction. /loop research build FINAL. Worked as BADF-WP-0054."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index a5aea3b..35a7e2b 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -36,7 +36,7 @@
+       "risk_class": "C1",
+       "allowed_tools": [],
+       "status": "DESIGNED",
+-      "digest": "sha256:c7b88160969791e749051206a9380cdea3cdca73d8331ceac3aadc2010efbf92"
++      "digest": "sha256:464d924de93ef8325209ed48172e29227f43104902b252d0152cce806e0e008f"
+     },
+     {
+       "name": "repository-research",
+@@ -151,6 +151,19 @@
+       ],
+       "status": "IMPLEMENTED",
+       "digest": "sha256:148f961b89538e66b60f9cd25bca9c8f2d23d48b5d7fb1cb8ec58e60f7387306"
++    },
++    {
++      "name": "research-reconciliation",
++      "source": "skills/badf-research/subskills/research-reconciliation/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [
++        "local-filesystem",
++        "local-shell"
++      ],
++      "status": "IMPLEMENTED",
++      "digest": "sha256:bff88e2ffeae312c03431ff169cfe222ecc5c398350c5f555e3c7102e4d5c863"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 22cc223..d54828b 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -436,6 +436,21 @@ refutation is not overridden by a majority or by the disposition; it reconciles
+ non-coverage). Research controls: **24 of 25** — only control 15 remains, for the last subskill,
+ `research-reconciliation`. `badf-research` stays `DESIGNED` (8 of 9 P0).
+ 
++## research-reconciliation — sufficiency means synthesis; the P0 family complete (`BADF-WP-0054`, Issue #99)
++
++The ninth and **final** P0 research subskill: `skills/badf-research/subskills/research-reconciliation/SKILL.md`
++is the terminal step — its question is *do we know enough?*, not *what do we recommend?*. It returns a
++controlled disposition (`RESEARCH_SUFFICIENT` … `RESEARCH_BLOCKED`), never PASS/FAIL, and holds the
++`RESEARCH_SUFFICIENT ≠ IMPLEMENTATION_AUTHORIZED` boundary. **Control 26, earned by failing-first** (the
++gap deferred from `evidence-synthesis`): a probe showed a `RESEARCH_SUFFICIENT` record passed with
++*zero findings*, so sufficiency now requires at least one synthesised finding — research declared
++sufficient on nothing synthesised is incoherent. An **accounting correction** rides here too: control 15
++(`only RESEARCH_SUFFICIENT → downstream work package`) was **already enforced** since RSR-004/`BADF-WP-0038`;
++an earlier admission note that mistracked it as pending is corrected. **With this WP the P0 family is
++complete: 9 of 9 subskills, all 26 controls enforced** — the `IMPLEMENTED` and `VALIDATED` criteria are met.
++The registry status advance (`DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED → APPROVED → ACTIVE`) is the
++operator's admission decision, so `badf-research` stays `DESIGNED`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index dadafac..32cb0be 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -3005,6 +3005,11 @@ def validate_research_record(path: Path) -> str:
+     down = rec["downstream"]
+     if disposition != "RESEARCH_SUFFICIENT" and down["work_package_id"] is not None:
+         raise ValidationError(f"disposition {disposition} names downstream work package {down['work_package_id']}, but only RESEARCH_SUFFICIENT makes a work package eligible")
++    # 26: sufficiency means the evidence was synthesised (research-reconciliation).
++    # A RESEARCH_SUFFICIENT record carries at least one finding -- research declared
++    # sufficient on the strength of nothing synthesised is incoherent.
++    if disposition == "RESEARCH_SUFFICIENT" and not rec["findings"]:
++        raise ValidationError("disposition is RESEARCH_SUFFICIENT but the record carries no findings; sufficiency means the evidence was synthesised into at least one finding (control 26)")
+     # 18: the chain Issue -> demand -> research -> decision -> work package can be
+     # reconstructed. The demand resolves; a named decision resolves; a named work
+     # package has a record; and a named decision governs the named work package.
+diff --git a/skills/badf-research/SKILL.md b/skills/badf-research/SKILL.md
+index 6ce17e3..d2e318a 100644
+--- a/skills/badf-research/SKILL.md
++++ b/skills/badf-research/SKILL.md
+@@ -5,7 +5,7 @@ description: Govern evidence-based research for BADF questions, issues, defects,
+ 
+ # BADF Research
+ 
+-Status: `DESIGNED` (contract frozen by `BADF-WP-0031`). The `research` gate command enforces the record contract, and the `problem-framing`, `repository-research`, `fact-checking`, `evidence-synthesis`, `deep-research`, `technical-research`, `comparative-evaluation` and `adversarial-research` subskills exist; the family is not yet activated for autonomous use (8 of 9 P0 subskills). Research determines what the evidence supports; `badf-delivery` governs what authorised actors may do with that conclusion.
++Status: `DESIGNED` (contract frozen by `BADF-WP-0031`). The `research` gate command enforces the record contract, and the `problem-framing`, `repository-research`, `fact-checking`, `evidence-synthesis`, `deep-research`, `technical-research`, `comparative-evaluation`, `adversarial-research` and `research-reconciliation` subskills exist -- all nine P0 subskills; the family is not yet activated for autonomous use (9 of 9 P0 subskills). Research determines what the evidence supports; `badf-delivery` governs what authorised actors may do with that conclusion.
+ 
+ 1. Read the repository `AGENTS.md` and the documents it marks required.
+ 2. Resolve the research question, the originating Issue and its demand record, the research type and depth (`references/research-types.md`), scope and non-goals, source and data boundaries, authority and mutation constraints, required evidence, and the bounded scope contract — non-empty **stop conditions** (when the run stops), the **assumptions** it rests on (kept distinct from evidence), and the **decision it serves** — all first-class in the record (`schemas/research-record.schema.json`, control 19).
+diff --git a/skills/badf-research/references/acceptance.md b/skills/badf-research/references/acceptance.md
+index b8751b4..8b3ba8d 100644
+--- a/skills/badf-research/references/acceptance.md
++++ b/skills/badf-research/references/acceptance.md
+@@ -31,10 +31,11 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows
+ | 23 | a technical-solution run yields grounded options (the `technical-research` invariant): an `R04` record carries at least one `alternative`, and every id-shaped `evidence_ref` resolves to a claim, finding or source the record holds |
+ | 24 | a comparison weighs at least two options (the `comparative-evaluation` invariant): a `COMPARATIVE` (R07) record carries two or more `alternatives` |
+ | 25 | an independent refutation is not erased by declaring sufficiency (the `adversarial-research` invariant): a challenge council carrying a `REFUTED` ballot cannot reconcile to `RESEARCH_SUFFICIENT` |
++| 26 | sufficiency means synthesis (the `research-reconciliation` invariant): a `RESEARCH_SUFFICIENT` record carries at least one finding -- research declared sufficient on nothing synthesised is incoherent |
+ 
+ ## Admission
+ 
+-- `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time). Present: `repository-research`, `problem-framing`, `fact-checking`, `evidence-synthesis`, `deep-research`, `technical-research`, `comparative-evaluation`, `adversarial-research` (8 of 9).
+-- `VALIDATED`: the 25 controls above pass as gate tests with mutation. Enforced today: 1–14, 16–25 (24 of 25); only control 15 remains (it rides the state machine, earned by `research-reconciliation`).
++- `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family. **Now met (9 of 9):** `repository-research`, `problem-framing`, `fact-checking`, `evidence-synthesis`, `deep-research`, `technical-research`, `comparative-evaluation`, `adversarial-research`, `research-reconciliation`.
++- `VALIDATED`: the 26 controls above pass as gate tests with mutation. **Now met: all 26 enforced (1–26).** (Control 15 landed with RSR-004/`BADF-WP-0038`; the earlier admission note that mistracked it as pending is corrected here.) The registry status advance DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED → APPROVED → ACTIVE is the operator's admission decision; the family stays `DESIGNED` until then.
+ - `SHADOWED`: the family is run retrospectively on historical BADF findings (the authority-downgrade defect, schema drift, foreign-revision resolution, the composed-tree reds of 2026-08-28) without knowing the answer; `examples/research-record.json` is the first such shadow record.
+ - `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. Until then the registry entry stays `DESIGNED`.
+diff --git a/skills/badf-research/subskills/research-reconciliation/SKILL.md b/skills/badf-research/subskills/research-reconciliation/SKILL.md
+new file mode 100644
+index 0000000..be0a1ee
+--- /dev/null
++++ b/skills/badf-research/subskills/research-reconciliation/SKILL.md
+@@ -0,0 +1,41 @@
++---
++name: research-reconciliation
++description: The terminal research subskill -- decide whether the evidence is enough to support a governed decision, and return a controlled disposition. Its question is not "what is our recommendation?" but "do we know enough?". It never returns PASS/FAIL, never authorises implementation, and never generates a work package: RESEARCH_SUFFICIENT hands off to a separate decision authority.
++---
++
++# research-reconciliation
++
++A subskill of `badf-research` (`../../SKILL.md`). It is the **last** step: after synthesis and
++challenge, it sets the record's `disposition` in the research record at
++`work/research/<BADF-RSR-NNNN>/research-record.json` against `schemas/research-record.schema.json`.
++It has no authority; a disposition is the end of research, never the start of implementation (RSR-I01).
++
++**Its question is "do we know enough?" — not "what do we recommend?".** The controlled dispositions:
++
++```text
++RESEARCH_SUFFICIENT        the evidence supports a governed decision
++MORE_RESEARCH_REQUIRED     a gap must close first
++EXPERIMENT_REQUIRED        a discriminating experiment is needed
++PROTOTYPE_REQUIRED         a build is needed to reduce the uncertainty
++CONTRADICTORY_EVIDENCE     the evidence conflicts and does not resolve
++SOURCE_INSUFFICIENT        the sources cannot bear the weight
++EXTERNAL_AUTHORITY_REQUIRED a decision beyond research is needed
++NO_ACTION_RECOMMENDED      the evidence supports doing nothing
++RESEARCH_BLOCKED           the research itself cannot proceed
++```
++
++**`RESEARCH_SUFFICIENT ≠ IMPLEMENTATION_AUTHORIZED`.** Reconciliation makes a record
++*decision-eligible*, never *implementation-authorized*. The gate holds the boundary: only a
++`RESEARCH_SUFFICIENT` record may name a downstream work package (control 15); a `REFUTED` challenge
++forecloses sufficiency (control 25); and **sufficiency means the evidence was synthesised into at
++least one finding** — a `RESEARCH_SUFFICIENT` record carries findings (control 26). The next object is
++a `BADF-DEC-*` decision, then a `BADF-WP-*`, authored by their own authorities.
++
++## Do
++
++1. Read the record's findings, contradictions, non-coverage and the challenge outcome.
++2. Ask **do we know enough to support a governed decision?** — not what the recommendation is.
++3. Choose the controlled disposition above from the evidence; a `REFUTED` challenge cannot reconcile to `RESEARCH_SUFFICIENT`.
++4. If `RESEARCH_SUFFICIENT`, confirm the record carries synthesised findings; otherwise it is not sufficient.
++5. Leave `downstream.work_package_id` null unless the disposition is `RESEARCH_SUFFICIENT`; never author the decision or the work package here.
++6. Return the disposition; hand off to a separate decision authority. Grant no downstream authority.
+diff --git a/tests/test_badf_research.py b/tests/test_badf_research.py
+index a552240..994b879 100644
+--- a/tests/test_badf_research.py
++++ b/tests/test_badf_research.py
+@@ -543,6 +543,40 @@ class TechnicalResearchTests(ResearchRecordTests):
+ CHALLENGED = json.loads((gate.ROOT / "examples/research-record-challenged.json").read_text())
+ 
+ 
++class ResearchReconciliationTests(ResearchRecordTests):
++    """Control 26 (BADF-WP-0054, research-reconciliation): sufficiency means synthesis
++    -- a RESEARCH_SUFFICIENT record carries at least one finding. findings are not in
++    the evidence_digest, so the record is re-digested defensively."""
++
++    def _run(self, rec):
++        rec["evidence_digest"] = gate.compute_research_evidence_digest(rec)
++        return self.run_cli(rec)
++
++    def test_research_sufficient_with_zero_findings_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); rec["findings"] = []
++        rec["evidence_digest"] = gate.compute_research_evidence_digest(rec)
++        self.refused(rec, "RESEARCH_SUFFICIENT but the record carries no findings")
++
++    def test_a_non_sufficient_disposition_with_zero_findings_passes(self):
++        rec = copy.deepcopy(EXAMPLE); rec["findings"] = []
++        rec["disposition"]["state"] = "MORE_RESEARCH_REQUIRED"
++        rec["downstream"] = {"decision_id": None, "work_package_id": None}
++        r = self._run(rec)
++        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
++
++    def test_sufficient_with_a_finding_passes(self):
++        r = self.run_cli(copy.deepcopy(EXAMPLE))
++        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
++
++    def test_research_reconciliation_is_registered_implemented(self):
++        import hashlib
++        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
++        entry = next((e for e in reg["skills"] if e["name"] == "research-reconciliation"), None)
++        self.assertIsNotNone(entry, "research-reconciliation is not registered")
++        self.assertEqual(entry["status"], "IMPLEMENTED")
++        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
++
++
+ class AdversarialResearchTests(ResearchRecordTests):
+     """Control 25 (BADF-WP-0053, adversarial-research): an independent refutation is
+     not erased by declaring sufficiency -- a challenge council carrying a REFUTED
+diff --git a/work/WP-2026-0053/work-package.json b/work/WP-2026-0053/work-package.json
+index b9a0b8b..a51a60e 100644
+--- a/work/WP-2026-0053/work-package.json
++++ b/work/WP-2026-0053/work-package.json
+@@ -45,11 +45,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "a51f1f7"
++    "base_revision": "a51f1f7",
++    "landed_as": "e1da61ce35639c29eb67c614383a09eb7fe1e94e"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Eighth P0 research subskill. Control 25 earned by a failing-first probe (REFUTED + RESEARCH_SUFFICIENT passed). Reconciles WP-2026-0052. badf-research stays DESIGNED (8 of 9 P0); research controls to 24 of 25. Only research-reconciliation (9/9) + control 15 remain to complete the P0 family."
+ }

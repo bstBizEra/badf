@@ -436,6 +436,21 @@ refutation is not overridden by a majority or by the disposition; it reconciles 
 non-coverage). Research controls: **24 of 25** — only control 15 remains, for the last subskill,
 `research-reconciliation`. `badf-research` stays `DESIGNED` (8 of 9 P0).
 
+## research-reconciliation — sufficiency means synthesis; the P0 family complete (`BADF-WP-0054`, Issue #99)
+
+The ninth and **final** P0 research subskill: `skills/badf-research/subskills/research-reconciliation/SKILL.md`
+is the terminal step — its question is *do we know enough?*, not *what do we recommend?*. It returns a
+controlled disposition (`RESEARCH_SUFFICIENT` … `RESEARCH_BLOCKED`), never PASS/FAIL, and holds the
+`RESEARCH_SUFFICIENT ≠ IMPLEMENTATION_AUTHORIZED` boundary. **Control 26, earned by failing-first** (the
+gap deferred from `evidence-synthesis`): a probe showed a `RESEARCH_SUFFICIENT` record passed with
+*zero findings*, so sufficiency now requires at least one synthesised finding — research declared
+sufficient on nothing synthesised is incoherent. An **accounting correction** rides here too: control 15
+(`only RESEARCH_SUFFICIENT → downstream work package`) was **already enforced** since RSR-004/`BADF-WP-0038`;
+an earlier admission note that mistracked it as pending is corrected. **With this WP the P0 family is
+complete: 9 of 9 subskills, all 26 controls enforced** — the `IMPLEMENTED` and `VALIDATED` criteria are met.
+The registry status advance (`DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED → APPROVED → ACTIVE`) is the
+operator's admission decision, so `badf-research` stays `DESIGNED`.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

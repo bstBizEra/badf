@@ -36,7 +36,7 @@
       "risk_class": "C1",
       "allowed_tools": [],
       "status": "DESIGNED",
-      "digest": "sha256:c7b88160969791e749051206a9380cdea3cdca73d8331ceac3aadc2010efbf92"
+      "digest": "sha256:464d924de93ef8325209ed48172e29227f43104902b252d0152cce806e0e008f"
     },
     {
       "name": "repository-research",
@@ -151,6 +151,19 @@
       ],
       "status": "IMPLEMENTED",
       "digest": "sha256:148f961b89538e66b60f9cd25bca9c8f2d23d48b5d7fb1cb8ec58e60f7387306"
+    },
+    {
+      "name": "research-reconciliation",
+      "source": "skills/badf-research/subskills/research-reconciliation/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem",
+        "local-shell"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:bff88e2ffeae312c03431ff169cfe222ecc5c398350c5f555e3c7102e4d5c863"
     }
   ]
 }
