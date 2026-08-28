@@ -1,0 +1,244 @@
+diff --git a/badf/demands/BADF-DEM-0033.json b/badf/demands/BADF-DEM-0033.json
+new file mode 100644
+index 0000000..dd16ab5
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0033.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0033",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 81,
++    "url": "https://github.com/bstBizEra/badf/issues/81",
++    "exported_at": "2026-08-28T17:37:34Z",
++    "body_digest": "sha256:adb15a4eb60143505847e632eaa0ea4c84e1f83d92f43c9f6d6bc29a09488901"
++  },
++  "title": "GOV-0029: badf-research has no problem-framing entry subskill, and pre-evidence states are unguarded (P0 subskill 2/9 + control 20)",
++  "problem": "## Observed\n`badf-research` is `DESIGNED`; the frozen admission rule requires all nine P0 subskills to exist before the family reaches `IMPLEMENTED`, and only **1 of 9** is present (`repository-research`). The **entry** subskill \u2014 `problem-framing` \u2014 does not exist, even though the root skill already instructs resolving the question/type/depth/scope/stop-conditions before research begins, and WP-0045 just gave those a complete machine-readable target (`question`, `scope`, `known`, `unknown`, `hypotheses`, `stop_conditions`, `assumptions`, `decision_context`). Separately, the state machine defines pre-evidence states (`PROPOSED`, `FRAMED`, `BASELINED`) but the gate does not enforce that a record in those states carries **no** claims/sources/findings \u2014 so a \"framing\" record could smuggle in premature conclusions, violating framing's core invariant.\n\n## Expected\nBuild `problem-framing` as P0 subskill **2 of 9**, mirroring `repository-research`:\n- `skills/badf-research/subskills/problem-framing/SKILL.md` \u2014 a concise declarative workflow that converts a demand/Issue into a bounded, machine-readable research **admission** (the record's framing fields), and whose invariant is that it **sharpens the question but never researches or answers it** (RSR-I01; framing precedes evidence).\n- A registry entry `IMPLEMENTED` with a real digest.\n- **Control 20** in `validate_research_record`: a record in a pre-evidence `state` (`PROPOSED`/`FRAMED`/`BASELINED`) carries no `claims`, `sources`, or `findings` \u2014 evidence appears only from `EVIDENCE_COLLECTING` onward. This makes \"framing \u2260 answering\" a deterministic refusal.\n- Opportunistic doc fix: the root `SKILL.md` still says *\"nothing here runs yet\"*, which is stale (the `research` gate command and `repository-research` exist); `DESIGNED` stays correct.\n\n## Evidence\n- `ls skills/badf-research/subskills` \u2192 only `repository-research` (1 of 9 P0)\n- state enum includes `PROPOSED`/`FRAMED`/`BASELINED`; the three shipped examples are all `RECONCILED`, so the pre-evidence guard does not touch them\n- root `SKILL.md` line: `Status: DESIGNED (... nothing here runs yet)` \u2014 stale\n\n## Unknowns\nNone for this subskill. **Not in scope:** control 6 (source freshness \u2014 deferred until `deep-research` owns source acquisition), the other 7 P0 subskills, and #77's reference-file refactor (structural churn, deferred). A separate follow-up issue will record the R08/R09 router ambiguity.\n\n## Proposed work package\n`BADF-WP-0046`. `problem-framing/SKILL.md` + registry entry; control 20 + acceptance.md row; root SKILL.md routing + stale-sentence fix; `tests/test_badf_research.py` failing-first + mutation; own G07 self-dossier. C2. Research controls -> 18 of 20; `badf-research` stays `DESIGNED` (2 of 9 P0 subskills).\n\ndiscovered-by: BADF-WP-0045 (the framing substrate) + operator research sequencing (2026-08-29) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T17:37:34Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Body exported verbatim and digest-bound. problem-framing = P0 research subskill 2/9 + control 20 (pre-evidence guard), on the frozen contract hardened by WP-0045. Authority: operator research sequencing 'build problem-framing next' (2026-08-29). Worked as BADF-WP-0046."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 770a4ac..ed56d28 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -36,7 +36,7 @@
+       "risk_class": "C1",
+       "allowed_tools": [],
+       "status": "DESIGNED",
+-      "digest": "sha256:638866d82f2d37f03b8ec70f796b9b035411dd0b34026f7f22efe2a272c41678"
++      "digest": "sha256:48468e6b475f46afb8903045d5ecc58e643935c4a4b4fdc76b3d49e242363392"
+     },
+     {
+       "name": "repository-research",
+@@ -60,6 +60,19 @@
+       "allowed_tools": [],
+       "status": "IMPLEMENTED",
+       "digest": "sha256:99f9bbe8111d4346b78b34c235b1ce06ba85ffe5ee9bf6db1d2a841e0486b56f"
++    },
++    {
++      "name": "problem-framing",
++      "source": "skills/badf-research/subskills/problem-framing/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [
++        "local-filesystem",
++        "local-shell"
++      ],
++      "status": "IMPLEMENTED",
++      "digest": "sha256:0dd049400f54f2c4cf9296bc27bf72a298891de8ab4d9e26b3e8b02c824e2a6a"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 0cdab8b..3dfe893 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -328,6 +328,20 @@ test that changing only framing leaves a record valid. Research controls: **17 o
+ (control 6 freshness needs a source fetch; control 15 rides the state machine). `badf-research`
+ stays `DESIGNED`. Overlaps external #69/#77, built fresh under #79 with their work untouched.
+ 
++## problem-framing — the entry research subskill (`BADF-WP-0046`, Issue #81)
++
++The second P0 research subskill (after `repository-research`), mirroring its shape: a concise
++`SKILL.md` under `skills/badf-research/subskills/problem-framing/`, registered `IMPLEMENTED`, on the
++frozen contract. It is the **entry** point — it turns a demand into a bounded, machine-readable
++research *admission* (question, type, depth, scope/non-goals, known/unknown, hypotheses, and the
++WP-0045 framing fields `assumptions`/`decision_context`/`stop_conditions`) — and its one invariant
++is that it **sharpens the question but never researches or answers it**. That invariant is now a
++deterministic refusal: **control 20** — a record in a pre-evidence `state` (`PROPOSED`/`FRAMED`/
++`BASELINED`) carries no `claims`, `sources`, or `findings`; evidence appears only from
++`EVIDENCE_COLLECTING` onward. Research controls: **18 of 20** (control 6 freshness deferred until
++`deep-research` owns source acquisition; control 15 rides the state machine). The root `SKILL.md`'s
++stale *"nothing here runs yet"* line is corrected; `badf-research` stays `DESIGNED` (2 of 9 P0).
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index ba682ff..944762b 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -2841,6 +2841,13 @@ def validate_research_record(path: Path) -> str:
+             raise ValidationError("research record has an empty assumption; an assumption is a non-empty statement kept distinct from evidence (control 19)")
+     if not rec["decision_context"]["decision_question"].strip():
+         raise ValidationError("research record decision_context.decision_question is empty; research must name the decision it serves (control 19)")
++    # 20: framing precedes evidence (problem-framing). A record in a pre-evidence
++    # state carries no claims, sources, or findings -- framing sharpens the
++    # question; it does not research or answer it.
++    if rec["state"] in {"PROPOSED", "FRAMED", "BASELINED"}:
++        premature = [n for n in ("claims", "sources", "findings") if rec[n]]
++        if premature:
++            raise ValidationError(f"research record is in pre-evidence state {rec['state']} but carries {', '.join(premature)}; framing precedes evidence collection (control 20)")
+     # 3: repository research (R02/R03) baselines to a commit that RESOLVES in its
+     # repository -- an investigation cannot be anchored to a commit that does not
+     # exist. Mirrors verify_foreign_revision's resolution and UNRESOLVABLE_HERE.
+diff --git a/skills/badf-research/SKILL.md b/skills/badf-research/SKILL.md
+index 1840159..59077ea 100644
+--- a/skills/badf-research/SKILL.md
++++ b/skills/badf-research/SKILL.md
+@@ -5,12 +5,12 @@ description: Govern evidence-based research for BADF questions, issues, defects,
+ 
+ # BADF Research
+ 
+-Status: `DESIGNED` (contract frozen by `BADF-WP-0031`; nothing here runs yet). Research determines what the evidence supports; `badf-delivery` governs what authorised actors may do with that conclusion.
++Status: `DESIGNED` (contract frozen by `BADF-WP-0031`). The `research` gate command enforces the record contract, and the `problem-framing` and `repository-research` subskills exist; the family is not yet activated for autonomous use (2 of 9 P0 subskills). Research determines what the evidence supports; `badf-delivery` governs what authorised actors may do with that conclusion.
+ 
+ 1. Read the repository `AGENTS.md` and the documents it marks required.
+ 2. Resolve the research question, the originating Issue and its demand record, the research type and depth (`references/research-types.md`), scope and non-goals, source and data boundaries, authority and mutation constraints, required evidence, and the bounded scope contract — non-empty **stop conditions** (when the run stops), the **assumptions** it rests on (kept distinct from evidence), and the **decision it serves** — all first-class in the record (`schemas/research-record.schema.json`, control 19).
+ 3. Establish the baseline — repository, revision, observation time — before drawing any conclusion.
+-4. Route only the subskills the type and depth require; this file is the only router.
++4. Route only the subskills the type and depth require, starting from `problem-framing` (the entry subskill that bounds the question before any evidence is collected) then the type's investigator (`repository-research`, …); this file is the only router.
+ 5. Keep `OBSERVED`, `REPORTED`, `INFERRED`, `HYPOTHESIS` and `DECIDED` distinct (`references/evidence-contract.md`).
+ 6. Bind every consequential claim to retrievable, digest-bound evidence; derive confidence from its basis, never assert it.
+ 7. Seek contradictory evidence and preserve it; declare every surface not inspected.
+diff --git a/skills/badf-research/references/acceptance.md b/skills/badf-research/references/acceptance.md
+index ad87c60..9f2c90e 100644
+--- a/skills/badf-research/references/acceptance.md
++++ b/skills/badf-research/references/acceptance.md
+@@ -25,10 +25,11 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows
+ | 17 | the record digest changes when material evidence changes |
+ | 18 | Research → Decision → Work Package traceability can be reconstructed |
+ | 19 | the research scope is bounded and machine-readable: a material run declares non-empty `stop_conditions`, `assumptions` distinct from evidence, and a `decision_context` naming the decision it serves (framing, excluded from the `evidence_digest`) |
++| 20 | framing precedes evidence: a record in a pre-evidence state (`PROPOSED`/`FRAMED`/`BASELINED`) carries no `claims`, `sources`, or `findings` (the `problem-framing` invariant — sharpen the question, do not answer it) |
+ 
+ ## Admission
+ 
+-- `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time).
+-- `VALIDATED`: the 19 controls above pass as gate tests with mutation. Enforced today: 1–5, 7–14, 16–19 (17 of 19); control 6 (source-digest freshness) awaits a source-fetch mechanism, control 15 rides the state machine.
++- `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time). Present: `repository-research`, `problem-framing` (2 of 9).
++- `VALIDATED`: the 20 controls above pass as gate tests with mutation. Enforced today: 1–5, 7–14, 16–20 (18 of 20); control 6 (source-digest freshness) awaits a source-fetch mechanism, control 15 rides the state machine.
+ - `SHADOWED`: the family is run retrospectively on historical BADF findings (the authority-downgrade defect, schema drift, foreign-revision resolution, the composed-tree reds of 2026-08-28) without knowing the answer; `examples/research-record.json` is the first such shadow record.
+ - `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. Until then the registry entry stays `DESIGNED`.
+diff --git a/skills/badf-research/subskills/problem-framing/SKILL.md b/skills/badf-research/subskills/problem-framing/SKILL.md
+new file mode 100644
+index 0000000..65740b1
+--- /dev/null
++++ b/skills/badf-research/subskills/problem-framing/SKILL.md
+@@ -0,0 +1,34 @@
++---
++name: problem-framing
++description: Convert a demand or Issue into a bounded, machine-readable research admission -- the research question, type and depth, scope and non-goals, known and unknown, hypotheses, assumptions, decision context and stop conditions -- before any research runs. The entry subskill for almost every R01-R09 route. Do not research or answer the question; do not decide or authorise anything.
++---
++
++# problem-framing
++
++A subskill of `badf-research` (`../../SKILL.md`). It is the **entry** point: it turns a demand into
++the framing of a research record at `work/research/<BADF-RSR-NNNN>/research-record.json` against
++`schemas/research-record.schema.json`, in a **pre-evidence** state (`PROPOSED` / `FRAMED` /
++`BASELINED`). It has no authority; its output is a bounded admission, never a conclusion (RSR-I01).
++
++**Its one invariant: it sharpens the question; it does not research or answer it.** Research quality
++is largely fixed before the first search -- so framing manages uncertainty explicitly rather than
++accumulating links. A framing record therefore carries **no `claims`, `sources`, or `findings`** --
++evidence appears only from `EVIDENCE_COLLECTING` onward (control 20, enforced by the gate).
++
++## Do
++
++1. Read the repository `AGENTS.md`, the originating Issue and its demand record.
++2. Resolve the **research question** (one primary question; sub-questions allowed) and the research
++   **type** and **depth** (`../../references/research-types.md`) -- the strictest the demand justifies.
++3. Bound the run: `scope.include` / `scope.exclude` and explicit **non-goals**; the **known** and the
++   **unknown**; the **hypotheses** to be retained or eliminated (each `OPEN` at framing).
++4. State the **assumptions** the run rests on -- kept distinct from evidence -- and the
++   **decision_context** (the decision this research serves), while `authority.implementation_authority`
++   stays `false`.
++5. Declare non-empty, bounded **stop_conditions**: the conditions under which the run terminates
++   (sufficient evidence, exhausted sources, a discriminating test resolved). Unbounded framing is refused.
++6. Hand the framed record to the type's route (`repository-research`, `deep-research`, …); this subskill
++   never collects the evidence itself.
++
++What is unknown at framing becomes an explicit `unknown`, a hypothesis, or a stop condition -- never a
++guessed fact, and never a premature claim. The framing is the contract every later subskill reads.
+diff --git a/tests/test_badf_research.py b/tests/test_badf_research.py
+index c50528c..9f7b98b 100644
+--- a/tests/test_badf_research.py
++++ b/tests/test_badf_research.py
+@@ -416,5 +416,39 @@ class ScopeContractTests(ResearchRecordTests):
+         self.assertIn("RESEARCH PASS", r.stdout)
+ 
+ 
++class PreEvidenceGuardTests(ResearchRecordTests):
++    """Control 20 (BADF-WP-0046, problem-framing): a record in a pre-evidence state
++    carries no claims, sources, or findings -- framing precedes evidence collection."""
++
++    def test_a_framed_record_with_claims_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); rec["state"] = "FRAMED"
++        self.refused(rec, "pre-evidence state FRAMED but carries")
++
++    def test_a_proposed_record_with_evidence_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); rec["state"] = "PROPOSED"
++        self.refused(rec, "pre-evidence state PROPOSED but carries")
++
++    def test_a_baselined_record_with_evidence_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); rec["state"] = "BASELINED"
++        self.refused(rec, "pre-evidence state BASELINED but carries")
++
++    def test_the_reconciled_example_with_claims_still_passes(self):
++        # control 20 only guards pre-evidence states; a RECONCILED record carries evidence.
++        r = self.run_cli(copy.deepcopy(EXAMPLE))
++        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
++
++
++class ProblemFramingRegistrationTests(unittest.TestCase):
++
++    def test_problem_framing_is_registered_implemented_with_a_real_digest(self):
++        import hashlib
++        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
++        entry = next((e for e in reg["skills"] if e["name"] == "problem-framing"), None)
++        self.assertIsNotNone(entry, "problem-framing is not registered")
++        self.assertEqual(entry["status"], "IMPLEMENTED")
++        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
++        self.assertTrue((gate.ROOT / "skills/badf-research/subskills/problem-framing/SKILL.md").is_file())
++
++
+ if __name__ == "__main__":
+     unittest.main()
+diff --git a/work/WP-2026-0045/work-package.json b/work/WP-2026-0045/work-package.json
+index 6991e25..2cf1f0e 100644
+--- a/work/WP-2026-0045/work-package.json
++++ b/work/WP-2026-0045/work-package.json
+@@ -49,11 +49,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "a4ff5a8"
++    "base_revision": "a4ff5a8",
++    "landed_as": "e8fa8ce2586769046872817791d7560a5ae78c58"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Extend-only hardening of the frozen contract through a governed WP (not a reopen of #50). Brings research controls to 17 of 19; control 6 (freshness) still open. Overlaps external #69/#77 -- built fresh under my own issue #79, their work untouched."
+ }

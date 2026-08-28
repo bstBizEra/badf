@@ -2841,6 +2841,13 @@ def validate_research_record(path: Path) -> str:
             raise ValidationError("research record has an empty assumption; an assumption is a non-empty statement kept distinct from evidence (control 19)")
     if not rec["decision_context"]["decision_question"].strip():
         raise ValidationError("research record decision_context.decision_question is empty; research must name the decision it serves (control 19)")
+    # 20: framing precedes evidence (problem-framing). A record in a pre-evidence
+    # state carries no claims, sources, or findings -- framing sharpens the
+    # question; it does not research or answer it.
+    if rec["state"] in {"PROPOSED", "FRAMED", "BASELINED"}:
+        premature = [n for n in ("claims", "sources", "findings") if rec[n]]
+        if premature:
+            raise ValidationError(f"research record is in pre-evidence state {rec['state']} but carries {', '.join(premature)}; framing precedes evidence collection (control 20)")
     # 3: repository research (R02/R03) baselines to a commit that RESOLVES in its
     # repository -- an investigation cannot be anchored to a commit that does not
     # exist. Mirrors verify_foreign_revision's resolution and UNRESOLVABLE_HERE.

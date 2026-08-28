@@ -1,0 +1,25 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 0cdab8b..3dfe893 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -328,6 +328,20 @@ test that changing only framing leaves a record valid. Research controls: **17 o
+ (control 6 freshness needs a source fetch; control 15 rides the state machine). `badf-research`
+ stays `DESIGNED`. Overlaps external #69/#77, built fresh under #79 with their work untouched.
+ 
++## problem-framing — the entry research subskill (`BADF-WP-0046`, Issue #81)
++
++The second P0 research subskill (after `repository-research`), mirroring its shape: a concise
++`SKILL.md` under `skills/badf-research/subskills/problem-framing/`, registered `IMPLEMENTED`, on the
++frozen contract. It is the **entry** point — it turns a demand into a bounded, machine-readable
++research *admission* (question, type, depth, scope/non-goals, known/unknown, hypotheses, and the
++WP-0045 framing fields `assumptions`/`decision_context`/`stop_conditions`) — and its one invariant
++is that it **sharpens the question but never researches or answers it**. That invariant is now a
++deterministic refusal: **control 20** — a record in a pre-evidence `state` (`PROPOSED`/`FRAMED`/
++`BASELINED`) carries no `claims`, `sources`, or `findings`; evidence appears only from
++`EVIDENCE_COLLECTING` onward. Research controls: **18 of 20** (control 6 freshness deferred until
++`deep-research` owns source acquisition; control 15 rides the state machine). The root `SKILL.md`'s
++stale *"nothing here runs yet"* line is corrected; `badf-research` stays `DESIGNED` (2 of 9 P0).
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
