@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "apis": [
+    {
+      "id": "API-001",
+      "name": "dossier validation CLI",
+      "interface": "IF-001",
+      "version": "1.0.0",
+      "kind": "internal",
+      "operations": [
+        "dossier",
+        "repo",
+        "advance"
+      ]
+    },
+    {
+      "id": "API-002",
+      "name": "composed-tree CLI",
+      "interface": "IF-002",
+      "version": "1.0.0",
+      "kind": "internal",
+      "operations": [
+        "compose"
+      ]
+    }
+  ]
+}

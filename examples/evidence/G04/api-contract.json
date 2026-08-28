@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G04",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G04-API-CONTRACT-v1",
+  "claim": "Example api-contract bound to PRD-BADF-0001",
+  "evidence_type": "api-contract",
+  "producer": {
+    "id": "example-architect",
+    "type": "human"
+  },
+  "operation": "specify the interface contracts",
+  "artifact": "examples/evidence/G04/api-contract.artifact.json",
+  "digest": "sha256:844116bc1926366701566d3a627ef804249163a47692a5ec55351ed8a008d7e0"
+}

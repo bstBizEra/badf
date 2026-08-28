@@ -48,11 +48,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "42520a6"
+    "base_revision": "42520a6",
+    "landed_as": "82d659ad0c7f68fc9c9978f920c75fa0e28f7c87"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Docs + registry only -- no new gate branch, so mutation is N/A; the contract test guards the meaning. Mirrors the badf-research freeze WP-0031 (C2/G07)."
 }

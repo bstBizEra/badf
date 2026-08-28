@@ -1110,11 +1110,148 @@ def check_user_validation(artifact: Path, dossier: dict[str, Any], evidence: dic
             raise ValidationError(f"user-validation: {f['id']} is {f['severity']} but carries no resolution; an unresolved major finding means the design is not validated")
 
 
+# ---- G04 evidence contract: architecture DESIGN semantics on the frozen badf-architecture contract (BADF-WP-0044, #76) ----
+def _unique_ids(items: list, key: str, label: str) -> set:
+    ids = [it[key] for it in items]
+    dupes = sorted({i for i in ids if ids.count(i) > 1})
+    if dupes:
+        raise ValidationError(f"{label}: duplicate id(s): {', '.join(dupes)}")
+    return set(ids)
+
+
+def check_architecture(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("architecture", doc)
+    _no_placeholders(doc, "architecture")
+    boundary_ids = _unique_ids(doc["boundaries"], "id", "architecture boundaries")
+    element_ids = _unique_ids(doc["elements"], "id", "architecture elements")
+    element_boundary = {e["id"]: e["boundary"] for e in doc["elements"]}
+    for e in doc["elements"]:
+        if e["boundary"] not in boundary_ids:
+            raise ValidationError(f"architecture: element {e['id']} is outside every declared boundary ({e['boundary']} is not a declared boundary)")
+    interface_ids = set()
+    for i in doc.get("interfaces") or []:
+        interface_ids.add(i["id"])
+        if i["provider"] not in element_ids:
+            raise ValidationError(f"architecture: interface {i['id']} is provided by unknown element {i['provider']}")
+    for idx, r in enumerate(doc["relationships"]):
+        where = f"relationship[{idx}] {r['from']}->{r['to']}"
+        if not (r.get("intent") or "").strip():
+            raise ValidationError(f"architecture: {where} has no intent; a bare A->B is not an architecture relationship")
+        if r["from"] not in element_ids or r["to"] not in element_ids:
+            raise ValidationError(f"architecture: {where} references an unknown element")
+        if element_boundary[r["from"]] != element_boundary[r["to"]]:
+            via = r.get("via_interface")
+            if not via or via not in interface_ids:
+                raise ValidationError(f"architecture: {where} crosses a boundary but not through a declared interface")
+    trust_ids = {t["id"] for t in (doc.get("trust_boundaries") or [])}  # noqa: F841 (declared universe; reserved for ASSURE)
+    for df in doc.get("data_flows") or []:
+        if df["source"] not in element_ids or df["destination"] not in element_ids:
+            raise ValidationError(f"architecture: data flow {df['id']} references an unknown element")
+        if df["trust_boundary_crossing"] and not (df.get("data_classification") or "").strip():
+            raise ValidationError(f"architecture: data flow {df['id']} crosses a trust boundary with no data classification")
+    fit_ids = set()
+    for f in doc["fitness_obligations"]:
+        fit_ids.add(f["id"])
+        if not (f.get("property") or "").strip() or not (f.get("scope") or "").strip():
+            raise ValidationError(f"architecture: fitness obligation {f['id']} has no measurable property or no scope")
+    for a in doc["nfr_allocations"]:
+        disp = a["disposition"]
+        if disp == "ALLOCATED":
+            if a.get("element") not in element_ids or not (a.get("mechanism") or "").strip() or a.get("fitness_obligation") not in fit_ids:
+                raise ValidationError(f"architecture: NFR allocation for {a['nfr']} is ALLOCATED but has no valid element, mechanism, and fitness obligation")
+        elif not (a.get("reason") or "").strip():
+            raise ValidationError(f"architecture: NFR allocation for {a['nfr']} is {disp} but carries no reason")
+    for v in doc.get("c4_views") or []:
+        unknown = sorted(set(v["elements"]) - element_ids)
+        if unknown:
+            raise ValidationError(f"architecture: C4 {v['level']} view names element(s) absent from the baseline: {', '.join(unknown)}")
+
+
+def check_adr(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("adr", doc)
+    _no_placeholders(doc, "adr")
+    records = doc["records"]
+    if not records:
+        raise ValidationError("adr: no records")
+    _unique_ids(records, "id", "adr")
+    _, arch = _sibling_artifact(dossier, "architecture", "adr")
+    element_ids = {e["id"] for e in (arch.get("elements") or [])}
+    req_universe = set(arch.get("upstream_requirements") or [])
+    nfr_universe = {a["nfr"] for a in (arch.get("nfr_allocations") or [])}
+    for adr in records:
+        if not (adr.get("affected_elements") or []):
+            raise ValidationError(f"adr: {adr['id']} affects no architecture element")
+        if not (adr.get("decision_drivers") or []):
+            raise ValidationError(f"adr: {adr['id']} has no decision driver")
+        unknown_el = sorted(set(adr["affected_elements"]) - element_ids)
+        if unknown_el:
+            raise ValidationError(f"adr: {adr['id']} affects element(s) absent from the baseline: {', '.join(unknown_el)}")
+        unknown_req = sorted(set(adr.get("requirement_refs") or []) - req_universe)
+        if unknown_req:
+            raise ValidationError(f"adr: {adr['id']} references unknown requirement(s): {', '.join(unknown_req)}")
+        unknown_nfr = sorted(set(adr.get("nfr_refs") or []) - nfr_universe)
+        if unknown_nfr:
+            raise ValidationError(f"adr: {adr['id']} references NFR(s) absent from the baseline: {', '.join(unknown_nfr)}")
+
+
+def check_data_model(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("data-model", doc)
+    _no_placeholders(doc, "data-model")
+    entities = doc["entities"]
+    if not entities:
+        raise ValidationError("data-model: no entities")
+    _unique_ids(entities, "id", "data-model")
+    _, arch = _sibling_artifact(dossier, "architecture", "data-model")
+    boundary_ids = {b["id"] for b in (arch.get("boundaries") or [])}
+    for ent in entities:
+        if ent["owner_boundary"] not in boundary_ids:
+            raise ValidationError(f"data-model: entity {ent['id']} owner boundary {ent['owner_boundary']} is not a declared architecture boundary")
+
+
+def check_api_contract(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("api-contract", doc)
+    _no_placeholders(doc, "api-contract")
+    apis = doc["apis"]
+    if not apis:
+        raise ValidationError("api-contract: no apis")
+    _unique_ids(apis, "id", "api-contract")
+    _, arch = _sibling_artifact(dossier, "architecture", "api-contract")
+    interface_ids = {i["id"] for i in (arch.get("interfaces") or [])}
+    for api in apis:
+        if api["interface"] not in interface_ids:
+            raise ValidationError(f"api-contract: {api['id']} declares interface {api['interface']} absent from the architecture baseline")
+
+
+def check_operability_design(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("operability-design", doc)
+    _no_placeholders(doc, "operability-design")
+    failure_modes = doc["failure_modes"]
+    if not failure_modes:
+        raise ValidationError("operability-design: no failure modes; architecture that explains only the happy path is incomplete")
+    if not (doc.get("observability") or []):
+        raise ValidationError("operability-design: no observability seams declared")
+    _unique_ids(failure_modes, "id", "operability-design")
+    _, arch = _sibling_artifact(dossier, "architecture", "operability-design")
+    element_ids = {e["id"] for e in (arch.get("elements") or [])}
+    for fm in failure_modes:
+        if not (fm.get("recovery") or "").strip():
+            raise ValidationError(f"operability-design: failure mode {fm['id']} declares no recovery")
+        if fm["element"] not in element_ids:
+            raise ValidationError(f"operability-design: failure mode {fm['id']} names element {fm['element']} absent from the baseline")
+
+
 EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_criteria, "product-approval": check_product_approval,
                   "requirements": check_requirements, "nfr": check_nfr, "traceability": check_traceability,
                   "definition-of-ready": check_definition_of_ready,
                   "journeys": check_journeys, "service-blueprint": check_service_blueprint,
-                  "accessibility": check_accessibility, "user-validation": check_user_validation}
+                  "accessibility": check_accessibility, "user-validation": check_user_validation,
+                  "architecture": check_architecture, "adr": check_adr, "data-model": check_data_model,
+                  "api-contract": check_api_contract, "operability-design": check_operability_design}
 
 
 def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -> None:

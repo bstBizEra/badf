@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "records": [
+    {
+      "id": "ADR-0001",
+      "title": "Keep the gate stdlib-only",
+      "status": "accepted",
+      "context": "CI runs bare python3 with no installed dependencies",
+      "decision": "the gate and its tests import only the standard library",
+      "decision_drivers": [
+        "a faithful CI runner reproduction"
+      ],
+      "alternatives": [
+        {
+          "option": "vendor PyYAML for parsing",
+          "rejected_because": "adds a runtime dependency the bare runner lacks, producing green-local red-CI"
+        }
+      ],
+      "affected_elements": [
+        "EL-001",
+        "EL-002"
+      ],
+      "requirement_refs": [
+        "REQ-001"
+      ],
+      "nfr_refs": [
+        "NFR-001"
+      ]
+    }
+  ]
+}

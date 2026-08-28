@@ -44,6 +44,7 @@ jobs:
           python3 scripts/badf_gate.py dossier examples/gate-dossier.G01.json
           python3 scripts/badf_gate.py dossier examples/gate-dossier.G02.json
           python3 scripts/badf_gate.py dossier examples/gate-dossier.G03.json
+          python3 scripts/badf_gate.py dossier examples/gate-dossier.G04.json
           python3 scripts/badf_gate.py research examples/research-record.json
           python3 scripts/badf_gate.py research examples/research-record-challenged.json
           python3 scripts/badf_gate.py research examples/research-record-repo.json

@@ -37,9 +37,9 @@ class StructureTests(unittest.TestCase):
         for r in REFERENCES:
             self.assertIn(r, text, f"SKILL.md does not name {r}")
 
-    def test_skill_is_designed_and_states_its_authority_boundary(self):
+    def test_skill_states_its_authority_boundary(self):
+        # The authority boundary is invariant across status (DESIGNED -> IMPLEMENTED -> ...).
         text = SKILL.read_text(encoding="utf-8")
-        self.assertIn("`DESIGNED`", text)
         self.assertIn("does **not** approve G04", text)
         self.assertIn("does **not** advance lifecycle", text)
 
@@ -72,11 +72,11 @@ class InvariantTests(unittest.TestCase):
 
 class RegistryAndAuthorityTests(unittest.TestCase):
 
-    def test_registry_entry_is_designed_with_a_real_digest(self):
+    def test_registry_entry_is_implemented_with_a_real_digest(self):
+        # WP-ARCH-B advanced the capability DESIGNED -> IMPLEMENTED (G04 DESIGN semantics enforced).
         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
         entry = next(e for e in reg["skills"] if e["name"] == "badf-architecture")
-        self.assertEqual(entry["status"], "DESIGNED")
-        self.assertEqual(entry["allowed_tools"], [], "a DESIGNED capability that does not run grants no tools")
+        self.assertEqual(entry["status"], "IMPLEMENTED")
         self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
 
     def test_g04_is_mapped_but_unchanged(self):
@@ -89,20 +89,25 @@ class RegistryAndAuthorityTests(unittest.TestCase):
         self.assertEqual(g04["owner_role"], "architecture_authority", "the freeze must not change G04 authority")
 
 
-class NothingImplementedYetTests(unittest.TestCase):
+class ImplementationStatusTests(unittest.TestCase):
 
     def test_no_architecture_validator_beside_the_gate(self):
+        # ARCH-I11 holds at every status: the semantics live in the canonical gate, not a second validator.
         self.assertEqual(sorted(p.name for p in (gate.ROOT / "scripts").glob("*architecture*")), [],
                          "a competing architecture validator exists (ARCH-I11)")
 
-    def test_architecture_evidence_types_are_not_enforced_yet(self):
+    def test_g04_design_evidence_types_are_enforced(self):
+        # WP-ARCH-B: the five G04 DESIGN evidence types now open their artifacts in the gate.
         for t in G04_EVIDENCE:
-            self.assertNotIn(t, gate.EVIDENCE_RULES, f"{t} is enforced, but the capability is only DESIGNED")
+            self.assertIn(t, gate.EVIDENCE_RULES, f"{t} is a G04 type but has no per-type rule")
 
-    def test_no_architecture_schema_yet(self):
-        for name in ("architecture", "adr", "data-model", "api-contract", "operability-design", "architecture-assurance"):
-            self.assertFalse((gate.ROOT / "schemas" / f"{name}.schema.json").exists(),
-                             f"schemas/{name}.schema.json exists, but WP-ARCH-A is DESIGNED-only")
+    def test_g04_design_schemas_exist_but_assurance_does_not(self):
+        for name in G04_EVIDENCE:
+            self.assertTrue((gate.ROOT / "schemas" / f"{name}.schema.json").is_file(),
+                            f"schemas/{name}.schema.json is missing")
+        # the ASSURE substrate (WP-ARCH-C) is not built yet
+        self.assertFalse((gate.ROOT / "schemas" / "architecture-assurance.schema.json").exists(),
+                         "an architecture-assurance schema exists, but ASSURE is WP-ARCH-C")
 
 
 if __name__ == "__main__":

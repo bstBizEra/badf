@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0031",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 76,
+    "url": "https://github.com/bstBizEra/badf/issues/76",
+    "exported_at": "2026-08-28T16:28:31Z",
+    "body_digest": "sha256:eebcd3c3088fb9ff536ae213af3f1ee2b6665f6f9b0e3f65a3174fbecd73c6e8"
+  },
+  "title": "GOV-0027: Gate 04 declared but unenforced \u2014 implement the G04 DESIGN evidence semantics (WP-ARCH-B) on the frozen badf-architecture contract",
+  "problem": "## Observed\nG04 (Architecture, Data and API; owner `architecture_authority`) is the next declared-but-unenforced gate, and the `badf-architecture` contract was just frozen at DESIGNED (#74). `lifecycle.json` lists G04's five `required_evidence` types \u2014 **architecture, adr, data-model, api-contract, operability-design** \u2014 yet `validate_evidence` has **no per-type rule** for any of them, no G04 example dossier exists, and none of the five schemas exist. A G04 dossier today would pass on names alone.\n\n## Expected\nImplement the deterministic **G04 DESIGN evidence semantics** inside the canonical gate (WP-ARCH-B), advancing `badf-architecture` from DESIGNED to IMPLEMENTED. The five types get per-type rules in `validate_evidence` that OPEN each artifact and enforce the frozen contract's DESIGN-side controls (acceptance.md 1\u201312), with the `architecture` baseline as the spine the other four are consistent with:\n\n- `architecture` \u2014 elements each inside a declared boundary (ctrl 3); every material relationship carries a **direction** and an **intent** (ctrl 1,2) and, when it crosses a boundary, goes **through a declared interface** (ctrl 4); a data flow crossing a trust boundary carries a **classification** (ctrl 11); each NFR allocation is `ALLOCATED` / `DEFERRED_WITH_REASON` / `NOT_APPLICABLE_WITH_REASON`, ALLOCATED carrying a mechanism + fitness obligation (ctrl 7,8); a fitness obligation carries a measurable property + scope (ctrl 9); a C4-view element absent from the baseline is refused (ctrl 12, ARCH-I02).\n- `adr` \u2014 each `ADR-NNNN` has \u22651 affected element and \u22651 decision driver (ctrl 5); affected elements resolve to baseline elements; requirement/NFR refs resolve to the baseline's declared universe (ctrl 6).\n- `data-model` \u2014 each entity's owner boundary resolves to a declared architecture boundary.\n- `api-contract` \u2014 each interface resolves to a declared architecture interface and is versioned.\n- `operability-design` \u2014 failure modes (each with a recovery) and observability are present (ctrl 10); failure-mode elements resolve to the baseline.\n\nPlus `examples/gate-dossier.G04.json` (validated in CI beside G00\u2013G03), and a **G03\u2192G04** pair-acceptance.\n\n## Evidence\n- `G04 required_evidence = ['architecture', 'adr', 'data-model', 'api-contract', 'operability-design']` (badf/lifecycle.json)\n- enforced of 5 \u2192 `0`; `ls examples/gate-dossier.G04.json` \u2192 False; schemas present \u2192 `[]`\n- `badf-architecture` registry status \u2192 DESIGNED (#74)\n\n## Unknowns\nNone for the DESIGN semantics. **Deferred, named:** WP-ARCH-C (the ASSURE substrate \u2014 dependency graph, cycles, boundary rules, ADR compliance, baseline/observed binding; acceptance controls 13\u201318) and WP-ARCH-D (shadow). No `scripts/badf_architecture.py` (ARCH-I11) \u2014 the semantics live in the canonical gate. This WP does not change G04 authority.\n\n## Proposed work package\n`BADF-WP-0044` (WP-ARCH-B). Five `check_*` functions + registration; five schemas; `examples/gate-dossier.G04.json` + its five evidence/artifact pairs; `tests/test_badf_g04.py` (failing-first) + a G03\u2192G04 pair-acceptance; mutation; own G07 self-dossier; `badf-architecture` \u2192 IMPLEMENTED. C2.\n\ndiscovered-by: BADF-WP-0043 (the architecture contract freeze) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T16:28:31Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. G04 DESIGN evidence semantics (WP-ARCH-B) on the frozen badf-architecture contract (#74); advances badf-architecture DESIGNED->IMPLEMENTED. Authority: the operator's 'proceed on your call' (2026-08-28). Worked as BADF-WP-0044."
+}

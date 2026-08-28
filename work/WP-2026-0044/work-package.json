@@ -1,0 +1,68 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0044",
+  "title": "WP-ARCH-B: G04 DESIGN evidence semantics (architecture / adr / data-model / api-contract / operability-design)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0031",
+  "objective": "Enforce Gate 04 by implementing the DESIGN-side deterministic controls of the frozen badf-architecture contract inside the canonical gate. Give the five G04 evidence types per-type rules in validate_evidence with the architecture baseline as the spine the other four are consistent with; ship examples/gate-dossier.G04.json (CI-validated) and a G03->G04 pair-acceptance; advance badf-architecture DESIGNED->IMPLEMENTED.",
+  "business_value": "Turns G04 -- the architecture gate -- from pass-on-names into deterministic refusals for undirected/unintended relationships, boundary crossings without an interface, unclassified trust-boundary data flows, unallocated NFRs, and operability that omits failure/recovery. The architecture baseline becomes the machine-checked source of truth, not a diagram.",
+  "in_scope": [
+    "check_architecture / check_adr / check_data_model / check_api_contract / check_operability_design in badf_gate.py + registration in EVIDENCE_RULES",
+    "schemas/architecture.schema.json, adr.schema.json, data-model.schema.json, api-contract.schema.json, operability-design.schema.json",
+    "examples/gate-dossier.G04.json + its five evidence/artifact pairs; CI validates it",
+    "tests/test_badf_g04.py (failing-first) + a G03->G04 pair-acceptance in tests/test_badf_advance.py",
+    "badf-architecture registry status DESIGNED -> IMPLEMENTED (re-digest)",
+    "mutation; own G07 self-dossier; doctrine section in GITHUB_CONTROL_PLANE.md"
+  ],
+  "out_of_scope": [
+    "WP-ARCH-C: the ASSURE substrate (dependency graph, cycles, boundary rules, ADR compliance, baseline/observed binding; acceptance controls 13-18)",
+    "WP-ARCH-D: shadow validation",
+    "any scripts/badf_architecture.py executable (ARCH-I11: no second gate)",
+    "any change to G04 authority or lifecycle.json gate order",
+    "later gates G05+ -- one WP each"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "examples/gate-dossier.G04.json renders APPROVED via `dossier`",
+    "a relationship without a direction or without an intent is refused",
+    "an element outside every declared boundary is refused",
+    "a boundary-crossing relationship not through a declared interface is refused",
+    "a trust-boundary data flow with no classification is refused",
+    "an ALLOCATED NFR with no mechanism or no fitness obligation is refused; an NFR with no disposition is refused",
+    "a fitness obligation with no property or no scope is refused",
+    "an ADR with no affected element or no decision driver, or referencing an unknown requirement/NFR, is refused",
+    "a data-model entity whose owner boundary is unknown, an api-contract interface that is unknown/unversioned, are refused",
+    "operability-design missing failure modes/recovery/observability is refused",
+    "a C4-view element absent from the baseline is refused",
+    "an instance at G03/APPROVED advances to G04/APPROVED on a valid G04 dossier",
+    "badf-architecture registry status is IMPLEMENTED with a real digest",
+    "mutation kills; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_g04.py",
+    "tests/test_badf_advance.py",
+    "tests/test_badf_architecture_contract.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "82d659a"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Reuses the G01/G02/G03 substrate -- no new validator module (ARCH-I11). Advances badf-architecture to IMPLEMENTED; the contract test's not-implemented-yet assertions flip to implemented in this WP. VALIDATED still requires WP-ARCH-C (ASSURE, controls 13-18) with mutation."
+}
