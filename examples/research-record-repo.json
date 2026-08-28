@@ -23,6 +23,15 @@
       "the external actor's branches (#44/#47)"
     ]
   },
+  "assumptions": [
+    "first-parent main and in-tree work records are the authoritative history for landed BADF work packages"
+  ],
+  "decision_context": "Establish the historical delivery pattern only; no solution or implementation decision is requested.",
+  "stop_conditions": [
+    "first-parent history and work records converge on one reproducible delivery sequence",
+    "the registered repository baseline cannot be resolved",
+    "the historical records materially contradict each other"
+  ],
   "baseline": {
     "repository": "bstBizEra/badf",
     "revision": "39dc6d9",
