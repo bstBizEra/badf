@@ -15,6 +15,16 @@ import sys
 WP = re.compile(r"^Work-Package:\s*(BADF-WP-[0-9]{4}|WP-2026-[0-9]{4})\s*$", re.M)
 CLOSES = re.compile(r"^(Closes|Fixes|Resolves):?\s+#([0-9]+)\s*$", re.M | re.I)
 
+# The PR body is the squash commit message on main -- the surface the next agent
+# greps. `.github/pull_request_template.md` REQUESTS this shape; this check
+# ENFORCES it, because `gh pr create --body-file` bypasses the web template
+# (BADF-WP-0034, #27). A section heading is `## <Name>` on its own line.
+REQUIRED_SECTIONS = ("What", "Verification")
+
+
+def _section(name: str) -> "re.Pattern[str]":
+    return re.compile(rf"^##\s+{name}\b", re.M | re.I)
+
 
 def check(body: str) -> list[str]:
     problems = []
@@ -22,6 +32,9 @@ def check(body: str) -> list[str]:
         problems.append("missing `Work-Package: BADF-WP-NNNN` line")
     if not CLOSES.search(body):
         problems.append("missing `Closes #N` line (every PR closes the Issue that demanded it)")
+    for name in REQUIRED_SECTIONS:
+        if not _section(name).search(body):
+            problems.append(f"missing `## {name}` section (see .github/pull_request_template.md)")
     return problems
 
 

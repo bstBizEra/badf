@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: BADF governance
+    url: https://github.com/bstBizEra/badf/blob/main/docs/governance/GITHUB_CONTROL_PLANE.md
+    about: How Issue → demand → work package → PR → main works.

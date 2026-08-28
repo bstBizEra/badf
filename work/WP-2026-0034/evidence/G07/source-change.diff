@@ -1,0 +1,271 @@
+diff --git a/.github/ISSUE_TEMPLATE/config.yml b/.github/ISSUE_TEMPLATE/config.yml
+new file mode 100644
+index 0000000..4d3738f
+--- /dev/null
++++ b/.github/ISSUE_TEMPLATE/config.yml
+@@ -0,0 +1,5 @@
++blank_issues_enabled: false
++contact_links:
++  - name: BADF governance
++    url: https://github.com/bstBizEra/badf/blob/main/docs/governance/GITHUB_CONTROL_PLANE.md
++    about: How Issue → demand → work package → PR → main works.
+diff --git a/.github/ISSUE_TEMPLATE/demand.yml b/.github/ISSUE_TEMPLATE/demand.yml
+new file mode 100644
+index 0000000..aa5d33e
+--- /dev/null
++++ b/.github/ISSUE_TEMPLATE/demand.yml
+@@ -0,0 +1,43 @@
++name: BADF demand (problem contract)
++description: An Issue is a demand -- a problem contract, never a solution contract. It becomes a digest-bound demand record (badf/demands/) and then a work package.
++title: "GOV-NNNN: <short problem statement>"
++labels: []
++body:
++  - type: markdown
++    attributes:
++      value: "This shape is requested here; `badf init` / `load_demand` do not rewrite an exported body. Fill the sections; the resulting body is exported verbatim and digest-bound."
++  - type: textarea
++    id: observed
++    attributes:
++      label: Observed
++      description: What is, measured. Cite commands and SHAs -- an evidence line is pasted output, never a remembered or inferred result.
++    validations:
++      required: true
++  - type: textarea
++    id: expected
++    attributes:
++      label: Expected
++      description: What should be, and the rule that says so.
++    validations:
++      required: true
++  - type: textarea
++    id: evidence
++    attributes:
++      label: Evidence
++      description: The pasted output that establishes Observed. Run the positive control before claiming a gap.
++    validations:
++      required: false
++  - type: textarea
++    id: unknowns
++    attributes:
++      label: Unknowns
++      description: What a decision still needs; any AGREE/NOT_AGREE the human must give.
++    validations:
++      required: false
++  - type: textarea
++    id: proposed
++    attributes:
++      label: Proposed work package
++      description: The named WP, its acceptance criteria, its version tier. A problem contract may propose; it never authorises.
++    validations:
++      required: true
+diff --git a/.github/pull_request_template.md b/.github/pull_request_template.md
+new file mode 100644
+index 0000000..fccefc1
+--- /dev/null
++++ b/.github/pull_request_template.md
+@@ -0,0 +1,17 @@
++<!-- BADF PR body = the squash commit message on main (BADF-WP-0034, #27).
++     gh pr create --body-file overrides this; CI enforces the shape via
++     scripts/check_pr_traceability.py. Keep the two headings and the two
++     trailer lines. -->
++
++## What
++
++<!-- What this change is, and the Issue it answers. One paragraph. -->
++
++## Verification
++
++<!-- The evidence, from the tree that ships: failing-first, mutation kills,
++     `python3 scripts/badf_compose.py --message-file <this body>` in both
++     shapes. Cite the SHA you measured. -->
++
++Work-Package: BADF-WP-NNNN
++Closes #N
+diff --git a/badf/demands/BADF-DEM-0021.json b/badf/demands/BADF-DEM-0021.json
+new file mode 100644
+index 0000000..95b50af
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0021.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0021",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 27,
++    "url": "https://github.com/bstBizEra/badf/issues/27",
++    "exported_at": "2026-08-28T07:39:54Z",
++    "body_digest": "sha256:66248e314b5538a7823758b56a09576776b31d7310f32d509cc897f24c60f354"
++  },
++  "title": "GOV-0007: Issue and PR bodies have no enforced shape",
++  "problem": "## Observed\n`check_pr_traceability.py` checks two lines. The Observed / Expected / Evidence / Unknowns / Proposed-WP structure that #19, #22, #24, #25, #26 follow is a convention typed by hand; nothing on GitHub asks for it, and PR bodies are free text. `.github/ISSUE_TEMPLATE/` and `.github/pull_request_template.md` are absent on `c510516`.\n\n## Expected\n> Issue = demand / problem contract \u2014 never a solution contract. Draft PR = live delivery dossier.\nA form that asks for the problem contract's fields, and a PR template that asks for the traceability lines and the verification-on-committed-SHA block, so the shape is requested at the point of writing rather than reconstructed at review.\n\n## Evidence\n`ls .github/ISSUE_TEMPLATE .github/pull_request_template.md` \u2192 no such file, on `c510516`.\n\n## Unknowns\nIssue Forms bind the web UI only \u2014 `gh issue create --body-file` bypasses them. Whether CI should also validate the Issue body's shape (that needs the network; the gate makes no calls, but a separate CI step can).\n\n## Proposed work package\nPatch tier, promised as a \"separate Issue\" in #19's scope boundary: `.github/ISSUE_TEMPLATE/demand.yml`, `pull_request_template.md`, and `check_pr_traceability.py` extended to the template's required headings.\n\ndiscovered-by: BADF-WP-0016 (deferred) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T07:39:54Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Body exported verbatim and digest-bound. DISCOVERED by BADF-WP-0016 (deferred, P1); authority: the operator's 'proceed on your call' on the #27 pick (2026-08-28). Worked as BADF-WP-0034."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 5c52de3..ec18c9f 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -130,6 +130,25 @@ it rather than trusting the record.
+   shape (WP-0029: 13 advance tests red there, green in the composed run). Scratch clones pin
+   `origin/main` explicitly (`tests/_scratch.pin_origin_main`).
+ 
++## Issue and PR body shape (`BADF-WP-0034`, Issue #27)
++
++Shape is **requested** on GitHub and **enforced** where BADF reads it — the two are
++different surfaces:
++
++- **Requested.** `.github/ISSUE_TEMPLATE/demand.yml` is an Issue Form asking for the
++  problem-contract sections (Observed / Expected / Evidence / Unknowns / Proposed work
++  package); `config.yml` turns blank issues off. `.github/pull_request_template.md` asks for
++  `## What`, `## Verification`, and the two trailer lines.
++- **Enforced.** `gh … --body-file` bypasses the web templates (every artefact this session
++  was filed that way), so the templates alone enforce nothing. The PR body is the squash
++  commit message on `main` — the surface the next agent greps — so
++  `scripts/check_pr_traceability.py` (a required CI step) now refuses a PR body missing
++  `## What`, `## Verification`, or a trailer line, naming which.
++- **Not enforced on demands.** An `issue`-kind demand's `problem` is a **verbatim,
++  digest-bound** export of the source Issue; the gate never rewrites or rejects it on shape.
++  `BADF-DEM-0016` (the external `#41`, structured Objective/Scope/…) is left exactly as
++  exported. The Issue Form is the requested shape for *new* Issues, not a retroactive gate.
++
+ ## Self-work-package dossiers (`BADF-WP-0033`, Issue #28)
+ 
+ BADF governs other projects through gate dossiers; its own work packages had only CI and
+diff --git a/scripts/check_pr_traceability.py b/scripts/check_pr_traceability.py
+index 368d318..1ff8976 100644
+--- a/scripts/check_pr_traceability.py
++++ b/scripts/check_pr_traceability.py
+@@ -15,6 +15,16 @@ import sys
+ WP = re.compile(r"^Work-Package:\s*(BADF-WP-[0-9]{4}|WP-2026-[0-9]{4})\s*$", re.M)
+ CLOSES = re.compile(r"^(Closes|Fixes|Resolves):?\s+#([0-9]+)\s*$", re.M | re.I)
+ 
++# The PR body is the squash commit message on main -- the surface the next agent
++# greps. `.github/pull_request_template.md` REQUESTS this shape; this check
++# ENFORCES it, because `gh pr create --body-file` bypasses the web template
++# (BADF-WP-0034, #27). A section heading is `## <Name>` on its own line.
++REQUIRED_SECTIONS = ("What", "Verification")
++
++
++def _section(name: str) -> "re.Pattern[str]":
++    return re.compile(rf"^##\s+{name}\b", re.M | re.I)
++
+ 
+ def check(body: str) -> list[str]:
+     problems = []
+@@ -22,6 +32,9 @@ def check(body: str) -> list[str]:
+         problems.append("missing `Work-Package: BADF-WP-NNNN` line")
+     if not CLOSES.search(body):
+         problems.append("missing `Closes #N` line (every PR closes the Issue that demanded it)")
++    for name in REQUIRED_SECTIONS:
++        if not _section(name).search(body):
++            problems.append(f"missing `## {name}` section (see .github/pull_request_template.md)")
+     return problems
+ 
+ 
+diff --git a/tests/test_badf_traceability.py b/tests/test_badf_traceability.py
+index 206fe0f..66c1958 100644
+--- a/tests/test_badf_traceability.py
++++ b/tests/test_badf_traceability.py
+@@ -12,33 +12,65 @@ sys.path.insert(0, str(gate.ROOT / "scripts"))
+ import check_pr_traceability as tr  # noqa: E402
+ 
+ 
++# A body that satisfies everything EXCEPT what a test removes, so each test
++# isolates one failure (BADF-WP-0034 added the section requirement, so the
++# trailer-isolation tests must carry the sections).
++SECTIONS = "## What\nx\n\n## Verification\nx\n"
++FULL = SECTIONS + "Work-Package: BADF-WP-0016\nCloses #19\n"
++
++
+ class TraceabilityTests(unittest.TestCase):
+-    def test_both_present_passes(self):
+-        self.assertEqual(tr.check("Work-Package: BADF-WP-0016\nCloses #19\n"), [])
++    def test_full_body_passes(self):
++        self.assertEqual(tr.check(FULL), [])
+ 
+     def test_legacy_wp_form_accepted(self):
+-        self.assertEqual(tr.check("Work-Package: WP-2026-0010\nFixes #3\n"), [])
++        self.assertEqual(tr.check(SECTIONS + "Work-Package: WP-2026-0010\nFixes #3\n"), [])
+ 
+     def test_missing_closes_is_named(self):
+-        p = tr.check("Work-Package: BADF-WP-0016\n")
++        p = tr.check(SECTIONS + "Work-Package: BADF-WP-0016\n")
+         self.assertEqual(len(p), 1); self.assertIn("Closes #N", p[0])
+ 
+     def test_missing_wp_is_named(self):
+-        p = tr.check("Closes #19\n")
++        p = tr.check(SECTIONS + "Closes #19\n")
+         self.assertEqual(len(p), 1); self.assertIn("Work-Package", p[0])
+ 
+     def test_malformed_wp_is_refused(self):
+-        self.assertTrue(any("Work-Package" in x for x in tr.check("Work-Package: WP-16\nCloses #19\n")))
++        self.assertTrue(any("Work-Package" in x for x in tr.check(SECTIONS + "Work-Package: WP-16\nCloses #19\n")))
+ 
+     def test_closes_must_be_its_own_line(self):
+         """A 'Closes #N' buried mid-sentence is prose, not a declaration."""
+-        self.assertTrue(any("Closes" in x for x in tr.check("Work-Package: BADF-WP-0016\nsee Closes #19 later\n")))
++        self.assertTrue(any("Closes" in x for x in tr.check(SECTIONS + "Work-Package: BADF-WP-0016\nsee Closes #19 later\n")))
++
++    def test_empty_body_names_everything(self):
++        p = tr.check("")
++        self.assertEqual(len(p), 4)   # WP, Closes, What, Verification
++
++    def test_missing_a_required_section_is_named(self):
++        p = tr.check("## What\nx\n\nWork-Package: BADF-WP-0016\nCloses #19\n")
++        self.assertEqual(len(p), 1); self.assertIn("Verification", p[0])
++
++    def test_a_section_must_be_a_heading_not_prose(self):
++        body = "we did the Verification and What of it\nWork-Package: BADF-WP-0016\nCloses #19\n"
++        self.assertEqual({x.split("`")[1] for x in tr.check(body)}, {"## What", "## Verification"})
++
++    def test_pr_template_carries_the_required_sections_and_trailers(self):
++        tmpl = (gate.ROOT / ".github/pull_request_template.md").read_text(encoding="utf-8")
++        for name in tr.REQUIRED_SECTIONS:
++            self.assertRegex(tmpl, rf"(?m)^##\s+{name}\b", f"PR template lacks the {name} heading the check requires")
++        self.assertIn("Work-Package:", tmpl); self.assertIn("Closes #", tmpl)
+ 
+-    def test_empty_body_names_both(self):
+-        self.assertEqual(len(tr.check("")), 2)
++    def test_issue_form_requests_the_problem_contract_sections(self):
++        # Parse the labels deterministically -- PyYAML is not a project dependency
++        # and is absent on the CI runner (this test errored there before the fix).
++        import re as _re
++        form = (gate.ROOT / ".github/ISSUE_TEMPLATE/demand.yml").read_text(encoding="utf-8")
++        labels = set(_re.findall(r"(?m)^\s+label:\s*(.+?)\s*$", form))
++        self.assertLessEqual({"Observed", "Expected", "Proposed work package"}, labels)
++        cfg = (gate.ROOT / ".github/ISSUE_TEMPLATE/config.yml").read_text(encoding="utf-8")
++        self.assertRegex(cfg, r"(?m)^blank_issues_enabled:\s*false\b", "a demand must use the form, not a blank issue")
+ 
+     def test_cli_exit_codes(self):
+-        for body, want in (("Work-Package: BADF-WP-0016\nCloses #19\n", 0), ("", 1)):
++        for body, want in ((FULL, 0), ("", 1)):
+             r = subprocess.run([sys.executable, "scripts/check_pr_traceability.py"], input=body,
+                                cwd=str(gate.ROOT), capture_output=True, text=True)
+             self.assertEqual(r.returncode, want, r.stdout + r.stderr)
+diff --git a/work/WP-2026-0033/work-package.json b/work/WP-2026-0033/work-package.json
+index fc4b246..2b5bdcc 100644
+--- a/work/WP-2026-0033/work-package.json
++++ b/work/WP-2026-0033/work-package.json
+@@ -46,11 +46,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "684539e"
++    "base_revision": "684539e",
++    "landed_as": "a711ef7a66e7b9628e5d3c02717d7958ad1947eb"
+   },
+   "note": "Lands IN_PROGRESS by design; reconciled by the next WP's branch. Dogfood: work/WP-2026-0033/gate-dossier.G07.json is assembled by the tool this WP ships."
+ }

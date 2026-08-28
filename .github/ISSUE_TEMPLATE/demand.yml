@@ -1,0 +1,43 @@
+name: BADF demand (problem contract)
+description: An Issue is a demand -- a problem contract, never a solution contract. It becomes a digest-bound demand record (badf/demands/) and then a work package.
+title: "GOV-NNNN: <short problem statement>"
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: "This shape is requested here; `badf init` / `load_demand` do not rewrite an exported body. Fill the sections; the resulting body is exported verbatim and digest-bound."
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed
+      description: What is, measured. Cite commands and SHAs -- an evidence line is pasted output, never a remembered or inferred result.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected
+      description: What should be, and the rule that says so.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: The pasted output that establishes Observed. Run the positive control before claiming a gap.
+    validations:
+      required: false
+  - type: textarea
+    id: unknowns
+    attributes:
+      label: Unknowns
+      description: What a decision still needs; any AGREE/NOT_AGREE the human must give.
+    validations:
+      required: false
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed work package
+      description: The named WP, its acceptance criteria, its version tier. A problem contract may propose; it never authorises.
+    validations:
+      required: true
