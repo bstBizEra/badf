@@ -17,6 +17,13 @@
       "__REQUIRED__"
     ]
   },
+  "assumptions": [
+    "__REQUIRED__"
+  ],
+  "decision_context": "__REQUIRED__",
+  "stop_conditions": [
+    "__REQUIRED__"
+  ],
   "baseline": {
     "repository": "__REQUIRED__",
     "revision": "__REQUIRED__",
@@ -83,6 +90,10 @@
     }
   ],
   "recommendation": "__REQUIRED__",
+  "researcher": {
+    "principal": "__REQUIRED__",
+    "principal_type": "agent"
+  },
   "challenge": {
     "required": false,
     "council": null
