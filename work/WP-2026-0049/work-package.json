@@ -1,0 +1,54 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0049",
+  "title": "deep-research: P0 research subskill 5/9 (read-only acquisition contract; no control -- teeth are control 6)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0036",
+  "objective": "Build the deep-research subskill: a concise SKILL.md for read-only external source acquisition -- query decomposition, primary/authoritative-source preference, independent corroboration, provenance capture (the source receipt), and contradiction preservation, with no decision/authority/implementation choice. Register IMPLEMENTED. It adds NO new gate control; its enforcement teeth are control 6 (the next WP), which adds the receipt fields and staleness semantics.",
+  "business_value": "deep-research is the acquisition plane every external route depends on, and the named prerequisite for control 6: source-digest freshness can only be enforced once acquisition owns the source receipt. Keeping it read-only preserves the untrusted-environment authority boundary.",
+  "in_scope": [
+    "skills/badf-research/subskills/deep-research/SKILL.md (read-only acquisition; source-receipt contract documented)",
+    "skill-registry entry deep-research IMPLEMENTED with a real digest",
+    "root SKILL.md router (5 of 9); acceptance.md admission list",
+    "registration test; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "any new gate control (deliberately none -- discipline: no control merely because prior subskills had one; teeth are control 6)",
+    "the source-receipt schema fields (retrieval outcome / resolved revision) and staleness -- control 6, the next WP",
+    "general crawling/search implementation; the other 4 P0 subskills; #77/#83/#84"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "deep-research/SKILL.md exists, is concise, registry digest == sha256(source), status IMPLEMENTED",
+    "the SKILL.md states the read-only / untrusted-environment boundary and the source-receipt contract",
+    "no new control or schema change is introduced (the WP diff touches no gate rule)",
+    "the three shipped examples still pass `research` unchanged",
+    "root SKILL.md routes deep-research (5 of 9); registry digests verified by `repo`",
+    "compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research.py",
+    "tests/test_badf_registry_digest.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "af1f239"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Fifth P0 research subskill. Earns NO gate control by design (its enforcement is control 6, the next unit) -- a deliberate demonstration that not every subskill lands with a control. Reconciles WP-2026-0048. badf-research stays DESIGNED (5 of 9 P0); research controls unchanged at 20 of 22."
+}

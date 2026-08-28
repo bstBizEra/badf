@@ -371,6 +371,19 @@ measured gap — `RESEARCH_SUFFICIENT` with zero findings — is genuinely the d
 is left for `research-reconciliation` to earn rather than grabbed here.) Research controls: **20 of
 22**. `badf-research` stays `DESIGNED` (4 of 9 P0).
 
+## deep-research — acquisition contract, no control by design (`BADF-WP-0049`, Issue #89)
+
+The fifth P0 research subskill and the named prerequisite for control 6:
+`skills/badf-research/subskills/deep-research/SKILL.md` is the **read-only** external
+source-acquisition plane — query decomposition, primary/authoritative-source preference, independent
+corroboration, provenance capture (the source receipt), contradiction preservation — bounded by the
+untrusted-environment authority boundary (it fetches; it never mutates, decides, or authorises).
+**It earns no gate control, by design.** Its enforcement teeth are control 6 (the next WP), which
+adds the receipt fields (retrieval outcome, resolved revision) and the staleness semantics. This is a
+deliberate demonstration of the discipline that not every subskill lands with a control — a control
+is earned by a measured, enforceable gap, not by precedent. Research controls unchanged at **20 of
+22**. `badf-research` stays `DESIGNED` (5 of 9 P0).
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
