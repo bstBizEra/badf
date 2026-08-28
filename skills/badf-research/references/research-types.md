@@ -1,10 +1,8 @@
-# Research types and depths
+# Research types
 
-Status: frozen contract v0.1 (`BADF-WP-0031`, #50). The schema `schemas/research-record.schema.json` carries the same codes; a drift test holds this file to it.
+Status: frozen contract v0.2 (`BADF-WP-0031`, evolved by `WP-2026-0041`). The schema `schemas/research-record.schema.json` carries the same codes; drift tests hold this table to the schema.
 
-## Types (`type`)
-
-A request may touch several types but has ONE primary question and one primary type.
+A request may touch several research concerns but every record has ONE primary question and ONE primary type. Supporting fact verification (`R10`) may be used inside another type without becoming a second router.
 
 | Code | Type | Question it answers | Default route |
 | :--- | :--- | :--- | :--- |
@@ -13,27 +11,17 @@ A request may touch several types but has ONE primary question and one primary t
 | `R03` | `ROOT_CAUSE` | why a failure happened | framing → repository → hypothesis / experiment |
 | `R04` | `TECHNICAL_SOLUTION` | what approaches could solve it | framing → technical → comparison |
 | `R05` | `ARCHITECTURE` | boundaries, patterns, ADR options | framing → deep → technical → comparison |
-| `R06` | `SECURITY` | threats, CVEs, attack paths | framing → repository / deep → adversarial (challenge required) |
-| `R07` | `COMPARATIVE` | decide between alternatives | framing → deep → comparison |
-| `R08` | `EMPIRICAL_EXPERIMENT` | measure under control | framing → experimental loop (D5) |
+| `R06` | `SECURITY` | threats, CVEs, attack paths | framing → repository / deep → adversarial |
+| `R07` | `COMPARATIVE` | compare alternatives against declared criteria | framing → deep → comparison |
+| `R08` | `EMPIRICAL_EXPERIMENT` | measure under controlled conditions | framing → experimental loop |
 | `R09` | `STANDARDS` | what a standard or regulation requires | framing → authoritative sources |
-| `R10` | `FACT_VERIFICATION` | is a claim true | fact-checking |
-
-## Depths (`depth`)
-
-Type is *what*; depth is *how much*. Depth is the cost control: it is set at framing and cannot be raised silently. `D4` and `D5` require independent challenge.
-
-| Code | Depth | Typical use |
-| :--- | :--- | :--- |
-| `D0` | `LOOKUP` | one factual answer |
-| `D1` | `SCAN` | quick engineering investigation |
-| `D2` | `STANDARD` | multiple sources and comparison |
-| `D3` | `DEEP` | parallel research and triangulation |
-| `D4` | `ADVERSARIAL` | deep plus independent challenge (challenge required) |
-| `D5` | `EXPERIMENTAL` | research plus controlled experiments (challenge required) |
+| `R10` | `FACT_VERIFICATION` | whether a material claim is supported | fact-checking |
 
 ## Routing rules
 
-- The router is the root `SKILL.md`; it selects subskills by type and depth. There is no second router.
-- Overlapping triggers resolve to the more specific type; `R10` (fact verification) is always available as a supporting step.
-- Business, market and user research are NOT engineering research types; they are a sibling family, later.
+- The root `SKILL.md` is the only router.
+- Type answers *what kind of uncertainty is being reduced*; depth answers *how much evidence and challenge is required*. See `research-depth.md`.
+- Overlapping triggers resolve to the most specific primary type.
+- `R02` and `R03` repository work must bind a registered repository baseline to a resolvable revision when that repository is available.
+- `R06` always requires independent challenge.
+- Business, market and user research are not engineering research types in this v0.2 family; they require their own governed sibling contract rather than being silently forced into these codes.
