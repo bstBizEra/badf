@@ -32,11 +32,11 @@
       "name": "badf-research",
       "source": "skills/badf-research/SKILL.md",
       "owner": "BADF Governance Authority",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "risk_class": "C1",
       "allowed_tools": [],
       "status": "DESIGNED",
-      "digest": "sha256:71b58478ca0d8f55e051c994403a8045ff04db794c7181b20489ae3c8ad12bde"
+      "digest": "sha256:a02cc44ef0aaaee5e8ee8fc6f6c54a88f83cc05cbc5ef87e04fdacb07c9d05c8"
     },
     {
       "name": "repository-research",
