@@ -51,7 +51,10 @@ def seed_clone(dest: Path, *, carry_working_state: bool = False) -> str:
         # The clone must see the same working state as ROOT: the gate under test,
         # the registries and decisions, and any work packages -- including files
         # not yet committed on the source branch.
-        for rel in ("scripts/badf_gate.py", gate.REPOSITORIES, gate.DECISIONS_DIR, gate.DEMANDS_DIR, "work", "examples", "templates"):
+        # EVERY locked input the working gate reads -- piecemeal lists missed badf/demands,
+        # templates and then badf/skill-registry.json (WP-0032: 30 red on the runner, green
+        # composed, because the composed world's origin/main IS the candidate).
+        for rel in ("scripts/badf_gate.py", "badf", "skills", "schemas", "templates", "examples", "work"):
             src = gate.ROOT / rel; dst = dest / rel
             if src.is_dir():
                 shutil.rmtree(dst, ignore_errors=True); shutil.copytree(src, dst)
