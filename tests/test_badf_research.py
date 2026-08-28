@@ -182,5 +182,87 @@ class ChallengeAndIndependenceTests(unittest.TestCase):
         self.refused(rec, "verdict")
 
 
+class ConclusionAndTraceabilityTests(unittest.TestCase):
+    def run_cli(self, rec):
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+            json.dump(rec, f); path = Path(f.name)
+        try:
+            return subprocess.run([sys.executable, "scripts/badf_gate.py", "research", str(path)],
+                                  cwd=str(gate.ROOT), capture_output=True, text=True)
+        finally:
+            path.unlink()
+
+    def refused(self, rec, needle):
+        r = self.run_cli(rec)
+        self.assertNotEqual(r.returncode, 0, "a defective research record passed")
+        self.assertIn(needle, r.stderr, r.stderr)
+
+    def test_a_concluded_disposition_in_a_non_reconciled_state_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE)
+        rec["state"] = "EVIDENCE_COLLECTING"   # but disposition is RESEARCH_SUFFICIENT
+        self.refused(rec, "not RECONCILED")
+
+    def test_research_blocked_may_be_in_flight(self):
+        rec = copy.deepcopy(EXAMPLE)
+        rec["state"] = "EVIDENCE_COLLECTING"
+        rec["disposition"] = {"state": "RESEARCH_BLOCKED", "reason": "still gathering"}
+        r = self.run_cli(rec)
+        self.assertEqual(r.returncode, 0, r.stderr)   # RESEARCH_BLOCKED is allowed pre-RECONCILED
+
+    def test_challenged_state_without_a_council_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE)
+        rec["state"] = "CHALLENGED"; rec["disposition"] = {"state": "RESEARCH_BLOCKED", "reason": "under challenge"}
+        self.refused(rec, "CHALLENGED but no council")
+
+    def test_a_contradiction_referencing_an_unknown_claim_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE)
+        rec["contradictions"] = [{"id": "X-001", "claim_refs": ["C-999"], "statement": "x"}]
+        self.refused(rec, "C-999")
+
+    def test_a_claim_with_contradicting_sources_not_recorded_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE)
+        rec["claims"][0]["contradicting_sources"] = ["S-002"]   # cited but no contradictions[] entry
+        rec["claims"][0]["confidence"]["basis"]["contradictions"] = 1
+        rec["claims"][0]["confidence"]["level"] = "HIGH"   # keep derivation consistent (ips=2,repro,contra=1 -> HIGH)
+        self.refused(rec, "no contradictions[] entry records it")
+
+    def test_a_recorded_contradiction_makes_the_claim_valid(self):
+        rec = copy.deepcopy(EXAMPLE)
+        rec["claims"][0]["contradicting_sources"] = ["S-002"]
+        rec["claims"][0]["confidence"]["basis"]["contradictions"] = 1
+        rec["claims"][0]["confidence"]["level"] = "HIGH"
+        rec["contradictions"] = [{"id": "X-001", "claim_refs": ["C-001"], "statement": "S-002 pointed the other way, examined"}]
+        r = self.run_cli(rec)
+        self.assertEqual(r.returncode, 0, r.stderr)
+
+    def test_not_sufficient_research_cannot_name_a_downstream_work_package(self):
+        rec = copy.deepcopy(EXAMPLE)
+        rec["disposition"] = {"state": "MORE_RESEARCH_REQUIRED", "reason": "gaps remain"}
+        rec["downstream"] = {"decision_id": None, "work_package_id": "WP-2026-0001"}
+        self.refused(rec, "only RESEARCH_SUFFICIENT makes a work package eligible")
+
+    def test_an_unresolvable_demand_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE)
+        rec["demand"] = "BADF-DEM-9999"
+        self.refused(rec, "BADF-DEM-9999")
+
+    def test_a_downstream_work_package_with_no_record_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE)
+        rec["downstream"] = {"decision_id": None, "work_package_id": "WP-2026-9999"}
+        self.refused(rec, "no record")
+
+    def test_a_downstream_decision_that_governs_another_work_package_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE)
+        # BADF-DEC-0007 governs WP-2026-0029; point downstream at a different WP that exists
+        rec["downstream"] = {"decision_id": "BADF-DEC-0007", "work_package_id": "WP-2026-0001"}
+        self.refused(rec, "does not reconstruct")
+
+    def test_a_consistent_downstream_chain_passes(self):
+        rec = copy.deepcopy(EXAMPLE)
+        rec["downstream"] = {"decision_id": "BADF-DEC-0007", "work_package_id": "WP-2026-0029"}
+        r = self.run_cli(rec)
+        self.assertEqual(r.returncode, 0, r.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

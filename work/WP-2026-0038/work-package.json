@@ -1,0 +1,50 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0038",
+  "title": "RSR-004: research conclusion integrity and traceability controls in the gate",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0025",
+  "objective": "Enforce the record-pure conclusion controls (8,15,16,18): state corroborated by disposition, contradictions preserved not buried, only sufficient research names a downstream WP, and the Issue->demand->research->decision->WP chain reconstructs.",
+  "business_value": "A record whose state, contradictions and downstream are unchecked can claim a conclusion its content does not support; enforcing these makes a research disposition trustworthy input to a decision.",
+  "in_scope": [
+    "controls 8,15,16,18 in validate_research_record",
+    "tests failing-first; mutation; own self-dossier"
+  ],
+  "out_of_scope": [
+    "controls 3 (baseline git-resolution), 6 (source-digest staleness), 17 (evidence_digest recomputation) -- need machinery beyond a record check; separate WPs",
+    "the nine P0 subskills; registry activation (badf-research stays DESIGNED)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "both examples still pass; a concluded disposition in a non-reconciled state refused; RESEARCH_BLOCKED allowed pre-reconcile",
+    "a buried contradiction refused; a recorded one passes",
+    "non-sufficient research naming a downstream WP refused",
+    "unresolvable demand/decision/WP refused; a decision governing another WP refused; a consistent chain passes",
+    "mutation kills; compose green both shapes"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "bcb9d6d"
+  },
+  "note": "Lands IN_PROGRESS by design. Own G07 self-dossier. 14 of 18 controls enforced; 3/6/17 deferred with reasons; badf-research stays DESIGNED."
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0025",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 63,
+    "url": "https://github.com/bstBizEra/badf/issues/63",
+    "exported_at": "2026-08-28T13:25:14Z",
+    "body_digest": "sha256:515ac57432ce5ee9a94f53aa7f28733cbcb1dde7bc9e9f2ce969d40a258db8c8"
+  },
+  "title": "GOV-0021: research conclusion integrity and traceability are not enforced (RSR-004)",
+  "problem": "## Observed\nAfter RSR-002/003, ten of the eighteen research controls are enforced, but a record's conclusion can still be internally inconsistent: a record can carry `disposition: RESEARCH_SUFFICIENT` while `state: EVIDENCE_COLLECTING`; a claim can cite `contradicting_sources` with no `contradictions[]` entry recording it (buried, not preserved \u2014 RSR-I04); a `MORE_RESEARCH_REQUIRED` record can name a downstream `work_package_id` as if insufficient research authorised implementation; and a named `downstream.decision_id`/`work_package_id` need not resolve, so the Issue \u2192 demand \u2192 research \u2192 decision \u2192 work package chain cannot be reconstructed.\n\n## Expected\n`badf_gate.py research` enforces: a disposition other than `RESEARCH_BLOCKED` requires `state == RECONCILED` (control 16); a `CHALLENGED` state requires a council; a claim with contradicting sources is recorded in `contradictions[]`, whose refs resolve (control 8); only `RESEARCH_SUFFICIENT` may name a downstream work package (control 15); the `demand` resolves, a named decision resolves and governs the named work package, and a named work package has a record (control 18).\n\n## Evidence\n`grep -n \"downstream\" scripts/badf_gate.py` \u2192 `validate_research_record` never reads `downstream`, `state`, or `contradictions` beyond the schema on `main` at `bcb9d6d`.\n\n## Unknowns\nNone. Controls 3 (baseline git-resolution \u2014 needs a repository-research subskill), 6 (source-digest staleness), and 17 (`evidence_digest` recomputation) need machinery beyond a record check and are separate later WPs; `badf-research` stays `DESIGNED` until all 18 pass.\n\n## Proposed work package\n`BADF-WP-0038` (RSR-004). Controls 8, 15, 16, 18 in `validate_research_record`; tests + mutation. C2. Brings 14 of 18 to enforced.\n\ndiscovered-by: BADF-WP-0031 (frozen-contract roadmap) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T13:25:14Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. Roadmap item RSR-004 under the frozen research contract (#50); authority: the operator's pick of RSR-004 (2026-08-28). Worked as BADF-WP-0038."
+}
