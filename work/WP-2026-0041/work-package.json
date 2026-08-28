@@ -1,0 +1,64 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0041",
+  "title": "Research contract v0.2: canonical reference layout + bounded framing",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0028",
+  "objective": "Normalize the canonical badf-research reference surface and make assumptions, decision_context and non-empty stop_conditions first-class in the research record without introducing a second router, validator, council or authority plane.",
+  "business_value": "A governed research capability must be able to prove not only what it investigated but why collection was bounded and why it stopped. A single canonical reference layout reduces drift before the remaining subskills are distributed.",
+  "in_scope": [
+    "skills/badf-research/SKILL.md and canonical seven-file reference surface",
+    "schemas/research-record.schema.json bounded framing fields",
+    "all shipped research examples + template aligned to the schema",
+    "docs/14-research-capability.md BADF integration contract",
+    "tests/test_badf_research_contract.py drift/contract migration",
+    "badf-research registry version/digest re-pin; integrity lockfile re-sign",
+    "reconcile landed WP-2026-0040 before admitting WP-2026-0041"
+  ],
+  "out_of_scope": [
+    "control 6 live source-digest staleness / source acquisition",
+    "remaining P0 research subskills",
+    "research sufficiency policy redesign",
+    "new research router, validator, council, memory store or authority mechanism",
+    "root badf-research activation; status remains DESIGNED"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the root skill names exactly the canonical seven research references and remains DESIGNED/no authority",
+    "research types, depths, states, dispositions, source/claim/confidence vocabularies match schema enums",
+    "schema requires assumptions and decision_context and at least one stop_condition",
+    "all three shipped research examples satisfy the schema and preserve their existing evidence_digest",
+    "legacy lifecycle.md, routing-and-authority.md and acceptance.md are removed so no duplicate normative research contracts remain",
+    "badf-research registry entry is version 0.2.0, DESIGNED, allowed_tools empty and digest equals sha256(SKILL.md)",
+    "repo integrity is re-signed and canonical BADF checks/CI pass on the composed tree"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research_contract.py",
+    "tests/test_badf_research.py",
+    "tests/test_badf_registry_digest.py"
+  ],
+  "evidence": [
+    "schema/contract tests",
+    "repository gate",
+    "full unittest suite",
+    "composed-tree CI"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR; restore v0.1 reference filenames and schema fields from 8896a37"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "8896a37"
+  },
+  "note": "Lands IN_PROGRESS by design and requires independent G07 review before merge. Root badf-research remains DESIGNED; this work changes contract structure, not operational authority."
+}
