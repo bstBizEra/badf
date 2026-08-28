@@ -1,0 +1,218 @@
+diff --git a/badf/demands/BADF-DEM-0025.json b/badf/demands/BADF-DEM-0025.json
+new file mode 100644
+index 0000000..94af419
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0025.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0025",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 63,
++    "url": "https://github.com/bstBizEra/badf/issues/63",
++    "exported_at": "2026-08-28T13:25:14Z",
++    "body_digest": "sha256:515ac57432ce5ee9a94f53aa7f28733cbcb1dde7bc9e9f2ce969d40a258db8c8"
++  },
++  "title": "GOV-0021: research conclusion integrity and traceability are not enforced (RSR-004)",
++  "problem": "## Observed\nAfter RSR-002/003, ten of the eighteen research controls are enforced, but a record's conclusion can still be internally inconsistent: a record can carry `disposition: RESEARCH_SUFFICIENT` while `state: EVIDENCE_COLLECTING`; a claim can cite `contradicting_sources` with no `contradictions[]` entry recording it (buried, not preserved \u2014 RSR-I04); a `MORE_RESEARCH_REQUIRED` record can name a downstream `work_package_id` as if insufficient research authorised implementation; and a named `downstream.decision_id`/`work_package_id` need not resolve, so the Issue \u2192 demand \u2192 research \u2192 decision \u2192 work package chain cannot be reconstructed.\n\n## Expected\n`badf_gate.py research` enforces: a disposition other than `RESEARCH_BLOCKED` requires `state == RECONCILED` (control 16); a `CHALLENGED` state requires a council; a claim with contradicting sources is recorded in `contradictions[]`, whose refs resolve (control 8); only `RESEARCH_SUFFICIENT` may name a downstream work package (control 15); the `demand` resolves, a named decision resolves and governs the named work package, and a named work package has a record (control 18).\n\n## Evidence\n`grep -n \"downstream\" scripts/badf_gate.py` \u2192 `validate_research_record` never reads `downstream`, `state`, or `contradictions` beyond the schema on `main` at `bcb9d6d`.\n\n## Unknowns\nNone. Controls 3 (baseline git-resolution \u2014 needs a repository-research subskill), 6 (source-digest staleness), and 17 (`evidence_digest` recomputation) need machinery beyond a record check and are separate later WPs; `badf-research` stays `DESIGNED` until all 18 pass.\n\n## Proposed work package\n`BADF-WP-0038` (RSR-004). Controls 8, 15, 16, 18 in `validate_research_record`; tests + mutation. C2. Brings 14 of 18 to enforced.\n\ndiscovered-by: BADF-WP-0031 (frozen-contract roadmap) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T13:25:14Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Body exported verbatim and digest-bound. Roadmap item RSR-004 under the frozen research contract (#50); authority: the operator's pick of RSR-004 (2026-08-28). Worked as BADF-WP-0038."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 0e5cbfc..d322f31 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -130,6 +130,21 @@ it rather than trusting the record.
+   shape (WP-0029: 13 advance tests red there, green in the composed run). Scratch clones pin
+   `origin/main` explicitly (`tests/_scratch.pin_origin_main`).
+ 
++## Research conclusion integrity and traceability (`BADF-WP-0038`, RSR-004)
++
++Four more controls, about whether a record's conclusion holds together and traces back:
++a disposition other than the in-flight `RESEARCH_BLOCKED` means the research **concluded**, so
++the state must be `RECONCILED` — an invalid state fails closed (control 16); a `CHALLENGED`
++state requires a council; a claim that cites contradicting sources must be **recorded** in
++`contradictions[]`, not buried in the claim (control 8, RSR-I04); only `RESEARCH_SUFFICIENT`
++may name a downstream work package (control 15); and the chain **Issue → demand → research →
++decision → work package** must reconstruct — the demand resolves, a named decision resolves and
++governs the named work package, and a named work package has a record (control 18). **Fourteen
++of the eighteen controls are now enforced.** The three remaining need machinery beyond a record
++check and are their own later work: baseline git-resolution (control 3, when a
++repository-research subskill lands), source-digest staleness (control 6), and the record's
++`evidence_digest` recomputation (control 17). `badf-research` stays `DESIGNED` until all pass.
++
+ ## Research challenge and independence (`BADF-WP-0037`, RSR-003)
+ 
+ Four more of the 18 controls, about who challenges research and how independence is counted:
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 4feb853..08ab591 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -2547,6 +2547,48 @@ def validate_research_record(path: Path) -> str:
+         if len(distinct) < 2:
+             raise ValidationError(f"a required independent challenge needs at least two distinct reviewers; found {len(distinct)}")
+ 
++    # ---- conclusion integrity + traceability (RSR-004, BADF-WP-0038) ----
++    disposition = rec["disposition"]["state"]
++    state = rec["state"]
++    # 16: a disposition other than the in-flight RESEARCH_BLOCKED means the record
++    # concluded, which is the RECONCILED state -- an invalid state fails closed.
++    if disposition != "RESEARCH_BLOCKED" and state != "RECONCILED":
++        raise ValidationError(f"disposition {disposition} means the research concluded, but state is {state}, not RECONCILED; a state that the content does not support is refused")
++    if state == "CHALLENGED" and not isinstance(council, dict):
++        raise ValidationError("state is CHALLENGED but no council record is present")
++    # 8: contradictory evidence is preserved -- a contradictions[] entry references
++    # real claims, and a claim that cites contradicting sources is recorded there,
++    # not buried in the claim (RSR-I04).
++    contradicted = set()
++    for x in rec["contradictions"]:
++        bad = sorted(set(x["claim_refs"]) - claim_ids)
++        if bad:
++            raise ValidationError(f"contradiction {x['id']} references claim(s) the record does not carry: {', '.join(bad)}")
++        contradicted.update(x["claim_refs"])
++    for c in rec["claims"]:
++        if c["contradicting_sources"] and c["id"] not in contradicted:
++            raise ValidationError(f"claim {c['id']} cites contradicting sources but no contradictions[] entry records it; contradictory evidence is preserved, not buried")
++    # 15: only RESEARCH_SUFFICIENT makes a work package eligible downstream; a
++    # not-sufficient disposition cannot have spawned an implementation work package.
++    down = rec["downstream"]
++    if disposition != "RESEARCH_SUFFICIENT" and down["work_package_id"] is not None:
++        raise ValidationError(f"disposition {disposition} names downstream work package {down['work_package_id']}, but only RESEARCH_SUFFICIENT makes a work package eligible")
++    # 18: the chain Issue -> demand -> research -> decision -> work package can be
++    # reconstructed. The demand resolves; a named decision resolves; a named work
++    # package has a record; and a named decision governs the named work package.
++    load_demand(rec["demand"])
++    if down["decision_id"] is not None:
++        dec = load_decision(down["decision_id"])
++        if down["work_package_id"] is not None:
++            dec_wp = re.search(r"([0-9]{4})$", str(dec.get("work_package_id") or ""))
++            this_wp = re.search(r"([0-9]{4})$", down["work_package_id"])
++            if not dec_wp or not this_wp or dec_wp.group(1) != this_wp.group(1):
++                raise ValidationError(f"decision {down['decision_id']} governs {dec.get('work_package_id')!r}, not {down['work_package_id']}; the Research -> Decision -> Work Package chain does not reconstruct")
++    if down["work_package_id"] is not None:
++        wp_path = ROOT / "work" / down["work_package_id"] / "work-package.json"
++        if not wp_path.is_file():
++            raise ValidationError(f"downstream work package {down['work_package_id']} has no record; the chain cannot be reconstructed")
++
+     return f"BADF RESEARCH PASS: {rec['id']} ({rec['type']}/{rec['depth']}) -- {len(rec['claims'])} claims, disposition {rec['disposition']['state']}; grants no implementation authority"
+ 
+ 
+diff --git a/tests/test_badf_research.py b/tests/test_badf_research.py
+index 9305808..ed55b66 100644
+--- a/tests/test_badf_research.py
++++ b/tests/test_badf_research.py
+@@ -182,5 +182,87 @@ class ChallengeAndIndependenceTests(unittest.TestCase):
+         self.refused(rec, "verdict")
+ 
+ 
++class ConclusionAndTraceabilityTests(unittest.TestCase):
++    def run_cli(self, rec):
++        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
++            json.dump(rec, f); path = Path(f.name)
++        try:
++            return subprocess.run([sys.executable, "scripts/badf_gate.py", "research", str(path)],
++                                  cwd=str(gate.ROOT), capture_output=True, text=True)
++        finally:
++            path.unlink()
++
++    def refused(self, rec, needle):
++        r = self.run_cli(rec)
++        self.assertNotEqual(r.returncode, 0, "a defective research record passed")
++        self.assertIn(needle, r.stderr, r.stderr)
++
++    def test_a_concluded_disposition_in_a_non_reconciled_state_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["state"] = "EVIDENCE_COLLECTING"   # but disposition is RESEARCH_SUFFICIENT
++        self.refused(rec, "not RECONCILED")
++
++    def test_research_blocked_may_be_in_flight(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["state"] = "EVIDENCE_COLLECTING"
++        rec["disposition"] = {"state": "RESEARCH_BLOCKED", "reason": "still gathering"}
++        r = self.run_cli(rec)
++        self.assertEqual(r.returncode, 0, r.stderr)   # RESEARCH_BLOCKED is allowed pre-RECONCILED
++
++    def test_challenged_state_without_a_council_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["state"] = "CHALLENGED"; rec["disposition"] = {"state": "RESEARCH_BLOCKED", "reason": "under challenge"}
++        self.refused(rec, "CHALLENGED but no council")
++
++    def test_a_contradiction_referencing_an_unknown_claim_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["contradictions"] = [{"id": "X-001", "claim_refs": ["C-999"], "statement": "x"}]
++        self.refused(rec, "C-999")
++
++    def test_a_claim_with_contradicting_sources_not_recorded_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["claims"][0]["contradicting_sources"] = ["S-002"]   # cited but no contradictions[] entry
++        rec["claims"][0]["confidence"]["basis"]["contradictions"] = 1
++        rec["claims"][0]["confidence"]["level"] = "HIGH"   # keep derivation consistent (ips=2,repro,contra=1 -> HIGH)
++        self.refused(rec, "no contradictions[] entry records it")
++
++    def test_a_recorded_contradiction_makes_the_claim_valid(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["claims"][0]["contradicting_sources"] = ["S-002"]
++        rec["claims"][0]["confidence"]["basis"]["contradictions"] = 1
++        rec["claims"][0]["confidence"]["level"] = "HIGH"
++        rec["contradictions"] = [{"id": "X-001", "claim_refs": ["C-001"], "statement": "S-002 pointed the other way, examined"}]
++        r = self.run_cli(rec)
++        self.assertEqual(r.returncode, 0, r.stderr)
++
++    def test_not_sufficient_research_cannot_name_a_downstream_work_package(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["disposition"] = {"state": "MORE_RESEARCH_REQUIRED", "reason": "gaps remain"}
++        rec["downstream"] = {"decision_id": None, "work_package_id": "WP-2026-0001"}
++        self.refused(rec, "only RESEARCH_SUFFICIENT makes a work package eligible")
++
++    def test_an_unresolvable_demand_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["demand"] = "BADF-DEM-9999"
++        self.refused(rec, "BADF-DEM-9999")
++
++    def test_a_downstream_work_package_with_no_record_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["downstream"] = {"decision_id": None, "work_package_id": "WP-2026-9999"}
++        self.refused(rec, "no record")
++
++    def test_a_downstream_decision_that_governs_another_work_package_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        # BADF-DEC-0007 governs WP-2026-0029; point downstream at a different WP that exists
++        rec["downstream"] = {"decision_id": "BADF-DEC-0007", "work_package_id": "WP-2026-0001"}
++        self.refused(rec, "does not reconstruct")
++
++    def test_a_consistent_downstream_chain_passes(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["downstream"] = {"decision_id": "BADF-DEC-0007", "work_package_id": "WP-2026-0029"}
++        r = self.run_cli(rec)
++        self.assertEqual(r.returncode, 0, r.stderr)
++
++
+ if __name__ == "__main__":
+     unittest.main()
+diff --git a/work/WP-2026-0037/work-package.json b/work/WP-2026-0037/work-package.json
+index d197d2f..a0e4739 100644
+--- a/work/WP-2026-0037/work-package.json
++++ b/work/WP-2026-0037/work-package.json
+@@ -43,11 +43,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "30160d4"
++    "base_revision": "30160d4",
++    "landed_as": "bcb9d6d1e36aabfe6d8daa6d668903010fd177ee"
+   },
+   "note": "Lands IN_PROGRESS by design. Carries its own G07 self-dossier. Second research-track WP; 10 of 18 controls now enforced (1,2,4,5,7,9,10,11,12,13)."
+ }
