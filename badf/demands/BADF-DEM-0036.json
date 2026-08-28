@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0036",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 89,
+    "url": "https://github.com/bstBizEra/badf/issues/89",
+    "exported_at": "2026-08-28T19:14:09Z",
+    "body_digest": "sha256:0d84274bd838a91c25fff20ef3b509404a4187967de4b1eb3f2218f19ac89577"
+  },
+  "title": "GOV-0033: badf-research has no deep-research acquisition subskill (P0 5/9; source-receipt prerequisite for control 6)",
+  "problem": "## Observed\n`badf-research` has 4 of 9 P0 subskills; `deep-research` \u2014 the external source-acquisition plane \u2014 does not exist. It is the prerequisite the operator named for control 6 (source-digest freshness): freshness can only be enforced once acquisition owns the source receipt.\n\n## Expected\nBuild `deep-research` as P0 subskill **5 of 9**: a concise `SKILL.md` for **read-only** external acquisition \u2014 query decomposition, primary/authoritative-source preference, independent corroboration, provenance capture (the source receipt: uri, source_type, retrieved_at, content digest, and where they exist a resolved revision + retrieval outcome), and contradiction preservation. It does not decide, authorise, or choose an implementation. Register `IMPLEMENTED`.\n\n**No new gate control in this WP** \u2014 its enforcement teeth are control 6 (the next WP), which adds the receipt fields and staleness semantics. Per the discipline \"no control merely because prior subskills had one\", deep-research earns none.\n\n## Evidence\n- `ls skills/badf-research/subskills` \u2192 `repository-research`, `problem-framing`, `fact-checking`, `evidence-synthesis` (no `deep-research`)\n- source schema today: `uri, source_type, retrieved_at, digest` \u2014 no resolved-revision or retrieval-outcome receipt fields yet (control 6 adds them)\n\n## Unknowns\nNone for the SKILL contract. Not in scope: control 6 (next WP), general crawling implementation, the other 4 P0 subskills, #77/#83/#84.\n\n## Proposed work package\n`BADF-WP-0049`. `deep-research/SKILL.md` + registry entry `IMPLEMENTED`; root router (5/9); registration test; own G07 self-dossier. C2. No new control (documented). `badf-research` stays `DESIGNED` (5 of 9 P0).\n\ndiscovered-by: operator research sequencing (2026-08-29) + BADF-WP-0048 \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T19:14:09Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "deep-research P0 subskill 5/9, read-only acquisition contract; no gate control (teeth are control 6). /loop research build. Worked as BADF-WP-0049."
+}

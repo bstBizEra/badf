@@ -496,6 +496,17 @@ class ProblemFramingRegistrationTests(unittest.TestCase):
         self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
         self.assertTrue((gate.ROOT / "skills/badf-research/subskills/fact-checking/SKILL.md").is_file())
 
+    def test_deep_research_is_registered_implemented_with_a_real_digest(self):
+        import hashlib
+        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
+        entry = next((e for e in reg["skills"] if e["name"] == "deep-research"), None)
+        self.assertIsNotNone(entry, "deep-research is not registered")
+        self.assertEqual(entry["status"], "IMPLEMENTED")
+        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
+        skill = gate.ROOT / "skills/badf-research/subskills/deep-research/SKILL.md"
+        self.assertTrue(skill.is_file())
+        self.assertIn("read-only", skill.read_text(encoding="utf-8").lower())
+
 
 class EvidenceSynthesisTests(ResearchRecordTests):
     """Control 22 (BADF-WP-0048, evidence-synthesis): a finding is grounded in the
