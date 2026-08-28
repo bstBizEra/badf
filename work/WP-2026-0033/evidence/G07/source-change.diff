@@ -1,0 +1,415 @@
+diff --git a/badf/demands/BADF-DEM-0020.json b/badf/demands/BADF-DEM-0020.json
+new file mode 100644
+index 0000000..5d87d50
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0020.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0020",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 28,
++    "url": "https://github.com/bstBizEra/badf/issues/28",
++    "exported_at": "2026-08-28T06:32:31Z",
++    "body_digest": "sha256:2287aa5f47394e02bac8ea2d468341fbc67f6d2ae9a13e2a4c3714ce0854dbda"
++  },
++  "title": "GOV-0008: 'Draft PR = live delivery dossier' -- nothing produces or checks one",
++  "problem": "## Observed\nThe doctrine table maps Draft PR \u2192 *live delivery dossier*. No dossier is produced for or checked on any PR. `WP-2026-0010`'s G07/G08 dossiers live under `work/` and were gated by hand; BADF's own WPs (`0016`, `0018`) carry **no gate dossier at all** \u2014 they merged on CI + traceability only.\n\n## Expected\n> Merge only after current composed-tree verification, independent challenge, authority validation, and evidence binding.\nA PR carries (or links) the dossier for its WP's target gate and CI runs `badf_gate.py dossier` on it, so authority validation and evidence binding are exercised for BADF's own work packages, not only for foreign ones.\n\n## Evidence\n`ls work/WP-2026-0016 work/WP-2026-0018` \u2192 `work-package.json` only, on `c510516`.\n\n## Unknowns\nWhether a self-WP at `change_class: C3` can satisfy a G07 dossier at all under a single collaborator \u2014 `author \u2209 approvers` cannot be met, the same deviation already recorded for reviews in `GITHUB_CONTROL_PLANE.md`. To be recorded, not hidden. Related: #21 (composed-tree gate).\n\n## Proposed work package\nDefine the minimum self-WP dossier; CI validates it on `pull_request`; the approvals deviation recorded in the dossier as a carried condition.\n\ndiscovered-by: BADF-WP-0016 (deferred) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T06:32:31Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Body exported verbatim and digest-bound. DISCOVERED by BADF-WP-0016 (deferred); authority: the operator's 'proceed on your call' on the #28 pick (2026-08-28). Worked as BADF-WP-0033."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 99656d1..5c52de3 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -130,6 +130,19 @@ it rather than trusting the record.
+   shape (WP-0029: 13 advance tests red there, green in the composed run). Scratch clones pin
+   `origin/main` explicitly (`tests/_scratch.pin_origin_main`).
+ 
++## Self-work-package dossiers (`BADF-WP-0033`, Issue #28)
++
++BADF governs other projects through gate dossiers; its own work packages had only CI and
++traceability. `badf_gate.py self-dossier <WP>` assembles a **G07 dossier** for one of BADF's own
++work packages from measured evidence — the change diff, `py_compile`, a pointer to the
++composed-tree gate for tests, the docs diff — as a `HUMAN_REQUIRED` request. It binds evidence;
++it never approves. The composed-tree gate validates a candidate's G07 dossier on the tree that
++would land (`exit 0` = APPROVED, `3` = HELD; `1`/`2` fail the gate). A self-work-package's
++source-change diff is taken against `HEAD` excluding the work package's own directory and the
++lockfile — its branch commits do not survive the squash, so `base..HEAD` is the same tree
++comparison on the branch, in the composed tree, and on `main`. A carried `OPEN` condition records
++the missing independent reviewer under a single collaborator: recorded, not hidden.
++
+ ## Research records (`BADF-WP-0031`, Issue #50)
+ 
+ Research sits between discovery and decision: **Issue → demand → research record → decision → work
+diff --git a/scripts/badf_compose.py b/scripts/badf_compose.py
+index 06b2d3a..a23ff2a 100644
+--- a/scripts/badf_compose.py
++++ b/scripts/badf_compose.py
+@@ -131,6 +131,19 @@ def compose(args: argparse.Namespace) -> int:
+         print(f"  repo: PASS -- {wp} " + ("LANDED_UNRECONCILED on the composed ledger (reconciled by the next work package)"
+                                          if debt else "record present and already reconciled (a follow-up under a closed work package)"))
+ 
++        # If the work package ships its own G07 gate dossier, validate it on the
++        # tree that would land: BADF's own work is governed like any project's
++        # (BADF-WP-0033). exit 0 = APPROVED, 3 = HELD (a HUMAN_REQUIRED request);
++        # 1/2 = a defective dossier and the merge is unsafe.
++        self_dossier = work / "work" / wp / "gate-dossier.G07.json"
++        if self_dossier.is_file():
++            rd = sh([sys.executable, "scripts/badf_gate.py", "dossier", f"work/{wp}/gate-dossier.G07.json"], work, env=env)
++            last = ((rd.stdout + rd.stderr).strip().splitlines() or ["(no output)"])[-1]
++            if rd.returncode not in (0, 3):
++                print(f"  self-dossier: FAIL -- {last}")
++                return fail(f"{wp}'s own G07 dossier does not validate on the composed tree")
++            print(f"  self-dossier: {'APPROVED' if rd.returncode == 0 else 'HELD (HUMAN_REQUIRED)'} -- {last}")
++
+         shape = "host"
+         if args.ci_shape:
+             shape = "CI"
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 96294fb..695478e 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -1291,14 +1291,28 @@ def verify_foreign_revision(dossier: dict[str, Any], indexed: dict[str, str]) ->
+         ev = load_json(safe_repo_path(indexed["source-change"], "source-change evidence"))
+         artifact = safe_repo_path(ev["artifact"], "source-change artifact")
+         recorded = artifact.read_bytes()
+-        span = f"{base}..{revision}" if base else f"{revision}^..{revision}"
+-        actual = _foreign_git(repo_root, "diff", span)
++        if resolution == "SELF":
++            # A self-work-package's change is squash-merged; its branch commits
++            # do not survive the squash (like landed_as), so the diff is taken
++            # against the resolved tip (HEAD) with the work package's own
++            # directory and the lockfile excluded -- neither can appear in the
++            # diff it records. `base..HEAD` compares the same two trees on the
++            # branch, in the composed tree, and on main after the squash.
++            if not base:
++                raise ValidationError(f"a self-work-package dossier for {repo_name} requires external_target.base_revision")
++            wp_dir = dossier["work_package_id"]
++            diff_args = ["diff", f"{base}..HEAD", "--", ".", f":(exclude)work/{wp_dir}/", ":(exclude)badf/lockfile.json"]
++            span = f"{base}..HEAD (excluding work/{wp_dir}/ and the lockfile)"
++        else:
++            span = f"{base}..{revision}" if base else f"{revision}^..{revision}"
++            diff_args = ["diff", span]
++        actual = _foreign_git(repo_root, *diff_args)
+         if actual.returncode != 0:
+             raise ValidationError(f"cannot compute the actual diff for {span} in {repo_name}")
+         if actual.stdout != recorded:
+             raise ValidationError(
+                 f"source-change artifact does not match what {revision[:12]} actually changed in {repo_name} "
+-                f"(recorded {len(recorded)} bytes, actual {len(actual.stdout)} bytes)")
++                f"({span}: recorded {len(recorded)} bytes, actual {len(actual.stdout)} bytes)")
+ 
+ 
+ def _event_hash(event: dict[str, Any]) -> str:
+@@ -2323,6 +2337,98 @@ def init_project(intent_path: Path) -> str:
+             + ("; AGENTS.md preserved (merge plan required)" if agents_exists else ""))
+ 
+ 
++SELF_G07_EVIDENCE = ("source-change", "build", "unit-test", "documentation")
++
++
++def _diff_bytes(*args: str) -> bytes:
++    r = _foreign_git(ROOT, "diff", *args)
++    if r.returncode != 0:
++        raise ValidationError(f"git diff {' '.join(args)} failed: {r.stderr.decode(errors='replace')[:200]}")
++    return r.stdout
++
++
++def self_dossier(wp_id: str) -> str:
++    """`badf_gate.py self-dossier <WP>`: assemble a G07 gate dossier for one of
++    BADF's OWN work packages, from measured evidence, as a HUMAN_REQUIRED
++    request. It binds; it never approves. Run it AFTER the deliverables are
++    committed and BEFORE committing the dossier: the source-change diff is
++    taken against HEAD, excluding the work package's own directory and the
++    lockfile, so committing this dossier does not change it."""
++    m = WP_ID_FORMS.match(wp_id.strip())
++    if not m:
++        raise ValidationError(f"{wp_id!r} is not a work package id")
++    wp_id = f"WP-2026-{m.group(1)}"
++    wp_dir = ROOT / "work" / wp_id
++    wp_path = wp_dir / "work-package.json"
++    if not wp_path.is_file():
++        raise ValidationError(f"{wp_id} has no record at work/{wp_id}/work-package.json")
++    wp = load_json(wp_path)
++    if wp.get("repository") != self_repository():
++        raise ValidationError(f"{wp_id} targets {wp.get('repository')!r}; self-dossier is for this repository's own work only")
++    base = ((wp.get("external_target") or {}).get("base_revision"))
++    if not base:
++        raise ValidationError(f"{wp_id} has no external_target.base_revision to diff against")
++    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
++    ev_dir = wp_dir / "evidence/G07"
++    ev_dir.mkdir(parents=True, exist_ok=True)
++    exclude = ["--", ".", f":(exclude)work/{wp_id}/", ":(exclude)badf/lockfile.json"]
++    change = _diff_bytes(f"{base}..HEAD", *exclude)
++    if not change:
++        raise ValidationError(f"{wp_id}: no change between {base[:12]} and HEAD (outside its own directory); nothing to govern -- commit the deliverables first")
++    docs = _diff_bytes(f"{base}..HEAD", "--", "docs/", "README.md", "AGENTS.md")
++    py = subprocess.run([sys.executable, "-m", "py_compile", "scripts/badf_gate.py", "scripts/badf_compose.py"],
++                        cwd=ROOT, capture_output=True, text=True)
++    build_txt = f"python -m py_compile scripts/badf_gate.py scripts/badf_compose.py -> exit {py.returncode}\n{py.stderr}"
++
++    artifacts = {
++        "source-change": (change, "git diff", "PASS", f"the change {wp_id} makes to this repository, outside its own directory and the lockfile"),
++        "build": (build_txt.encode(), "py_compile", "PASS" if py.returncode == 0 else "FAIL", "the modules compile"),
++        "unit-test": (b"Unit tests are executed by the composed-tree gate (scripts/badf_compose.py) on the tree that would land. "
++                      b"This dossier is a REQUEST; its test evidence is the PR's BADF COMPOSE PASS transcript, not a run by this tool.\n",
++                      "deferred-to-compose", "NOT_RUN", "unit tests run in the composed-tree gate, not here"),
++        "documentation": (docs if docs else b"", "git diff", "PASS" if docs else "NOT_APPLICABLE", "the documentation this change carries"),
++    }
++    index, non_coverage = [], []
++    for t in SELF_G07_EVIDENCE:
++        data, op, outcome, claim = artifacts[t]
++        art = ev_dir / f"{t}.{'diff' if op == 'git diff' else 'txt'}"
++        art.write_bytes(data)
++        rel_art = f"work/{wp_id}/evidence/G07/{art.name}"
++        rec = {"schema_version": "1.0.0", "id": f"EVD-{wp_id}-G07-{t}", "work_package_id": wp_id, "gate": "G07",
++               "claim": claim, "evidence_type": t, "producer": {"id": "badf-self-dossier", "type": "controller"},
++               "source_revision": "HEAD", "target": f"{self_repository()}:main",
++               "toolchain": {"name": op, "version": "1"}, "operation": op,
++               "started_at": now, "completed_at": now, "outcome": outcome,
++               "artifact": rel_art, "digest": sha256(art)}
++        (ev_dir / f"{t}.json").write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
++        index.append({"type": t, "path": f"work/{wp_id}/evidence/G07/{t}.json"})
++        if outcome == "NOT_APPLICABLE":
++            non_coverage.append({"evidence_type": t, "reason": "no documentation changed in this work package", "declared_by": "badf-self-dossier"})
++    condition = {"condition_id": "C-1",
++                 "statement": "An independent reviewer distinct from the author has not recorded an approval; BADF runs under a single collaborator (recorded, not hidden -- see GITHUB_CONTROL_PLANE.md).",
++                 "status": "OPEN", "severity": "Major", "blocking_scope": "G09",
++                 "owner": "engineering_owner",
++                 "closure_predicate": "a distinct human independent_reviewer records an approval, or the deviation is accepted in a decision record",
++                 "closure_authority": "quality_authority"}
++    dossier = {
++        "schema_version": "1.0.0", "id": f"DOS-{wp_id}-G07-v1", "work_package_id": wp_id, "gate": "G07",
++        "policy_epoch": load_json(ROOT / "badf/lifecycle.json")["policy_epoch"],
++        "source_revision": "HEAD", "target": f"{self_repository()}:main",
++        "change_class": expect_str(wp.get("change_class"), f"{wp_id}.change_class"),
++        "author": "badf-self-dossier", "author_type": "controller",
++        "evidence": index, "approvals": [], "conditions": [condition], "non_coverage": non_coverage,
++        "exceptions": [], "risks": [], "council": None,
++        "disposition": "HUMAN_REQUIRED", "created_at": now,
++        "held_because": f"BADF's own work package {wp_id} at G07: evidence prepared and digest-bound; the independent-reviewer "
++                        f"condition C-1 is open under a single collaborator; a human merges. The tool binds evidence, it does not approve.",
++    }
++    (wp_dir / "gate-dossier.G07.json").write_text(json.dumps(dossier, indent=2) + "\n", encoding="utf-8")
++    write_lockfile()
++    return (f"BADF SELF-DOSSIER: {wp_id} G07 assembled, disposition HUMAN_REQUIRED; "
++            f"source-change {len(change)} bytes bound to {base[:7]}..HEAD; a human merges. "
++            f"Validate: python3 scripts/badf_gate.py dossier work/{wp_id}/gate-dossier.G07.json (exit 3 = HELD).")
++
++
+ def validate_dossier(dossier_path: Path) -> str:
+     validate_repo()
+     dossier = load_json(dossier_path.resolve())
+@@ -2442,6 +2548,8 @@ def main() -> int:
+     init_parser.add_argument("intent", type=Path)
+     rec_parser = subparsers.add_parser("reconcile", help="write a landed work package's corroborated landing from the ledger; refuses otherwise")
+     rec_parser.add_argument("work_package")
++    self_parser = subparsers.add_parser("self-dossier", help="assemble a G07 dossier for one of BADF's own work packages from measured evidence (HUMAN_REQUIRED)")
++    self_parser.add_argument("work_package")
+     args = parser.parse_args()
+     try:
+         if args.command == "repo":
+@@ -2468,6 +2576,9 @@ def main() -> int:
+         elif args.command == "reconcile":
+             print(reconcile_work_package(args.work_package))
+             return 0
++        elif args.command == "self-dossier":
++            print(self_dossier(args.work_package))
++            return 0
+         else:
+             args._rendered = validate_dossier(args.path)
+     except ValidationError as exc:
+diff --git a/tests/test_badf_self_dossier.py b/tests/test_badf_self_dossier.py
+new file mode 100644
+index 0000000..de36bda
+--- /dev/null
++++ b/tests/test_badf_self_dossier.py
+@@ -0,0 +1,160 @@
++"""Self-work-package dossiers (BADF-WP-0033, Issue #28).
++
++Every BADF work package merged on CI plus traceability without a gate
++dossier; authority validation and evidence binding were exercised only for
++foreign work. `self-dossier <WP>` assembles a G07 dossier for BADF's OWN work
++from measured evidence, as a HUMAN_REQUIRED request. The source-change diff
++is taken against HEAD, excluding the work package's own directory and the
++lockfile, so it is the same on the branch, in the composed tree and on main
++after the squash -- and committing the dossier does not change it. Every test
++runs the real gate in a scratch clone.
++"""
++import json
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++from tests._scratch import seed_clone  # noqa: E402
++
++WP = "WP-2026-0999"
++
++
++class SelfDossierScratch(unittest.TestCase):
++    def setUp(self):
++        self.tmp = tempfile.mkdtemp()
++        self.root = Path(self.tmp) / "badf"
++        self.base = seed_clone(self.root, carry_working_state=True)
++        self.env = {k: v for k, v in {**__import__("os").environ}.items() if not k.startswith("BADF_")}
++        # Normalise the inherited ledger: in the composed world this WP has landed
++        # and is LANDED_UNRECONCILED, so a new scratch WP would trip the gate's
++        # "reconcile before opening a new one" rule inside validate_repo. Keep only
++        # the records origin/main's tree carries; the test adds its own afterward.
++        on_ledger = set(self.git("ls-tree", "-r", "--name-only", "origin/main", "--", "work/").splitlines())
++        for rec in list((self.root / "work").glob("WP-*/work-package.json")):
++            if rec.relative_to(self.root).as_posix() not in on_ledger:
++                shutil.rmtree(rec.parent)
++        # ...and reconcile any that the ledger shows landed (in the composed world
++        # this very work package is landed-unreconciled), so no debt blocks a new
++        # scratch record. reconcile refuses non-landed/foreign records -- ignored.
++        for rec in list((self.root / "work").glob("WP-*/work-package.json")):
++            subprocess.run([sys.executable, "scripts/badf_gate.py", "reconcile", rec.parent.name],
++                           cwd=self.root, env=self.env, capture_output=True)
++        # a real deliverable change on a TRACKED, UNLOCKED file (README is not in
++        # INTEGRITY_PATHS), so a later tamper reaches the diff check rather than
++        # tripping integrity first.
++        (self.root / "README.md").write_text((self.root / "README.md").read_text() + "\n<!-- WP-0999 deliverable -->\n")
++        self.git("add", "README.md"); self.commit("deliverable")
++        d = self.root / "work" / WP; d.mkdir(parents=True)
++        rec = {"$schema": "../../schemas/work-package.schema.json", "schema_version": "1.0.0", "id": WP,
++               "title": "scratch self-dossier work package", "owner": "human_sponsor", "repository": "bstBizEra/badf",
++               "demand": "BADF-DEM-0001", "objective": "x", "business_value": "x", "in_scope": ["x"], "out_of_scope": ["y"],
++               "target_gate": "G07", "change_class": "C2", "data_classification": "internal",
++               "acceptance_criteria": ["x"], "permissions": ["write: bstBizEra/badf via PR"], "tests": ["t"],
++               "evidence": ["source-change"], "rollback": {"reversible": True, "method": "revert"},
++               "status": "IN_PROGRESS", "external_target": {"repository": "bstBizEra/badf", "branch": "main", "base_revision": self.base}}
++        (d / "work-package.json").write_text(json.dumps(rec, indent=2) + "\n")
++        self.lock()
++
++    def tearDown(self):
++        shutil.rmtree(self.tmp, ignore_errors=True)
++
++    def git(self, *a):
++        return subprocess.run(["git", "-C", str(self.root), "-c", "user.email=t@t", "-c", "user.name=t", *a],
++                              capture_output=True, text=True, check=True).stdout.strip()
++
++    def commit(self, msg):
++        self.git("commit", "-q", "-m", msg)
++
++    def lock(self):
++        subprocess.run([sys.executable, "scripts/badf_gate.py", "lock"], cwd=self.root, env=self.env, capture_output=True, check=True)
++
++    def assemble(self, wp=WP):
++        return subprocess.run([sys.executable, "scripts/badf_gate.py", "self-dossier", wp],
++                              cwd=self.root, env=self.env, capture_output=True, text=True)
++
++    def validate(self):
++        return subprocess.run([sys.executable, "scripts/badf_gate.py", "dossier", f"work/{WP}/gate-dossier.G07.json"],
++                              cwd=self.root, env=self.env, capture_output=True, text=True)
++
++    def dossier(self):
++        return json.loads((self.root / "work" / WP / "gate-dossier.G07.json").read_text())
++
++
++class AssembleTests(SelfDossierScratch):
++
++    def test_assembled_dossier_is_held_with_four_bound_evidence(self):
++        r = self.assemble(); self.assertEqual(r.returncode, 0, r.stderr)
++        d = self.dossier()
++        self.assertEqual(d["disposition"], "HUMAN_REQUIRED")
++        self.assertEqual([e["type"] for e in d["evidence"]], ["source-change", "build", "unit-test", "documentation"])
++        for e in d["evidence"]:
++            rec = json.loads((self.root / e["path"]).read_text())
++            art = self.root / rec["artifact"]
++            self.assertTrue(art.is_file(), rec["artifact"])
++            self.assertEqual(rec["digest"], gate.sha256(art))
++        v = self.validate()
++        self.assertEqual(v.returncode, 3, v.stdout + v.stderr)   # HELD
++        self.assertIn("HUMAN_REQUIRED", v.stdout)
++
++    def test_carried_condition_records_the_missing_independent_reviewer(self):
++        self.assertEqual(self.assemble().returncode, 0)
++        conds = self.dossier()["conditions"]
++        self.assertEqual(len(conds), 1)
++        self.assertEqual(conds[0]["status"], "OPEN")
++        self.assertIn("independent reviewer", conds[0]["statement"].lower())
++        self.assertEqual(conds[0]["closure_authority"], "quality_authority")
++
++    def test_source_change_artifact_is_the_diff_excluding_its_own_dir_and_lockfile(self):
++        self.assertEqual(self.assemble().returncode, 0)
++        diff = (self.root / "work" / WP / "evidence/G07/source-change.diff").read_text()
++        self.assertIn("README.md", diff)
++        self.assertNotIn(f"work/{WP}/", diff, "the dossier's own directory leaked into the diff it records")
++        self.assertNotIn("lockfile.json", diff)
++
++    def test_committing_the_dossier_does_not_invalidate_it(self):
++        self.assertEqual(self.assemble().returncode, 0)
++        self.git("add", f"work/{WP}", "badf/lockfile.json"); self.commit("dossier")
++        v = self.validate()
++        self.assertEqual(v.returncode, 3, v.stdout + v.stderr)
++
++    def test_a_committed_change_outside_the_dir_after_assembly_invalidates_the_binding(self):
++        self.assertEqual(self.assemble().returncode, 0)
++        (self.root / "README.md").write_text((self.root / "README.md").read_text() + "\n<!-- tamper -->\n")
++        self.git("add", "README.md"); self.commit("tamper")   # README is not locked, so this reaches the diff check
++        v = self.validate()
++        self.assertNotEqual(v.returncode, 0, "a change after assembly still validated")
++        self.assertIn("does not match", v.stderr)
++
++    def test_flipping_to_pass_re_enters_full_validation_and_is_refused(self):
++        self.assertEqual(self.assemble().returncode, 0)
++        p = self.root / "work" / WP / "gate-dossier.G07.json"
++        d = json.loads(p.read_text()); d["disposition"] = "PASS"; p.write_text(json.dumps(d, indent=2) + "\n")
++        self.lock()
++        v = self.validate()
++        self.assertNotEqual(v.returncode, 0, "a self-dossier claiming PASS was accepted with unit-test NOT_RUN and no approvals")
++
++    def test_refuses_a_work_package_with_no_change(self):
++        # a fresh WP whose base is HEAD: nothing to govern
++        d = self.root / "work" / "WP-2026-0998"; d.mkdir()
++        rec = json.loads((self.root / "work" / WP / "work-package.json").read_text())
++        rec["id"] = "WP-2026-0998"; rec["external_target"]["base_revision"] = self.git("rev-parse", "HEAD")
++        (d / "work-package.json").write_text(json.dumps(rec, indent=2) + "\n"); self.lock()
++        r = self.assemble("WP-2026-0998")
++        self.assertNotEqual(r.returncode, 0); self.assertIn("nothing to govern", r.stderr)
++
++    def test_refuses_a_foreign_work_package(self):
++        d = self.root / "work" / "WP-2026-0997"; d.mkdir()
++        rec = json.loads((self.root / "work" / WP / "work-package.json").read_text())
++        rec["id"] = "WP-2026-0997"; rec["repository"] = "bstBizEra/secb_pf"
++        (d / "work-package.json").write_text(json.dumps(rec, indent=2) + "\n"); self.lock()
++        r = self.assemble("WP-2026-0997")
++        self.assertNotEqual(r.returncode, 0); self.assertIn("own work only", r.stderr)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0032/work-package.json b/work/WP-2026-0032/work-package.json
+index 5a10975..8c1b540 100644
+--- a/work/WP-2026-0032/work-package.json
++++ b/work/WP-2026-0032/work-package.json
+@@ -42,11 +42,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "20633e3"
++    "base_revision": "20633e3",
++    "landed_as": "684539e0987a481b0f8e8f9e4bde0677b945078f"
+   },
+   "note": "Lands IN_PROGRESS by design; reconciled by the next WP's branch."
+ }

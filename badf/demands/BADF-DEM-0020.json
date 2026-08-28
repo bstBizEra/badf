@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0020",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 28,
+    "url": "https://github.com/bstBizEra/badf/issues/28",
+    "exported_at": "2026-08-28T06:32:31Z",
+    "body_digest": "sha256:2287aa5f47394e02bac8ea2d468341fbc67f6d2ae9a13e2a4c3714ce0854dbda"
+  },
+  "title": "GOV-0008: 'Draft PR = live delivery dossier' -- nothing produces or checks one",
+  "problem": "## Observed\nThe doctrine table maps Draft PR \u2192 *live delivery dossier*. No dossier is produced for or checked on any PR. `WP-2026-0010`'s G07/G08 dossiers live under `work/` and were gated by hand; BADF's own WPs (`0016`, `0018`) carry **no gate dossier at all** \u2014 they merged on CI + traceability only.\n\n## Expected\n> Merge only after current composed-tree verification, independent challenge, authority validation, and evidence binding.\nA PR carries (or links) the dossier for its WP's target gate and CI runs `badf_gate.py dossier` on it, so authority validation and evidence binding are exercised for BADF's own work packages, not only for foreign ones.\n\n## Evidence\n`ls work/WP-2026-0016 work/WP-2026-0018` \u2192 `work-package.json` only, on `c510516`.\n\n## Unknowns\nWhether a self-WP at `change_class: C3` can satisfy a G07 dossier at all under a single collaborator \u2014 `author \u2209 approvers` cannot be met, the same deviation already recorded for reviews in `GITHUB_CONTROL_PLANE.md`. To be recorded, not hidden. Related: #21 (composed-tree gate).\n\n## Proposed work package\nDefine the minimum self-WP dossier; CI validates it on `pull_request`; the approvals deviation recorded in the dossier as a carried condition.\n\ndiscovered-by: BADF-WP-0016 (deferred) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T06:32:31Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. DISCOVERED by BADF-WP-0016 (deferred); authority: the operator's 'proceed on your call' on the #28 pick (2026-08-28). Worked as BADF-WP-0033."
+}
