@@ -1,0 +1,26 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 3fc9954..331ca4f 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -263,6 +263,21 @@ substrate — reusing `validate_evidence`, no competing `scripts/badf_requiremen
+ Spec-Kit; the `badf-requirements` authoring skill and the capability/epic hierarchy are named,
+ deferred WPs.
+ 
++## Gate 03 — UX and service design (`BADF-WP-0042`, Issue #72)
++
++The gate march continues one gate at a time: G03's four types (`journeys`, `service-blueprint`,
++`accessibility`, `user-validation`) were declared but unenforced. Each now has a per-type rule in
++`validate_evidence`, and each maps to one of G03's exit criteria. `journeys` — unique `JRN-NNN`
++with non-empty steps, and the set must design **both** a happy and an unhappy path (an all-happy
++design is refused). `service-blueprint` — one lane per journey, reached through the `journeys`
++sibling: no uncovered journey, no lane for an unknown journey (the coverage cross-reference, G03's
++RTM analogue), and every lane must define support actions. `accessibility` — a declared standard
++and enumerated criteria, each `met` or `not_applicable` **with a rationale**. `user-validation` —
++**human**-produced, a positive participant count, and every `major`/`critical` finding carrying a
++resolution (an unresolved major finding means the design is not validated). Ships
++`examples/gate-dossier.G03.json` and a G02→G03 pair-acceptance. Same lean substrate as G01/G02 —
++no design-authoring skill, no vendored UX toolkit.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "badf/service-blueprint.schema.json",
+  "title": "G03 service-blueprint evidence artifact -- one lane per journey, frontstage/backstage/support",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "prd_id",
+    "lanes"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": [
+        "1.0.0"
+      ]
+    },
+    "prd_id": {
+      "type": "string",
+      "pattern": "^PRD-[A-Za-z0-9._-]+$"
+    },
+    "lanes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "journey",
+          "frontstage",
+          "backstage",
+          "support_actions"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "journey": {
+            "type": "string",
+            "pattern": "^JRN-[0-9]{3,}$"
+          },
+          "frontstage": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "backstage": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "support_actions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}

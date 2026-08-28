@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "standard": "WCAG 2.1 AA",
+  "criteria": [
+    {
+      "id": "A11Y-001",
+      "requirement": "the dashboard is fully keyboard navigable",
+      "status": "met"
+    },
+    {
+      "id": "A11Y-002",
+      "requirement": "verdict colour is paired with a text label (not colour alone)",
+      "status": "met"
+    },
+    {
+      "id": "A11Y-003",
+      "requirement": "audio captioning",
+      "status": "not_applicable",
+      "rationale": "the control plane has no audio surface"
+    }
+  ]
+}

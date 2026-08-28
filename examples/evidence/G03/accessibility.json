@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G03",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G03-ACCESSIBILITY-v1",
+  "claim": "Example accessibility bound to PRD-BADF-0001",
+  "evidence_type": "accessibility",
+  "producer": {
+    "id": "example-designer",
+    "type": "human"
+  },
+  "operation": "assess accessibility",
+  "artifact": "examples/evidence/G03/accessibility.artifact.json",
+  "digest": "sha256:a42df69a43a4bb38a70a21922ba02d8fe407086ead5df9d4312f1e235ce8b2bd"
+}
