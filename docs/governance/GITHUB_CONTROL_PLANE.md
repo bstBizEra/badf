@@ -130,6 +130,16 @@ it rather than trusting the record.
   shape (WP-0029: 13 advance tests red there, green in the composed run). Scratch clones pin
   `origin/main` explicitly (`tests/_scratch.pin_origin_main`).
 
+## Research evidence digest (`BADF-WP-0039`, RSR-005 control 17)
+
+A record's `evidence_digest` is the sha256 of its **material evidence** — sources, claims,
+contradictions, experiments — in canonical JSON, **computed by the gate, not asserted**. A
+claim or source edited without re-digesting is stale and refused; editing interpretation
+(findings, recommendation, disposition) does not change it. **Fifteen of the eighteen controls
+are now enforced.** The last three need machinery beyond a record check: baseline
+git-resolution (3, `repository-research` subskill territory), source-digest staleness detection
+(6), which need a subskill and a source-fetch respectively. `badf-research` stays `DESIGNED`.
+
 ## Research conclusion integrity and traceability (`BADF-WP-0038`, RSR-004)
 
 Four more controls, about whether a record's conclusion holds together and traces back:

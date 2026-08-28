@@ -2470,6 +2470,17 @@ def derive_confidence(basis: dict[str, Any]) -> str:
     return "HIGH" if contra > 0 else "VERY_HIGH"
 
 
+def compute_research_evidence_digest(rec: dict[str, Any]) -> str:
+    """The digest of a record's MATERIAL evidence -- its sources, claims,
+    contradictions and experiments. Interpretation (findings, recommendation,
+    disposition) is deliberately excluded: the digest changes when the
+    evidence changes, not when its reading does (RSR-002 control 17). Canonical
+    JSON so the same evidence always yields the same digest."""
+    material = {k: rec[k] for k in ("sources", "claims", "contradictions", "experiments")}
+    blob = json.dumps(material, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return "sha256:" + hashlib.sha256(blob).hexdigest()
+
+
 def validate_research_record(path: Path) -> str:
     """`badf_gate.py research <path>`: the deterministic record/source/claim
     controls of the frozen research contract (RSR-002). Schema conformance,
@@ -2576,6 +2587,11 @@ def validate_research_record(path: Path) -> str:
     # 18: the chain Issue -> demand -> research -> decision -> work package can be
     # reconstructed. The demand resolves; a named decision resolves; a named work
     # package has a record; and a named decision governs the named work package.
+    # 17: the evidence_digest is computed from the material evidence, not
+    # asserted; a claim or source edited without re-digesting is stale.
+    want_digest = compute_research_evidence_digest(rec)
+    if rec["evidence_digest"] != want_digest:
+        raise ValidationError(f"evidence_digest {rec['evidence_digest']} is not the digest of this record's sources/claims/contradictions/experiments ({want_digest[:19]}...); it is computed, not asserted -- re-digest when the evidence changes")
     load_demand(rec["demand"])
     if down["decision_id"] is not None:
         dec = load_decision(down["decision_id"])

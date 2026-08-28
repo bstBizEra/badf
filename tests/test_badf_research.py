@@ -232,6 +232,7 @@ class ConclusionAndTraceabilityTests(unittest.TestCase):
         rec["claims"][0]["confidence"]["basis"]["contradictions"] = 1
         rec["claims"][0]["confidence"]["level"] = "HIGH"
         rec["contradictions"] = [{"id": "X-001", "claim_refs": ["C-001"], "statement": "S-002 pointed the other way, examined"}]
+        rec["evidence_digest"] = gate.compute_research_evidence_digest(rec)   # material evidence changed -> re-digest (control 17)
         r = self.run_cli(rec)
         self.assertEqual(r.returncode, 0, r.stderr)
 
@@ -260,6 +261,56 @@ class ConclusionAndTraceabilityTests(unittest.TestCase):
     def test_a_consistent_downstream_chain_passes(self):
         rec = copy.deepcopy(EXAMPLE)
         rec["downstream"] = {"decision_id": "BADF-DEC-0007", "work_package_id": "WP-2026-0029"}
+        r = self.run_cli(rec)
+        self.assertEqual(r.returncode, 0, r.stderr)
+
+
+class EvidenceDigestTests(unittest.TestCase):
+    def run_cli(self, rec):
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+            json.dump(rec, f); path = Path(f.name)
+        try:
+            return subprocess.run([sys.executable, "scripts/badf_gate.py", "research", str(path)],
+                                  cwd=str(gate.ROOT), capture_output=True, text=True)
+        finally:
+            path.unlink()
+
+    def rebind(self, rec):
+        rec["evidence_digest"] = gate.compute_research_evidence_digest(rec); return rec
+
+    def test_shipped_examples_carry_the_computed_digest(self):
+        for name in ("research-record.json", "research-record-challenged.json"):
+            rec = json.loads((gate.ROOT / "examples" / name).read_text())
+            self.assertEqual(rec["evidence_digest"], gate.compute_research_evidence_digest(rec), name)
+
+    def test_a_null_evidence_digest_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE); rec["evidence_digest"] = None
+        r = self.run_cli(rec)
+        self.assertNotEqual(r.returncode, 0); self.assertIn("computed, not asserted", r.stderr)
+
+    def test_a_claim_edited_without_re_digesting_is_stale(self):
+        rec = copy.deepcopy(EXAMPLE)
+        rec["claims"][0]["statement"] = "a different claim"   # material evidence changed; digest not updated
+        r = self.run_cli(rec)
+        self.assertNotEqual(r.returncode, 0); self.assertIn("not the digest", r.stderr)
+
+    def test_a_source_edited_without_re_digesting_is_stale(self):
+        rec = copy.deepcopy(EXAMPLE)
+        rec["sources"][0]["uri"] = "https://example.invalid/moved"
+        r = self.run_cli(rec)
+        self.assertNotEqual(r.returncode, 0); self.assertIn("not the digest", r.stderr)
+
+    def test_editing_interpretation_does_not_change_the_evidence_digest(self):
+        rec = copy.deepcopy(EXAMPLE)
+        rec["recommendation"] = "a different recommendation, same evidence"
+        rec["findings"][0]["statement"] = "reworded finding"
+        r = self.run_cli(rec)   # evidence_digest unchanged and still correct -> passes
+        self.assertEqual(r.returncode, 0, r.stderr)
+
+    def test_re_digesting_after_a_real_edit_passes(self):
+        rec = self.rebind(copy.deepcopy(EXAMPLE))
+        rec["claims"][0]["statement"] = "a new, honestly re-digested claim"
+        self.rebind(rec)
         r = self.run_cli(rec)
         self.assertEqual(r.returncode, 0, r.stderr)
 

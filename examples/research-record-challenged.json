@@ -148,6 +148,6 @@
   "authority": {
     "implementation_authority": false
   },
-  "evidence_digest": null,
+  "evidence_digest": "sha256:35c4a47ed7179b74b40e85574ed6ee9e7be02482498cffe3bcbbb768bf23d005",
   "recorded_at": "2026-08-28T14:20:00Z"
 }

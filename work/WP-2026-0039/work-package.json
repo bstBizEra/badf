@@ -1,0 +1,51 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0039",
+  "title": "RSR-005 (control 17): a research record's evidence_digest is computed, not asserted",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0026",
+  "objective": "Enforce control 17: evidence_digest = sha256 of the record's material evidence (sources, claims, contradictions, experiments), computed by the gate; a stale or null digest is refused. This is the last record-pure control (15 of 18).",
+  "business_value": "An unchecked evidence_digest is decorative; computing it makes 'the record changed when the evidence changed' true, so a downstream decision can trust the record it cites.",
+  "in_scope": [
+    "compute_research_evidence_digest + control 17 in validate_research_record",
+    "both examples digest-bound; doc aligned",
+    "tests failing-first; mutation; own self-dossier"
+  ],
+  "out_of_scope": [
+    "controls 3 (baseline git-resolution -- repository-research subskill) and 6 (source-digest staleness) -- need machinery beyond a record check; separate later work with operator scoping",
+    "the nine P0 subskills; registry activation (badf-research stays DESIGNED)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "both examples carry the computed digest and pass",
+    "a null evidence_digest is refused",
+    "a claim or source edited without re-digesting is refused; editing interpretation is not",
+    "re-digesting after a real edit passes",
+    "mutation kills; compose green both shapes"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "e7ea929"
+  },
+  "note": "Lands IN_PROGRESS by design. Own G07 self-dossier. The last record-pure control (15/18); 3 and 6 remain, needing a subskill and a source-fetch, to be scoped with the operator. badf-research stays DESIGNED."
+}
