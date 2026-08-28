@@ -25,6 +25,7 @@
     "contradictions",
     "non_coverage",
     "recommendation",
+    "researcher",
     "challenge",
     "state",
     "disposition",
@@ -500,7 +501,7 @@
             "object",
             "null"
           ],
-          "description": "the framework's council record, when required; the originating researcher cannot ballot (RSR-I05)"
+          "description": "The framework council record when challenge is required, else null. Its structure and independence are validated in code (a nullable object defeats the schema walker): distinct reviewers, none of them the researcher (RSR-I05), each declaring non_coverage (BADF-WP-0037)."
         }
       }
     },
@@ -595,6 +596,30 @@
     "recorded_at": {
       "type": "string",
       "minLength": 1
+    },
+    "researcher": {
+      "type": "object",
+      "required": [
+        "principal",
+        "principal_type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "principal": {
+          "type": "string",
+          "minLength": 1
+        },
+        "principal_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "agent",
+            "service",
+            "controller"
+          ]
+        }
+      },
+      "description": "Who produced this record. A required independent challenge cannot be balloted by this principal (RSR-I05, BADF-WP-0037)."
     }
   }
 }

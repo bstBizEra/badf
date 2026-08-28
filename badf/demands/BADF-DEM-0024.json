@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0024",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 61,
+    "url": "https://github.com/bstBizEra/badf/issues/61",
+    "exported_at": "2026-08-28T13:05:51Z",
+    "body_digest": "sha256:b5e756c355895cee1b36334e1d90999fe902883cd4899bf14fc3a0c189fa37ff"
+  },
+  "title": "GOV-0020: research challenge and independence controls are not enforced (RSR-003)",
+  "problem": "## Observed\n`BADF-WP-0036` (RSR-002) enforced the research contract's record/source/claim controls, but the challenge/independence half (`skills/badf-research/references/acceptance.md` controls 10\u201313) is not enforced. A research record can assert `independent_primary_sources: 5` while citing one source; a `D4`/`D5` or `R06` record can set `challenge.required: false`; a council can list the researcher as a reviewer or the same identity twice; a ballot can omit its non-coverage. The record has no `researcher` field at all, so RSR-I05 (\"the author cannot satisfy required independent challenge\") has nothing to compare against.\n\n## Expected\n`badf_gate.py research` enforces: `independent_primary_sources` \u2264 distinct PRIMARY sources cited (control 10); challenge **required** (computed) at `D4`/`D5` or `R06` (control 11 precondition); when required, a council with \u22652 distinct reviewers, none of them the researcher (RSR-I05, control 11); no duplicate reviewer identity (control 12); every ballot declares `non_coverage` as a list (control 13). A required `researcher` field. A challenged example validated in CI.\n\n## Evidence\n`grep -n \"researcher\" schemas/research-record.schema.json` \u2192 absent on `main` at `30160d4`. `validate_research_record` has no council/independence checks.\n\n## Unknowns\nNone of substance. State-transition (control 16) and traceability (18) remain later WPs; `badf-research` stays `DESIGNED` until all 18 pass.\n\n## Proposed work package\n`BADF-WP-0037` (RSR-003). `researcher` field; challenge/council structure validated in code (a nullable object defeats the schema walker); the four controls; a challenged example; tests + mutation. C2.\n\ndiscovered-by: BADF-WP-0031 (frozen-contract roadmap) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T13:05:51Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. Roadmap item RSR-003 under the frozen research contract (#50); authority: the operator's pick of RSR-003 (2026-08-28). Worked as BADF-WP-0037."
+}

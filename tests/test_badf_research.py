@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import badf_gate as gate  # noqa: E402
 
 EXAMPLE = json.loads((gate.ROOT / "examples/research-record.json").read_text())
+CHALLENGED = json.loads((gate.ROOT / "examples/research-record-challenged.json").read_text())
 
 
 class DeriveConfidenceTests(unittest.TestCase):
@@ -111,6 +112,74 @@ class ResearchRecordTests(unittest.TestCase):
         rec = copy.deepcopy(EXAMPLE)
         rec["findings"][0]["claim_refs"].append("C-999")
         self.refused(rec, "C-999")
+
+
+class ChallengeAndIndependenceTests(unittest.TestCase):
+    def run_cli(self, rec):
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+            json.dump(rec, f); path = Path(f.name)
+        try:
+            return subprocess.run([sys.executable, "scripts/badf_gate.py", "research", str(path)],
+                                  cwd=str(gate.ROOT), capture_output=True, text=True)
+        finally:
+            path.unlink()
+
+    def refused(self, rec, needle):
+        r = self.run_cli(rec)
+        self.assertNotEqual(r.returncode, 0, "a defective research record passed")
+        self.assertIn(needle, r.stderr, r.stderr)
+
+    def test_challenged_example_passes(self):
+        r = self.run_cli(copy.deepcopy(CHALLENGED))
+        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
+
+    def test_more_independent_primaries_than_cited_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE)
+        rec["claims"][1]["confidence"]["basis"]["independent_primary_sources"] = 3  # cites one primary (S-002)
+        rec["claims"][1]["confidence"]["level"] = "VERY_HIGH"  # keep confidence derivation consistent so control 10 fires
+        self.refused(rec, "source count is not independence")
+
+    def test_deep_research_without_a_required_challenge_is_refused(self):
+        rec = copy.deepcopy(CHALLENGED)
+        rec["challenge"] = {"required": False, "council": None}
+        self.refused(rec, "requires independent challenge")
+
+    def test_required_challenge_with_no_council_is_refused(self):
+        rec = copy.deepcopy(CHALLENGED)
+        rec["challenge"]["council"] = None
+        self.refused(rec, "no council record")
+
+    def test_the_researcher_cannot_ballot_on_their_own_research(self):
+        rec = copy.deepcopy(CHALLENGED)
+        rec["challenge"]["council"]["ballots"][0]["reviewer"] = rec["researcher"]["principal"]
+        self.refused(rec, "cannot ballot on their own")
+
+    def test_a_duplicate_reviewer_identity_is_refused(self):
+        rec = copy.deepcopy(CHALLENGED)
+        rec["challenge"]["council"]["ballots"][1]["reviewer"] = rec["challenge"]["council"]["ballots"][0]["reviewer"]
+        self.refused(rec, "duplicate reviewer")
+
+    def test_a_ballot_without_declared_non_coverage_is_refused(self):
+        rec = copy.deepcopy(CHALLENGED)
+        del rec["challenge"]["council"]["ballots"][0]["non_coverage"]
+        self.refused(rec, "reviewer, principal_type, verdict, non_coverage")
+
+    def test_non_coverage_that_is_not_a_list_is_refused(self):
+        """The key present is not enough -- a reviewer declares non-coverage as
+        a list of surfaces, not a bare string (control 13)."""
+        rec = copy.deepcopy(CHALLENGED)
+        rec["challenge"]["council"]["ballots"][0]["non_coverage"] = "none"
+        self.refused(rec, "non_coverage as a list")
+
+    def test_a_single_reviewer_does_not_meet_quorum(self):
+        rec = copy.deepcopy(CHALLENGED)
+        rec["challenge"]["council"]["ballots"] = rec["challenge"]["council"]["ballots"][:1]
+        self.refused(rec, "at least two distinct reviewers")
+
+    def test_an_invalid_ballot_verdict_is_refused(self):
+        rec = copy.deepcopy(CHALLENGED)
+        rec["challenge"]["council"]["ballots"][0]["verdict"] = "APPROVE"
+        self.refused(rec, "verdict")
 
 
 if __name__ == "__main__":

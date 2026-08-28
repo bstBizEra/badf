@@ -1,0 +1,153 @@
+{
+  "schema_version": "1.0.0",
+  "id": "BADF-RSR-0002",
+  "demand": "BADF-DEM-0023",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 59
+  },
+  "researcher": {
+    "principal": "badf-research-agent",
+    "principal_type": "agent"
+  },
+  "type": "R07",
+  "depth": "D4",
+  "question": "Should BADF verify a self-work-package's source-change diff against HEAD (excluding the WP dir) or against a pinned branch SHA?",
+  "scope": {
+    "include": [
+      "the squash-merge behaviour on main",
+      "verify_foreign_revision"
+    ],
+    "exclude": [
+      "foreign (LOCAL_MIRROR) work packages"
+    ]
+  },
+  "baseline": {
+    "repository": "bstBizEra/badf",
+    "revision": "684539e",
+    "observed_at": "2026-08-28T14:00:00Z"
+  },
+  "known": [
+    "a branch's intermediate commits do not survive a squash merge",
+    "landed_as is derived, not recorded, for the same reason"
+  ],
+  "unknown": [
+    "whether a pinned SHA can be made to survive the squash"
+  ],
+  "hypotheses": [
+    {
+      "id": "H-001",
+      "statement": "a pinned branch SHA cannot survive the squash; HEAD with path exclusions can",
+      "status": "RETAINED"
+    }
+  ],
+  "sources": [
+    {
+      "id": "S-001",
+      "uri": "git:bstBizEra/badf reconciliation design (WP-0019)",
+      "source_type": "PRIMARY",
+      "retrieved_at": "2026-08-28T14:01:00Z",
+      "digest": null
+    },
+    {
+      "id": "S-002",
+      "uri": "git:bstBizEra/badf composed-tree gate (WP-0024)",
+      "source_type": "PRIMARY",
+      "retrieved_at": "2026-08-28T14:02:00Z",
+      "digest": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "C-001",
+      "statement": "a self-WP diff taken against HEAD excluding the WP dir is identical on the branch, in the composed tree and on main",
+      "classification": "INFERRED",
+      "supporting_sources": [
+        "S-001",
+        "S-002"
+      ],
+      "contradicting_sources": [],
+      "status": "VERIFIED",
+      "confidence": {
+        "level": "VERY_HIGH",
+        "basis": {
+          "independent_primary_sources": 2,
+          "reproducible": true,
+          "contradictions": 0
+        }
+      }
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-001",
+      "statement": "HEAD-with-exclusions is the only diff basis that survives the squash",
+      "claim_refs": [
+        "C-001"
+      ]
+    }
+  ],
+  "alternatives": [
+    {
+      "id": "A-001",
+      "mechanism": "pin the branch tip SHA in source_revision",
+      "evidence_refs": [
+        "the SHA is discarded by the squash"
+      ]
+    },
+    {
+      "id": "A-002",
+      "mechanism": "diff base..HEAD excluding the WP dir and the lockfile",
+      "evidence_refs": [
+        "tree-identical across branch/composed/main"
+      ]
+    }
+  ],
+  "experiments": [],
+  "contradictions": [],
+  "non_coverage": [
+    {
+      "surface": "non-squash merge strategies",
+      "reason": "main is squash-only under the ruleset"
+    }
+  ],
+  "recommendation": "diff base..HEAD excluding the WP's own directory and the lockfile (adopted in WP-0033)",
+  "challenge": {
+    "required": true,
+    "council": {
+      "convened_at": "2026-08-28T14:10:00Z",
+      "ballots": [
+        {
+          "reviewer": "human-reviewer-a",
+          "principal_type": "human",
+          "verdict": "CONFIRMED",
+          "non_coverage": [
+            "did not re-derive the tree hashes by hand"
+          ],
+          "sealed": true
+        },
+        {
+          "reviewer": "human-reviewer-b",
+          "principal_type": "human",
+          "verdict": "CONFIRMED",
+          "non_coverage": [],
+          "sealed": true
+        }
+      ]
+    }
+  },
+  "state": "RECONCILED",
+  "disposition": {
+    "state": "RESEARCH_SUFFICIENT",
+    "reason": "the tree-identity argument is confirmed by two independent reviewers"
+  },
+  "downstream": {
+    "decision_id": null,
+    "work_package_id": null
+  },
+  "authority": {
+    "implementation_authority": false
+  },
+  "evidence_digest": null,
+  "recorded_at": "2026-08-28T14:20:00Z"
+}
