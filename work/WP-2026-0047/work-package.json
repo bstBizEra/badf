@@ -1,0 +1,59 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0047",
+  "title": "fact-checking: P0 research subskill 3/9 + control 21 (claim status <-> evidence, earned by failing-first)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0034",
+  "objective": "Build the fact-checking research subskill (mirroring repository-research/problem-framing): an R10 declarative workflow that adjudicates claim status over already-bound evidence, reusing the frozen statuses and derived confidence, with invariants NO EVIDENCE != FALSE, NO CONTRADICTION != VERIFIED, CITATION != SUPPORT. Add control 21 ONLY because a failing-first probe earned it: FALSIFIED/DISPUTED claims currently pass with no contradicting evidence. Register IMPLEMENTED; badf-research stays DESIGNED (3 of 9 P0).",
+  "business_value": "fact-checking is the reusable verification primitive for every multi-source route; a claim's status becomes a function of evidence rather than researcher judgment, and 'no evidence is not falsification' becomes a deterministic refusal. It does not own source acquisition -- that is deep-research -- so the ordering fact-checking -> evidence-synthesis -> deep-research -> control 6 stays intact.",
+  "in_scope": [
+    "skills/badf-research/subskills/fact-checking/SKILL.md (concise, declarative; scope boundary: adjudicates bound evidence, does not acquire)",
+    "skill-registry entry fact-checking IMPLEMENTED with a real digest",
+    "control 21 in validate_research_record (earned): FALSIFIED => a contradicting source; DISPUTED => both supporting and contradicting",
+    "acceptance.md control 21 row; root SKILL.md router (3 of 9)",
+    "tests/test_badf_research.py failing-first + mutation; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "the semantic source-supports-claim check (no content locator -- filed as #84, RSR-I06 candidate)",
+    "any new claim-status vocabulary (SUPPORTED/REFUTED/NEI/TRUE/FALSE rejected)",
+    "general web crawling/search / source acquisition (deep-research)",
+    "control 6 (source freshness), the other 6 P0 subskills, #77 refactor, the R08/R09 router (#83)",
+    "any move of badf-research off DESIGNED; any new validator module or council"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "fact-checking/SKILL.md exists, is concise, and its registry digest == sha256(source), status IMPLEMENTED",
+    "a FALSIFIED claim with no contradicting source is refused; a DISPUTED claim without both sides is refused",
+    "a valid FALSIFIED/DISPUTED claim (with contradicting source + a contradictions[] entry) passes",
+    "the three shipped examples still pass `research` unchanged (all VERIFIED, con=0)",
+    "no new claim-status vocabulary is introduced",
+    "root SKILL.md routes fact-checking; acceptance.md documents control 21 (research controls 19 of 21)",
+    "mutation kills; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research.py",
+    "tests/test_badf_registry_digest.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "936169f"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Third P0 research subskill. Control 21 was EARNED by a failing-first adversarial probe (not added because prior subskills happened to land with a control); the non-enforceable semantic half is issue #84. Reconciles WP-2026-0046. badf-research stays DESIGNED (3 of 9 P0); research controls to 19 of 21."
+}

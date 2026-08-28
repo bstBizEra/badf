@@ -49,11 +49,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "e8fa8ce"
+    "base_revision": "e8fa8ce",
+    "landed_as": "936169fd46de38cd4a035deaa0b53c7704d6d116"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Second P0 research subskill (repository-research was first). Reuses the frozen contract + WP-0045 framing fields -- no new validator module. badf-research stays DESIGNED (2 of 9 P0). Research controls to 18 of 20; control 6 (freshness) still open."
 }

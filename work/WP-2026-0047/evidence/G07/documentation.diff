@@ -1,0 +1,28 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 3dfe893..48a96ab 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -342,6 +342,23 @@ deterministic refusal: **control 20** — a record in a pre-evidence `state` (`P
+ `deep-research` owns source acquisition; control 15 rides the state machine). The root `SKILL.md`'s
+ stale *"nothing here runs yet"* line is corrected; `badf-research` stays `DESIGNED` (2 of 9 P0).
+ 
++## fact-checking — verification primitive, control earned not assumed (`BADF-WP-0047`, Issue #85)
++
++The third P0 research subskill, a cross-cutting verification primitive:
++`skills/badf-research/subskills/fact-checking/SKILL.md`
++adjudicates claim `status` over evidence **already bound** to the record — it does not acquire
++sources (that is `deep-research`). It reuses the frozen statuses; it adds no new vocabulary. Its
++invariants: `NO EVIDENCE ≠ FALSE`, `NO CONTRADICTION ≠ VERIFIED`, `CITATION ≠ SUPPORT`.
++
++The control was **earned by failing-first, not assumed**: adversarial probes against the current gate
++showed a `FALSIFIED` or `DISPUTED` claim passed with *no contradicting evidence*. That gap is
++deterministically enforceable, so **control 21** now requires a `FALSIFIED` claim to carry a
++contradicting source and a `DISPUTED` claim to carry both sides (composing with the existing
++contradiction-preservation control 8). The *semantic* half of `CITATION ≠ SUPPORT` — whether a
++source's content entails the claim — has no content locator in the machine contract and is therefore
++**not** forced into a weak verifier here; it is filed as its own issue (RSR-I06 candidate). Research
++controls: **19 of 21**. `badf-research` stays `DESIGNED` (3 of 9 P0).
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

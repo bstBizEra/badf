@@ -36,7 +36,7 @@
       "risk_class": "C1",
       "allowed_tools": [],
       "status": "DESIGNED",
-      "digest": "sha256:48468e6b475f46afb8903045d5ecc58e643935c4a4b4fdc76b3d49e242363392"
+      "digest": "sha256:71e2fe9825be4ddcd8891763a230d51013f59760ec93d15dc116d8b78c470f18"
     },
     {
       "name": "repository-research",
@@ -73,6 +73,19 @@
       ],
       "status": "IMPLEMENTED",
       "digest": "sha256:0dd049400f54f2c4cf9296bc27bf72a298891de8ab4d9e26b3e8b02c824e2a6a"
+    },
+    {
+      "name": "fact-checking",
+      "source": "skills/badf-research/subskills/fact-checking/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem",
+        "local-shell"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:fa87749db7df5512f1f3cfdddba25e4b1f9f19ed9b56fdb8f01ee0a12c8669f8"
     }
   ]
 }

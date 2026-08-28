@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0034",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 85,
+    "url": "https://github.com/bstBizEra/badf/issues/85",
+    "exported_at": "2026-08-28T18:28:43Z",
+    "body_digest": "sha256:f8c905dc0fc7cf0c237e2ce85d3950ba889702a06d8f52e8d09adfbd34a518c5"
+  },
+  "title": "GOV-0031B: badf-research has no fact-checking primitive, and FALSIFIED/DISPUTED claims pass with no contradicting evidence (P0 subskill 3/9 + earned control 21)",
+  "problem": "## Observed\n`badf-research` has 2 of 9 P0 subskills (`repository-research`, `problem-framing`); the `fact-checking` primitive \u2014 reused by repository/deep/technical/comparative/synthesis/adversarial routes and R10 \u2014 does not exist. And a failing-first probe of the current gate shows a real, deterministically-enforceable defect: a claim marked `FALSIFIED` or `DISPUTED` is accepted with **no contradicting evidence**, so \"NO EVIDENCE \u2260 FALSE\" and \"support and contradiction coexist\" are unenforced.\n\n## Expected\nBuild `fact-checking` as P0 subskill **3 of 9**, mirroring `repository-research`/`problem-framing`:\n- `skills/badf-research/subskills/fact-checking/SKILL.md` \u2014 an R10 declarative workflow (target \u2192 atomize \u2192 bind \u2192 check support \u2192 check contradiction \u2192 classify \u2192 adjudicate \u2192 derive confidence \u2192 declare non-coverage \u2192 hand off) that adjudicates claim status over **already-bound** evidence, reusing the frozen statuses (`VERIFIED`/`PARTIALLY_VERIFIED`/`DISPUTED`/`UNVERIFIED`/`FALSIFIED`) and derived confidence. Invariants: `NO EVIDENCE \u2260 FALSE`, `NO CONTRADICTION \u2260 VERIFIED`, `CITATION \u2260 SUPPORT`. It is **not** the acquisition skill (that is `deep-research`); absent evidence yields `UNVERIFIED`, not \"search until something agrees\".\n- Registry entry `IMPLEMENTED` + real digest; root router updated.\n- **Control 21 only because the failing-first probe earned it**: a `FALSIFIED` claim carries a contradicting source; a `DISPUTED` claim carries both supporting and contradicting sources. No new claim-status vocabulary.\n\n## Evidence\n- `ls skills/badf-research/subskills` \u2192 `repository-research`, `problem-framing` (no `fact-checking`)\n- adversarial probe (recomputed digest): `FALSIFIED + no contradicting_sources` \u2192 **PASS (gap)**; `DISPUTED + no contradicting_sources` \u2192 **PASS (gap)** on the current gate\n- source item fields = `[digest,id,note,retrieved_at,source_type,uri]` \u2014 no content locator, so the *semantic* support half is not machine-checkable (filed separately)\n\n## Unknowns\nNone for this subskill. **Not in scope:** the semantic source-supports-claim check (no content locator \u2014 separate issue), control 6 freshness, general web acquisition, the other 6 P0 subskills, #77 refactor, and the R08/R09 router (#83).\n\n## Proposed work package\n`BADF-WP-0047`. `fact-checking/SKILL.md` + registry entry; control 21 (earned) + acceptance.md row; root router; tests failing-first + mutation; own G07 self-dossier. C2. Research controls -> 19 of 21; `badf-research` stays `DESIGNED` (3 of 9 P0).\n\ndiscovered-by: operator research sequencing (2026-08-29) + BADF-WP-0046 \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T18:28:43Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. fact-checking = P0 research subskill 3/9 + control 21 (earned by failing-first: FALSIFIED/DISPUTED must carry contradicting evidence). Semantic support gap filed separately (#84). Authority: operator 'proceed with fact-checking next, do not pre-invent control 21' (2026-08-29). Worked as BADF-WP-0047."
+}

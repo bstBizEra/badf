@@ -438,6 +438,44 @@ class PreEvidenceGuardTests(ResearchRecordTests):
         self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
 
 
+class FactCheckStatusTests(ResearchRecordTests):
+    """Control 21 (BADF-WP-0047, fact-checking): a claim's status is consistent with
+    its evidence. FALSIFIED needs a contradicting source (NO EVIDENCE != FALSE);
+    DISPUTED needs both supporting and contradicting (support and contradiction
+    coexist). Records are re-digested so control 17 does not mask the status gap."""
+
+    def refused_redigest(self, rec, needle):
+        rec["evidence_digest"] = gate.compute_research_evidence_digest(rec)
+        self.refused(rec, needle)
+
+    def passes_redigest(self, rec):
+        rec["evidence_digest"] = gate.compute_research_evidence_digest(rec)
+        r = self.run_cli(rec)
+        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
+
+    def test_falsified_without_a_contradicting_source_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE); rec["claims"][0]["status"] = "FALSIFIED"; rec["claims"][0]["contradicting_sources"] = []
+        self.refused_redigest(rec, "FALSIFIED but cites no contradicting source")
+
+    def test_disputed_without_a_contradicting_source_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE); rec["claims"][0]["status"] = "DISPUTED"; rec["claims"][0]["contradicting_sources"] = []
+        self.refused_redigest(rec, "DISPUTED but does not carry both")
+
+    def _with_contradiction(self, rec):
+        cid = rec["claims"][0]["id"]; other = rec["sources"][-1]["id"]
+        rec["claims"][0]["contradicting_sources"] = [other]
+        rec["contradictions"] = [{"id": "X-001", "claim_refs": [cid], "statement": "an independent source contradicts the claim"}]
+        return rec
+
+    def test_a_falsified_claim_with_a_contradicting_source_passes(self):
+        rec = self._with_contradiction(copy.deepcopy(EXAMPLE)); rec["claims"][0]["status"] = "FALSIFIED"
+        self.passes_redigest(rec)
+
+    def test_a_disputed_claim_with_both_sides_passes(self):
+        rec = self._with_contradiction(copy.deepcopy(EXAMPLE)); rec["claims"][0]["status"] = "DISPUTED"
+        self.passes_redigest(rec)
+
+
 class ProblemFramingRegistrationTests(unittest.TestCase):
 
     def test_problem_framing_is_registered_implemented_with_a_real_digest(self):
@@ -448,6 +486,15 @@ class ProblemFramingRegistrationTests(unittest.TestCase):
         self.assertEqual(entry["status"], "IMPLEMENTED")
         self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
         self.assertTrue((gate.ROOT / "skills/badf-research/subskills/problem-framing/SKILL.md").is_file())
+
+    def test_fact_checking_is_registered_implemented_with_a_real_digest(self):
+        import hashlib
+        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
+        entry = next((e for e in reg["skills"] if e["name"] == "fact-checking"), None)
+        self.assertIsNotNone(entry, "fact-checking is not registered")
+        self.assertEqual(entry["status"], "IMPLEMENTED")
+        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
+        self.assertTrue((gate.ROOT / "skills/badf-research/subskills/fact-checking/SKILL.md").is_file())
 
 
 if __name__ == "__main__":
