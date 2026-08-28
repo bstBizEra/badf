@@ -1,0 +1,52 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0032",
+  "title": "Registry digests are real and checked: repo refuses a skill entry whose digest is not the sha256 of its source",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0019",
+  "objective": "Make the skill registry's digest field mean what docs/07 says ACTIVE means -- a pin. Every entry's digest equals sha256(source); a placeholder or a stale digest is refused by repo.",
+  "business_value": "A skill edited without its registry re-pinned is drift the lockfile shows but the registry does not; the placeholder made the field decorative from the start.",
+  "in_scope": [
+    "verify_registry_digests in validate_repo (skill registry; other registries only if they carry digests)",
+    "badf-delivery digest computed",
+    "tests + mutation",
+    "docs/07 note"
+  ],
+  "out_of_scope": [
+    "registry schema changes",
+    "skill content"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "repo passes with every digest real",
+    "GENERATED_AT_RELEASE refused naming the entry",
+    "a skill source edited and re-signed but not re-pinned is refused naming the entry",
+    "a missing source is refused",
+    "mutation kills"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_registry_digest.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "20633e3"
+  },
+  "note": "Lands IN_PROGRESS by design; reconciled by the next WP's branch."
+}

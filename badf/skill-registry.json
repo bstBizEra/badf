@@ -13,7 +13,7 @@
         "local-shell"
       ],
       "status": "VALIDATED",
-      "digest": "GENERATED_AT_RELEASE"
+      "digest": "sha256:2370199aa8cc0b6c4c4d0c44eedceba41e645948acd8a65562b86040f97f9771"
     },
     {
       "name": "badf-prd",

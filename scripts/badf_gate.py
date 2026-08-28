@@ -723,6 +723,29 @@ def reconcile_work_package(wp_arg: str) -> str:
     return f"BADF RECONCILE: {wp} CLOSED, landed_as {sha[:7]}{also}; lockfile re-signed -- ship it in the next work package's PR"
 
 
+DIGEST_FORM = re.compile(r"^sha256:[0-9a-f]{64}$")
+
+
+def verify_registry_digests() -> None:
+    """Every skill-registry entry's digest is the sha256 of the source it
+    names (BADF-WP-0032, #52). docs/07 makes ACTIVE mean a pinned digest; the
+    field carried GENERATED_AT_RELEASE from the start and nothing compared
+    it. A placeholder, a malformed value, a stale digest or a missing source
+    is refused, naming the entry."""
+    registry = load_json(ROOT / "badf/skill-registry.json")
+    for entry in registry.get("skills") or []:
+        name = entry.get("name", "?")
+        source = entry.get("source")
+        digest = entry.get("digest")
+        if not isinstance(source, str) or not (ROOT / source).is_file():
+            raise ValidationError(f"skill registry entry {name}: source {source!r} does not exist")
+        if not isinstance(digest, str) or not DIGEST_FORM.match(digest):
+            raise ValidationError(f"skill registry entry {name}: digest {digest!r} is not a sha256 pin (a placeholder is not a pin)")
+        actual = sha256(ROOT / source)
+        if digest != actual:
+            raise ValidationError(f"skill registry entry {name}: digest does not match {source} ({digest[:19]}... vs {actual[:19]}...); re-pin the entry with the edit")
+
+
 def validate_repo() -> None:
     missing = [path for path in REQUIRED_FILES if not (ROOT / path).is_file()]
     if missing:
@@ -758,6 +781,7 @@ def validate_repo() -> None:
         raise ValidationError("badf-delivery SKILL.md frontmatter is invalid")
 
     verify_integrity()
+    verify_registry_digests()
     verify_monotonic_authority()
     verify_work_ledger()
 
