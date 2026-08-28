@@ -428,6 +428,15 @@
     "work/WP-2026-0048/evidence/G07/unit-test.txt": "sha256:3ebfe5e512dfeda144788ffffd16868b94226c8875f266fe231350792fa89fbc",
     "work/WP-2026-0048/gate-dossier.G07.json": "sha256:88f7029704a920190a6815eca21a432ec2e94fcac24841cfa9c5dc8c46a354dd",
     "work/WP-2026-0048/work-package.json": "sha256:4ca553f232dfad9a1bfadf5ba5c22764a672ba387509c6a92956078801d6c70b",
+    "work/WP-2026-0049/evidence/G07/build.json": "sha256:5d2558ecd883710bb2c8a5b59e63426ffa0911a9763c86acab9f585d786d14a9",
+    "work/WP-2026-0049/evidence/G07/build.txt": "sha256:72b8c609edaf2f1bb7f9d4fdefee6a3aa089239b7dc6dac61b5a144e8cf39a57",
+    "work/WP-2026-0049/evidence/G07/documentation.diff": "sha256:70b1bd0b893bdc1aa78b6b0da81a9e3ba8dc15adeb3ff04840c2329075427ffd",
+    "work/WP-2026-0049/evidence/G07/documentation.json": "sha256:f220b3df7a12bfef7450d3bdbbd72116dc68cf45b9d7470992f9f682511ce763",
+    "work/WP-2026-0049/evidence/G07/source-change.diff": "sha256:4b17b01d4a5fd11ef182b99a3a998b0a0df1c35d26ccea312064b076c993fa61",
+    "work/WP-2026-0049/evidence/G07/source-change.json": "sha256:f82f8b5f482efe3bd3ecb6efb570295f52458b0fc8ea314264ad7a922ece8c11",
+    "work/WP-2026-0049/evidence/G07/unit-test.json": "sha256:7e8f5e192eea1bcc7e28cb5ebffd9e49222422bedfb2412d80bbdc139c8c5783",
+    "work/WP-2026-0049/evidence/G07/unit-test.txt": "sha256:3ebfe5e512dfeda144788ffffd16868b94226c8875f266fe231350792fa89fbc",
+    "work/WP-2026-0049/gate-dossier.G07.json": "sha256:c55508337d07730521773573d48b52018dc169043b0bcc0cc8bb85ecd3e54854",
     "work/WP-2026-0049/work-package.json": "sha256:a31ae5737a275919d65b805439808c19d289a565f39191ed2a2258b255b04aa4"
   },
   "schema_version": "1.0.0"
