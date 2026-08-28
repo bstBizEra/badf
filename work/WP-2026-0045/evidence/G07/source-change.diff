@@ -1,0 +1,308 @@
+diff --git a/badf/demands/BADF-DEM-0032.json b/badf/demands/BADF-DEM-0032.json
+new file mode 100644
+index 0000000..6a50e1b
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0032.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0032",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 79,
++    "url": "https://github.com/bstBizEra/badf/issues/79",
++    "exported_at": "2026-08-28T17:12:04Z",
++    "body_digest": "sha256:2cfc72820ef9d10ec231106ab5720ad21ac62c7847ad8fbfdb077215f6ea4917"
++  },
++  "title": "GOV-0028: badf-research scope-contract asymmetry \u2014 stop_conditions/assumptions/decision_context are instructed but not machine-readable",
++  "problem": "## Observed\nThe frozen research contract (`badf-research`, #50 / WP-0031) has a **contract/schema asymmetry**. `skills/badf-research/SKILL.md` step 2 instructs the researcher to *\"resolve \u2026 stop conditions\"*, and the capability's purpose is bounded, governed uncertainty reduction \u2014 but `schemas/research-record.schema.json` carries `question`, `scope`, `known`, `unknown`, `hypotheses` and has **no first-class `stop_conditions`, `assumptions`, or `decision_context`**. The research scope contract is not machine-readable where it most matters: a run can be recorded with no declared bounded-termination, no separation of assumptions from evidence, and no named decision it serves.\n\n## Expected\nHarden the scope contract through this new governed WP (not by reopening #50), extend-only:\n- Add `stop_conditions` (bounded termination \u2014 the conditions under which the run stops), `assumptions` (kept distinct from claims/observations, per RSR-I03), and `decision_context` (the decision this research serves \u2014 reinforcing RESEARCH \u2260 DECISION while `authority.implementation_authority` stays `false`) as **first-class, required** research-record fields.\n- A new deterministic gate control: a material research run declares **non-empty `stop_conditions`** (no unbounded research scope), each assumption is a non-empty string distinct from evidence, and `decision_context.decision_question` is present. This becomes acceptance **control 19** \u2014 \"bounded research scope, machine-readable\".\n- These are **framing**, not evidence, so they stay OUT of the `evidence_digest` (which covers sources/claims/contradictions/experiments) \u2014 control 17 semantics unchanged.\n- Update the three shipped examples and align SKILL.md + acceptance.md. `badf-research` stays `DESIGNED`.\n\n## Evidence\n- `schemas/research-record.schema.json` properties missing: `stop_conditions, assumptions, decision_context`\n- `grep 'stop conditions' skills/badf-research/SKILL.md` \u2192 `stop conditions` (the skill promises what the schema cannot carry)\n\n## Unknowns\nNone for the scope contract. **Not in scope:** control 6 (source-digest freshness \u2014 needs a source fetch), the remaining 8 P0 subskills, and #77's \"canonical reference split\" (a docs refactor, deferrable). This WP closes only the scope-contract asymmetry.\n\n## Proposed work package\n`BADF-WP-0045`. Schema fields + control 19 in `validate_research_record`; the three examples updated; SKILL.md + acceptance.md aligned; `tests/test_badf_research.py` failing-first + mutation; own G07 self-dossier. C2. Brings research controls to 17/19 (control 6 freshness still open).\n\ndiscovered-by: operator review of the frozen contract (2026-08-29); overlaps external #69/#77 (left untouched) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T17:12:04Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Body exported verbatim and digest-bound. Research scope-contract hardening (stop_conditions/assumptions/decision_context first-class + control 19), fixing the SKILL<->schema asymmetry the operator verified on the frozen contract (#50). Extend-only, not a reopen. Authority: operator directive 'fix it through a new governed contract-hardening WP' (2026-08-29). Overlaps external #69/#77 (untouched). Worked as BADF-WP-0045."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 4d0f512..770a4ac 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -36,7 +36,7 @@
+       "risk_class": "C1",
+       "allowed_tools": [],
+       "status": "DESIGNED",
+-      "digest": "sha256:71b58478ca0d8f55e051c994403a8045ff04db794c7181b20489ae3c8ad12bde"
++      "digest": "sha256:638866d82f2d37f03b8ec70f796b9b035411dd0b34026f7f22efe2a272c41678"
+     },
+     {
+       "name": "repository-research",
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 083e318..0cdab8b 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -313,6 +313,21 @@ versioned; `operability-design` must declare failure modes with recovery and obs
+ Ships `examples/gate-dossier.G04.json` and a G03→G04 pair-acceptance (the full G00→G04 chain). The
+ ASSURE substrate (controls 13–18) is WP-ARCH-C; VALIDATED awaits it.
+ 
++## Research scope-contract hardening (`BADF-WP-0045`, Issue #79)
++
++The frozen research contract (#50) had a SKILL↔schema asymmetry: `badf-research/SKILL.md`
++instructs the researcher to *resolve stop conditions*, but the record schema carried no
++`stop_conditions`, `assumptions`, or `decision_context`. Fixed **extend-only through a governed WP,
++not by reopening #50**: the three fields are now first-class, required record fields, and
++**control 19** enforces a bounded, machine-readable scope — non-empty `stop_conditions` (no
++unbounded research), each `assumption` a non-empty statement kept distinct from evidence, and a
++`decision_context.decision_question` naming the decision the run serves (reinforcing RESEARCH ≠
++DECISION while `authority.implementation_authority` stays `false`). These are **framing, not
++evidence**, so they are excluded from the `evidence_digest` — control 17 is unaffected, proven by a
++test that changing only framing leaves a record valid. Research controls: **17 of 19** enforced
++(control 6 freshness needs a source fetch; control 15 rides the state machine). `badf-research`
++stays `DESIGNED`. Overlaps external #69/#77, built fresh under #79 with their work untouched.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/examples/research-record-challenged.json b/examples/research-record-challenged.json
+index 4d8e189..981b372 100644
+--- a/examples/research-record-challenged.json
++++ b/examples/research-record-challenged.json
+@@ -41,6 +41,16 @@
+       "status": "RETAINED"
+     }
+   ],
++  "stop_conditions": [
++    "the council reaches a challenge verdict",
++    "no independent source for the primary claim remains uninspected"
++  ],
++  "assumptions": [
++    "the two reviewers are independent identities"
++  ],
++  "decision_context": {
++    "decision_question": "is the comparative recommendation sufficient to author a decision record?"
++  },
+   "sources": [
+     {
+       "id": "S-001",
+diff --git a/examples/research-record-repo.json b/examples/research-record-repo.json
+index 369b5a4..50d33a0 100644
+--- a/examples/research-record-repo.json
++++ b/examples/research-record-repo.json
+@@ -42,6 +42,16 @@
+       "status": "RETAINED"
+     }
+   ],
++  "stop_conditions": [
++    "every finding is bound to a commit SHA",
++    "no material PR or issue for the change remains unread"
++  ],
++  "assumptions": [
++    "the git history is complete on this host"
++  ],
++  "decision_context": {
++    "decision_question": "what change, if any, does the enforcement-history investigation justify?"
++  },
+   "sources": [
+     {
+       "id": "S-001",
+diff --git a/examples/research-record.json b/examples/research-record.json
+index 2878af1..8bb7144 100644
+--- a/examples/research-record.json
++++ b/examples/research-record.json
+@@ -43,6 +43,20 @@
+       "status": "ELIMINATED"
+     }
+   ],
++  "stop_conditions": [
++    "the root cause is isolated to a single mechanism",
++    "a discriminating test distinguishes the candidate hypotheses"
++  ],
++  "assumptions": [
++    "the shared .git is the only cross-session write surface"
++  ],
++  "decision_context": {
++    "decision_question": "should the classifier fix proceed to a work package?",
++    "drivers": [
++      "correctness",
++      "blast radius"
++    ]
++  },
+   "sources": [
+     {
+       "id": "S-001",
+diff --git a/schemas/research-record.schema.json b/schemas/research-record.schema.json
+index e33e52e..6e4d9c8 100644
+--- a/schemas/research-record.schema.json
++++ b/schemas/research-record.schema.json
+@@ -17,6 +17,9 @@
+     "known",
+     "unknown",
+     "hypotheses",
++    "stop_conditions",
++    "assumptions",
++    "decision_context",
+     "sources",
+     "claims",
+     "findings",
+@@ -190,6 +193,40 @@
+         }
+       }
+     },
++    "stop_conditions": {
++      "type": "array",
++      "items": {
++        "type": "string",
++        "minLength": 1
++      }
++    },
++    "assumptions": {
++      "type": "array",
++      "items": {
++        "type": "string",
++        "minLength": 1
++      }
++    },
++    "decision_context": {
++      "type": "object",
++      "additionalProperties": false,
++      "required": [
++        "decision_question"
++      ],
++      "properties": {
++        "decision_question": {
++          "type": "string",
++          "minLength": 1
++        },
++        "drivers": {
++          "type": "array",
++          "items": {
++            "type": "string",
++            "minLength": 1
++          }
++        }
++      }
++    },
+     "sources": {
+       "type": "array",
+       "items": {
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index ab49f5b..ba682ff 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -2829,6 +2829,18 @@ def validate_research_record(path: Path) -> str:
+     # schema's enum [false]; a separate check here would be dead code (a mutant
+     # proved the schema catches it first).
+     check_schema("research-record", rec)
++    # 19: the scope contract is bounded and machine-readable (WP-0045). The root
++    # skill instructs resolving stop conditions; the record must carry non-empty
++    # stop_conditions (no unbounded research), assumptions distinct from evidence,
++    # and the decision it serves. These are framing, not evidence -- they are
++    # excluded from the evidence_digest, so control 17 is unaffected.
++    if not [s for s in rec["stop_conditions"] if s.strip()]:
++        raise ValidationError("research record declares no bounded stop_conditions; a material research run states when it stops (control 19)")
++    for a in rec["assumptions"]:
++        if not a.strip():
++            raise ValidationError("research record has an empty assumption; an assumption is a non-empty statement kept distinct from evidence (control 19)")
++    if not rec["decision_context"]["decision_question"].strip():
++        raise ValidationError("research record decision_context.decision_question is empty; research must name the decision it serves (control 19)")
+     # 3: repository research (R02/R03) baselines to a commit that RESOLVES in its
+     # repository -- an investigation cannot be anchored to a commit that does not
+     # exist. Mirrors verify_foreign_revision's resolution and UNRESOLVABLE_HERE.
+diff --git a/skills/badf-research/SKILL.md b/skills/badf-research/SKILL.md
+index 5f49def..1840159 100644
+--- a/skills/badf-research/SKILL.md
++++ b/skills/badf-research/SKILL.md
+@@ -8,7 +8,7 @@ description: Govern evidence-based research for BADF questions, issues, defects,
+ Status: `DESIGNED` (contract frozen by `BADF-WP-0031`; nothing here runs yet). Research determines what the evidence supports; `badf-delivery` governs what authorised actors may do with that conclusion.
+ 
+ 1. Read the repository `AGENTS.md` and the documents it marks required.
+-2. Resolve the research question, the originating Issue and its demand record, the research type and depth (`references/research-types.md`), scope and non-goals, source and data boundaries, authority and mutation constraints, required evidence, stop conditions.
++2. Resolve the research question, the originating Issue and its demand record, the research type and depth (`references/research-types.md`), scope and non-goals, source and data boundaries, authority and mutation constraints, required evidence, and the bounded scope contract — non-empty **stop conditions** (when the run stops), the **assumptions** it rests on (kept distinct from evidence), and the **decision it serves** — all first-class in the record (`schemas/research-record.schema.json`, control 19).
+ 3. Establish the baseline — repository, revision, observation time — before drawing any conclusion.
+ 4. Route only the subskills the type and depth require; this file is the only router.
+ 5. Keep `OBSERVED`, `REPORTED`, `INFERRED`, `HYPOTHESIS` and `DECIDED` distinct (`references/evidence-contract.md`).
+diff --git a/skills/badf-research/references/acceptance.md b/skills/badf-research/references/acceptance.md
+index 87c8e52..ad87c60 100644
+--- a/skills/badf-research/references/acceptance.md
++++ b/skills/badf-research/references/acceptance.md
+@@ -24,10 +24,11 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows
+ | 16 | an invalid state transition fails closed |
+ | 17 | the record digest changes when material evidence changes |
+ | 18 | Research → Decision → Work Package traceability can be reconstructed |
++| 19 | the research scope is bounded and machine-readable: a material run declares non-empty `stop_conditions`, `assumptions` distinct from evidence, and a `decision_context` naming the decision it serves (framing, excluded from the `evidence_digest`) |
+ 
+ ## Admission
+ 
+ - `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time).
+-- `VALIDATED`: the 18 controls above pass as gate tests with mutation.
++- `VALIDATED`: the 19 controls above pass as gate tests with mutation. Enforced today: 1–5, 7–14, 16–19 (17 of 19); control 6 (source-digest freshness) awaits a source-fetch mechanism, control 15 rides the state machine.
+ - `SHADOWED`: the family is run retrospectively on historical BADF findings (the authority-downgrade defect, schema drift, foreign-revision resolution, the composed-tree reds of 2026-08-28) without knowing the answer; `examples/research-record.json` is the first such shadow record.
+ - `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. Until then the registry entry stays `DESIGNED`.
+diff --git a/tests/test_badf_research.py b/tests/test_badf_research.py
+index 646de47..c50528c 100644
+--- a/tests/test_badf_research.py
++++ b/tests/test_badf_research.py
+@@ -379,5 +379,42 @@ class RepositoryResearchTests(unittest.TestCase):
+             shutil.rmtree(backup, ignore_errors=True)
+ 
+ 
++class ScopeContractTests(ResearchRecordTests):
++    """Control 19 (BADF-WP-0045): the scope contract is bounded and machine-readable
++    -- non-empty stop_conditions, assumptions distinct from evidence, a decision it
++    serves -- and these framing fields are excluded from the evidence_digest."""
++
++    def test_empty_stop_conditions_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); rec["stop_conditions"] = []
++        self.refused(rec, "no bounded stop_conditions")
++
++    def test_whitespace_only_stop_condition_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); rec["stop_conditions"] = ["   "]
++        self.refused(rec, "no bounded stop_conditions")
++
++    def test_absent_stop_conditions_is_refused_by_schema(self):
++        rec = copy.deepcopy(EXAMPLE); rec.pop("stop_conditions")
++        self.refused(rec, "stop_conditions")
++
++    def test_an_empty_assumption_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); rec["assumptions"] = ["a real assumption", ""]
++        self.refused(rec, "empty assumption")
++
++    def test_an_empty_decision_question_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); rec["decision_context"] = {"decision_question": ""}
++        self.refused(rec, "decision_context.decision_question is empty")
++
++    def test_changing_only_framing_leaves_the_evidence_digest_valid(self):
++        # stop_conditions/assumptions/decision_context are framing, not evidence:
++        # changing them must not invalidate the stored evidence_digest (control 17).
++        rec = copy.deepcopy(EXAMPLE)
++        rec["stop_conditions"] = ["a different but still bounded stop condition"]
++        rec["assumptions"] = ["a different assumption"]
++        rec["decision_context"] = {"decision_question": "a different decision this run serves?"}
++        r = self.run_cli(rec)
++        self.assertEqual(r.returncode, 0, r.stderr)
++        self.assertIn("RESEARCH PASS", r.stdout)
++
++
+ if __name__ == "__main__":
+     unittest.main()
+diff --git a/work/WP-2026-0044/work-package.json b/work/WP-2026-0044/work-package.json
+index 8edc83a..a465365 100644
+--- a/work/WP-2026-0044/work-package.json
++++ b/work/WP-2026-0044/work-package.json
+@@ -58,11 +58,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "82d659a"
++    "base_revision": "82d659a",
++    "landed_as": "a4ff5a8107b41340671fc7c254245a31518c82d9"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Reuses the G01/G02/G03 substrate -- no new validator module (ARCH-I11). Advances badf-architecture to IMPLEMENTED; the contract test's not-implemented-yet assertions flip to implemented in this WP. VALIDATED still requires WP-ARCH-C (ASSURE, controls 13-18) with mutation."
+ }
