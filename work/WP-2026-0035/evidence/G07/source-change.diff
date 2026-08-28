@@ -1,0 +1,407 @@
+diff --git a/badf/demands/BADF-DEM-0001.json b/badf/demands/BADF-DEM-0001.json
+index 0d35f86..a47cb16 100644
+--- a/badf/demands/BADF-DEM-0001.json
++++ b/badf/demands/BADF-DEM-0001.json
+@@ -17,5 +17,6 @@
+   "recorded_at": "2026-08-28T00:00:00Z",
+   "provenance": "RECONSTRUCTED",
+   "status": "RESOLVED",
+-  "note": "RECONSTRUCTED under BADF-WP-0018. The demand was an operator decision in session, before this repository or its doctrine existed. Recorded here so WP-2026-0001 resolves; no Issue was created after the fact to pretend otherwise."
++  "note": "RECONSTRUCTED under BADF-WP-0018. The demand was an operator decision in session, before this repository or its doctrine existed. Recorded here so WP-2026-0001 resolves; no Issue was created after the fact to pretend otherwise.",
++  "learning": "NONE_DECLARED"
+ }
+diff --git a/badf/demands/BADF-DEM-0002.json b/badf/demands/BADF-DEM-0002.json
+index 717d6a3..e43c01e 100644
+--- a/badf/demands/BADF-DEM-0002.json
++++ b/badf/demands/BADF-DEM-0002.json
+@@ -17,5 +17,6 @@
+   "recorded_at": "2026-08-28T00:00:00Z",
+   "provenance": "RECONSTRUCTED",
+   "status": "RESOLVED",
+-  "note": "RECONSTRUCTED under BADF-WP-0018. The demand was 'proceed on your call' in session; the branch selection was the agent's. Both predate GITHUB_CONTROL_PLANE.md."
++  "note": "RECONSTRUCTED under BADF-WP-0018. The demand was 'proceed on your call' in session; the branch selection was the agent's. Both predate GITHUB_CONTROL_PLANE.md.",
++  "learning": "docs/learnings/a-foreign-revision-must-verify-the-diff.md"
+ }
+diff --git a/badf/demands/BADF-DEM-0004.json b/badf/demands/BADF-DEM-0004.json
+index ced22ab..d9b4a4d 100644
+--- a/badf/demands/BADF-DEM-0004.json
++++ b/badf/demands/BADF-DEM-0004.json
+@@ -18,5 +18,6 @@
+   "recorded_at": "2026-08-28T00:00:00Z",
+   "provenance": "EXPORTED_FROM_SOURCE",
+   "status": "RESOLVED",
+-  "note": "Body exported verbatim from the GitHub Issue and digest-bound. The Issue is the source; this record is what the gate verifies offline. Closed by PR #20 (squash 12f5056)."
++  "note": "Body exported verbatim from the GitHub Issue and digest-bound. The Issue is the source; this record is what the gate verifies offline. Closed by PR #20 (squash 12f5056).",
++  "learning": "docs/learnings/main-is-pr-only-by-rule-not-by-accident.md"
+ }
+diff --git a/badf/demands/BADF-DEM-0013.json b/badf/demands/BADF-DEM-0013.json
+index 36a971d..24a5255 100644
+--- a/badf/demands/BADF-DEM-0013.json
++++ b/badf/demands/BADF-DEM-0013.json
+@@ -18,5 +18,6 @@
+   "recorded_at": "2026-08-27T19:11:02Z",
+   "provenance": "EXPORTED_FROM_SOURCE",
+   "status": "REJECTED",
+-  "note": "Body exported verbatim and digest-bound. DISCOVERED by BADF-WP-0018; authority: the operator's pick of #24 + #25 (2026-08-28). Worked as BADF-WP-0026. REJECTED 2026-08-27T19:13:13Z: premise false -- schemas/*.json was already locked (e0ddf29); the Issue's evidence line was not the output of a command run in that step."
++  "note": "Body exported verbatim and digest-bound. DISCOVERED by BADF-WP-0018; authority: the operator's pick of #24 + #25 (2026-08-28). Worked as BADF-WP-0026. REJECTED 2026-08-27T19:13:13Z: premise false -- schemas/*.json was already locked (e0ddf29); the Issue's evidence line was not the output of a command run in that step.",
++  "learning": "docs/learnings/evidence-must-be-measured.md"
+ }
+diff --git a/badf/demands/BADF-DEM-0022.json b/badf/demands/BADF-DEM-0022.json
+new file mode 100644
+index 0000000..6591bee
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0022.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0022",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 29,
++    "url": "https://github.com/bstBizEra/badf/issues/29",
++    "exported_at": "2026-08-28T08:18:11Z",
++    "body_digest": "sha256:a9bcc817746c7317a7e2adec85b2755273e8ce68a34acb0f876a2332017acba8"
++  },
++  "title": "GOV-0009: resolved Issues become no institutional learning",
++  "problem": "## Observed\n> Every resolved Issue becomes potential institutional learning.\nNothing reads a resolved demand. Learnings from this repository's own WPs (the shell-eaten backtick, the wrong-tree verification, the empty-glob clone errors of WP-0018) live in session memory outside the repo; `docs/errata/` holds one case. A `RESOLVED` demand record has no field where a learning disposition is stated.\n\n## Expected\nA deterministic, offline form: a `RESOLVED` demand carries a learning disposition \u2014 a `docs/learnings/` entry or an explicit `NONE_DECLARED` \u2014 and the drift walker treats a `RESOLVED` demand with neither as drift. Explicit \"nothing learned\" is a claim; silence is not.\n\n## Evidence\n`grep -rn learning docs/ badf/demands/` \u2192 the doctrine sentence only, on `c510516`.\n\n## Unknowns\nWhether a \"research agent\" belongs here \u2014 it does not: it is capability, not a defect, and the skills-catalogue verdict placed such things in a research catalogue, not an implementation roadmap.\n\n## Proposed work package\nPatch tier, promised as a \"separate Issue\" in #19's scope boundary: schema field `learning` on demand records; `docs/learnings/` convention; drift test.\n\ndiscovered-by: BADF-WP-0016 (deferred) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T08:18:11Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Body exported verbatim and digest-bound. DISCOVERED by BADF-WP-0016 (deferred, P1); authority: the operator's 'proceed on your call' on #29 (2026-08-28). Worked as BADF-WP-0035."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index ec18c9f..659444f 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -130,6 +130,17 @@ it rather than trusting the record.
+   shape (WP-0029: 13 advance tests red there, green in the composed run). Scratch clones pin
+   `origin/main` explicitly (`tests/_scratch.pin_origin_main`).
+ 
++## Resolved Issues become learning (`BADF-WP-0035`, Issue #29)
++
++The Doctrine's last clause — *every resolved Issue becomes potential institutional learning* —
++is now enforced, not aspirational. A demand that reaches a terminal status (`RESOLVED` or
++`REJECTED`) carries a `learning`: a `docs/learnings/<slug>.md` file that exists, or the literal
++`NONE_DECLARED`. `badf_gate.py repo` refuses a terminal demand with neither — an explicit
++"nothing learned" is a claim; silence is drift. Learnings are extend-only (`docs/learnings/`).
++Flipping a demand from `AUTHORIZED` to `RESOLVED` when its Issue closes is not yet automatic
++(the same shape as the reconciliation debt); the requirement bites the moment a demand *is*
++marked terminal.
++
+ ## Issue and PR body shape (`BADF-WP-0034`, Issue #27)
+ 
+ Shape is **requested** on GitHub and **enforced** where BADF reads it — the two are
+diff --git a/docs/learnings/README.md b/docs/learnings/README.md
+new file mode 100644
+index 0000000..ed40d55
+--- /dev/null
++++ b/docs/learnings/README.md
+@@ -0,0 +1,12 @@
++# BADF learnings
++
++> Every resolved Issue becomes potential institutional learning. (`GITHUB_CONTROL_PLANE.md`)
++
++When a demand reaches a terminal status (`RESOLVED` or `REJECTED`), it carries a `learning`
++disposition: a file in this directory, or the literal `NONE_DECLARED`. `badf_gate.py repo`
++refuses a terminal demand with neither — an explicit "nothing learned" is a claim; silence is
++drift (`BADF-WP-0035`, Issue #29).
++
++Slugs are `[a-z0-9-]+.md`. An entry states the demand it came from, what was learned, and how
++it changes practice. Learnings are extend-only: correct one with a new entry, do not rewrite
++history.
+diff --git a/docs/learnings/a-foreign-revision-must-verify-the-diff.md b/docs/learnings/a-foreign-revision-must-verify-the-diff.md
+new file mode 100644
+index 0000000..6fd8278
+--- /dev/null
++++ b/docs/learnings/a-foreign-revision-must-verify-the-diff.md
+@@ -0,0 +1,17 @@
++# Equality across copies is not verification
++
++From `BADF-DEM-0002` (**RESOLVED** — govern one non-BADF work package end to end, `WP-2026-0010`).
++
++The first work package BADF governed that was not BADF exposed that `source_revision` was only
++ever compared for *equality* across the dossier, its evidence and its approvals. A dossier
++whose three copies all agreed on the all-zeros SHA passed. For BADF's own work the SHA was
++always BADF's, so the hole never showed.
++
++**Learned:** a dossier must govern a commit that *exists* and *changed what the evidence says*.
++`verify_foreign_revision` now resolves the revision in the target repository, checks it
++descends from the declared base, and requires the recorded `source-change` diff to equal
++`git diff base..revision`. Deny unless established.
++
++**Changed:** the same derive-and-corroborate shape now underlies `landed_as`, the composed-tree
++gate, the charter floor and self-dossiers — a record's claim is checked against the world, never
++against another copy of itself.
+diff --git a/docs/learnings/evidence-must-be-measured.md b/docs/learnings/evidence-must-be-measured.md
+new file mode 100644
+index 0000000..68fd05c
+--- /dev/null
++++ b/docs/learnings/evidence-must-be-measured.md
+@@ -0,0 +1,18 @@
++# An evidence line is measured output, never inference
++
++From `BADF-DEM-0013` (Issue #24, **REJECTED**).
++
++#24 claimed `schemas/` was not under `INTEGRITY_PATHS`, with an Evidence line quoting a
++command returning `[]`. The command was never run in that step; `schemas/*.json` had been
++locked since `BADF-WP-0007`. A demand record and a work package were opened on a false
++premise before the mistake was caught.
++
++**Learned:** an Evidence line is the *pasted output* of a command executed in the same step —
++never a remembered or inferred result. Before filing an Issue that asserts a gap ("X is not
++locked / checked / present"), run the positive control first: show the thing present where the
++claim says it is absent, or the exact grep returning nothing, in that step. Converting a
++partial read into a FAIL claim is the same defect as converting missing evidence into PASS.
++
++**Changed:** #43 (the real `examples/` gap) was filed *with* its measurement pasted. This
++learning is enforced socially, not mechanically — the gate cannot know whether a human ran a
++command; the discipline is the control.
+diff --git a/docs/learnings/main-is-pr-only-by-rule-not-by-accident.md b/docs/learnings/main-is-pr-only-by-rule-not-by-accident.md
+new file mode 100644
+index 0000000..7ce8ca6
+--- /dev/null
++++ b/docs/learnings/main-is-pr-only-by-rule-not-by-accident.md
+@@ -0,0 +1,16 @@
++# A safety net held by accident is not a control
++
++From `BADF-DEM-0004` (Issue #19, **RESOLVED** by `BADF-WP-0016`).
++
++Before #19, `main` refused a direct push only because a `governance` status check had never
++reported on a push commit — no rule required a PR, and 18 of 23 commits were `--merge` with
++zero Issue references. The repository had a safety net it did not actually have; an agent
++reading the constitution would have trusted it.
++
++**Learned:** a control that works by accident of configuration is not a control. State what is
++actually enforced, and enforce what the doctrine claims. `main` is now PR-only under an active
++zero-bypass ruleset, squash-only, with a required composed-tree gate; the doctrine says so and
++CI proves it every push.
++
++**Changed:** every merge since is a squash through a PR with an Issue→demand→WP→PR chain, and
++`main`'s protection is asserted only where it is true (corrected in `AGENTS.md` under #407).
+diff --git a/schemas/demand.schema.json b/schemas/demand.schema.json
+index ae51905..5b6a343 100644
+--- a/schemas/demand.schema.json
++++ b/schemas/demand.schema.json
+@@ -133,6 +133,11 @@
+     },
+     "note": {
+       "type": "string"
++    },
++    "learning": {
++      "type": "string",
++      "pattern": "^(NONE_DECLARED|docs/learnings/[a-z0-9-]+\\.md)$",
++      "description": "Institutional learning from a concluded demand (BADF-WP-0035): a docs/learnings/<slug>.md path or the literal NONE_DECLARED. Required by the gate when status is RESOLVED or REJECTED -- silence is not 'nothing learned'."
+     }
+   }
+ }
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 695478e..54ffc17 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -726,6 +726,29 @@ def reconcile_work_package(wp_arg: str) -> str:
+ DIGEST_FORM = re.compile(r"^sha256:[0-9a-f]{64}$")
+ 
+ 
++DEMAND_TERMINAL = {"RESOLVED", "REJECTED"}
++LEARNING_FORM = re.compile(r"^(NONE_DECLARED|docs/learnings/[a-z0-9-]+\.md)$")
++
++
++def verify_demand_learnings() -> None:
++    """Every resolved Issue becomes potential institutional learning
++    (GITHUB_CONTROL_PLANE.md). A demand that reached a terminal status
++    (RESOLVED or REJECTED) must carry a `learning`: a docs/learnings/<slug>.md
++    path that exists, or the literal NONE_DECLARED. Silence is not 'nothing
++    learned' -- it is drift (BADF-WP-0035, #29)."""
++    for path in sorted((ROOT / DEMANDS_DIR).glob("*.json")):
++        rec = load_json(path)
++        did = rec.get("demand_id", path.name)
++        learning = rec.get("learning")
++        if learning is not None and not (isinstance(learning, str) and LEARNING_FORM.match(learning)):
++            raise ValidationError(f"demand {did} learning {learning!r} is malformed (expected NONE_DECLARED or docs/learnings/<slug>.md)")
++        if rec.get("status") in DEMAND_TERMINAL:
++            if not isinstance(learning, str) or not LEARNING_FORM.match(learning):
++                raise ValidationError(f"demand {did} is {rec.get('status')} but declares no learning; a concluded demand states docs/learnings/<slug>.md or NONE_DECLARED")
++            if learning != "NONE_DECLARED" and not (ROOT / learning).is_file():
++                raise ValidationError(f"demand {did} learning file {learning} does not exist")
++
++
+ def verify_registry_digests() -> None:
+     """Every skill-registry entry's digest is the sha256 of the source it
+     names (BADF-WP-0032, #52). docs/07 makes ACTIVE mean a pinned digest; the
+@@ -782,6 +805,7 @@ def validate_repo() -> None:
+ 
+     verify_integrity()
+     verify_registry_digests()
++    verify_demand_learnings()
+     verify_monotonic_authority()
+     verify_work_ledger()
+ 
+diff --git a/tests/_scratch.py b/tests/_scratch.py
+index 069b2b0..cdbe258 100644
+--- a/tests/_scratch.py
++++ b/tests/_scratch.py
+@@ -54,7 +54,7 @@ def seed_clone(dest: Path, *, carry_working_state: bool = False) -> str:
+         # EVERY locked input the working gate reads -- piecemeal lists missed badf/demands,
+         # templates and then badf/skill-registry.json (WP-0032: 30 red on the runner, green
+         # composed, because the composed world's origin/main IS the candidate).
+-        for rel in ("scripts/badf_gate.py", "badf", "skills", "schemas", "templates", "examples", "work"):
++        for rel in ("scripts/badf_gate.py", "badf", "skills", "schemas", "templates", "examples", "docs", "work"):
+             src = gate.ROOT / rel; dst = dest / rel
+             if src.is_dir():
+                 shutil.rmtree(dst, ignore_errors=True); shutil.copytree(src, dst)
+diff --git a/tests/test_badf_demand.py b/tests/test_badf_demand.py
+index 7abda1b..a225a93 100644
+--- a/tests/test_badf_demand.py
++++ b/tests/test_badf_demand.py
+@@ -108,7 +108,7 @@ class InitRequiresDemandTests(unittest.TestCase):
+         subprocess.run(["git", "clone", "-q", str(gate.ROOT), str(self.root)], check=True)
+         from tests._scratch import pin_origin_main
+         pin_origin_main(self.root)
+-        for rel in ("scripts/badf_gate.py", "badf", "skills", "work", "schemas", "templates", "examples"):
++        for rel in ("scripts/badf_gate.py", "badf", "skills", "work", "schemas", "templates", "examples", "docs"):
+             src, dst = gate.ROOT / rel, self.root / rel
+             if src.is_dir(): shutil.rmtree(dst, ignore_errors=True); shutil.copytree(src, dst)
+             else: shutil.copy2(src, dst)
+diff --git a/tests/test_badf_init.py b/tests/test_badf_init.py
+index 220b910..ed5c057 100644
+--- a/tests/test_badf_init.py
++++ b/tests/test_badf_init.py
+@@ -57,7 +57,7 @@ class InitScratchMixin:
+         subprocess.run(["git", "clone", "-q", str(gate.ROOT), str(self.root)], check=True)
+         from tests._scratch import pin_origin_main
+         pin_origin_main(self.root)
+-        for rel in ("scripts/badf_gate.py", "badf", "skills", "schemas", "templates", "examples", "work"):
++        for rel in ("scripts/badf_gate.py", "badf", "skills", "schemas", "templates", "examples", "docs", "work"):
+             src, dst = gate.ROOT / rel, self.root / rel
+             if src.is_dir():
+                 shutil.rmtree(dst, ignore_errors=True); shutil.copytree(src, dst)
+diff --git a/tests/test_badf_instance.py b/tests/test_badf_instance.py
+index f5a974c..0543506 100644
+--- a/tests/test_badf_instance.py
++++ b/tests/test_badf_instance.py
+@@ -58,7 +58,7 @@ class InstanceScratch(unittest.TestCase):
+         self.root = Path(self.tmp) / "badf"
+         subprocess.run(["git", "clone", "-q", str(gate.ROOT), str(self.root)], check=True)
+         pin_origin_main(self.root)
+-        for rel in ("scripts/badf_gate.py", "badf", "skills", "schemas", "templates", "examples", "work"):
++        for rel in ("scripts/badf_gate.py", "badf", "skills", "schemas", "templates", "examples", "docs", "work"):
+             src, dst = gate.ROOT / rel, self.root / rel
+             if src.is_dir():
+                 shutil.rmtree(dst, ignore_errors=True); shutil.copytree(src, dst)
+diff --git a/tests/test_badf_issue_learning.py b/tests/test_badf_issue_learning.py
+new file mode 100644
+index 0000000..f9cc316
+--- /dev/null
++++ b/tests/test_badf_issue_learning.py
+@@ -0,0 +1,87 @@
++"""Resolved Issues become institutional learning (BADF-WP-0035, Issue #29).
++
++The doctrine: "Every resolved Issue becomes potential institutional learning."
++A demand that reached a terminal status (RESOLVED or REJECTED) must carry a
++`learning` -- a docs/learnings/<slug>.md path that exists, or the literal
++NONE_DECLARED. `badf_gate.py repo` refuses a terminal demand with neither.
++Each test injects its defect into a backup-restored demand and re-signs, so
++only the learning check decides.
++"""
++import json
++import shutil
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++DEMANDS = gate.ROOT / "badf/demands"
++GUARDED = sorted(DEMANDS.glob("*.json")) + [gate.ROOT / gate.LOCKFILE]
++
++
++class IssueLearningTests(unittest.TestCase):
++    def setUp(self):
++        self.backup = tempfile.mkdtemp()
++        for p in GUARDED:
++            dst = Path(self.backup) / p.relative_to(gate.ROOT); dst.parent.mkdir(parents=True, exist_ok=True); shutil.copy2(p, dst)
++
++    def tearDown(self):
++        for p in GUARDED:
++            shutil.copy2(Path(self.backup) / p.relative_to(gate.ROOT), p)
++        shutil.rmtree(self.backup, ignore_errors=True)
++
++    def edit(self, demand_id, fn):
++        p = DEMANDS / f"{demand_id}.json"; d = json.loads(p.read_text()); fn(d); p.write_text(json.dumps(d, indent=2) + "\n")
++        gate.write_lock(gate.ROOT, gate.INTEGRITY_PATHS)   # re-signed: only the learning check may refuse
++
++    def refused(self, needle):
++        with self.assertRaisesRegex(gate.ValidationError, needle):
++            gate.validate_repo()
++
++    def test_clean_repo_passes(self):
++        gate.validate_repo()
++
++    def test_every_terminal_demand_carries_a_valid_learning(self):
++        for p in DEMANDS.glob("*.json"):
++            d = json.loads(p.read_text())
++            if d["status"] in ("RESOLVED", "REJECTED"):
++                with self.subTest(demand=d["demand_id"]):
++                    lv = d.get("learning")
++                    self.assertTrue(isinstance(lv, str) and gate.LEARNING_FORM.match(lv), f"{d['demand_id']} has no learning")
++                    if lv != "NONE_DECLARED":
++                        self.assertTrue((gate.ROOT / lv).is_file(), lv)
++
++    def test_a_resolved_demand_without_learning_is_refused(self):
++        self.edit("BADF-DEM-0004", lambda d: d.pop("learning", None))
++        self.refused("BADF-DEM-0004.*declares no learning")
++
++    def test_a_rejected_demand_without_learning_is_refused(self):
++        self.edit("BADF-DEM-0013", lambda d: d.pop("learning", None))
++        self.refused("BADF-DEM-0013.*declares no learning")
++
++    def test_none_declared_is_accepted(self):
++        self.edit("BADF-DEM-0004", lambda d: d.update(learning="NONE_DECLARED"))
++        gate.validate_repo()   # explicit "nothing learned" is a claim, not drift
++
++    def test_a_learning_path_that_does_not_exist_is_refused(self):
++        self.edit("BADF-DEM-0004", lambda d: d.update(learning="docs/learnings/no-such-file.md"))
++        self.refused("BADF-DEM-0004.*does not exist")
++
++    def test_a_malformed_learning_is_refused(self):
++        self.edit("BADF-DEM-0004", lambda d: d.update(learning="see the wiki"))
++        self.refused("BADF-DEM-0004.*malformed")
++
++    def test_an_authorized_demand_needs_no_learning(self):
++        # DEM-0021 (#27) is AUTHORIZED; removing any learning it lacks must not refuse
++        self.edit("BADF-DEM-0021", lambda d: d.pop("learning", None))
++        gate.validate_repo()
++
++    def test_a_malformed_learning_on_a_non_terminal_demand_is_still_refused(self):
++        self.edit("BADF-DEM-0021", lambda d: d.update(learning="whatever"))
++        self.refused("BADF-DEM-0021.*malformed")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0034/work-package.json b/work/WP-2026-0034/work-package.json
+index 7c9f503..6b914c2 100644
+--- a/work/WP-2026-0034/work-package.json
++++ b/work/WP-2026-0034/work-package.json
+@@ -45,11 +45,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "a711ef7"
++    "base_revision": "a711ef7",
++    "landed_as": "f59c5c2654ff86911f557b85f729f713a2ac8c9d"
+   },
+   "note": "Lands IN_PROGRESS by design; reconciled by the next WP's branch. Carries its own G07 self-dossier."
+ }

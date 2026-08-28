@@ -1,0 +1,109 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index ec18c9f..659444f 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -130,6 +130,17 @@ it rather than trusting the record.
+   shape (WP-0029: 13 advance tests red there, green in the composed run). Scratch clones pin
+   `origin/main` explicitly (`tests/_scratch.pin_origin_main`).
+ 
++## Resolved Issues become learning (`BADF-WP-0035`, Issue #29)
++
++The Doctrine's last clause — *every resolved Issue becomes potential institutional learning* —
++is now enforced, not aspirational. A demand that reaches a terminal status (`RESOLVED` or
++`REJECTED`) carries a `learning`: a `docs/learnings/<slug>.md` file that exists, or the literal
++`NONE_DECLARED`. `badf_gate.py repo` refuses a terminal demand with neither — an explicit
++"nothing learned" is a claim; silence is drift. Learnings are extend-only (`docs/learnings/`).
++Flipping a demand from `AUTHORIZED` to `RESOLVED` when its Issue closes is not yet automatic
++(the same shape as the reconciliation debt); the requirement bites the moment a demand *is*
++marked terminal.
++
+ ## Issue and PR body shape (`BADF-WP-0034`, Issue #27)
+ 
+ Shape is **requested** on GitHub and **enforced** where BADF reads it — the two are
+diff --git a/docs/learnings/README.md b/docs/learnings/README.md
+new file mode 100644
+index 0000000..ed40d55
+--- /dev/null
++++ b/docs/learnings/README.md
+@@ -0,0 +1,12 @@
++# BADF learnings
++
++> Every resolved Issue becomes potential institutional learning. (`GITHUB_CONTROL_PLANE.md`)
++
++When a demand reaches a terminal status (`RESOLVED` or `REJECTED`), it carries a `learning`
++disposition: a file in this directory, or the literal `NONE_DECLARED`. `badf_gate.py repo`
++refuses a terminal demand with neither — an explicit "nothing learned" is a claim; silence is
++drift (`BADF-WP-0035`, Issue #29).
++
++Slugs are `[a-z0-9-]+.md`. An entry states the demand it came from, what was learned, and how
++it changes practice. Learnings are extend-only: correct one with a new entry, do not rewrite
++history.
+diff --git a/docs/learnings/a-foreign-revision-must-verify-the-diff.md b/docs/learnings/a-foreign-revision-must-verify-the-diff.md
+new file mode 100644
+index 0000000..6fd8278
+--- /dev/null
++++ b/docs/learnings/a-foreign-revision-must-verify-the-diff.md
+@@ -0,0 +1,17 @@
++# Equality across copies is not verification
++
++From `BADF-DEM-0002` (**RESOLVED** — govern one non-BADF work package end to end, `WP-2026-0010`).
++
++The first work package BADF governed that was not BADF exposed that `source_revision` was only
++ever compared for *equality* across the dossier, its evidence and its approvals. A dossier
++whose three copies all agreed on the all-zeros SHA passed. For BADF's own work the SHA was
++always BADF's, so the hole never showed.
++
++**Learned:** a dossier must govern a commit that *exists* and *changed what the evidence says*.
++`verify_foreign_revision` now resolves the revision in the target repository, checks it
++descends from the declared base, and requires the recorded `source-change` diff to equal
++`git diff base..revision`. Deny unless established.
++
++**Changed:** the same derive-and-corroborate shape now underlies `landed_as`, the composed-tree
++gate, the charter floor and self-dossiers — a record's claim is checked against the world, never
++against another copy of itself.
+diff --git a/docs/learnings/evidence-must-be-measured.md b/docs/learnings/evidence-must-be-measured.md
+new file mode 100644
+index 0000000..68fd05c
+--- /dev/null
++++ b/docs/learnings/evidence-must-be-measured.md
+@@ -0,0 +1,18 @@
++# An evidence line is measured output, never inference
++
++From `BADF-DEM-0013` (Issue #24, **REJECTED**).
++
++#24 claimed `schemas/` was not under `INTEGRITY_PATHS`, with an Evidence line quoting a
++command returning `[]`. The command was never run in that step; `schemas/*.json` had been
++locked since `BADF-WP-0007`. A demand record and a work package were opened on a false
++premise before the mistake was caught.
++
++**Learned:** an Evidence line is the *pasted output* of a command executed in the same step —
++never a remembered or inferred result. Before filing an Issue that asserts a gap ("X is not
++locked / checked / present"), run the positive control first: show the thing present where the
++claim says it is absent, or the exact grep returning nothing, in that step. Converting a
++partial read into a FAIL claim is the same defect as converting missing evidence into PASS.
++
++**Changed:** #43 (the real `examples/` gap) was filed *with* its measurement pasted. This
++learning is enforced socially, not mechanically — the gate cannot know whether a human ran a
++command; the discipline is the control.
+diff --git a/docs/learnings/main-is-pr-only-by-rule-not-by-accident.md b/docs/learnings/main-is-pr-only-by-rule-not-by-accident.md
+new file mode 100644
+index 0000000..7ce8ca6
+--- /dev/null
++++ b/docs/learnings/main-is-pr-only-by-rule-not-by-accident.md
+@@ -0,0 +1,16 @@
++# A safety net held by accident is not a control
++
++From `BADF-DEM-0004` (Issue #19, **RESOLVED** by `BADF-WP-0016`).
++
++Before #19, `main` refused a direct push only because a `governance` status check had never
++reported on a push commit — no rule required a PR, and 18 of 23 commits were `--merge` with
++zero Issue references. The repository had a safety net it did not actually have; an agent
++reading the constitution would have trusted it.
++
++**Learned:** a control that works by accident of configuration is not a control. State what is
++actually enforced, and enforce what the doctrine claims. `main` is now PR-only under an active
++zero-bypass ruleset, squash-only, with a required composed-tree gate; the doctrine says so and
++CI proves it every push.
++
++**Changed:** every merge since is a squash through a PR with an Issue→demand→WP→PR chain, and
++`main`'s protection is asserted only where it is true (corrected in `AGENTS.md` under #407).
