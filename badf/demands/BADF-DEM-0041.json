@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0041",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 99,
+    "url": "https://github.com/bstBizEra/badf/issues/99",
+    "exported_at": "2026-08-28T21:03:01Z",
+    "body_digest": "sha256:77bf3115d0bcdf2da1a35f9e3c65f6b393fabe9c95e338638e756e228e35134a"
+  },
+  "title": "GOV-0038: badf-research has no research-reconciliation subskill; RESEARCH_SUFFICIENT passes with zero findings (P0 9/9 + earned control 26; control-15 accounting correction)",
+  "problem": "## Observed\n`badf-research` has 8 of 9 P0 subskills; `research-reconciliation` \u2014 the terminal disposition subskill \u2014 does not exist. A failing-first probe also shows a real gap I deferred from evidence-synthesis: a **`RESEARCH_SUFFICIENT`** record passes with **zero findings** \u2014 research declared sufficient on nothing synthesised. (Separately, an accounting correction: control 15, \"only RESEARCH_SUFFICIENT \u2192 downstream work package\", is **already enforced** since RSR-004/WP-0038; an earlier note that it \"remained\" was a tracking error.)\n\n## Expected\nBuild `research-reconciliation` as P0 subskill **9 of 9** (completing the family): a concise `SKILL.md` whose question is \"do we know enough?\" not \"what do we recommend?\", returning a controlled disposition (RESEARCH_SUFFICIENT / MORE_RESEARCH_REQUIRED / EXPERIMENT_REQUIRED / ... / RESEARCH_BLOCKED), never PASS/FAIL, and holding the RESEARCH_SUFFICIENT \u2260 IMPLEMENTATION_AUTHORIZED boundary. Register `IMPLEMENTED`. **Control 26 (earned, deferred from evidence-synthesis):** a `RESEARCH_SUFFICIENT` record carries at least one finding.\n\n## Evidence\n- probe: `RESEARCH_SUFFICIENT + zero findings` \u2192 PASS (gap)\n- `# 15:` already enforces `disposition != RESEARCH_SUFFICIENT and downstream.work_package_id is not None` \u2192 refused (control 15 present)\n\n## Unknowns\nNone. After this: all 9 P0 subskills present and all 26 controls enforced \u2014 the family MEETS the IMPLEMENTED and VALIDATED criteria; the status advance is the operator's admission decision, so `badf-research` stays `DESIGNED`.\n\n## Proposed work package\n`BADF-WP-0054`. `research-reconciliation/SKILL.md` + registry; control 26 (earned) + acceptance row; control-15 accounting correction; root router (9/9); tests + mutation; own G07 self-dossier. C2. Completes the P0 family; `badf-research` stays `DESIGNED`.\n\ndiscovered-by: operator research sequencing (2026-08-29) + BADF-WP-0053 + the evidence-synthesis deferral \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T21:03:01Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "research-reconciliation P0 9/9 (completes family) + control 26 (RESEARCH_SUFFICIENT needs findings, earned/deferred from evidence-synthesis) + control-15 accounting correction. /loop research build FINAL. Worked as BADF-WP-0054."
+}

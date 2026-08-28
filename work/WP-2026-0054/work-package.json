@@ -1,0 +1,54 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0054",
+  "title": "research-reconciliation: P0 research subskill 9/9 (completes family) + control 26 (sufficiency means synthesis)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0041",
+  "objective": "Build the terminal research subskill research-reconciliation, completing the nine P0 subskills: a concise SKILL.md whose question is 'do we know enough?' not 'what do we recommend?', returning a controlled disposition, never PASS/FAIL, holding RESEARCH_SUFFICIENT != IMPLEMENTATION_AUTHORIZED. Add control 26 (earned, deferred from evidence-synthesis): a RESEARCH_SUFFICIENT record carries at least one finding. Correct the accounting error that mistracked control 15 (already enforced since RSR-004) as pending. Register IMPLEMENTED; badf-research stays DESIGNED.",
+  "business_value": "Reconciliation is where research ends and hands off to a separate decision authority; requiring RESEARCH_SUFFICIENT to rest on synthesised findings stops a record from declaring the evidence enough while having synthesised nothing. Completing the family means every P0 research capability now has a governed contract.",
+  "in_scope": [
+    "skills/badf-research/subskills/research-reconciliation/SKILL.md (controlled dispositions; sufficiency != authorization)",
+    "skill-registry entry research-reconciliation IMPLEMENTED with a real digest",
+    "control 26 in validate_research_record (earned): RESEARCH_SUFFICIENT => >=1 finding",
+    "acceptance.md control 26 row + control-15 accounting correction (already enforced since RSR-004)",
+    "root SKILL.md router (9 of 9); tests failing-first + mutation; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "advancing badf-research off DESIGNED (the family now MEETS IMPLEMENTED/VALIDATED criteria, but the status advance is the operator's admission decision)",
+    "the P1/P2 research skills; #77/#83/#84"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "research-reconciliation/SKILL.md exists, is concise, registry digest == sha256(source), status IMPLEMENTED",
+    "a RESEARCH_SUFFICIENT record with zero findings is refused; a non-sufficient disposition with zero findings passes",
+    "the three shipped examples pass unchanged (all RESEARCH_SUFFICIENT with >=1 finding)",
+    "acceptance.md documents control 26 and corrects the control-15 accounting (all 26 controls enforced)",
+    "root SKILL.md routes research-reconciliation (9 of 9); mutation kills; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research.py",
+    "tests/test_badf_registry_digest.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "e1da61c"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Ninth and final P0 research subskill -- completes the family. Control 26 earned by a failing-first probe (RESEARCH_SUFFICIENT + zero findings passed), deferred here from evidence-synthesis. Control 15 was already enforced since RSR-004/WP-0038; this WP corrects the mistracking. Reconciles WP-2026-0053. badf-research stays DESIGNED (9 of 9 P0, all 26 controls enforced -- IMPLEMENTED/VALIDATED criteria met; status advance is the operator's admission call)."
+}
