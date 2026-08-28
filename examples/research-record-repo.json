@@ -58,14 +58,16 @@
       "uri": "git:bstBizEra/badf@39dc6d9:work/",
       "source_type": "PRIMARY",
       "retrieved_at": "2026-08-28T15:01:00Z",
-      "digest": null
+      "digest": null,
+      "freshness": "CURRENT"
     },
     {
       "id": "S-002",
       "uri": "git:bstBizEra/badf log --first-parent main",
       "source_type": "PRIMARY",
       "retrieved_at": "2026-08-28T15:02:00Z",
-      "digest": null
+      "digest": null,
+      "freshness": "CURRENT"
     }
   ],
   "claims": [
@@ -124,6 +126,6 @@
   "authority": {
     "implementation_authority": false
   },
-  "evidence_digest": "sha256:41c6419c15accafd929c161c98c69face235f4704b23d05d7f6d1ff77a32db51",
+  "evidence_digest": "sha256:ba2e21525579f2f347be6d2686f5594421e5e6c4e7d7de10e8a83c72851a75b0",
   "recorded_at": "2026-08-28T15:10:00Z"
 }

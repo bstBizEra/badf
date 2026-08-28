@@ -23,7 +23,7 @@ source_type         PRIMARY | AUTHORITATIVE_SECONDARY | SECONDARY | COMMUNITY | 
 retrieved_at        when the bytes were captured
 digest              content digest of the captured bytes
 (resolved revision) an immutable revision where one exists (a commit, a DOI, a versioned URL)
-(retrieval outcome) whether the fetch resolved, was unavailable, or was partial
+freshness            CURRENT | STALE | UNKNOWN -- the re-resolution verdict (control 6)
 ```
 
 The last two are the receipt fields the **staleness** control (control 6, the next work package)

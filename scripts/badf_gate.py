@@ -2896,6 +2896,14 @@ def validate_research_record(path: Path) -> str:
             raise ValidationError(f"claim {cid} is FALSIFIED but cites no contradicting source; no evidence is not falsification (control 21)")
         if c["status"] == "DISPUTED" and not (c["supporting_sources"] and c["contradicting_sources"]):
             raise ValidationError(f"claim {cid} is DISPUTED but does not carry both supporting and contradicting evidence; a dispute is support and contradiction coexisting (control 21)")
+        # 6: a changed source digest makes dependent claims stale. deep-research
+        # re-resolves a source and sets its freshness (CURRENT when an immutable
+        # revision resolves or the digest is unchanged; STALE when the bytes
+        # changed; UNKNOWN when it could not be resolved). A claim may not rest on
+        # a STALE or UNKNOWN source -- source unavailable/changed fails closed.
+        for ref in c["supporting_sources"] + c["contradicting_sources"]:
+            if sources[ref]["freshness"] != "CURRENT":
+                raise ValidationError(f"claim {cid} rests on source {ref} whose freshness is {sources[ref]['freshness']}; a stale or unresolvable source cannot support a claim (control 6)")
     for f in rec["findings"]:
         # 22: a finding is grounded in the claims it synthesises (evidence-synthesis).
         # A synthesis conclusion rests on adjudicated claims, not free assertion.

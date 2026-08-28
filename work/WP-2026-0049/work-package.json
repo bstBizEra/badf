@@ -44,11 +44,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "af1f239"
+    "base_revision": "af1f239",
+    "landed_as": "4f80a406099c7c20c00b445af65eee06f620f0c0"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Fifth P0 research subskill. Earns NO gate control by design (its enforcement is control 6, the next unit) -- a deliberate demonstration that not every subskill lands with a control. Reconciles WP-2026-0048. badf-research stays DESIGNED (5 of 9 P0); research controls unchanged at 20 of 22."
 }

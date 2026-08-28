@@ -236,13 +236,26 @@
           "uri",
           "source_type",
           "retrieved_at",
-          "digest"
+          "digest",
+          "freshness"
         ],
         "additionalProperties": false,
         "properties": {
           "id": {
             "type": "string",
             "pattern": "^S-[0-9]{3,}$"
+          },
+          "freshness": {
+            "type": "string",
+            "enum": [
+              "CURRENT",
+              "STALE",
+              "UNKNOWN"
+            ]
+          },
+          "resolved_revision": {
+            "type": "string",
+            "minLength": 1
           },
           "uri": {
             "type": "string",

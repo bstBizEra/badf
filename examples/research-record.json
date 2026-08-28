@@ -63,21 +63,24 @@
       "uri": "https://github.com/bstBizEra/badf/actions/runs/33104985912",
       "source_type": "PRIMARY",
       "retrieved_at": "2026-08-28T13:41:00Z",
-      "digest": null
+      "digest": null,
+      "freshness": "CURRENT"
     },
     {
       "id": "S-002",
       "uri": "git:bstBizEra/badf@0b88c74:tests/test_badf_compose.py",
       "source_type": "PRIMARY",
       "retrieved_at": "2026-08-28T13:42:00Z",
-      "digest": null
+      "digest": null,
+      "freshness": "CURRENT"
     },
     {
       "id": "S-003",
       "uri": "local reproduction: pristine clone of 0b88c74, one compose test verbose (CalledProcessError: nothing to commit)",
       "source_type": "PRIMARY",
       "retrieved_at": "2026-08-28T13:45:00Z",
-      "digest": null
+      "digest": null,
+      "freshness": "CURRENT"
     }
   ],
   "claims": [
@@ -159,6 +162,6 @@
   "authority": {
     "implementation_authority": false
   },
-  "evidence_digest": "sha256:8a2fe9ea6b48901aeac588cc2aaed22dceaf794872f12dee49cf7d66297c58bf",
+  "evidence_digest": "sha256:12ae90b55958f069d210a8407a6c6aff3e8c45a2c64bb6f05d350fe2b88f0af5",
   "recorded_at": "2026-08-28T13:50:00Z"
 }

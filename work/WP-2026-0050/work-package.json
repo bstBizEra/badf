@@ -1,0 +1,55 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0050",
+  "title": "control 6 — source-digest freshness (freshness receipt field + fail-closed on STALE/UNKNOWN)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0037",
+  "objective": "Implement the long-deferred acceptance control 6 now that deep-research owns acquisition: add a source-receipt freshness field (CURRENT/STALE/UNKNOWN) plus an optional resolved_revision, and enforce that a claim may not rest on a STALE or UNKNOWN source (fail closed). deep-research sets freshness on re-resolution; the gate reads the receipt (it does not fetch). Migrate the three examples with recomputed evidence_digests. badf-research stays DESIGNED (5 of 9 P0).",
+  "business_value": "Freshness is the difference between 'a URL still exists' and 'the evidence is current'. A claim resting on a source whose bytes changed, or that can no longer be resolved, is no longer supported; failing closed on stale/unknown sources stops a decision from being built on evidence that has moved.",
+  "in_scope": [
+    "schemas/research-record.schema.json: source freshness (CURRENT/STALE/UNKNOWN, required) + optional resolved_revision",
+    "control 6 in validate_research_record: a claim's supporting/contradicting source must be CURRENT",
+    "the three examples migrated (freshness: CURRENT) with recomputed evidence_digests",
+    "acceptance.md marks control 6 enforced (21 of 22); deep-research SKILL.md references freshness",
+    "tests failing-first + mutation; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "any network fetch in the gate (deterministic -- freshness is deep-research's verdict, the gate enforces the consequence)",
+    "control 15 (rides the state machine -- research-reconciliation), the other 4 P0 subskills, #77/#83/#84",
+    "any move of badf-research off DESIGNED"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "a claim resting on a STALE or UNKNOWN source is refused naming it",
+    "the three migrated examples pass `research` with recomputed digests",
+    "freshness is inside the evidence_digest (a source going stale is an evidence change; control 17 stays coherent)",
+    "acceptance.md marks control 6 enforced (21 of 22)",
+    "mutation kills; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research.py",
+    "tests/test_badf_registry_digest.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "4f80a40"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Control-only WP (no new subskill) implementing the long-pending acceptance control 6, enabled by deep-research (WP-0049). Reconciles WP-2026-0049. Research controls to 21 of 22 (only control 15 remains, owned by research-reconciliation)."
+}

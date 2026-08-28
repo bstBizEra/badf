@@ -384,6 +384,19 @@ deliberate demonstration of the discipline that not every subskill lands with a 
 is earned by a measured, enforceable gap, not by precedent. Research controls unchanged at **20 of
 22**. `badf-research` stays `DESIGNED` (5 of 9 P0).
 
+## Control 6 — source-digest freshness (`BADF-WP-0050`, Issue #91)
+
+The long-deferred acceptance control 6, unblocked now that `deep-research` owns acquisition. A source
+carries a receipt field `freshness` (`CURRENT` / `STALE` / `UNKNOWN`) and an optional
+`resolved_revision`; `deep-research` sets `freshness` on re-resolution — `CURRENT` when an immutable
+revision resolves or the digest is unchanged, `STALE` when the bytes changed, `UNKNOWN` when it could
+not be resolved. **Control 6 fails closed: a claim may not rest on a `STALE` or `UNKNOWN` source.** The
+gate reads the receipt; it does not fetch (deterministic, no network) — the re-fetch is
+`deep-research`'s, the consequence is the gate's. `freshness` is inside the `evidence_digest` (a source
+going stale *is* an evidence change, so control 17 stays coherent); the three examples were migrated
+with recomputed digests. This distinguishes *a URL still exists* from *the evidence is current*.
+Research controls: **21 of 22** — only control 15 remains, owned by `research-reconciliation`.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
