@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0017",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 51,
+    "url": "https://github.com/bstBizEra/badf/issues/51",
+    "exported_at": "2026-08-28T03:40:24Z",
+    "body_digest": "sha256:fa64952908c57a2f451adf1cc0b1e338b64c5b063baedb26714795dddf26df18"
+  },
+  "title": "GOV-0017: G01 has a lifecycle contract but no evidence semantics",
+  "problem": "## Observed (measured on `main` 2c5cb71)\n`badf/lifecycle.json` G01 requires evidence `prd`, `acceptance-criteria`, `product-approval` (owner `product_owner`, floor C1), and `validate_evidence` checks every evidence record the same way: schema fields, outcome PASS, producer present, toolchain present, artifact digest. It never opens the artifact. A `prd` whose artifact is one line of text, an `acceptance-criteria` artifact with no criteria, and a `product-approval` produced by the PRD's own author all render APPROVED today. With `advance` (WP-0029) an instance can now reach `G01 / APPROVED` on that.\n\n## Expected (WP-B of the plan on #41, BADF-DEC-0007)\nPer-type evidence rules **inside `validate_evidence`** \u2014 no second validator:\n- `prd`: artifact is JSON conforming to `schemas/prd.schema.json`; no item in both `in_scope` and `out_of_scope`; every objective's `metric_refs` resolves to a declared success metric; no unresolved placeholders.\n- `acceptance-criteria`: JSON conforming to its schema; non-empty; unique ids; no placeholders.\n- `product-approval`: produced by a **human** `product_owner` whose principal \u2260 the PRD's author; bound by digest to the exact `prd` artifact bytes it approves (a PRD edited after approval invalidates the approval).\n- An `examples/gate-dossier.G01.json` that validates, and CI validating it like G00's.\n\nSalvage from PR #44 (closed, branch `feature/BADF-WP-G01-001-gate-01-prd-baseline` @ `e3cfde1`): its schema, template, the semantic tests, and the `badf-prd` skill doc \u2014 copy minimal + test. No `scripts/badf_prd.py`.\n\n## Unknowns\nWhether `product_owner` must also appear among the dossier's approvals at C1 (matrix roles are engineering_owner + independent_reviewer). Reading: the human product-approval **evidence** is the product owner's act; the dossier approvals stay the matrix's. Stated in the doc.\n\n## Proposed work package\n`BADF-WP-0030`. Class C2 (contract impact). Tests failing-first; mutation per rule; compose both shapes.\n\nstatus: PROPOSED (WP-B of the #41 plan; authority: the operator's \"proceed on your call\", 2026-08-28)\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T03:40:24Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. WP-B of the #41 plan (BADF-DEC-0007); authority: the operator's 'proceed on your call' (2026-08-28). Worked as BADF-WP-0030."
+}

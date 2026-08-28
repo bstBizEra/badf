@@ -39,7 +39,9 @@ jobs:
         run: python3 -m unittest discover -s tests -p 'test_*.py'
       - name: Validate example dossier
         if: ${{ !cancelled() }}
-        run: python3 scripts/badf_gate.py dossier examples/gate-dossier.G00.json
+        run: |
+          python3 scripts/badf_gate.py dossier examples/gate-dossier.G00.json
+          python3 scripts/badf_gate.py dossier examples/gate-dossier.G01.json
       - name: PR traceability (Work-Package + Closes #N)
         # BADF-MAIN-001. Only a PR has a body; a push to main has already been
         # traced by the PR that produced it. Reports on the PR event only.

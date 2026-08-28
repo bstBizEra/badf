@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "prd_digest": "sha256:bc0e03d1facc6501896ca3de8020aed3d54266e85139057fd6068794f9eb66b1",
+  "approved_by": {
+    "principal": "example-product-owner",
+    "principal_type": "human",
+    "role": "product_owner"
+  },
+  "decision": "APPROVED",
+  "approved_at": "2026-08-25T00:00:05Z",
+  "note": "example approval bound to the example PRD bytes"
+}

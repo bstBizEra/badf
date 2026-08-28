@@ -1,0 +1,13 @@
+{
+  "$schema": "../schemas/product-approval.schema.json",
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-__REQUIRED__",
+  "prd_digest": "sha256:__REQUIRED__",
+  "approved_by": {
+    "principal": "__REQUIRED__",
+    "principal_type": "human",
+    "role": "product_owner"
+  },
+  "decision": "APPROVED",
+  "approved_at": "__REQUIRED__"
+}

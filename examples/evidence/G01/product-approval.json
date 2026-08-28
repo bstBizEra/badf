@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G01",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G01-PRODUCT-APPROVAL-v1",
+  "claim": "Example product-owner approval of PRD-BADF-0001, digest-bound",
+  "evidence_type": "product-approval",
+  "producer": {
+    "id": "example-product-owner",
+    "type": "human"
+  },
+  "operation": "approve the PRD",
+  "artifact": "examples/evidence/G01/product-approval.artifact.json",
+  "digest": "sha256:cb54e785d70b6c0f25098207a2df5440d773aa876e5b2415a3411996cff18834"
+}

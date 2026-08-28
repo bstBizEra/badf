@@ -222,10 +222,13 @@ class HeldDossierCannotBeLaunderedTests(InitScratchMixin, unittest.TestCase):
         if with_approvals:
             doc["approvals"] = [{"role": r, "decision": "APPROVED", "by": f"human-{i}", "principal_type": "human",
                                  "revision": doc["source_revision"], "policy_epoch": doc["policy_epoch"],
-                                 "approved_at": "2026-08-28T00:00:00Z"}
+                                 # bound to the dossier: a hard-coded "2026-08-28T00:00:00Z" was in the
+                                 # future when written and became "predates the dossier" once UTC
+                                 # crossed that instant -- a time bomb the wall clock fired (WP-0030)
+                                 "approved_at": doc["created_at"]}
                                 for i, r in enumerate(["human_sponsor", "security_authority", "release_authority", "service_owner"])]
         if with_council:
-            doc["council"] = {"convened_at": "2026-08-28T00:00:00Z", "verdict": "APPROVE",
+            doc["council"] = {"convened_at": doc["created_at"], "verdict": "APPROVE",
                               "ballots": [{"by": f"c-{i}", "principal_type": "agent", "verdict": "APPROVE", "sealed": True} for i in range(2)]}
         d.write_text(json.dumps(doc))
         subprocess.run([sys.executable, "scripts/badf_gate.py", "lock"], cwd=self.root, env=self.env, capture_output=True)

@@ -47,11 +47,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "7336a48"
+    "base_revision": "7336a48",
+    "landed_as": "2c5cb716b1adb52b35281885a2814b7add27a626"
   },
   "note": "Lands IN_PROGRESS by design. Decision BADF-DEC-0007 is delegated and says so."
 }

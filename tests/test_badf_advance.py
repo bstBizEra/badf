@@ -79,15 +79,28 @@ class AdvanceScratch(ValidatedInstance):
         evidence records by a human, two human approvers."""
         d = self.wp_dir(); ev_dir = d / "evidence/G01"; ev_dir.mkdir(parents=True, exist_ok=True)
         g00 = json.loads((d / "gate-dossier.G00.json").read_text())
+        # Since BADF-WP-0030 the gate OPENS G01 artifacts: real evidence, modelled on
+        # the shipped example, bound to this PRD and (for the approval) to its bytes.
+        ex = gate.ROOT / "examples/evidence/G01"
+        prd = json.loads((ex / "prd.artifact.json").read_text()); prd["id"] = "PRD-SCRATCH-0001"
+        ac = json.loads((ex / "acceptance-criteria.artifact.json").read_text()); ac["prd_id"] = "PRD-SCRATCH-0001"
+        (ev_dir / "prd.artifact.json").write_text(json.dumps(prd, indent=2) + "\n")
+        (ev_dir / "acceptance-criteria.artifact.json").write_text(json.dumps(ac, indent=2) + "\n")
+        pa = {"schema_version": "1.0.0", "prd_id": "PRD-SCRATCH-0001", "prd_digest": gate.sha256(ev_dir / "prd.artifact.json"),
+              "approved_by": {"principal": "scratch-product-owner", "principal_type": "human", "role": "product_owner"},
+              "decision": "APPROVED", "approved_at": g00["created_at"]}
+        (ev_dir / "product-approval.artifact.json").write_text(json.dumps(pa, indent=2) + "\n")
+        producers = {"prd": {"id": prd["author"]["principal"], "type": "human"}, "acceptance-criteria": HUMAN,
+                     "product-approval": {"id": "scratch-product-owner", "type": "human"}}
         index = []
         for t in ("prd", "acceptance-criteria", "product-approval"):
-            art = ev_dir / f"{t}.txt"; art.write_text(f"{t} evidence for the scratch product\n")
+            art = ev_dir / f"{t}.artifact.json"
             e = {"schema_version": "1.0.0", "id": f"EVD-{self.wp()}-G01-{t}", "work_package_id": self.wp(), "gate": "G01",
-                 "claim": f"{t} present", "evidence_type": t, "producer": HUMAN,
+                 "claim": f"{t} present", "evidence_type": t, "producer": producers[t],
                  "source_revision": g00["source_revision"], "target": g00["target"],
                  "toolchain": {"name": "human-review", "version": "1"}, "operation": "review",
                  "started_at": g00["created_at"], "completed_at": g00["created_at"], "outcome": "PASS",
-                 "artifact": f"work/{self.wp()}/evidence/G01/{t}.txt", "digest": gate.sha256(art)}
+                 "artifact": f"work/{self.wp()}/evidence/G01/{t}.artifact.json", "digest": gate.sha256(art)}
             (ev_dir / f"{t}.json").write_text(json.dumps(e, indent=2) + "\n")
             index.append({"type": t, "path": f"work/{self.wp()}/evidence/G01/{t}.json"})
         approvals = []
