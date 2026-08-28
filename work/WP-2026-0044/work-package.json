@@ -58,11 +58,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "82d659a"
+    "base_revision": "82d659a",
+    "landed_as": "a4ff5a8107b41340671fc7c254245a31518c82d9"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Reuses the G01/G02/G03 substrate -- no new validator module (ARCH-I11). Advances badf-architecture to IMPLEMENTED; the contract test's not-implemented-yet assertions flip to implemented in this WP. VALIDATED still requires WP-ARCH-C (ASSURE, controls 13-18) with mutation."
 }

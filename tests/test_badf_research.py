@@ -379,5 +379,42 @@ class RepositoryResearchTests(unittest.TestCase):
             shutil.rmtree(backup, ignore_errors=True)
 
 
+class ScopeContractTests(ResearchRecordTests):
+    """Control 19 (BADF-WP-0045): the scope contract is bounded and machine-readable
+    -- non-empty stop_conditions, assumptions distinct from evidence, a decision it
+    serves -- and these framing fields are excluded from the evidence_digest."""
+
+    def test_empty_stop_conditions_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE); rec["stop_conditions"] = []
+        self.refused(rec, "no bounded stop_conditions")
+
+    def test_whitespace_only_stop_condition_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE); rec["stop_conditions"] = ["   "]
+        self.refused(rec, "no bounded stop_conditions")
+
+    def test_absent_stop_conditions_is_refused_by_schema(self):
+        rec = copy.deepcopy(EXAMPLE); rec.pop("stop_conditions")
+        self.refused(rec, "stop_conditions")
+
+    def test_an_empty_assumption_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE); rec["assumptions"] = ["a real assumption", ""]
+        self.refused(rec, "empty assumption")
+
+    def test_an_empty_decision_question_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE); rec["decision_context"] = {"decision_question": ""}
+        self.refused(rec, "decision_context.decision_question is empty")
+
+    def test_changing_only_framing_leaves_the_evidence_digest_valid(self):
+        # stop_conditions/assumptions/decision_context are framing, not evidence:
+        # changing them must not invalidate the stored evidence_digest (control 17).
+        rec = copy.deepcopy(EXAMPLE)
+        rec["stop_conditions"] = ["a different but still bounded stop condition"]
+        rec["assumptions"] = ["a different assumption"]
+        rec["decision_context"] = {"decision_question": "a different decision this run serves?"}
+        r = self.run_cli(rec)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("RESEARCH PASS", r.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()

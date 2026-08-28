@@ -43,6 +43,20 @@
       "status": "ELIMINATED"
     }
   ],
+  "stop_conditions": [
+    "the root cause is isolated to a single mechanism",
+    "a discriminating test distinguishes the candidate hypotheses"
+  ],
+  "assumptions": [
+    "the shared .git is the only cross-session write surface"
+  ],
+  "decision_context": {
+    "decision_question": "should the classifier fix proceed to a work package?",
+    "drivers": [
+      "correctness",
+      "blast radius"
+    ]
+  },
   "sources": [
     {
       "id": "S-001",

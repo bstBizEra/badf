@@ -17,6 +17,9 @@
     "known",
     "unknown",
     "hypotheses",
+    "stop_conditions",
+    "assumptions",
+    "decision_context",
     "sources",
     "claims",
     "findings",
@@ -186,6 +189,40 @@
               "RETAINED",
               "ELIMINATED"
             ]
+          }
+        }
+      }
+    },
+    "stop_conditions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "decision_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_question"
+      ],
+      "properties": {
+        "decision_question": {
+          "type": "string",
+          "minLength": 1
+        },
+        "drivers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
           }
         }
       }

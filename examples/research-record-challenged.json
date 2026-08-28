@@ -41,6 +41,16 @@
       "status": "RETAINED"
     }
   ],
+  "stop_conditions": [
+    "the council reaches a challenge verdict",
+    "no independent source for the primary claim remains uninspected"
+  ],
+  "assumptions": [
+    "the two reviewers are independent identities"
+  ],
+  "decision_context": {
+    "decision_question": "is the comparative recommendation sufficient to author a decision record?"
+  },
   "sources": [
     {
       "id": "S-001",
