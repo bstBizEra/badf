@@ -22,6 +22,15 @@
       "foreign (LOCAL_MIRROR) work packages"
     ]
   },
+  "assumptions": [
+    "main remains squash-only under the current repository ruleset"
+  ],
+  "decision_context": "Support a governed decision on the durable source-change basis for self-work-package evidence.",
+  "stop_conditions": [
+    "one mechanism is shown to preserve source-change identity across branch, composed tree and squash-landed main while the alternative cannot",
+    "independent challenge identifies an unresolved material contradiction",
+    "available evidence cannot distinguish the alternatives"
+  ],
   "baseline": {
     "repository": "bstBizEra/badf",
     "revision": "684539e",
