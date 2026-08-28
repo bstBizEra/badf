@@ -21,6 +21,7 @@ import badf_gate as gate  # noqa: E402
 
 EXAMPLE = json.loads((gate.ROOT / "examples/research-record.json").read_text())
 CHALLENGED = json.loads((gate.ROOT / "examples/research-record-challenged.json").read_text())
+REPO = json.loads((gate.ROOT / "examples/research-record-repo.json").read_text())
 
 
 class DeriveConfidenceTests(unittest.TestCase):
@@ -313,6 +314,69 @@ class EvidenceDigestTests(unittest.TestCase):
         self.rebind(rec)
         r = self.run_cli(rec)
         self.assertEqual(r.returncode, 0, r.stderr)
+
+
+class RepositoryResearchTests(unittest.TestCase):
+    """Control 3: a repo-type (R02/R03) record baselines to a commit that
+    resolves in its repository. Mutating a copy of the shipped R02 example."""
+    def run_cli(self, rec):
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+            json.dump(rec, f); path = Path(f.name)
+        try:
+            return subprocess.run([sys.executable, "scripts/badf_gate.py", "research", str(path)],
+                                  cwd=str(gate.ROOT), capture_output=True, text=True)
+        finally:
+            path.unlink()
+
+    def rebind(self, rec):
+        rec["evidence_digest"] = gate.compute_research_evidence_digest(rec); return rec
+
+    def refused(self, rec, needle):
+        r = self.run_cli(rec)
+        self.assertNotEqual(r.returncode, 0, "a defective record passed")
+        self.assertIn(needle, r.stderr, r.stderr)
+
+    def test_repo_example_passes(self):
+        r = self.run_cli(copy.deepcopy(REPO))
+        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
+
+    def test_a_baseline_that_does_not_resolve_is_refused(self):
+        rec = copy.deepcopy(REPO); rec["baseline"]["revision"] = "0" * 40
+        self.refused(self.rebind(rec), "does not resolve")
+
+    def test_a_baseline_in_an_unregistered_repository_is_refused(self):
+        rec = copy.deepcopy(REPO); rec["baseline"]["repository"] = "bstBizEra/nope"
+        self.refused(self.rebind(rec), "not registered")
+
+    def test_control_3_does_not_apply_to_non_repository_research(self):
+        rec = copy.deepcopy(REPO)
+        rec["type"] = "R07"; rec["baseline"]["revision"] = "0" * 40   # bogus, but R07 is not repo-type
+        r = self.run_cli(self.rebind(rec))
+        self.assertEqual(r.returncode, 0, r.stderr)
+
+    def test_a_root_cause_record_is_also_subject_to_control_3(self):
+        rec = copy.deepcopy(REPO)
+        rec["type"] = "R03"; rec["baseline"]["revision"] = "0" * 40
+        self.refused(self.rebind(rec), "does not resolve")
+
+    def test_an_absent_local_mirror_reports_unresolvable_here(self):
+        """A record baselining to a LOCAL_MIRROR that is not on this host is
+        UNRESOLVABLE_HERE, not a refusal. Registered against a scratch path so
+        the test is host-independent; the registry is restored."""
+        import shutil, tempfile as tf
+        reg = gate.ROOT / gate.REPOSITORIES; lock = gate.ROOT / gate.LOCKFILE
+        backup = Path(tf.mkdtemp())
+        shutil.copy2(reg, backup / "r.json"); shutil.copy2(lock, backup / "l.json")
+        try:
+            d = json.loads(reg.read_text())
+            d["repositories"]["bstBizEra/absent-mirror"] = {"local_path": "/no/such/mirror/here", "default_branch": "main", "resolution": "LOCAL_MIRROR"}
+            reg.write_text(json.dumps(d, indent=2) + "\n")
+            gate.write_lock(gate.ROOT, gate.INTEGRITY_PATHS)
+            rec = copy.deepcopy(REPO); rec["baseline"]["repository"] = "bstBizEra/absent-mirror"; rec["baseline"]["revision"] = "abc1234"
+            self.refused(self.rebind(rec), "UNRESOLVABLE_HERE")
+        finally:
+            shutil.copy2(backup / "r.json", reg); shutil.copy2(backup / "l.json", lock)
+            shutil.rmtree(backup, ignore_errors=True)
 
 
 if __name__ == "__main__":

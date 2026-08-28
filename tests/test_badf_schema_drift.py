@@ -23,7 +23,7 @@ SHIPPED = {
     "prd": [gate.ROOT / "examples/evidence/G01/prd.artifact.json"],
     "acceptance-criteria": [gate.ROOT / "examples/evidence/G01/acceptance-criteria.artifact.json"],
     "product-approval": [gate.ROOT / "examples/evidence/G01/product-approval.artifact.json"],
-    "research-record": [gate.ROOT / "examples/research-record.json", gate.ROOT / "examples/research-record-challenged.json"],
+    "research-record": [gate.ROOT / "examples/research-record.json", gate.ROOT / "examples/research-record-challenged.json", gate.ROOT / "examples/research-record-repo.json"],
     "lifecycle": [gate.ROOT / "badf/lifecycle.json"],
     "demand": sorted((gate.ROOT / "badf/demands").glob("BADF-DEM-*.json")),
     "work-package": sorted(gate.ROOT.glob("work/WP-*/work-package.json")),

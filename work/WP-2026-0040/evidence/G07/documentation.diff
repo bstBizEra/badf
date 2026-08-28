@@ -1,0 +1,23 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index dd84688..d83c343 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -130,6 +130,18 @@ it rather than trusting the record.
+   shape (WP-0029: 13 advance tests red there, green in the composed run). Scratch clones pin
+   `origin/main` explicitly (`tests/_scratch.pin_origin_main`).
+ 
++## repository-research subskill + control 3 (`BADF-WP-0040`, RSR-006)
++
++The first of the nine P0 research subskills. `skills/badf-research/subskills/repository-research/
++SKILL.md` is the declarative workflow for investigating a repository (commits, PRs, issues,
++history) and producing an `R02`/`R03` research record, binding every finding to a commit SHA;
++its invariant is *current state is not historical evidence*. Control 3 is now enforced: a
++repo-type record's `baseline.repository` must be registered and `baseline.revision` must resolve
++there (an absent `LOCAL_MIRROR` reports `UNRESOLVABLE_HERE`, like `verify_foreign_revision`).
++`examples/research-record-repo.json` is validated in CI. **Sixteen of the eighteen controls are
++now enforced.** Control 6 (source-digest staleness, needs a source fetch) and the other eight P0
++subskills remain, one WP each. `badf-research` stays `DESIGNED`.
++
+ ## Research evidence digest (`BADF-WP-0039`, RSR-005 control 17)
+ 
+ A record's `evidence_digest` is the sha256 of its **material evidence** — sources, claims,

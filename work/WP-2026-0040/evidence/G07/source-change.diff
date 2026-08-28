@@ -1,0 +1,402 @@
+diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
+index e828886..366fb84 100644
+--- a/.github/workflows/badf-gates.yml
++++ b/.github/workflows/badf-gates.yml
+@@ -44,6 +44,7 @@ jobs:
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G01.json
+           python3 scripts/badf_gate.py research examples/research-record.json
+           python3 scripts/badf_gate.py research examples/research-record-challenged.json
++          python3 scripts/badf_gate.py research examples/research-record-repo.json
+       - name: PR traceability (Work-Package + Closes #N)
+         # BADF-MAIN-001. Only a PR has a body; a push to main has already been
+         # traced by the PR that produced it. Reports on the PR event only.
+diff --git a/badf/demands/BADF-DEM-0027.json b/badf/demands/BADF-DEM-0027.json
+new file mode 100644
+index 0000000..132eb55
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0027.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0027",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 67,
++    "url": "https://github.com/bstBizEra/badf/issues/67",
++    "exported_at": "2026-08-28T14:23:25Z",
++    "body_digest": "sha256:88bcd34aa316b58c336d363ed4048c79fa314bb5f632ebff16490a985a44be53"
++  },
++  "title": "GOV-0023: no repository-research subskill; a repo-type research record's baseline is not required to resolve (RSR-006 / control 3)",
++  "problem": "## Observed\nThe frozen research contract (#50) names nine P0 subskills; none exist. `repository-research` \u2014 BADF-native investigation of a repository's commits, PRs, issues, code and history, binding findings to a commit SHA \u2014 has no `SKILL.md`. And control 3 (\"baseline is bound to a repository revision when repository research applies\") is not enforced: a record of type `R02` (REPOSITORY_INVESTIGATION) or `R03` (ROOT_CAUSE) can baseline to a commit that does not exist in the repo, and `badf_gate.py research` accepts it.\n\n## Expected\nA concise `skills/badf-research/subskills/repository-research/SKILL.md` (a declarative workflow, like `badf-delivery`), a registry entry for it, and control 3 enforced: for a repo-type record (R02/R03), `baseline.repository` must be registered and `baseline.revision` must resolve there (an absent LOCAL_MIRROR reports `UNRESOLVABLE_HERE`, like `verify_foreign_revision`). A shipped `examples/research-record-repo.json` (a real R02 investigation) validated in CI.\n\n## Evidence\n`ls skills/badf-research/subskills` \u2192 absent on `main` at `39dc6d9`; `grep -n '\"R02\"\\|\"R03\"' scripts/badf_gate.py` \u2192 `validate_research_record` never resolves a baseline.\n\n## Unknowns\nNone. Control 6 (source-digest staleness, needs a source fetch) remains a separate later WP; the other eight P0 subskills follow one at a time. `badf-research` stays `DESIGNED` until all controls and subskills land.\n\n## Proposed work package\n`BADF-WP-0040` (RSR-006). The `repository-research` SKILL.md + registry entry; control 3 in `validate_research_record`; `examples/research-record-repo.json`; tests + mutation. C2. Brings 16 of 18 controls to enforced.\n\ndiscovered-by: BADF-WP-0031 (frozen-contract roadmap) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T14:23:25Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Body exported verbatim and digest-bound. Roadmap item RSR-006 (first P0 subskill + control 3) under the frozen research contract (#50); authority: the operator's pick 'SKILL.md + control 3 + example' (2026-08-28). Worked as BADF-WP-0040."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index d677e04..a5b4a81 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -37,6 +37,19 @@
+       "allowed_tools": [],
+       "status": "DESIGNED",
+       "digest": "sha256:71b58478ca0d8f55e051c994403a8045ff04db794c7181b20489ae3c8ad12bde"
++    },
++    {
++      "name": "repository-research",
++      "source": "skills/badf-research/subskills/repository-research/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [
++        "local-filesystem",
++        "local-shell"
++      ],
++      "status": "IMPLEMENTED",
++      "digest": "sha256:7f10d20688feeae30effcf5689c8552dd153202b0137297003446c2d13bcb7a8"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index dd84688..d83c343 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -130,6 +130,18 @@ it rather than trusting the record.
+   shape (WP-0029: 13 advance tests red there, green in the composed run). Scratch clones pin
+   `origin/main` explicitly (`tests/_scratch.pin_origin_main`).
+ 
++## repository-research subskill + control 3 (`BADF-WP-0040`, RSR-006)
++
++The first of the nine P0 research subskills. `skills/badf-research/subskills/repository-research/
++SKILL.md` is the declarative workflow for investigating a repository (commits, PRs, issues,
++history) and producing an `R02`/`R03` research record, binding every finding to a commit SHA;
++its invariant is *current state is not historical evidence*. Control 3 is now enforced: a
++repo-type record's `baseline.repository` must be registered and `baseline.revision` must resolve
++there (an absent `LOCAL_MIRROR` reports `UNRESOLVABLE_HERE`, like `verify_foreign_revision`).
++`examples/research-record-repo.json` is validated in CI. **Sixteen of the eighteen controls are
++now enforced.** Control 6 (source-digest staleness, needs a source fetch) and the other eight P0
++subskills remain, one WP each. `badf-research` stays `DESIGNED`.
++
+ ## Research evidence digest (`BADF-WP-0039`, RSR-005 control 17)
+ 
+ A record's `evidence_digest` is the sha256 of its **material evidence** — sources, claims,
+diff --git a/examples/research-record-repo.json b/examples/research-record-repo.json
+new file mode 100644
+index 0000000..369b5a4
+--- /dev/null
++++ b/examples/research-record-repo.json
+@@ -0,0 +1,119 @@
++{
++  "schema_version": "1.0.0",
++  "id": "BADF-RSR-0003",
++  "demand": "BADF-DEM-0027",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 67
++  },
++  "researcher": {
++    "principal": "badf-research-agent",
++    "principal_type": "agent"
++  },
++  "type": "R02",
++  "depth": "D2",
++  "question": "How did BADF's main branch reach an all-green enforcement state, and what does the commit history show about the loop that got it there?",
++  "scope": {
++    "include": [
++      "work/ records",
++      "the composed-tree gate history",
++      "git log --first-parent main"
++    ],
++    "exclude": [
++      "the external actor's branches (#44/#47)"
++    ]
++  },
++  "baseline": {
++    "repository": "bstBizEra/badf",
++    "revision": "39dc6d9",
++    "observed_at": "2026-08-28T15:00:00Z"
++  },
++  "known": [
++    "main is PR-only under a zero-bypass ruleset since WP-0016",
++    "every WP lands via a squash commit carrying a Work-Package line"
++  ],
++  "unknown": [
++    "how many work packages the enforcement state took"
++  ],
++  "hypotheses": [
++    {
++      "id": "H-001",
++      "statement": "the enforcement state was reached incrementally, one squash-merged work package at a time",
++      "status": "RETAINED"
++    }
++  ],
++  "sources": [
++    {
++      "id": "S-001",
++      "uri": "git:bstBizEra/badf@39dc6d9:work/",
++      "source_type": "PRIMARY",
++      "retrieved_at": "2026-08-28T15:01:00Z",
++      "digest": null
++    },
++    {
++      "id": "S-002",
++      "uri": "git:bstBizEra/badf log --first-parent main",
++      "source_type": "PRIMARY",
++      "retrieved_at": "2026-08-28T15:02:00Z",
++      "digest": null
++    }
++  ],
++  "claims": [
++    {
++      "id": "C-001",
++      "statement": "the tree at 39dc6d9 carries a chain of squash-merged work-package records, each with a landed_as on the ledger",
++      "classification": "OBSERVED",
++      "supporting_sources": [
++        "S-001",
++        "S-002"
++      ],
++      "contradicting_sources": [],
++      "status": "VERIFIED",
++      "confidence": {
++        "level": "VERY_HIGH",
++        "basis": {
++          "independent_primary_sources": 2,
++          "reproducible": true,
++          "contradictions": 0
++        }
++      }
++    }
++  ],
++  "findings": [
++    {
++      "id": "F-001",
++      "statement": "the enforcement state was reached by the incremental Issue -> demand -> WP -> PR -> squash loop, not a single change",
++      "claim_refs": [
++        "C-001"
++      ]
++    }
++  ],
++  "alternatives": [],
++  "experiments": [],
++  "contradictions": [],
++  "non_coverage": [
++    {
++      "surface": "the external actor's branches",
++      "reason": "out of scope; not this agent's work"
++    }
++  ],
++  "recommendation": "none; this is a repository-investigation, not a solution search",
++  "challenge": {
++    "required": false,
++    "council": null
++  },
++  "state": "RECONCILED",
++  "disposition": {
++    "state": "RESEARCH_SUFFICIENT",
++    "reason": "the ledger and first-parent history are primary and reproducible"
++  },
++  "downstream": {
++    "decision_id": null,
++    "work_package_id": null
++  },
++  "authority": {
++    "implementation_authority": false
++  },
++  "evidence_digest": "sha256:41c6419c15accafd929c161c98c69face235f4704b23d05d7f6d1ff77a32db51",
++  "recorded_at": "2026-08-28T15:10:00Z"
++}
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 21dd0c9..a93e004 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -2494,6 +2494,24 @@ def validate_research_record(path: Path) -> str:
+     # schema's enum [false]; a separate check here would be dead code (a mutant
+     # proved the schema catches it first).
+     check_schema("research-record", rec)
++    # 3: repository research (R02/R03) baselines to a commit that RESOLVES in its
++    # repository -- an investigation cannot be anchored to a commit that does not
++    # exist. Mirrors verify_foreign_revision's resolution and UNRESOLVABLE_HERE.
++    if rec["type"] in {"R02", "R03"}:
++        repo_name = rec["baseline"]["repository"]
++        revision = rec["baseline"]["revision"]
++        registry = load_json(ROOT / REPOSITORIES)
++        entry = (registry.get("repositories") or {}).get(repo_name)
++        if not isinstance(entry, dict) or "local_path" not in entry:
++            raise ValidationError(f"repository research baselines to {repo_name}, which is not registered in {REPOSITORIES} (control 3)")
++        repo_root = (ROOT / entry["local_path"]).resolve() if not Path(entry["local_path"]).is_absolute() else Path(entry["local_path"])
++        top = _foreign_git(repo_root, "rev-parse", "--show-toplevel")
++        if top.returncode != 0:
++            if entry.get("resolution") == "LOCAL_MIRROR" and not repo_root.exists():
++                raise ValidationError(f"UNRESOLVABLE_HERE: {repo_name} is a LOCAL_MIRROR at {repo_root}, absent on this host; validate this record where the mirror exists")
++            raise ValidationError(f"registered path {repo_root} for {repo_name} is not a git repository")
++        if _foreign_git(repo_root, "cat-file", "-e", f"{revision}^{{commit}}").returncode != 0:
++            raise ValidationError(f"baseline revision {revision[:12]} does not resolve in {repo_name}; repository research must baseline to a real commit (control 3)")
+     source_ids = [src["id"] for src in rec["sources"]]
+     if len(source_ids) != len(set(source_ids)):
+         raise ValidationError("research record has duplicate source ids")
+diff --git a/skills/badf-research/subskills/repository-research/SKILL.md b/skills/badf-research/subskills/repository-research/SKILL.md
+new file mode 100644
+index 0000000..f272e09
+--- /dev/null
++++ b/skills/badf-research/subskills/repository-research/SKILL.md
+@@ -0,0 +1,42 @@
++---
++name: repository-research
++description: Investigate a repository -- its commits, branches, PRs, issues, workflows, configs, tests, decision records, evidence and historical revisions -- to answer a BADF research question, binding every finding to a commit SHA. Use for research types R02 (repository investigation) and R03 (root cause). Do not use for external/web research (deep-research), for solution options (technical-research), or to decide or authorise anything.
++---
++
++# repository-research
++
++A subskill of `badf-research` (`../../SKILL.md`). It produces a research record of type `R02`
++or `R03` at `work/research/<BADF-RSR-NNNN>/research-record.json` against
++`schemas/research-record.schema.json`. It has no authority; its output is evidence for a
++decision, never a decision (RSR-I01).
++
++**The invariant: current state is not historical evidence.** Every finding is bound to a
++`revision` (a commit SHA that resolves in the repo) and, where possible, a path and line. A
++claim read from the working tree is `OBSERVED` only against the commit it was read at; a claim
++about *why* a change happened is `INFERRED` from the commits/PRs that made it.
++
++1. **FRAME** — from the demand, state the research question, type (R02/R03), depth, scope and
++   non-goals. Fix the `baseline`: the repository and the commit the investigation is anchored to.
++   The baseline commit MUST resolve in the repository (the gate enforces this, control 3).
++2. **DISCOVER** — read the repository as evidence: `git log`, `git blame`, the diff of the
++   suspect commits, the PRs and issues that reference them, the workflows and CI runs, the
++   decision records and prior evidence. Prefer primary sources (the commit, the run log, the
++   spec) over reports of them.
++3. **BIND** — each source carries its `uri` (e.g. `git:<repo>@<sha>:<path>`), `source_type`
++   (a commit or run log is `PRIMARY`), `retrieved_at`, and a digest where the bytes are
++   retrievable. A changed source digest makes dependent claims stale.
++4. **CLAIM** — every material statement is a claim: `OBSERVED` (measured against a commit),
++   `REPORTED`, `INFERRED`, `HYPOTHESIS` or `DECIDED`; with supporting and contradicting
++   sources; a status; and a confidence DERIVED from its basis, never asserted.
++5. **HYPOTHESISE (R03)** — for root cause, list hypotheses, find the discriminating commit or
++   test, and eliminate or retain each on evidence — not a guessed fix.
++6. **SYNTHESISE** — findings reference claims; contradictions are preserved, not buried;
++   non-coverage names every surface not read.
++7. **CHALLENGE** — at depth D4/D5, an independent council (never the researcher) reviews;
++   each ballot declares its non-coverage.
++8. **RECONCILE** — return a controlled disposition. `RESEARCH_SUFFICIENT` makes a decision
++   *eligible*; it authorises nothing. The next object is a decision record, then a work package.
++9. **VALIDATE** — `python3 scripts/badf_gate.py research work/research/<id>/research-record.json`.
++   Exit 0 is the only pass; a refusal names the defect.
++
++Never translate a repository finding into a change. Read, bind, conclude — a human decides.
+diff --git a/tests/test_badf_research.py b/tests/test_badf_research.py
+index 78bd484..646de47 100644
+--- a/tests/test_badf_research.py
++++ b/tests/test_badf_research.py
+@@ -21,6 +21,7 @@ import badf_gate as gate  # noqa: E402
+ 
+ EXAMPLE = json.loads((gate.ROOT / "examples/research-record.json").read_text())
+ CHALLENGED = json.loads((gate.ROOT / "examples/research-record-challenged.json").read_text())
++REPO = json.loads((gate.ROOT / "examples/research-record-repo.json").read_text())
+ 
+ 
+ class DeriveConfidenceTests(unittest.TestCase):
+@@ -315,5 +316,68 @@ class EvidenceDigestTests(unittest.TestCase):
+         self.assertEqual(r.returncode, 0, r.stderr)
+ 
+ 
++class RepositoryResearchTests(unittest.TestCase):
++    """Control 3: a repo-type (R02/R03) record baselines to a commit that
++    resolves in its repository. Mutating a copy of the shipped R02 example."""
++    def run_cli(self, rec):
++        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
++            json.dump(rec, f); path = Path(f.name)
++        try:
++            return subprocess.run([sys.executable, "scripts/badf_gate.py", "research", str(path)],
++                                  cwd=str(gate.ROOT), capture_output=True, text=True)
++        finally:
++            path.unlink()
++
++    def rebind(self, rec):
++        rec["evidence_digest"] = gate.compute_research_evidence_digest(rec); return rec
++
++    def refused(self, rec, needle):
++        r = self.run_cli(rec)
++        self.assertNotEqual(r.returncode, 0, "a defective record passed")
++        self.assertIn(needle, r.stderr, r.stderr)
++
++    def test_repo_example_passes(self):
++        r = self.run_cli(copy.deepcopy(REPO))
++        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
++
++    def test_a_baseline_that_does_not_resolve_is_refused(self):
++        rec = copy.deepcopy(REPO); rec["baseline"]["revision"] = "0" * 40
++        self.refused(self.rebind(rec), "does not resolve")
++
++    def test_a_baseline_in_an_unregistered_repository_is_refused(self):
++        rec = copy.deepcopy(REPO); rec["baseline"]["repository"] = "bstBizEra/nope"
++        self.refused(self.rebind(rec), "not registered")
++
++    def test_control_3_does_not_apply_to_non_repository_research(self):
++        rec = copy.deepcopy(REPO)
++        rec["type"] = "R07"; rec["baseline"]["revision"] = "0" * 40   # bogus, but R07 is not repo-type
++        r = self.run_cli(self.rebind(rec))
++        self.assertEqual(r.returncode, 0, r.stderr)
++
++    def test_a_root_cause_record_is_also_subject_to_control_3(self):
++        rec = copy.deepcopy(REPO)
++        rec["type"] = "R03"; rec["baseline"]["revision"] = "0" * 40
++        self.refused(self.rebind(rec), "does not resolve")
++
++    def test_an_absent_local_mirror_reports_unresolvable_here(self):
++        """A record baselining to a LOCAL_MIRROR that is not on this host is
++        UNRESOLVABLE_HERE, not a refusal. Registered against a scratch path so
++        the test is host-independent; the registry is restored."""
++        import shutil, tempfile as tf
++        reg = gate.ROOT / gate.REPOSITORIES; lock = gate.ROOT / gate.LOCKFILE
++        backup = Path(tf.mkdtemp())
++        shutil.copy2(reg, backup / "r.json"); shutil.copy2(lock, backup / "l.json")
++        try:
++            d = json.loads(reg.read_text())
++            d["repositories"]["bstBizEra/absent-mirror"] = {"local_path": "/no/such/mirror/here", "default_branch": "main", "resolution": "LOCAL_MIRROR"}
++            reg.write_text(json.dumps(d, indent=2) + "\n")
++            gate.write_lock(gate.ROOT, gate.INTEGRITY_PATHS)
++            rec = copy.deepcopy(REPO); rec["baseline"]["repository"] = "bstBizEra/absent-mirror"; rec["baseline"]["revision"] = "abc1234"
++            self.refused(self.rebind(rec), "UNRESOLVABLE_HERE")
++        finally:
++            shutil.copy2(backup / "r.json", reg); shutil.copy2(backup / "l.json", lock)
++            shutil.rmtree(backup, ignore_errors=True)
++
++
+ if __name__ == "__main__":
+     unittest.main()
+diff --git a/tests/test_badf_schema_drift.py b/tests/test_badf_schema_drift.py
+index 2b7fda5..658e8c8 100644
+--- a/tests/test_badf_schema_drift.py
++++ b/tests/test_badf_schema_drift.py
+@@ -23,7 +23,7 @@ SHIPPED = {
+     "prd": [gate.ROOT / "examples/evidence/G01/prd.artifact.json"],
+     "acceptance-criteria": [gate.ROOT / "examples/evidence/G01/acceptance-criteria.artifact.json"],
+     "product-approval": [gate.ROOT / "examples/evidence/G01/product-approval.artifact.json"],
+-    "research-record": [gate.ROOT / "examples/research-record.json", gate.ROOT / "examples/research-record-challenged.json"],
++    "research-record": [gate.ROOT / "examples/research-record.json", gate.ROOT / "examples/research-record-challenged.json", gate.ROOT / "examples/research-record-repo.json"],
+     "lifecycle": [gate.ROOT / "badf/lifecycle.json"],
+     "demand": sorted((gate.ROOT / "badf/demands").glob("BADF-DEM-*.json")),
+     "work-package": sorted(gate.ROOT.glob("work/WP-*/work-package.json")),
+diff --git a/work/WP-2026-0039/work-package.json b/work/WP-2026-0039/work-package.json
+index 133d983..3e4ef69 100644
+--- a/work/WP-2026-0039/work-package.json
++++ b/work/WP-2026-0039/work-package.json
+@@ -41,11 +41,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "e7ea929"
++    "base_revision": "e7ea929",
++    "landed_as": "39dc6d9aaff82785f350ff298ad9ca9c086c7200"
+   },
+   "note": "Lands IN_PROGRESS by design. Own G07 self-dossier. The last record-pure control (15/18); 3 and 6 remain, needing a subskill and a source-fetch, to be scoped with the operator. badf-research stays DESIGNED."
+ }

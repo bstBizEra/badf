@@ -1,0 +1,119 @@
+{
+  "schema_version": "1.0.0",
+  "id": "BADF-RSR-0003",
+  "demand": "BADF-DEM-0027",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 67
+  },
+  "researcher": {
+    "principal": "badf-research-agent",
+    "principal_type": "agent"
+  },
+  "type": "R02",
+  "depth": "D2",
+  "question": "How did BADF's main branch reach an all-green enforcement state, and what does the commit history show about the loop that got it there?",
+  "scope": {
+    "include": [
+      "work/ records",
+      "the composed-tree gate history",
+      "git log --first-parent main"
+    ],
+    "exclude": [
+      "the external actor's branches (#44/#47)"
+    ]
+  },
+  "baseline": {
+    "repository": "bstBizEra/badf",
+    "revision": "39dc6d9",
+    "observed_at": "2026-08-28T15:00:00Z"
+  },
+  "known": [
+    "main is PR-only under a zero-bypass ruleset since WP-0016",
+    "every WP lands via a squash commit carrying a Work-Package line"
+  ],
+  "unknown": [
+    "how many work packages the enforcement state took"
+  ],
+  "hypotheses": [
+    {
+      "id": "H-001",
+      "statement": "the enforcement state was reached incrementally, one squash-merged work package at a time",
+      "status": "RETAINED"
+    }
+  ],
+  "sources": [
+    {
+      "id": "S-001",
+      "uri": "git:bstBizEra/badf@39dc6d9:work/",
+      "source_type": "PRIMARY",
+      "retrieved_at": "2026-08-28T15:01:00Z",
+      "digest": null
+    },
+    {
+      "id": "S-002",
+      "uri": "git:bstBizEra/badf log --first-parent main",
+      "source_type": "PRIMARY",
+      "retrieved_at": "2026-08-28T15:02:00Z",
+      "digest": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "C-001",
+      "statement": "the tree at 39dc6d9 carries a chain of squash-merged work-package records, each with a landed_as on the ledger",
+      "classification": "OBSERVED",
+      "supporting_sources": [
+        "S-001",
+        "S-002"
+      ],
+      "contradicting_sources": [],
+      "status": "VERIFIED",
+      "confidence": {
+        "level": "VERY_HIGH",
+        "basis": {
+          "independent_primary_sources": 2,
+          "reproducible": true,
+          "contradictions": 0
+        }
+      }
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-001",
+      "statement": "the enforcement state was reached by the incremental Issue -> demand -> WP -> PR -> squash loop, not a single change",
+      "claim_refs": [
+        "C-001"
+      ]
+    }
+  ],
+  "alternatives": [],
+  "experiments": [],
+  "contradictions": [],
+  "non_coverage": [
+    {
+      "surface": "the external actor's branches",
+      "reason": "out of scope; not this agent's work"
+    }
+  ],
+  "recommendation": "none; this is a repository-investigation, not a solution search",
+  "challenge": {
+    "required": false,
+    "council": null
+  },
+  "state": "RECONCILED",
+  "disposition": {
+    "state": "RESEARCH_SUFFICIENT",
+    "reason": "the ledger and first-parent history are primary and reproducible"
+  },
+  "downstream": {
+    "decision_id": null,
+    "work_package_id": null
+  },
+  "authority": {
+    "implementation_authority": false
+  },
+  "evidence_digest": "sha256:41c6419c15accafd929c161c98c69face235f4704b23d05d7f6d1ff77a32db51",
+  "recorded_at": "2026-08-28T15:10:00Z"
+}
