@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "badf/research-record.schema.json",
-  "title": "BADF Research Record (work/research/<BADF-RSR-NNNN>/research-record.json) -- frozen contract v0.1; research output never grants implementation authority",
+  "title": "BADF Research Record (work/research/<BADF-RSR-NNNN>/research-record.json) -- frozen contract v0.2; research output never grants implementation authority",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -13,6 +13,9 @@
     "depth",
     "question",
     "scope",
+    "assumptions",
+    "decision_context",
+    "stop_conditions",
     "baseline",
     "known",
     "unknown",
@@ -121,6 +124,28 @@
             "minLength": 1
           }
         }
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "description": "Explicit framing assumptions. An empty array means no assumptions are declared; silence is not an implicit assumption.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "decision_context": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The downstream uncertainty this research is intended to reduce. It is context, not authority."
+    },
+    "stop_conditions": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Bounded termination conditions for collection. Reaching one stops collection but does not itself imply RESEARCH_SUFFICIENT.",
+      "items": {
+        "type": "string",
+        "minLength": 1
       }
     },
     "baseline": {
