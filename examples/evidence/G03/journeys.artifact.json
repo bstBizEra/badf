@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "journeys": [
+    {
+      "id": "JRN-001",
+      "persona": "operator",
+      "path_type": "happy",
+      "steps": [
+        "opens the gate dashboard",
+        "reads a green composed-tree verdict",
+        "merges the PR"
+      ]
+    },
+    {
+      "id": "JRN-002",
+      "persona": "operator",
+      "path_type": "unhappy",
+      "steps": [
+        "opens a red PR",
+        "reads the failing evidence type named by the gate",
+        "requests changes"
+      ]
+    }
+  ]
+}

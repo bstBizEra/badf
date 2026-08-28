@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "lanes": [
+    {
+      "journey": "JRN-001",
+      "frontstage": [
+        "dashboard shows the APPROVED verdict"
+      ],
+      "backstage": [
+        "compose runs the full suite on the composed tree"
+      ],
+      "support_actions": [
+        "operator can re-run CI from the PR"
+      ]
+    },
+    {
+      "journey": "JRN-002",
+      "frontstage": [
+        "red banner names the failing type"
+      ],
+      "backstage": [
+        "gate exits non-zero and names the evidence type"
+      ],
+      "support_actions": [
+        "reviewer posts a Request-Changes comment"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G03",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G03-USER-VALIDATION-v1",
+  "claim": "Example user-validation bound to PRD-BADF-0001",
+  "evidence_type": "user-validation",
+  "producer": {
+    "id": "example-researcher",
+    "type": "human"
+  },
+  "operation": "validate the design with users",
+  "artifact": "examples/evidence/G03/user-validation.artifact.json",
+  "digest": "sha256:dc3f47b5c7ff5f012917e08663559421edfb334bc93546e2d89b47bf19ced1f9"
+}

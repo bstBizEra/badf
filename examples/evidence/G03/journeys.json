@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G03",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G03-JOURNEYS-v1",
+  "claim": "Example journeys bound to PRD-BADF-0001",
+  "evidence_type": "journeys",
+  "producer": {
+    "id": "example-designer",
+    "type": "human"
+  },
+  "operation": "design the user journeys",
+  "artifact": "examples/evidence/G03/journeys.artifact.json",
+  "digest": "sha256:48bebb0fd8790e84cfc9a60e88000c9e78ef4a60fdedc8940d2f941a6ad06520"
+}

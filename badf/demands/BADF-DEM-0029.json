@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0029",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 72,
+    "url": "https://github.com/bstBizEra/badf/issues/72",
+    "exported_at": "2026-08-28T15:43:22Z",
+    "body_digest": "sha256:9ff013a201cf22f1cc0a1450bcfa8365c9ebae8fe2abcf4da1ef4d509c1df1ce"
+  },
+  "title": "GOV-0025: Gate 03 declared but unenforced \u2014 no per-type rules, schemas, or example for journeys/service-blueprint/accessibility/user-validation",
+  "problem": "## Observed\nGate 03 is the next declared-but-unenforced gate, the same defect class #70 closed for G02. `badf/lifecycle.json` lists G03 (UX and service design) with `required_evidence` **journeys, service-blueprint, accessibility, user-validation** and exit criteria \"happy and unhappy paths designed / accessibility addressed / support operations defined / design validated\" \u2014 yet `validate_evidence` has **no per-type rule** for any of the four, no G03 example dossier exists, and none of the four schemas exist. A G03 dossier today would pass on names alone.\n\n## Expected\nThe four G03 evidence types get per-type rules in `validate_evidence`, exactly as G01/G02 do \u2014 the gate OPENS each artifact, and each rule maps to one exit criterion:\n- `journeys` \u2014 unique `JRN-NNN`, each with a persona and non-empty steps; the set must design **both** a happy and an unhappy path (\"happy and unhappy paths designed\").\n- `service-blueprint` \u2014 one lane per journey (bidirectional coverage: every journey blueprinted, no lane for an unknown journey), each lane with non-empty support actions (\"support operations defined\").\n- `accessibility` \u2014 a declared standard and enumerated criteria, each `met` or `not_applicable` with a rationale (\"accessibility addressed\").\n- `user-validation` \u2014 a **human**-produced record with a method, a positive participant count, and findings whose major/critical items carry a resolution (\"design validated\").\nPlus `examples/gate-dossier.G03.json` (validated in CI beside G00\u2013G02), and a G02\u2192G03 pair-acceptance.\n\n## Evidence\n- `G03 required_evidence = ['journeys', 'service-blueprint', 'accessibility', 'user-validation']` (badf/lifecycle.json)\n- `grep -cE 'def check_(journeys|service_blueprint|accessibility|user_validation)' scripts/badf_gate.py` \u2192 `0` (no G03 rule exists)\n- `EVIDENCE_RULES keys = ['prd', 'acceptance-criteria', 'product-approval', 'requirements', 'nfr', 'traceability', 'definition-of-ready']` (G00\u2013G02 types only)\n- `ls examples/gate-dossier.G03.json` \u2192 `No such file or directory`; the four G03 schemas absent \u2192 `4/4` missing\n\n## Unknowns\nNone for the gate contract. This WP is the deterministic G03 evidence contract only \u2014 no design-authoring skill, no vendored UX toolkit. Reuses the G01/G02 substrate.\n\n## Proposed work package\n`BADF-WP-0042` (G03). Four `check_*` functions + registration; four schemas; `examples/gate-dossier.G03.json` + its four evidence/artifact pairs; `tests/test_badf_g03.py` (failing-first) + a G02\u2192G03 pair-acceptance; mutation; own G07 self-dossier. C2.\n\ndiscovered-by: BADF-WP-0041 (the G02 gate contract) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T15:43:22Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. G03 gate contract, the next declared-but-unenforced gate after G02 (#70). Authority: the operator's 'proceed on your call' (2026-08-28). Worked as BADF-WP-0042."
+}

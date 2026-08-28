@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "badf/journeys.schema.json",
+  "title": "G03 journeys evidence artifact -- user journeys covering happy and unhappy paths",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "prd_id",
+    "journeys"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": [
+        "1.0.0"
+      ]
+    },
+    "prd_id": {
+      "type": "string",
+      "pattern": "^PRD-[A-Za-z0-9._-]+$"
+    },
+    "journeys": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "persona",
+          "path_type",
+          "steps"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^JRN-[0-9]{3,}$"
+          },
+          "persona": {
+            "type": "string",
+            "minLength": 1
+          },
+          "path_type": {
+            "type": "string",
+            "enum": [
+              "happy",
+              "unhappy"
+            ]
+          },
+          "steps": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    }
+  }
+}

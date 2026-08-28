@@ -1,0 +1,58 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0042",
+  "title": "G03: UX-and-service-design gate contract (journeys / service-blueprint / accessibility / user-validation)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0029",
+  "objective": "Enforce Gate 03, declared in lifecycle.json but unbacked: give its four required_evidence types per-type rules in validate_evidence, exactly as G01/G02, so the gate OPENS each artifact. Ship examples/gate-dossier.G03.json (validated in CI) and prove an instance advances G02->G03 on a valid G03 dossier.",
+  "business_value": "Without per-type rules a G03 dossier passes on names alone. This makes the four UX exit criteria -- happy/unhappy paths, accessibility addressed, support operations defined, design validated -- deterministic gate refusals rather than prose.",
+  "in_scope": [
+    "check_journeys / check_service_blueprint / check_accessibility / check_user_validation in badf_gate.py + registration in EVIDENCE_RULES",
+    "schemas/journeys.schema.json, service-blueprint.schema.json, accessibility.schema.json, user-validation.schema.json",
+    "examples/gate-dossier.G03.json + its four evidence/artifact pairs; CI validates it",
+    "tests/test_badf_g03.py (failing-first) + a G02->G03 pair-acceptance in tests/test_badf_advance.py",
+    "mutation; own G07 self-dossier; doctrine section in GITHUB_CONTROL_PLANE.md"
+  ],
+  "out_of_scope": [
+    "a design-authoring skill (a later WP if a real task needs it)",
+    "any vendored UX toolkit; any competing validator module",
+    "later gates G04+ -- one WP each"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "examples/gate-dossier.G03.json renders APPROVED via `dossier`",
+    "journeys with only a happy path (no unhappy path) are refused",
+    "a service-blueprint that leaves a journey uncovered, or names an unknown journey, is refused",
+    "a lane with no support actions is refused",
+    "a not_applicable accessibility criterion without a rationale is refused",
+    "a user-validation with zero participants, or an unresolved major finding, is refused",
+    "an instance at G02/APPROVED advances to G03/APPROVED on a valid G03 dossier",
+    "mutation kills; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_g03.py",
+    "tests/test_badf_advance.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "9c934ef"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Reuses the G01/G02 substrate -- no new validator module. Continues the one-gate-at-a-time march (G01 WP-0030, G02 WP-0041, G03 here)."
+}

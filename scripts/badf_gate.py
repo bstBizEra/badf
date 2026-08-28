@@ -1025,9 +1025,96 @@ def check_definition_of_ready(artifact: Path, dossier: dict[str, Any], evidence:
         raise ValidationError(f"definition-of-ready: G02 exit criterion not met: {'; '.join(unmet)}")
 
 
+# ---- G03 evidence contract: UX and service design -- journeys, blueprint, accessibility, validation (BADF-WP-0042, #72) ----
+def check_journeys(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("journeys", doc)
+    _no_placeholders(doc, "journeys")
+    journeys = doc["journeys"]
+    if not journeys:
+        raise ValidationError("journeys: no journeys; an empty list designs no path")
+    ids = [j["id"] for j in journeys]
+    dupes = sorted({i for i in ids if ids.count(i) > 1})
+    if dupes:
+        raise ValidationError(f"journeys: duplicate journey id(s): {', '.join(dupes)}")
+    for j in journeys:
+        if not j.get("steps"):
+            raise ValidationError(f"journeys: {j['id']} has no steps")
+    kinds = {j["path_type"] for j in journeys}
+    missing = {"happy", "unhappy"} - kinds
+    if missing:
+        raise ValidationError(f"journeys: no {', '.join(sorted(missing))} path designed; both a happy and an unhappy path are required")
+
+
+def check_service_blueprint(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("service-blueprint", doc)
+    _no_placeholders(doc, "service-blueprint")
+    lanes = doc["lanes"]
+    if not lanes:
+        raise ValidationError("service-blueprint: no lanes")
+    _, jr = _sibling_artifact(dossier, "journeys", "service-blueprint")
+    journey_ids = {j["id"] for j in (jr.get("journeys") or [])}
+    covered: dict[str, Any] = {}
+    for lane in lanes:
+        jid = lane["journey"]
+        if jid in covered:
+            raise ValidationError(f"service-blueprint: journey {jid} has more than one lane")
+        covered[jid] = lane
+        if not lane.get("support_actions"):
+            raise ValidationError(f"service-blueprint: lane for {jid} defines no support actions; support operations must be defined")
+    dangling = sorted(set(covered) - journey_ids)
+    if dangling:
+        raise ValidationError(f"service-blueprint: lane(s) for journey(s) absent from the journeys artifact: {', '.join(dangling)}")
+    uncovered = sorted(journey_ids - set(covered))
+    if uncovered:
+        raise ValidationError(f"service-blueprint: uncovered journey(s) with no lane: {', '.join(uncovered)}")
+
+
+def check_accessibility(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("accessibility", doc)
+    _no_placeholders(doc, "accessibility")
+    if not (doc.get("standard") or "").strip():
+        raise ValidationError("accessibility: no standard declared")
+    criteria = doc["criteria"]
+    if not criteria:
+        raise ValidationError("accessibility: no criteria; accessibility is not addressed by an empty list")
+    ids = [c["id"] for c in criteria]
+    dupes = sorted({i for i in ids if ids.count(i) > 1})
+    if dupes:
+        raise ValidationError(f"accessibility: duplicate criterion id(s): {', '.join(dupes)}")
+    for c in criteria:
+        if c["status"] == "not_applicable" and not (c.get("rationale") or "").strip():
+            raise ValidationError(f"accessibility: {c['id']} is not_applicable without a rationale")
+
+
+def check_user_validation(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("user-validation", doc)
+    _no_placeholders(doc, "user-validation")
+    if evidence["producer"].get("type") != "human":
+        raise ValidationError("user-validation must be produced by a human; validation with users is a human activity")
+    participants = doc["participants"]
+    if isinstance(participants, bool) or not isinstance(participants, (int, float)) or participants < 1:
+        raise ValidationError(f"user-validation: participants must be a positive number; got {participants!r}; a design is not validated with zero users")
+    findings = doc["findings"]
+    if not findings:
+        raise ValidationError("user-validation: no findings recorded")
+    ids = [f["id"] for f in findings]
+    dupes = sorted({i for i in ids if ids.count(i) > 1})
+    if dupes:
+        raise ValidationError(f"user-validation: duplicate finding id(s): {', '.join(dupes)}")
+    for f in findings:
+        if f["severity"] in {"major", "critical"} and not (f.get("resolution") or "").strip():
+            raise ValidationError(f"user-validation: {f['id']} is {f['severity']} but carries no resolution; an unresolved major finding means the design is not validated")
+
+
 EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_criteria, "product-approval": check_product_approval,
                   "requirements": check_requirements, "nfr": check_nfr, "traceability": check_traceability,
-                  "definition-of-ready": check_definition_of_ready}
+                  "definition-of-ready": check_definition_of_ready,
+                  "journeys": check_journeys, "service-blueprint": check_service_blueprint,
+                  "accessibility": check_accessibility, "user-validation": check_user_validation}
 
 
 def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -> None:

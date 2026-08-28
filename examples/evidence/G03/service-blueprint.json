@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G03",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G03-SERVICE-BLUEPRINT-v1",
+  "claim": "Example service-blueprint bound to PRD-BADF-0001",
+  "evidence_type": "service-blueprint",
+  "producer": {
+    "id": "example-designer",
+    "type": "human"
+  },
+  "operation": "map the service blueprint",
+  "artifact": "examples/evidence/G03/service-blueprint.artifact.json",
+  "digest": "sha256:5aff1d420f7215d7d52d5703810140d490fd211a5aa58d9dd237665e44b6366d"
+}

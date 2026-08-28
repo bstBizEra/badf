@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "method": "moderated usability test",
+  "participants": 5,
+  "findings": [
+    {
+      "id": "UV-001",
+      "observation": "operators read the green verdict without hesitation",
+      "severity": "info"
+    },
+    {
+      "id": "UV-002",
+      "observation": "the red path did not say WHICH evidence type failed",
+      "severity": "major",
+      "resolution": "the banner now names the failing type, mirroring the gate stderr"
+    }
+  ]
+}
