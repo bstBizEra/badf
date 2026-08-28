@@ -27,6 +27,16 @@
       ],
       "status": "IMPLEMENTED",
       "digest": "sha256:32c3cfc1d618d484e2f8a01957b5d2ac80575f182ec4c68f6e285bcbf09e8bf3"
+    },
+    {
+      "name": "badf-research",
+      "source": "skills/badf-research/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [],
+      "status": "DESIGNED",
+      "digest": "sha256:71b58478ca0d8f55e051c994403a8045ff04db794c7181b20489ae3c8ad12bde"
     }
   ]
 }

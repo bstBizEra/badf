@@ -1,0 +1,600 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "badf/research-record.schema.json",
+  "title": "BADF Research Record (work/research/<BADF-RSR-NNNN>/research-record.json) -- frozen contract v0.1; research output never grants implementation authority",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "demand",
+    "source",
+    "type",
+    "depth",
+    "question",
+    "scope",
+    "baseline",
+    "known",
+    "unknown",
+    "hypotheses",
+    "sources",
+    "claims",
+    "findings",
+    "alternatives",
+    "experiments",
+    "contradictions",
+    "non_coverage",
+    "recommendation",
+    "challenge",
+    "state",
+    "disposition",
+    "downstream",
+    "authority",
+    "evidence_digest",
+    "recorded_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": [
+        "1.0.0"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^BADF-RSR-[0-9]{4,}$"
+    },
+    "demand": {
+      "type": "string",
+      "pattern": "^BADF-DEM-[0-9]{4,}$"
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "repository",
+        "issue"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issue": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "R05",
+        "R06",
+        "R07",
+        "R08",
+        "R09",
+        "R10"
+      ]
+    },
+    "depth": {
+      "type": "string",
+      "enum": [
+        "D0",
+        "D1",
+        "D2",
+        "D3",
+        "D4",
+        "D5"
+      ]
+    },
+    "question": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scope": {
+      "type": "object",
+      "required": [
+        "include",
+        "exclude"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "include": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "exclude": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "baseline": {
+      "type": "object",
+      "required": [
+        "repository",
+        "revision",
+        "observed_at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{7,40}$"
+        },
+        "observed_at": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "known": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "unknown": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "hypotheses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "statement",
+          "status"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^H-[0-9]{3,}$"
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "OPEN",
+              "RETAINED",
+              "ELIMINATED"
+            ]
+          }
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "uri",
+          "source_type",
+          "retrieved_at",
+          "digest"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^S-[0-9]{3,}$"
+          },
+          "uri": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_type": {
+            "type": "string",
+            "enum": [
+              "PRIMARY",
+              "AUTHORITATIVE_SECONDARY",
+              "SECONDARY",
+              "COMMUNITY",
+              "UNVERIFIED"
+            ]
+          },
+          "retrieved_at": {
+            "type": "string",
+            "minLength": 1
+          },
+          "digest": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "statement",
+          "classification",
+          "supporting_sources",
+          "contradicting_sources",
+          "status",
+          "confidence"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^C-[0-9]{3,}$"
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 1
+          },
+          "classification": {
+            "type": "string",
+            "enum": [
+              "OBSERVED",
+              "REPORTED",
+              "INFERRED",
+              "HYPOTHESIS",
+              "DECIDED"
+            ]
+          },
+          "supporting_sources": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^S-[0-9]{3,}$"
+            }
+          },
+          "contradicting_sources": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^S-[0-9]{3,}$"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "VERIFIED",
+              "PARTIALLY_VERIFIED",
+              "DISPUTED",
+              "UNVERIFIED",
+              "FALSIFIED"
+            ]
+          },
+          "confidence": {
+            "type": "object",
+            "required": [
+              "level",
+              "basis"
+            ],
+            "additionalProperties": false,
+            "description": "DERIVED from the basis, never self-reported; it never enters authority or evidence semantics as an agent's own assessment",
+            "properties": {
+              "level": {
+                "type": "string",
+                "enum": [
+                  "VERY_LOW",
+                  "LOW",
+                  "MODERATE",
+                  "HIGH",
+                  "VERY_HIGH"
+                ]
+              },
+              "basis": {
+                "type": "object",
+                "required": [
+                  "independent_primary_sources",
+                  "reproducible",
+                  "contradictions"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "independent_primary_sources": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "reproducible": {
+                    "type": "boolean"
+                  },
+                  "contradictions": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "statement",
+          "claim_refs"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^F-[0-9]{3,}$"
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 1
+          },
+          "claim_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^C-[0-9]{3,}$"
+            }
+          }
+        }
+      }
+    },
+    "alternatives": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "mechanism",
+          "evidence_refs"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^A-[0-9]{3,}$"
+          },
+          "mechanism": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "experiments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "hypothesis_ref",
+          "method",
+          "result"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^E-[0-9]{3,}$"
+          },
+          "hypothesis_ref": {
+            "type": "string",
+            "pattern": "^H-[0-9]{3,}$"
+          },
+          "method": {
+            "type": "string",
+            "minLength": 1
+          },
+          "result": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "contradictions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "claim_refs",
+          "statement"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^X-[0-9]{3,}$"
+          },
+          "claim_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^C-[0-9]{3,}$"
+            }
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "description": "never silently discarded (RSR-I04)"
+    },
+    "non_coverage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "surface",
+          "reason"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "surface": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "recommendation": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "challenge": {
+      "type": "object",
+      "required": [
+        "required",
+        "council"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "council": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "the framework's council record, when required; the originating researcher cannot ballot (RSR-I05)"
+        }
+      }
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "PROPOSED",
+        "FRAMED",
+        "BASELINED",
+        "EVIDENCE_COLLECTING",
+        "EVIDENCE_ASSESSED",
+        "SYNTHESIZED",
+        "CHALLENGED",
+        "RECONCILED"
+      ]
+    },
+    "disposition": {
+      "type": "object",
+      "required": [
+        "state",
+        "reason"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": [
+            "RESEARCH_SUFFICIENT",
+            "MORE_RESEARCH_REQUIRED",
+            "EXPERIMENT_REQUIRED",
+            "PROTOTYPE_REQUIRED",
+            "CONTRADICTORY_EVIDENCE",
+            "SOURCE_INSUFFICIENT",
+            "EXTERNAL_AUTHORITY_REQUIRED",
+            "NO_ACTION_RECOMMENDED",
+            "RESEARCH_BLOCKED"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "downstream": {
+      "type": "object",
+      "required": [
+        "decision_id",
+        "work_package_id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^BADF-DEC-[0-9]{4,}$"
+        },
+        "work_package_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^WP-2026-[0-9]{4}$"
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "required": [
+        "implementation_authority"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "implementation_authority": {
+          "type": "boolean",
+          "enum": [
+            false
+          ],
+          "description": "RSR-I01: research output cannot grant implementation authority -- fixed by the schema, not by discipline"
+        }
+      }
+    },
+    "evidence_digest": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "recorded_at": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}
