@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G02",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G02-DEFINITION-OF-READY-v1",
+  "claim": "Example definition-of-ready bound to PRD-BADF-0001",
+  "evidence_type": "definition-of-ready",
+  "producer": {
+    "id": "example-product-owner",
+    "type": "human"
+  },
+  "operation": "sign off gate readiness",
+  "artifact": "examples/evidence/G02/definition-of-ready.artifact.json",
+  "digest": "sha256:6c4b55b10b2a14bea5adf8de653495a4b4fe725d59a97d1886a9d4b72b258268"
+}

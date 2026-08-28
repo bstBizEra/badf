@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "objectives": [
+    "OBJ-001",
+    "OBJ-002"
+  ],
+  "acceptance_criteria": [
+    "AC-001",
+    "AC-002"
+  ],
+  "requirement_to_objective": [
+    {
+      "requirement": "REQ-001",
+      "objectives": [
+        "OBJ-001"
+      ]
+    },
+    {
+      "requirement": "REQ-002",
+      "objectives": [
+        "OBJ-002"
+      ]
+    },
+    {
+      "requirement": "REQ-003",
+      "objectives": [
+        "OBJ-001"
+      ]
+    }
+  ],
+  "criterion_to_requirement": [
+    {
+      "criterion": "AC-001",
+      "requirements": [
+        "REQ-001",
+        "REQ-003"
+      ]
+    },
+    {
+      "criterion": "AC-002",
+      "requirements": [
+        "REQ-002"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G02",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G02-NFR-v1",
+  "claim": "Example nfr bound to PRD-BADF-0001",
+  "evidence_type": "nfr",
+  "producer": {
+    "id": "example-author",
+    "type": "human"
+  },
+  "operation": "quantify the non-functional requirements",
+  "artifact": "examples/evidence/G02/nfr.artifact.json",
+  "digest": "sha256:66344facdc9c288ec20d67fc33aad8b304deecdc98f0102ff2fc1d6d63dc03dc"
+}

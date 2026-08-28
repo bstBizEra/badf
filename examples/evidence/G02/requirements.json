@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G02",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G02-REQUIREMENTS-v1",
+  "claim": "Example requirements bound to PRD-BADF-0001",
+  "evidence_type": "requirements",
+  "producer": {
+    "id": "example-author",
+    "type": "human"
+  },
+  "operation": "decompose the product into requirements",
+  "artifact": "examples/evidence/G02/requirements.artifact.json",
+  "digest": "sha256:308599d5ab9a1fc47b2776876f590383657d1c6408e0116481d65f0a7903916b"
+}

@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "nfrs": [
+    {
+      "id": "NFR-001",
+      "category": "performance",
+      "statement": "The composed-tree gate completes within a bounded time on the reference suite.",
+      "metric": "composed-tree gate wall-clock on the reference suite",
+      "target": {
+        "operator": "<=",
+        "value": 120,
+        "unit": "seconds"
+      }
+    },
+    {
+      "id": "NFR-002",
+      "category": "reliability",
+      "statement": "A push to main that is red must not be reported green.",
+      "metric": "red merges reported green",
+      "target": {
+        "operator": "=",
+        "value": 0,
+        "unit": "count"
+      }
+    }
+  ]
+}
