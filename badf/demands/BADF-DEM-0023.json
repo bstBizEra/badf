@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0023",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 59,
+    "url": "https://github.com/bstBizEra/badf/issues/59",
+    "exported_at": "2026-08-28T12:42:54Z",
+    "body_digest": "sha256:058f32b885aa782a6e1419346da098502dbf30cba6bcd5f76f2cd35679dcede7"
+  },
+  "title": "GOV-0019: the research contract is frozen but a record's record/source/claim controls are not enforced",
+  "problem": "## Observed\n`BADF-WP-0031` (Issue #50, closed) froze the research capability contract: `schemas/research-record.schema.json`, the `badf-research` skill family at `DESIGNED`, and `skills/badf-research/references/acceptance.md` listing 18 deterministic controls required before `VALIDATED`. Nothing enforces them. `examples/research-record.json` is checked for schema shape by the drift walker, but no command validates a record's referential integrity, its confidence derivation, or the RSR-I02/I03 primary-source invariants. A record could assert `confidence: VERY_HIGH` on a basis that derives `LOW`, or a `VERIFIED` claim resting on no primary source, and nothing would object.\n\n## Expected\nThe first slice of the 18 controls \u2014 the deterministic **record/source/claim** ones that are pure functions of the record \u2014 enforced by the gate: `badf_gate.py research <path>` validates schema conformance, source/claim/finding referential integrity, confidence **derived not asserted**, and that a `VERIFIED` claim rests on an independent primary source and an `OBSERVED` claim on a primary source. CI runs it on the shipped example. `RESEARCH_SUFFICIENT \u2260 IMPLEMENTATION_AUTHORIZED` is already schema-fixed.\n\n## Evidence\n`grep -n \"def validate_research\" scripts/badf_gate.py` \u2192 no such function on `main` at `d398e10`. `skills/badf-research/references/acceptance.md` lists controls 1\u201318; none are gate tests yet.\n\n## Unknowns\nNone of substance. The challenge/independence controls (10\u201313), state-transition (16), traceability (18), and the baseline git-resolution (control 3, which needs a repository-research subskill) are separate later work packages; `badf-research` stays `DESIGNED` until all 18 pass.\n\n## Proposed work package\n`BADF-WP-0036` (roadmap item RSR-002). `derive_confidence` + `validate_research_record` + a `research` CLI + a CI step; the confidence table made a pure function of the basis; tests + mutation. C2.\n\ndiscovered-by: BADF-WP-0031 (frozen-contract roadmap) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T12:42:54Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. Roadmap item RSR-002 under the frozen research contract (#50); authority: the operator's pick of RSR-002 (2026-08-28). Worked as BADF-WP-0036."
+}

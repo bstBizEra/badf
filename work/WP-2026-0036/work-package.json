@@ -1,0 +1,55 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0036",
+  "title": "RSR-002: research record/source/claim checks in the gate",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0023",
+  "objective": "Begin enforcing the frozen research contract: badf_gate.py research validates a record's schema, referential integrity, derived confidence, and the VERIFIED/OBSERVED primary-source invariants (RSR-I02/I03). Research grants no implementation authority (schema-fixed).",
+  "business_value": "A frozen contract nobody validates is documentation. These are the deterministic record/source/claim controls -- the ones that are pure functions of the record.",
+  "in_scope": [
+    "derive_confidence + validate_research_record + `research` CLI",
+    "schema/example/doc aligned so confidence is computable (example C-002 HIGH->MODERATE)",
+    "CI validates examples/research-record.json",
+    "tests failing-first; mutation; own self-dossier"
+  ],
+  "out_of_scope": [
+    "challenge/independence controls (10-13)",
+    "state-transition (16) and traceability (18)",
+    "baseline git-resolution (control 3) -- when a repository-research subskill lands",
+    "the nine P0 subskills; registry activation (badf-research stays DESIGNED)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the shipped example passes `research`",
+    "an asserted confidence != the derived level is refused",
+    "a dangling source or finding ref is refused",
+    "a VERIFIED claim without an independent primary source is refused; an OBSERVED claim without a primary source is refused",
+    "derive_confidence truth table holds and every result is a schema enum",
+    "mutation kills; compose green both shapes"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "d398e10"
+  },
+  "note": "Lands IN_PROGRESS by design. Carries its own G07 self-dossier. First of the research-track WPs after the contract freeze."
+}

@@ -1,0 +1,334 @@
+diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
+index bb09cd3..168bb48 100644
+--- a/.github/workflows/badf-gates.yml
++++ b/.github/workflows/badf-gates.yml
+@@ -42,6 +42,7 @@ jobs:
+         run: |
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G00.json
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G01.json
++          python3 scripts/badf_gate.py research examples/research-record.json
+       - name: PR traceability (Work-Package + Closes #N)
+         # BADF-MAIN-001. Only a PR has a body; a push to main has already been
+         # traced by the PR that produced it. Reports on the PR event only.
+diff --git a/badf/demands/BADF-DEM-0023.json b/badf/demands/BADF-DEM-0023.json
+new file mode 100644
+index 0000000..155fe2d
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0023.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0023",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 59,
++    "url": "https://github.com/bstBizEra/badf/issues/59",
++    "exported_at": "2026-08-28T12:42:54Z",
++    "body_digest": "sha256:058f32b885aa782a6e1419346da098502dbf30cba6bcd5f76f2cd35679dcede7"
++  },
++  "title": "GOV-0019: the research contract is frozen but a record's record/source/claim controls are not enforced",
++  "problem": "## Observed\n`BADF-WP-0031` (Issue #50, closed) froze the research capability contract: `schemas/research-record.schema.json`, the `badf-research` skill family at `DESIGNED`, and `skills/badf-research/references/acceptance.md` listing 18 deterministic controls required before `VALIDATED`. Nothing enforces them. `examples/research-record.json` is checked for schema shape by the drift walker, but no command validates a record's referential integrity, its confidence derivation, or the RSR-I02/I03 primary-source invariants. A record could assert `confidence: VERY_HIGH` on a basis that derives `LOW`, or a `VERIFIED` claim resting on no primary source, and nothing would object.\n\n## Expected\nThe first slice of the 18 controls \u2014 the deterministic **record/source/claim** ones that are pure functions of the record \u2014 enforced by the gate: `badf_gate.py research <path>` validates schema conformance, source/claim/finding referential integrity, confidence **derived not asserted**, and that a `VERIFIED` claim rests on an independent primary source and an `OBSERVED` claim on a primary source. CI runs it on the shipped example. `RESEARCH_SUFFICIENT \u2260 IMPLEMENTATION_AUTHORIZED` is already schema-fixed.\n\n## Evidence\n`grep -n \"def validate_research\" scripts/badf_gate.py` \u2192 no such function on `main` at `d398e10`. `skills/badf-research/references/acceptance.md` lists controls 1\u201318; none are gate tests yet.\n\n## Unknowns\nNone of substance. The challenge/independence controls (10\u201313), state-transition (16), traceability (18), and the baseline git-resolution (control 3, which needs a repository-research subskill) are separate later work packages; `badf-research` stays `DESIGNED` until all 18 pass.\n\n## Proposed work package\n`BADF-WP-0036` (roadmap item RSR-002). `derive_confidence` + `validate_research_record` + a `research` CLI + a CI step; the confidence table made a pure function of the basis; tests + mutation. C2.\n\ndiscovered-by: BADF-WP-0031 (frozen-contract roadmap) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T12:42:54Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Body exported verbatim and digest-bound. Roadmap item RSR-002 under the frozen research contract (#50); authority: the operator's pick of RSR-002 (2026-08-28). Worked as BADF-WP-0036."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 659444f..632f63f 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -130,6 +130,19 @@ it rather than trusting the record.
+   shape (WP-0029: 13 advance tests red there, green in the composed run). Scratch clones pin
+   `origin/main` explicitly (`tests/_scratch.pin_origin_main`).
+ 
++## Research record checks (`BADF-WP-0036`, RSR-002)
++
++The frozen research contract (`BADF-WP-0031`) begins to be enforced. `badf_gate.py research
++<path>` validates a research record's deterministic **record/source/claim** controls: schema
++conformance, referential integrity (every claim's source refs and every finding's claim refs
++exist), **confidence derived not asserted** (`derive_confidence` recomputes the level from the
++basis and refuses a mismatch, like the two-plane verdict), and the invariants that a `VERIFIED`
++claim rests on an independent primary source (RSR-I02) and an `OBSERVED` claim on a primary
++source (RSR-I03). `RESEARCH_SUFFICIENT ≠ IMPLEMENTATION_AUTHORIZED` stays schema-fixed. CI runs
++it on `examples/research-record.json`. The challenge, state-transition and traceability controls
++(the rest of the 18 in `skills/badf-research/references/acceptance.md`) are later work packages;
++`badf-research` stays `DESIGNED`.
++
+ ## Resolved Issues become learning (`BADF-WP-0035`, Issue #29)
+ 
+ The Doctrine's last clause — *every resolved Issue becomes potential institutional learning* —
+diff --git a/examples/research-record.json b/examples/research-record.json
+index 7d8e21e..1115461 100644
+--- a/examples/research-record.json
++++ b/examples/research-record.json
+@@ -96,7 +96,7 @@
+       "contradicting_sources": [],
+       "status": "VERIFIED",
+       "confidence": {
+-        "level": "HIGH",
++        "level": "MODERATE",
+         "basis": {
+           "independent_primary_sources": 1,
+           "reproducible": true,
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 54ffc17..6357fe8 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -2453,6 +2453,65 @@ def self_dossier(wp_id: str) -> str:
+             f"Validate: python3 scripts/badf_gate.py dossier work/{wp_id}/gate-dossier.G07.json (exit 3 = HELD).")
+ 
+ 
++
++# ---- research record checks: record / source / claim (BADF-WP-0036, #29 research track, RSR-002) ----
++def derive_confidence(basis: dict[str, Any]) -> str:
++    """Confidence is computed from the basis, never self-reported (the mandate
++    forbids 'agent confidence' in evidence semantics). A pure function of
++    independent_primary_sources, reproducible and contradictions -- the table
++    in skills/badf-research/references/evidence-contract.md."""
++    ips = basis["independent_primary_sources"]; repro = basis["reproducible"]; contra = basis["contradictions"]
++    if ips == 0:
++        return "VERY_LOW"
++    if ips == 1:
++        return "MODERATE" if repro else "LOW"
++    if not repro:
++        return "MODERATE"
++    return "HIGH" if contra > 0 else "VERY_HIGH"
++
++
++def validate_research_record(path: Path) -> str:
++    """`badf_gate.py research <path>`: the deterministic record/source/claim
++    controls of the frozen research contract (RSR-002). Schema conformance,
++    referential integrity, derived confidence, and the invariants that a
++    VERIFIED claim rests on an independent primary source and an OBSERVED
++    claim on a primary source. Research output never grants implementation
++    authority. Later work packages add the challenge, state-transition and
++    traceability controls."""
++    rec = load_json(path)
++    # check_schema enforces implementation_authority == false (RSR-I01) via the
++    # schema's enum [false]; a separate check here would be dead code (a mutant
++    # proved the schema catches it first).
++    check_schema("research-record", rec)
++    source_ids = [src["id"] for src in rec["sources"]]
++    if len(source_ids) != len(set(source_ids)):
++        raise ValidationError("research record has duplicate source ids")
++    sources = {src["id"]: src for src in rec["sources"]}
++    claim_ids = set()
++    for c in rec["claims"]:
++        cid = c["id"]
++        if cid in claim_ids:
++            raise ValidationError(f"research record has duplicate claim id {cid}")
++        claim_ids.add(cid)
++        for ref in c["supporting_sources"] + c["contradicting_sources"]:
++            if ref not in sources:
++                raise ValidationError(f"claim {cid} references source {ref} that the record does not carry")
++        want = derive_confidence(c["confidence"]["basis"])
++        if c["confidence"]["level"] != want:
++            raise ValidationError(f"claim {cid} confidence {c['confidence']['level']} is not the derived level {want}; confidence is computed from its basis, not asserted")
++        supporting_primary = any(sources[r]["source_type"] == "PRIMARY" for r in c["supporting_sources"])
++        if c["status"] == "VERIFIED":
++            if c["confidence"]["basis"]["independent_primary_sources"] < 1 or not supporting_primary:
++                raise ValidationError(f"claim {cid} is VERIFIED but rests on no independent primary source (RSR-I02)")
++        if c["classification"] == "OBSERVED" and not supporting_primary:
++            raise ValidationError(f"claim {cid} is OBSERVED but cites no primary source; an observation is of the thing itself, not a report of it (RSR-I03)")
++    for f in rec["findings"]:
++        missing = sorted(set(f["claim_refs"]) - claim_ids)
++        if missing:
++            raise ValidationError(f"finding {f['id']} references claim(s) the record does not carry: {', '.join(missing)}")
++    return f"BADF RESEARCH PASS: {rec['id']} ({rec['type']}/{rec['depth']}) -- {len(rec['claims'])} claims, disposition {rec['disposition']['state']}; grants no implementation authority"
++
++
+ def validate_dossier(dossier_path: Path) -> str:
+     validate_repo()
+     dossier = load_json(dossier_path.resolve())
+@@ -2574,6 +2633,8 @@ def main() -> int:
+     rec_parser.add_argument("work_package")
+     self_parser = subparsers.add_parser("self-dossier", help="assemble a G07 dossier for one of BADF's own work packages from measured evidence (HUMAN_REQUIRED)")
+     self_parser.add_argument("work_package")
++    research_parser = subparsers.add_parser("research", help="validate a research record's record/source/claim controls (RSR-002)")
++    research_parser.add_argument("path", type=Path)
+     args = parser.parse_args()
+     try:
+         if args.command == "repo":
+@@ -2603,6 +2664,9 @@ def main() -> int:
+         elif args.command == "self-dossier":
+             print(self_dossier(args.work_package))
+             return 0
++        elif args.command == "research":
++            print(validate_research_record(args.path))
++            return 0
+         else:
+             args._rendered = validate_dossier(args.path)
+     except ValidationError as exc:
+diff --git a/skills/badf-research/references/evidence-contract.md b/skills/badf-research/references/evidence-contract.md
+index 5df6c1f..2c1f4c8 100644
+--- a/skills/badf-research/references/evidence-contract.md
++++ b/skills/badf-research/references/evidence-contract.md
+@@ -36,15 +36,15 @@ Every material statement is a claim with a classification, supporting and contra
+ 
+ ## Confidence (`claims[].confidence`)
+ 
+-Confidence is **derived** from `basis` — `independent_primary_sources`, `reproducible`, `contradictions` — by the table below. It is never self-reported, never a percentage, and it never enters authority or evidence semantics as an agent's own assessment (the mandate forbids "agent confidence" there by name).
++Confidence is **derived** from `basis` — `independent_primary_sources` (`ips`), `reproducible`, `contradictions` — by the table below, which is a pure function of those three fields (`badf_gate.py research` recomputes it and refuses a mismatch, like the two-plane verdict). It is never self-reported, never a percentage, and it never enters authority or evidence semantics as an agent's own assessment (the mandate forbids "agent confidence" there by name).
+ 
+ | Level | Derived when |
+ | :--- | :--- |
+-| `VERY_LOW` | 0 independent primary sources, or contradictions ≥ supporting |
+-| `LOW` | 1 primary source, not reproducible |
+-| `MODERATE` | 1 primary source, reproducible, or 2 non-independent |
+-| `HIGH` | ≥2 independent primary sources, reproducible, no contradiction |
+-| `VERY_HIGH` | ≥2 independent primary sources, reproducible, contradictions examined and eliminated |
++| `VERY_LOW` | 0 independent primary sources |
++| `LOW` | 1 independent primary source, not reproducible |
++| `MODERATE` | 1 independent primary source reproducible, or ≥2 not reproducible |
++| `HIGH` | ≥2 independent primary sources, reproducible, with an unresolved contradiction |
++| `VERY_HIGH` | ≥2 independent primary sources, reproducible, no contradiction |
+ 
+ ## Contradictions and non-coverage
+ 
+diff --git a/tests/test_badf_research.py b/tests/test_badf_research.py
+new file mode 100644
+index 0000000..72fa763
+--- /dev/null
++++ b/tests/test_badf_research.py
+@@ -0,0 +1,117 @@
++"""Research record checks (BADF-WP-0036, RSR-002).
++
++The first deterministic controls of the frozen research contract:
++`badf_gate.py research <path>` validates a record's schema, the referential
++integrity of its source and claim refs, that confidence is DERIVED not
++asserted, and that a VERIFIED claim rests on an independent primary source
++and an OBSERVED claim on a primary source. Research grants no implementation
++authority. Later work packages add challenge, state and traceability
++controls. Every test mutates a copy of the shipped example and runs the CLI.
++"""
++import copy
++import json
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++EXAMPLE = json.loads((gate.ROOT / "examples/research-record.json").read_text())
++
++
++class DeriveConfidenceTests(unittest.TestCase):
++    """Confidence is a pure function of (independent_primary_sources,
++    reproducible, contradictions) -- the table in evidence-contract.md."""
++
++    def d(self, ips, repro, contra):
++        return gate.derive_confidence({"independent_primary_sources": ips, "reproducible": repro, "contradictions": contra})
++
++    def test_truth_table(self):
++        self.assertEqual(self.d(0, True, 0), "VERY_LOW")
++        self.assertEqual(self.d(0, False, 5), "VERY_LOW")
++        self.assertEqual(self.d(1, False, 0), "LOW")
++        self.assertEqual(self.d(1, True, 0), "MODERATE")
++        self.assertEqual(self.d(2, False, 0), "MODERATE")
++        self.assertEqual(self.d(3, False, 0), "MODERATE")
++        self.assertEqual(self.d(2, True, 1), "HIGH")
++        self.assertEqual(self.d(2, True, 0), "VERY_HIGH")
++        self.assertEqual(self.d(5, True, 0), "VERY_HIGH")
++
++    def test_every_result_is_a_schema_enum_value(self):
++        levels = set(json.loads((gate.ROOT / "schemas/research-record.schema.json").read_text())
++                     ["properties"]["claims"]["items"]["properties"]["confidence"]["properties"]["level"]["enum"])
++        got = {self.d(i, r, c) for i in range(4) for r in (True, False) for c in range(3)}
++        self.assertLessEqual(got, levels)
++
++
++class ResearchRecordTests(unittest.TestCase):
++    def run_cli(self, rec):
++        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
++            json.dump(rec, f); path = Path(f.name)
++        try:
++            return subprocess.run([sys.executable, "scripts/badf_gate.py", "research", str(path)],
++                                  cwd=str(gate.ROOT), capture_output=True, text=True)
++        finally:
++            path.unlink()
++
++    def refused(self, rec, needle):
++        r = self.run_cli(rec)
++        self.assertNotEqual(r.returncode, 0, "a defective research record passed")
++        self.assertIn(needle, r.stderr, r.stderr)
++
++    def test_shipped_example_passes(self):
++        r = self.run_cli(copy.deepcopy(EXAMPLE))
++        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
++
++    def test_asserted_confidence_that_is_not_the_derived_level_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["claims"][0]["confidence"]["level"] = "LOW"   # basis derives VERY_HIGH
++        self.refused(rec, "not the derived level")
++
++    def test_a_dangling_source_reference_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["claims"][0]["supporting_sources"].append("S-999")
++        self.refused(rec, "S-999")
++
++    def test_a_duplicate_source_id_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["sources"].append(dict(rec["sources"][0]))
++        self.refused(rec, "duplicate source")
++
++    def test_verified_without_an_independent_primary_source_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["claims"][1]["confidence"]["basis"]["independent_primary_sources"] = 0
++        rec["claims"][1]["confidence"]["level"] = "VERY_LOW"   # keep confidence consistent so THIS control fires
++        self.refused(rec, "no independent primary source")
++
++    def test_verified_whose_only_support_is_secondary_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["sources"][1]["source_type"] = "SECONDARY"   # S-002, the only support of C-002 (VERIFIED)
++        self.refused(rec, "no independent primary source")
++
++    def test_observed_without_a_primary_source_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        # C-001 is OBSERVED; make both its supports non-primary while keeping it INFERRED-free
++        for s in rec["sources"]:
++            if s["id"] in ("S-001", "S-003"):
++                s["source_type"] = "COMMUNITY"
++        # C-002 (VERIFIED) also supported by S-002 primary still; C-001 now fails OBSERVED-needs-primary
++        rec["claims"][0]["status"] = "PARTIALLY_VERIFIED"   # avoid the VERIFIED path so OBSERVED path is what refuses
++        self.refused(rec, "cites no primary source")
++
++    def test_implementation_authority_true_is_refused_by_the_schema(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["authority"]["implementation_authority"] = True   # schema fixes this to enum [false]
++        self.refused(rec, "implementation_authority")
++
++    def test_a_finding_referencing_an_unknown_claim_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["findings"][0]["claim_refs"].append("C-999")
++        self.refused(rec, "C-999")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0035/work-package.json b/work/WP-2026-0035/work-package.json
+index 051930b..2b6066a 100644
+--- a/work/WP-2026-0035/work-package.json
++++ b/work/WP-2026-0035/work-package.json
+@@ -44,11 +44,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "f59c5c2"
++    "base_revision": "f59c5c2",
++    "landed_as": "d398e1011d31b6b9d299be3b10ce2db4ee014268"
+   },
+   "note": "Lands IN_PROGRESS by design. Carries its own G07 self-dossier. Closes the last of the original doctrine's discovered gaps."
+ }
