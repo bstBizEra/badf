@@ -46,11 +46,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "684539e"
+    "base_revision": "684539e",
+    "landed_as": "a711ef7a66e7b9628e5d3c02717d7958ad1947eb"
   },
   "note": "Lands IN_PROGRESS by design; reconciled by the next WP's branch. Dogfood: work/WP-2026-0033/gate-dossier.G07.json is assembled by the tool this WP ships."
 }

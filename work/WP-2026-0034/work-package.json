@@ -1,0 +1,55 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0034",
+  "title": "Issue and PR body shape: requested by an Issue Form and PR template, enforced by check_pr_traceability on the PR body",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0021",
+  "objective": "Give Issue and PR bodies a shape that is REQUESTED on GitHub (an Issue Form and a PR template) and ENFORCED where BADF reads it: check_pr_traceability.py verifies the PR template's required section headings in addition to the two trailer lines. Demand bodies are NOT enforced in load_demand -- an issue-kind demand's problem is a verbatim, digest-bound export of the source Issue and must not be rewritten (e.g. BADF-DEM-0016 is the external #41 with a different structure); the Issue Form is the requested shape for new Issues.",
+  "business_value": "gh --body-file bypasses web templates, so templates alone enforce nothing; every artifact this session was filed that way. The shape becomes a control only where the gate/CI reads it.",
+  "in_scope": [
+    ".github/ISSUE_TEMPLATE/demand.yml (Issue Form) + config.yml (blank issues off)",
+    ".github/pull_request_template.md",
+    "check_pr_traceability.py: required section headings (What / Verification) plus the two trailer lines",
+    "the template headings and the check agree (a self-consistency test)",
+    "doctrine note; tests failing-first; mutation; compose",
+    "its own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "enforcing demand-body shape in load_demand (would rewrite or reject digest-bound external exports)",
+    "a network check that an Issue exists",
+    "changing the demand schema"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "a PR body missing a required section fails check_pr_traceability naming it, and one with the sections + trailers passes",
+    "the Issue Form and PR template exist; the template's headings equal the check's required set (test)",
+    "the current WP-0034 PR body satisfies the check",
+    "load_demand and every shipped demand are unchanged (no demand-body enforcement)",
+    "mutation kills; compose green both shapes"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_traceability.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "a711ef7"
+  },
+  "note": "Lands IN_PROGRESS by design; reconciled by the next WP's branch. Carries its own G07 self-dossier."
+}
