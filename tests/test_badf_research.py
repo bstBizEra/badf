@@ -476,6 +476,34 @@ class FactCheckStatusTests(ResearchRecordTests):
         self.passes_redigest(rec)
 
 
+class SourceFreshnessTests(ResearchRecordTests):
+    """Control 6 (BADF-WP-0050): a claim may not rest on a STALE or UNKNOWN source.
+    deep-research sets each source's freshness on re-resolution; the gate fails
+    closed. freshness is part of the evidence_digest, so records are re-digested."""
+
+    def refused_redigest(self, rec, needle):
+        rec["evidence_digest"] = gate.compute_research_evidence_digest(rec)
+        self.refused(rec, needle)
+
+    def test_a_claim_on_a_stale_source_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE); cited = rec["claims"][0]["supporting_sources"][0]
+        for s in rec["sources"]:
+            if s["id"] == cited:
+                s["freshness"] = "STALE"
+        self.refused_redigest(rec, "freshness is STALE")
+
+    def test_a_claim_on_an_unknown_source_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE); cited = rec["claims"][0]["supporting_sources"][0]
+        for s in rec["sources"]:
+            if s["id"] == cited:
+                s["freshness"] = "UNKNOWN"
+        self.refused_redigest(rec, "freshness is UNKNOWN")
+
+    def test_all_current_sources_pass(self):
+        r = self.run_cli(copy.deepcopy(EXAMPLE))
+        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
+
+
 class ProblemFramingRegistrationTests(unittest.TestCase):
 
     def test_problem_framing_is_registered_implemented_with_a_real_digest(self):

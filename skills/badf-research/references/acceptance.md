@@ -11,7 +11,7 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows 
 | 3 | baseline is bound to a repository revision when repository research applies |
 | 4 | every VERIFIED material claim has evidence |
 | 5 | a missing source cannot silently resolve |
-| 6 | a changed source digest makes dependent claims stale |
+| 6 | a changed source digest makes dependent claims stale: `deep-research` sets each source's `freshness` (CURRENT / STALE / UNKNOWN) on re-resolution, and a claim may not rest on a STALE or UNKNOWN source (fail closed) |
 | 7 | an inference cannot be serialised as an observation |
 | 8 | contradictory evidence is preserved |
 | 9 | confidence has an explainable, derived basis |
@@ -32,6 +32,6 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows 
 ## Admission
 
 - `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time). Present: `repository-research`, `problem-framing`, `fact-checking`, `evidence-synthesis`, `deep-research` (5 of 9).
-- `VALIDATED`: the 22 controls above pass as gate tests with mutation. Enforced today: 1–5, 7–14, 16–22 (20 of 22); control 6 (source-digest freshness) awaits a source-fetch mechanism, control 15 rides the state machine.
+- `VALIDATED`: the 22 controls above pass as gate tests with mutation. Enforced today: 1–14, 16–22 (21 of 22); only control 15 remains (it rides the state machine, earned by `research-reconciliation`).
 - `SHADOWED`: the family is run retrospectively on historical BADF findings (the authority-downgrade defect, schema drift, foreign-revision resolution, the composed-tree reds of 2026-08-28) without knowing the answer; `examples/research-record.json` is the first such shadow record.
 - `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. Until then the registry entry stays `DESIGNED`.

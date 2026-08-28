@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0037",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 91,
+    "url": "https://github.com/bstBizEra/badf/issues/91",
+    "exported_at": "2026-08-28T19:34:23Z",
+    "body_digest": "sha256:cfbd755b265fc7ecc12ca0223207133358cfb089953683c1e0aee428555febcf"
+  },
+  "title": "GOV-0034: implement control 6 \u2014 source-digest freshness (a claim cannot rest on a STALE/UNKNOWN source), now that deep-research owns acquisition",
+  "problem": "## Observed\nAcceptance control 6 (\"a changed source digest makes dependent claims stale\") has been the long-deferred research control \u2014 it awaited a source-fetch mechanism, which `deep-research` (WP-0049) now provides. Today a source carries `uri, source_type, retrieved_at, digest` but **no freshness / re-resolution outcome**, so a claim can rest on a source whose bytes have since changed or that can no longer be resolved, and the gate accepts it.\n\n## Expected\nImplement control 6 (not a new control number \u2014 the long-pending one):\n- Add a source-receipt field `freshness` (`CURRENT` / `STALE` / `UNKNOWN`), required, and an optional `resolved_revision` (an immutable revision \u2014 a commit, DOI, versioned URL). `deep-research` sets `freshness` on re-resolution: `CURRENT` when an immutable revision resolves or the digest is unchanged; `STALE` when the bytes changed; `UNKNOWN` when it could not be resolved.\n- **Control 6 (gate enforcement):** a claim may not rest on a `STALE` or `UNKNOWN` source (fail closed) \u2014 the gate reads the receipt; it does not itself fetch. A stale/unavailable source can remain in the record as documented non-coverage, but it cannot support a claim.\n- `freshness` is part of the material evidence, so it is inside the `evidence_digest` (a source going stale is an evidence change \u2014 control 17 stays coherent); the three examples are migrated with recomputed digests.\n\n## Evidence\n- source schema today: `uri, source_type, retrieved_at, digest` \u2014 no freshness/receipt field\n- `deep-research` (#89 / WP-0049) established the read-only acquisition contract; control 6 is its named consumer\n\n## Unknowns\nNone. The gate cannot re-fetch (deterministic, no network) \u2014 freshness is `deep-research`'s verdict; the gate enforces the consequence. Not in scope: the other 4 P0 subskills, #77/#83/#84.\n\n## Proposed work package\n`BADF-WP-0050`. `freshness`/`resolved_revision` source fields; control 6 in `validate_research_record`; examples migrated + re-digested; acceptance.md marks control 6 enforced (21 of 22); tests + mutation; own G07 self-dossier. C2. `badf-research` stays `DESIGNED` (5 of 9 P0).\n\ndiscovered-by: operator research sequencing (2026-08-29) + BADF-WP-0049 (deep-research) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T19:34:23Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "control 6 source-digest freshness (freshness receipt field + fail-closed on STALE/UNKNOWN), enabled by deep-research (#89). Long-deferred acceptance control, not a new number. /loop research build. Worked as BADF-WP-0050."
+}

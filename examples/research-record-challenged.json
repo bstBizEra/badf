@@ -57,14 +57,16 @@
       "uri": "git:bstBizEra/badf reconciliation design (WP-0019)",
       "source_type": "PRIMARY",
       "retrieved_at": "2026-08-28T14:01:00Z",
-      "digest": null
+      "digest": null,
+      "freshness": "CURRENT"
     },
     {
       "id": "S-002",
       "uri": "git:bstBizEra/badf composed-tree gate (WP-0024)",
       "source_type": "PRIMARY",
       "retrieved_at": "2026-08-28T14:02:00Z",
-      "digest": null
+      "digest": null,
+      "freshness": "CURRENT"
     }
   ],
   "claims": [
@@ -158,6 +160,6 @@
   "authority": {
     "implementation_authority": false
   },
-  "evidence_digest": "sha256:35c4a47ed7179b74b40e85574ed6ee9e7be02482498cffe3bcbbb768bf23d005",
+  "evidence_digest": "sha256:c383942cfc87ae7fa9d4850207da45936c86e275ad102bc844de7006ba9b2328",
   "recorded_at": "2026-08-28T14:20:00Z"
 }
