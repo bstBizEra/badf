@@ -1,0 +1,134 @@
+{
+  "schema_version": "1.0.0",
+  "id": "BADF-RSR-0006",
+  "demand": "BADF-DEM-0042",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 101
+  },
+  "researcher": {
+    "principal": "badf-research-agent",
+    "principal_type": "agent"
+  },
+  "type": "R10",
+  "depth": "D1",
+  "question": "Does a green local test run prove a green CI run for BADF?",
+  "scope": {
+    "include": [
+      "the #57 local vs CI outcomes"
+    ],
+    "exclude": [
+      "unrelated CI infra"
+    ]
+  },
+  "baseline": {
+    "repository": "bstBizEra/badf",
+    "revision": "45b1a8c",
+    "observed_at": "2026-08-29T00:00:00Z"
+  },
+  "known": [
+    "#57 passed every local run including a runner-shape reproduction"
+  ],
+  "unknown": [
+    "whether local parity implies CI parity"
+  ],
+  "hypotheses": [
+    {
+      "id": "H-001",
+      "statement": "a green local run proves a green CI run",
+      "status": "ELIMINATED"
+    }
+  ],
+  "stop_conditions": [
+    "the claim is verified or falsified against the #57 outcomes"
+  ],
+  "assumptions": [
+    "the local machine's Python differs from the bare CI runner"
+  ],
+  "decision_context": {
+    "decision_question": "what reproduction discipline is required before trusting a local pass?"
+  },
+  "sources": [
+    {
+      "id": "S-001",
+      "uri": "note:the local green runs for #57",
+      "source_type": "SECONDARY",
+      "retrieved_at": "2026-08-29T00:01:00Z",
+      "digest": null,
+      "freshness": "CURRENT"
+    },
+    {
+      "id": "S-002",
+      "uri": "ci:bstBizEra/badf#57 run conclusion=failure (ModuleNotFoundError: yaml)",
+      "source_type": "PRIMARY",
+      "retrieved_at": "2026-08-29T00:02:00Z",
+      "digest": null,
+      "freshness": "CURRENT"
+    }
+  ],
+  "claims": [
+    {
+      "id": "C-001",
+      "statement": "a green local run proves a green CI run",
+      "classification": "INFERRED",
+      "supporting_sources": [],
+      "contradicting_sources": [
+        "S-002"
+      ],
+      "status": "FALSIFIED",
+      "confidence": {
+        "level": "VERY_LOW",
+        "basis": {
+          "independent_primary_sources": 0,
+          "reproducible": false,
+          "contradictions": 1
+        }
+      }
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-001",
+      "statement": "a green local run does not prove a green CI run; environment parity (shadow optional deps on PYTHONPATH) is required, not just the git checkout shape",
+      "claim_refs": [
+        "C-001"
+      ]
+    }
+  ],
+  "alternatives": [],
+  "experiments": [],
+  "contradictions": [
+    {
+      "id": "X-001",
+      "claim_refs": [
+        "C-001"
+      ],
+      "statement": "CI on #57 was red from a PyYAML import absent on the bare runner but present on the local machine"
+    }
+  ],
+  "non_coverage": [
+    {
+      "surface": "non-#57 CI infrastructure",
+      "reason": "single-case fact check"
+    }
+  ],
+  "recommendation": "reproduce the runner ENVIRONMENT, not only its checkout, before trusting a local pass",
+  "challenge": {
+    "required": false,
+    "council": null
+  },
+  "state": "RECONCILED",
+  "disposition": {
+    "state": "RESEARCH_SUFFICIENT",
+    "reason": "the claim is falsified by a primary contradicting CI outcome, contradiction preserved"
+  },
+  "downstream": {
+    "decision_id": null,
+    "work_package_id": null
+  },
+  "authority": {
+    "implementation_authority": false
+  },
+  "recorded_at": "2026-08-29T00:14:00Z",
+  "evidence_digest": "sha256:87ebb099355f1a29ee72e6cc4fd062add293dc7ad2ad2a19e9f9dfcc8dfbc843"
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0042",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 101,
+    "url": "https://github.com/bstBizEra/badf/issues/101",
+    "exported_at": "2026-08-28T21:47:09Z",
+    "body_digest": "sha256:bb1552598a631b4388b045836182b455c276839189264d509926c9ecac00cc0b"
+  },
+  "title": "GOV-0039: shadow-evaluate the completed badf-research P0 family on real historical BADF cases (SHADOWED admission evidence)",
+  "problem": "## Observed\n`badf-research` is a complete P0 family (9 of 9 subskills, 26 of 26 controls) but sits at `DESIGNED`, validated only against synthetic examples. The admission ladder requires a `SHADOWED` step before `APPROVED`/`ACTIVE`: run the contract retrospectively on real historical BADF cases and ask whether it would have surfaced the correct uncertainty, evidence, contradiction and decision boundary without knowing the answer.\n\n## Expected\nProduce the shadow evidence: author **three digest-bound, gate-valid research records** over distinct real historical BADF cases, each exercising a different part of the contract, plus a short admission-evidence note measuring whether the contract represented the real case faithfully:\n- **R02 repository-investigation** \u2014 was control 15 (only `RESEARCH_SUFFICIENT` \u2192 downstream work package) enforced, or only documented? (baseline `bstBizEra/badf@e7ea929`) \u2014 the case that surfaced the control-15 mistracking this session.\n- **R03 root-cause** \u2014 why did WP-0019 turn `main` red at `30186c5` after a green PR? (baseline `bstBizEra/badf@30186c5`) \u2014 the composed-tree-red / pre-merge-ledger defect.\n- **R10 fact-verification** \u2014 does a green local run prove a green CI run? (`FALSIFIED` by the #57 PyYAML runner-parity defect, with the contradiction preserved).\n\nAdd them to CI (`research` validation) and write the admission-evidence note. `badf-research` stays `DESIGNED` \u2014 the status advance is the operator's admission decision, now backed by shadow data.\n\n## Evidence\n- all three baselines resolve (`bstBizEra/badf` registered SELF; `e7ea929`, `30186c5` in history)\n- the three synthetic examples pass but do not constitute historical shadow evidence\n\n## Unknowns\nWhether the contract can faithfully represent all three cases is the point of the exercise; a gap becomes its own issue rather than a silent pass.\n\n## Proposed work package\n`BADF-WP-0055`. Three shadow research records in `examples/` + CI validation; an admission-evidence note; own G07 self-dossier. C2. `badf-research` stays `DESIGNED` (shadow evidence produced; status advance = operator).\n\ndiscovered-by: operator recommendation to shadow-evaluate the completed P0 family (2026-08-29) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T21:47:09Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Shadow evaluation of the completed badf-research P0 family: 3 shadow records on real historical BADF cases + admission-evidence note. Family stays DESIGNED. Worked as BADF-WP-0055."
+}

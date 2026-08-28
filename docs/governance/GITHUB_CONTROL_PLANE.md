@@ -451,6 +451,22 @@ complete: 9 of 9 subskills, all 26 controls enforced** — the `IMPLEMENTED` and
 The registry status advance (`DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED → APPROVED → ACTIVE`) is the
 operator's admission decision, so `badf-research` stays `DESIGNED`.
 
+## Shadow evidence — the research family run on real history (`BADF-WP-0055`, Issue #101)
+
+The completed `badf-research` P0 family (9/9 subskills, 26/26 controls) was `DESIGNED` but validated
+only against synthetic examples. This WP produces the **`SHADOWED` admission evidence**: three
+gate-valid research records over **real historical BADF cases**, framed blind, each exercising a
+distinct part of the contract — `research-record-shadow-control15.json` (R02: the control-15
+mistracking, baseline `e7ea929`, control-3 resolution), `research-record-shadow-composed-red.json`
+(R03 root-cause: the composed-tree red at `30186c5`, hypothesis elimination), and
+`research-record-shadow-ci-parity.json` (R10: `local-green ≠ CI-green`, a **FALSIFIED** claim with its
+contradiction preserved — controls 21 + 8). The measurement (`references/shadow-evidence.md`): the
+contract represented all three faithfully — derived confidence matched each basis, baselines resolved,
+the falsification kept its contradiction, findings were grounded, sufficiency rested on synthesis —
+**no contract gap surfaced under real conditions**. This is stronger than the synthetic examples
+because the cases actually happened. `badf-research` stays `DESIGNED`; advancing it up the ladder
+(`… → SHADOWED → APPROVED → ACTIVE`) is the operator's admission decision, now backed by shadow data.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

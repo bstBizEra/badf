@@ -1,0 +1,125 @@
+{
+  "schema_version": "1.0.0",
+  "id": "BADF-RSR-0004",
+  "demand": "BADF-DEM-0042",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 101
+  },
+  "researcher": {
+    "principal": "badf-research-agent",
+    "principal_type": "agent"
+  },
+  "type": "R02",
+  "depth": "D2",
+  "question": "Is control 15 (only a RESEARCH_SUFFICIENT disposition may name a downstream work package) enforced in the gate at this revision, or merely documented?",
+  "scope": {
+    "include": [
+      "scripts/badf_gate.py validate_research_record",
+      "skills/badf-research/references/acceptance.md"
+    ],
+    "exclude": [
+      "the dossier council (a different code path)"
+    ]
+  },
+  "baseline": {
+    "repository": "bstBizEra/badf",
+    "revision": "e7ea929",
+    "observed_at": "2026-08-29T00:00:00Z"
+  },
+  "known": [
+    "acceptance.md lists control 15",
+    "RSR-004/WP-0038 shipped the conclusion-integrity controls"
+  ],
+  "unknown": [
+    "whether a control-15 check exists in code at e7ea929, or only in the doc"
+  ],
+  "hypotheses": [
+    {
+      "id": "H-001",
+      "statement": "control 15 is enforced in validate_research_record at e7ea929",
+      "status": "RETAINED"
+    },
+    {
+      "id": "H-002",
+      "statement": "control 15 is documentation-only and unenforced",
+      "status": "ELIMINATED"
+    }
+  ],
+  "stop_conditions": [
+    "the control-15 check is found or proven absent at the pinned revision"
+  ],
+  "assumptions": [
+    "the gate file at e7ea929 is the enforced code path"
+  ],
+  "decision_context": {
+    "decision_question": "does the acceptance doc's control-15 status need correcting?"
+  },
+  "sources": [
+    {
+      "id": "S-001",
+      "uri": "git:bstBizEra/badf@e7ea929:scripts/badf_gate.py",
+      "source_type": "PRIMARY",
+      "retrieved_at": "2026-08-29T00:01:00Z",
+      "digest": null,
+      "freshness": "CURRENT"
+    }
+  ],
+  "claims": [
+    {
+      "id": "C-001",
+      "statement": "validate_research_record at e7ea929 raises when a disposition other than RESEARCH_SUFFICIENT names a downstream work_package_id",
+      "classification": "OBSERVED",
+      "supporting_sources": [
+        "S-001"
+      ],
+      "contradicting_sources": [],
+      "status": "VERIFIED",
+      "confidence": {
+        "level": "MODERATE",
+        "basis": {
+          "independent_primary_sources": 1,
+          "reproducible": true,
+          "contradictions": 0
+        }
+      }
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-001",
+      "statement": "control 15 is enforced in code, not pending; a later acceptance-doc note that called it 'remaining' was a mistracking",
+      "claim_refs": [
+        "C-001"
+      ]
+    }
+  ],
+  "alternatives": [],
+  "experiments": [],
+  "contradictions": [],
+  "non_coverage": [
+    {
+      "surface": "the dossier council code path",
+      "reason": "a different mechanism; out of scope"
+    }
+  ],
+  "recommendation": "correct the acceptance-doc control-15 status; no code change",
+  "challenge": {
+    "required": false,
+    "council": null
+  },
+  "state": "RECONCILED",
+  "disposition": {
+    "state": "RESEARCH_SUFFICIENT",
+    "reason": "the check is present at a pinned, primary, reproducible revision"
+  },
+  "downstream": {
+    "decision_id": null,
+    "work_package_id": null
+  },
+  "authority": {
+    "implementation_authority": false
+  },
+  "recorded_at": "2026-08-29T00:10:00Z",
+  "evidence_digest": "sha256:eb46f87a0a0508b99646d2d40a186f2835e039c97017a90e700aed284e6a7c92"
+}

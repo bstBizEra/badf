@@ -1,0 +1,135 @@
+{
+  "schema_version": "1.0.0",
+  "id": "BADF-RSR-0005",
+  "demand": "BADF-DEM-0042",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 101
+  },
+  "researcher": {
+    "principal": "badf-research-agent",
+    "principal_type": "agent"
+  },
+  "type": "R03",
+  "depth": "D2",
+  "question": "Why did WP-0019 turn main red at 30186c5 immediately after a green PR?",
+  "scope": {
+    "include": [
+      "the WP-0019 tests at 30186c5",
+      "the reconciliation design rule"
+    ],
+    "exclude": [
+      "unrelated suites"
+    ]
+  },
+  "baseline": {
+    "repository": "bstBizEra/badf",
+    "revision": "30186c5",
+    "observed_at": "2026-08-29T00:00:00Z"
+  },
+  "known": [
+    "the PR was green",
+    "main went red at 30186c5",
+    "WP-0019 shipped the reconciliation rule"
+  ],
+  "unknown": [
+    "the mechanism that made the merged tree differ from the PR tree"
+  ],
+  "hypotheses": [
+    {
+      "id": "H-001",
+      "statement": "the reconciliation fixture assumed a debt-free ledger, but the merge itself creates a LANDED_UNRECONCILED record the PR runner never saw",
+      "status": "RETAINED"
+    },
+    {
+      "id": "H-002",
+      "statement": "a flaky or environment-dependent test",
+      "status": "ELIMINATED"
+    }
+  ],
+  "stop_conditions": [
+    "the root cause is isolated to a single mechanism bound to the commit"
+  ],
+  "assumptions": [
+    "30186c5 is the first red commit on main"
+  ],
+  "decision_context": {
+    "decision_question": "what durable rule prevents the PR-green/main-red class?"
+  },
+  "sources": [
+    {
+      "id": "S-001",
+      "uri": "git:bstBizEra/badf@30186c5:tests/",
+      "source_type": "PRIMARY",
+      "retrieved_at": "2026-08-29T00:01:00Z",
+      "digest": null,
+      "freshness": "CURRENT"
+    },
+    {
+      "id": "S-002",
+      "uri": "git:bstBizEra/badf@30186c5:the-first-parent-merge",
+      "source_type": "PRIMARY",
+      "retrieved_at": "2026-08-29T00:02:00Z",
+      "digest": null,
+      "freshness": "CURRENT"
+    }
+  ],
+  "claims": [
+    {
+      "id": "C-001",
+      "statement": "the PR runner's origin/main is the pre-merge ledger; the merge adds the new LANDED_UNRECONCILED record, which the WP-0019 fixture did not model",
+      "classification": "OBSERVED",
+      "supporting_sources": [
+        "S-001",
+        "S-002"
+      ],
+      "contradicting_sources": [],
+      "status": "VERIFIED",
+      "confidence": {
+        "level": "VERY_HIGH",
+        "basis": {
+          "independent_primary_sources": 2,
+          "reproducible": true,
+          "contradictions": 0
+        }
+      }
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-001",
+      "statement": "root cause: BRANCH_GREEN != MERGE_SAFE -- the fixture must simulate the post-merge tree; this became the composed-tree gate (WP-0024)",
+      "claim_refs": [
+        "C-001"
+      ]
+    }
+  ],
+  "alternatives": [],
+  "experiments": [],
+  "contradictions": [],
+  "non_coverage": [
+    {
+      "surface": "suites unrelated to the ledger",
+      "reason": "not implicated"
+    }
+  ],
+  "recommendation": "simulate the post-merge tree before merging a ledger-reading PR",
+  "challenge": {
+    "required": false,
+    "council": null
+  },
+  "state": "RECONCILED",
+  "disposition": {
+    "state": "RESEARCH_SUFFICIENT",
+    "reason": "root cause bound to the commit, one hypothesis retained, others eliminated"
+  },
+  "downstream": {
+    "decision_id": null,
+    "work_package_id": null
+  },
+  "authority": {
+    "implementation_authority": false
+  },
+  "recorded_at": "2026-08-29T00:12:00Z",
+  "evidence_digest": "sha256:2544908d5d38bafe5f23c74dcc13dc9221b60e1d834a241c97bfde2603a7b687"
+}
