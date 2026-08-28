@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0038",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 93,
+    "url": "https://github.com/bstBizEra/badf/issues/93",
+    "exported_at": "2026-08-28T19:51:15Z",
+    "body_digest": "sha256:a292b6b7573b2ec098400bbb9e8e36c427b57dac55a23b8022362680bcda5ad6"
+  },
+  "title": "GOV-0035: badf-research has no technical-research subskill; R04 passes with zero alternatives and ungrounded options (P0 6/9 + earned control 23)",
+  "problem": "## Observed\n`badf-research` has 5 of 9 P0 subskills; `technical-research` \u2014 which finds the viable engineering approaches (an option set, not one early answer) \u2014 does not exist. Failing-first probes show two real, enforceable gaps: an `R04` (TECHNICAL_SOLUTION) record passes with **zero alternatives**, and an alternative can cite **non-existent evidence** (`evidence_refs` are unenforced).\n\n## Expected\nBuild `technical-research` as P0 subskill **6 of 9**: a concise `SKILL.md` that yields candidate approaches (mechanism, limitations, security, compatibility, cost, migration, reversibility), grounded in the record's evidence, and does not rank/choose (that is `comparative-evaluation`). Register `IMPLEMENTED`. **Control 23 (earned):** an `R04` record carries \u22651 `alternative`, and every alternative's `evidence_refs` resolves to a claim, finding or source in the record.\n\n## Evidence\n- probe: `R04 + zero alternatives` \u2192 PASS (gap); `R04 + alternative citing C-999` \u2192 PASS (gap)\n- `alternatives[]` schema has `evidence_refs` but the gate enforces nothing about them\n\n## Unknowns\nNone. Not in scope: comparative-evaluation/adversarial/reconciliation (later units), #77/#83/#84.\n\n## Proposed work package\n`BADF-WP-0051`. `technical-research/SKILL.md` + registry; control 23 (earned) + acceptance row; root router (6/9); tests + mutation; own G07 self-dossier. C2. Controls -> 22 of 23; `badf-research` stays `DESIGNED` (6 of 9 P0).\n\ndiscovered-by: operator research sequencing (2026-08-29) + BADF-WP-0050 \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T19:51:15Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "technical-research P0 6/9 + control 23 (R04 alternatives non-empty + grounded evidence_refs, earned). /loop research build. Worked as BADF-WP-0051."
+}

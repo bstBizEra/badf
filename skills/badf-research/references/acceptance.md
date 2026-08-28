@@ -28,10 +28,11 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows 
 | 20 | framing precedes evidence: a record in a pre-evidence state (`PROPOSED`/`FRAMED`/`BASELINED`) carries no `claims`, `sources`, or `findings` (the `problem-framing` invariant — sharpen the question, do not answer it) |
 | 21 | a claim's status is consistent with its evidence (the `fact-checking` invariant): a `FALSIFIED` claim carries a contradicting source (no evidence ≠ false), and a `DISPUTED` claim carries both supporting and contradicting sources (support and contradiction coexist). Whether a source's *content* entails the claim is not machine-checkable here — the source carries no content locator — and is tracked separately |
 | 22 | a finding is grounded (the `evidence-synthesis` invariant): every finding references at least one claim — a synthesis conclusion rests on adjudicated evidence, not free assertion |
+| 23 | a technical-solution run yields grounded options (the `technical-research` invariant): an `R04` record carries at least one `alternative`, and every alternative's `evidence_refs` resolves to a claim, finding or source the record holds |
 
 ## Admission
 
-- `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time). Present: `repository-research`, `problem-framing`, `fact-checking`, `evidence-synthesis`, `deep-research` (5 of 9).
-- `VALIDATED`: the 22 controls above pass as gate tests with mutation. Enforced today: 1–14, 16–22 (21 of 22); only control 15 remains (it rides the state machine, earned by `research-reconciliation`).
+- `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time). Present: `repository-research`, `problem-framing`, `fact-checking`, `evidence-synthesis`, `deep-research`, `technical-research` (6 of 9).
+- `VALIDATED`: the 23 controls above pass as gate tests with mutation. Enforced today: 1–14, 16–23 (22 of 23); only control 15 remains (it rides the state machine, earned by `research-reconciliation`).
 - `SHADOWED`: the family is run retrospectively on historical BADF findings (the authority-downgrade defect, schema drift, foreign-revision resolution, the composed-tree reds of 2026-08-28) without knowing the answer; `examples/research-record.json` is the first such shadow record.
 - `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. Until then the registry entry stays `DESIGNED`.

@@ -504,6 +504,42 @@ class SourceFreshnessTests(ResearchRecordTests):
         self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
 
 
+class TechnicalResearchTests(ResearchRecordTests):
+    """Control 23 (BADF-WP-0051, technical-research): a TECHNICAL_SOLUTION (R04) run
+    yields grounded options -- >=1 alternative, each with evidence_refs resolving to
+    a claim, finding or source. alternatives/type are not in the evidence_digest."""
+
+    def test_r04_with_zero_alternatives_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE); rec["type"] = "R04"; rec["alternatives"] = []
+        self.refused(rec, "carries no alternatives")
+
+    def test_an_ungrounded_alternative_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE); rec["type"] = "R04"
+        rec["alternatives"] = [{"id": "A-001", "mechanism": "an approach", "evidence_refs": ["C-999"]}]
+        self.refused(rec, "cites in-record evidence C-999 that is absent")
+
+    def test_a_free_form_evidence_ref_is_allowed(self):
+        # evidence_refs are free-form; only id-shaped refs must resolve.
+        rec = copy.deepcopy(EXAMPLE); rec["type"] = "R04"
+        rec["alternatives"] = [{"id": "A-001", "mechanism": "an approach", "evidence_refs": ["see the upstream design note"]}]
+        r = self.run_cli(rec)
+        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
+
+    def test_a_grounded_alternative_passes(self):
+        rec = copy.deepcopy(EXAMPLE); rec["type"] = "R04"
+        rec["alternatives"] = [{"id": "A-001", "mechanism": "an approach", "evidence_refs": [rec["claims"][0]["id"]]}]
+        r = self.run_cli(rec)
+        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
+
+    def test_technical_research_is_registered_implemented(self):
+        import hashlib
+        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
+        entry = next((e for e in reg["skills"] if e["name"] == "technical-research"), None)
+        self.assertIsNotNone(entry, "technical-research is not registered")
+        self.assertEqual(entry["status"], "IMPLEMENTED")
+        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
+
+
 class ProblemFramingRegistrationTests(unittest.TestCase):
 
     def test_problem_framing_is_registered_implemented_with_a_real_digest(self):
