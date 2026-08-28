@@ -1991,7 +1991,7 @@ def validate_instance(path: Path) -> list[str]:
         have, want = _flat(state), _flat(expected)
         diffs = sorted(k for k in set(have) | set(want) if have.get(k) != want.get(k))
         raise ValidationError("state.json disagrees with the derived state on " + ", ".join(diffs)
-                              + "; only init has run, so a state the receipt cannot corroborate is refused")
+                              + "; a state that the receipt, the charter and the chain of bound dossiers cannot corroborate is refused")
 
     notes: list[str] = list(charter_notes)
     agents = inst / "AGENTS.md"
