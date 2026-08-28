@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0028",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 69,
+    "url": "https://github.com/bstBizEra/badf/issues/69",
+    "exported_at": "2026-08-28T14:50:20Z",
+    "body_digest": "sha256:2ce81273aea330308cc74f113fde53beb156bbc2423e7bf419f1f8c7c91d9010"
+  },
+  "title": "GOV-0024: normalize badf-research contract layout and make bounded research scope machine-readable",
+  "problem": "## Observed\nOn `main` at `8896a37`, the `badf-research` contract is frozen and partially enforced (16/18 controls), but its canonical concepts are still bundled under the v0.1 file layout: depth is embedded in `research-types.md`, lifecycle/state semantics are in `lifecycle.md`, routing/authority are in `routing-and-authority.md`, and admission controls are in `acceptance.md`. The root skill already requires stop conditions, but `schemas/research-record.schema.json` cannot record `assumptions`, `decision_context`, or `stop_conditions`, so a material research run cannot prove why it continued or why it stopped.\n\n## Expected\nContinue the contract as one canonical `badf-research` family with a normalized reference surface:\n\n```text\nskills/badf-research/\n├── SKILL.md\n└── references/\n    ├── research-contract.md\n    ├── research-types.md\n    ├── research-depth.md\n    ├── research-state-machine.md\n    ├── evidence-contract.md\n    ├── routing-authority.md\n    └── acceptance-controls.md\n\nschemas/research-record.schema.json\ndocs/14-research-capability.md\nbadf/skill-registry.json\n```\n\nThe schema must make bounded framing first-class with `assumptions`, `decision_context`, and non-empty `stop_conditions`. The root `SKILL.md`, schema, examples/template and drift tests must agree. Existing authority topology remains unchanged: `RESEARCH_SUFFICIENT != IMPLEMENTATION_AUTHORIZED`; no second validator, router or council; `badf-research` remains `DESIGNED`.\n\n## Evidence\n- `skills/badf-research/SKILL.md` already instructs the researcher to resolve stop conditions.\n- `schemas/research-record.schema.json` currently has `question`, `scope`, `known`, `unknown`, `hypotheses` but no machine-readable stop conditions/assumptions/decision context.\n- `tests/test_badf_research_contract.py` hard-codes the older reference paths, so the current layout is itself contract-bound and must be migrated deliberately.\n\n## Unknowns\nControl 6 (live source-digest staleness) remains a separate subsequent work package because it requires source acquisition/fetch semantics. The remaining eight P0 subskills remain incremental follow-ons.\n\n## Proposed work package\n`WP-2026-0041` / research contract normalization and bounded-scope hardening. C2. Rename/split the normative reference surface, add the framing fields to the schema and examples/template, add one normative integration document, update contract tests, re-pin the root skill digest and integrity lockfile. No activation and no new execution tool.\n\nsource: operator instruction to continue development of the canonical `badf-research` tree (2026-08-28) · status: PROPOSED\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T14:50:20Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. Operator authorized continuation of the canonical badf-research development; worked as WP-2026-0041. Contract/layout hardening only; no activation or new execution authority."
+}
