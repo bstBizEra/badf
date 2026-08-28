@@ -19,6 +19,15 @@
       "the content of G01/G02 PRs under the shared account"
     ]
   },
+  "assumptions": [
+    "GitHub Actions runs and repository contents at the baseline are authoritative for this defect investigation"
+  ],
+  "decision_context": "Determine whether the evidence is sufficient for a downstream decision on correcting the composed-tree blind spot.",
+  "stop_conditions": [
+    "the failure is reproduced from primary evidence and one mechanism explains both red main and green PR observations",
+    "material contradictory evidence prevents a single root-cause conclusion",
+    "required primary evidence becomes unavailable within the research boundary"
+  ],
   "baseline": {
     "repository": "bstBizEra/badf",
     "revision": "0b88c74",
