@@ -52,4 +52,4 @@ Confidence is **derived** from `basis` — `independent_primary_sources` (`ips`)
 
 ## Findings, alternatives, experiments
 
-`findings[]` reference claims; `alternatives[]` reference evidence; `experiments[]` reference a hypothesis and state method and result. `evidence_digest` is the sha256 over the sources and claims and changes when material evidence changes.
+`findings[]` reference claims; `alternatives[]` reference evidence; `experiments[]` reference a hypothesis and state method and result. `evidence_digest` is the sha256 over the record's material evidence -- its sources, claims, contradictions and experiments -- in canonical JSON; it is computed by the gate, not asserted, and changes when the evidence changes but not when its reading (findings, recommendation, disposition) does (`badf_gate.py research` refuses a mismatch).

@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0026",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 65,
+    "url": "https://github.com/bstBizEra/badf/issues/65",
+    "exported_at": "2026-08-28T13:46:03Z",
+    "body_digest": "sha256:1b85326ad3649df716f63bf47bae23f17aecf33122f780f37064211b8bbe7c06"
+  },
+  "title": "GOV-0022: a research record's evidence_digest is not computed or checked (RSR-005 control 17)",
+  "problem": "## Observed\n`schemas/research-record.schema.json` carries an `evidence_digest` field, but nothing computes or checks it \u2014 both shipped examples had it `null`. A claim or source can be edited and the record still validate, so `evidence_digest` is decorative: the acceptance-control \"the record digest changes when material evidence changes\" (control 17) is not enforced.\n\n## Expected\n`badf_gate.py research` computes the digest from the record's material evidence (sources, claims, contradictions, experiments) in canonical JSON and refuses a record whose `evidence_digest` does not match \u2014 computed, not asserted, like the two-plane verdict. Editing interpretation (findings, recommendation, disposition) does not change it.\n\n## Evidence\n`grep -n \"evidence_digest\" scripts/badf_gate.py` \u2192 absent on `main` at `e7ea929`; `python3 -c \"import json;print(json.load(open('examples/research-record.json'))['evidence_digest'])\"` \u2192 `None`.\n\n## Unknowns\nNone. Controls 3 (baseline git-resolution, `repository-research` subskill territory) and 6 (source-digest staleness, needs a source fetch) need machinery beyond a record check and are separate later work; `badf-research` stays `DESIGNED` until all 18 pass.\n\n## Proposed work package\n`BADF-WP-0039` (RSR-005). `compute_research_evidence_digest` + control 17; both examples digest-bound; tests + mutation. C2. Brings 15 of 18 to enforced.\n\ndiscovered-by: BADF-WP-0031 (frozen-contract roadmap) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T13:46:03Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. Roadmap item RSR-005 (control 17 only) under the frozen research contract (#50); authority: the operator's direction to finish the record-pure controls (2026-08-28). Worked as BADF-WP-0039."
+}
