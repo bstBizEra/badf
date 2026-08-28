@@ -133,6 +133,11 @@
     },
     "note": {
       "type": "string"
+    },
+    "learning": {
+      "type": "string",
+      "pattern": "^(NONE_DECLARED|docs/learnings/[a-z0-9-]+\\.md)$",
+      "description": "Institutional learning from a concluded demand (BADF-WP-0035): a docs/learnings/<slug>.md path or the literal NONE_DECLARED. Required by the gate when status is RESOLVED or REJECTED -- silence is not 'nothing learned'."
     }
   }
 }

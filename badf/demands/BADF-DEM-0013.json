@@ -18,5 +18,6 @@
   "recorded_at": "2026-08-27T19:11:02Z",
   "provenance": "EXPORTED_FROM_SOURCE",
   "status": "REJECTED",
-  "note": "Body exported verbatim and digest-bound. DISCOVERED by BADF-WP-0018; authority: the operator's pick of #24 + #25 (2026-08-28). Worked as BADF-WP-0026. REJECTED 2026-08-27T19:13:13Z: premise false -- schemas/*.json was already locked (e0ddf29); the Issue's evidence line was not the output of a command run in that step."
+  "note": "Body exported verbatim and digest-bound. DISCOVERED by BADF-WP-0018; authority: the operator's pick of #24 + #25 (2026-08-28). Worked as BADF-WP-0026. REJECTED 2026-08-27T19:13:13Z: premise false -- schemas/*.json was already locked (e0ddf29); the Issue's evidence line was not the output of a command run in that step.",
+  "learning": "docs/learnings/evidence-must-be-measured.md"
 }

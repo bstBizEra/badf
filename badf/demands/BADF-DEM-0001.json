@@ -17,5 +17,6 @@
   "recorded_at": "2026-08-28T00:00:00Z",
   "provenance": "RECONSTRUCTED",
   "status": "RESOLVED",
-  "note": "RECONSTRUCTED under BADF-WP-0018. The demand was an operator decision in session, before this repository or its doctrine existed. Recorded here so WP-2026-0001 resolves; no Issue was created after the fact to pretend otherwise."
+  "note": "RECONSTRUCTED under BADF-WP-0018. The demand was an operator decision in session, before this repository or its doctrine existed. Recorded here so WP-2026-0001 resolves; no Issue was created after the fact to pretend otherwise.",
+  "learning": "NONE_DECLARED"
 }

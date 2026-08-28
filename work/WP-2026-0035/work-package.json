@@ -1,0 +1,54 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0035",
+  "title": "Resolved Issues become institutional learning: a terminal demand carries a learning or NONE_DECLARED, enforced by repo",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0022",
+  "objective": "Enforce the doctrine's last clause: a demand in a terminal status (RESOLVED/REJECTED) must carry a `learning` (docs/learnings/<slug>.md or NONE_DECLARED); repo refuses silence.",
+  "business_value": "The doctrine said 'every resolved Issue becomes potential institutional learning' and nothing read a resolved demand; learnings lived only in session memory outside the repo.",
+  "in_scope": [
+    "schemas/demand.schema.json: learning field",
+    "verify_demand_learnings in validate_repo",
+    "docs/learnings/README.md + entries for the terminal demands",
+    "backfill DEM-0001/0002/0004/0013",
+    "doctrine note",
+    "tests failing-first; mutation; own self-dossier"
+  ],
+  "out_of_scope": [
+    "auto-resolving AUTHORIZED demands when their Issues close (the reconciliation-shaped gap; a later WP)",
+    "a network check of Issue state"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "a RESOLVED or REJECTED demand without learning is refused by repo naming it",
+    "NONE_DECLARED accepted; a nonexistent learning path refused; a malformed learning refused",
+    "AUTHORIZED demands unaffected",
+    "every shipped terminal demand carries a valid learning",
+    "mutation kills; compose green both shapes"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_issue_learning.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "f59c5c2"
+  },
+  "note": "Lands IN_PROGRESS by design. Carries its own G07 self-dossier. Closes the last of the original doctrine's discovered gaps."
+}

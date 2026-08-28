@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0022",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 29,
+    "url": "https://github.com/bstBizEra/badf/issues/29",
+    "exported_at": "2026-08-28T08:18:11Z",
+    "body_digest": "sha256:a9bcc817746c7317a7e2adec85b2755273e8ce68a34acb0f876a2332017acba8"
+  },
+  "title": "GOV-0009: resolved Issues become no institutional learning",
+  "problem": "## Observed\n> Every resolved Issue becomes potential institutional learning.\nNothing reads a resolved demand. Learnings from this repository's own WPs (the shell-eaten backtick, the wrong-tree verification, the empty-glob clone errors of WP-0018) live in session memory outside the repo; `docs/errata/` holds one case. A `RESOLVED` demand record has no field where a learning disposition is stated.\n\n## Expected\nA deterministic, offline form: a `RESOLVED` demand carries a learning disposition \u2014 a `docs/learnings/` entry or an explicit `NONE_DECLARED` \u2014 and the drift walker treats a `RESOLVED` demand with neither as drift. Explicit \"nothing learned\" is a claim; silence is not.\n\n## Evidence\n`grep -rn learning docs/ badf/demands/` \u2192 the doctrine sentence only, on `c510516`.\n\n## Unknowns\nWhether a \"research agent\" belongs here \u2014 it does not: it is capability, not a defect, and the skills-catalogue verdict placed such things in a research catalogue, not an implementation roadmap.\n\n## Proposed work package\nPatch tier, promised as a \"separate Issue\" in #19's scope boundary: schema field `learning` on demand records; `docs/learnings/` convention; drift test.\n\ndiscovered-by: BADF-WP-0016 (deferred) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T08:18:11Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. DISCOVERED by BADF-WP-0016 (deferred, P1); authority: the operator's 'proceed on your call' on #29 (2026-08-28). Worked as BADF-WP-0035."
+}

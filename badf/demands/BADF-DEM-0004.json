@@ -18,5 +18,6 @@
   "recorded_at": "2026-08-28T00:00:00Z",
   "provenance": "EXPORTED_FROM_SOURCE",
   "status": "RESOLVED",
-  "note": "Body exported verbatim from the GitHub Issue and digest-bound. The Issue is the source; this record is what the gate verifies offline. Closed by PR #20 (squash 12f5056)."
+  "note": "Body exported verbatim from the GitHub Issue and digest-bound. The Issue is the source; this record is what the gate verifies offline. Closed by PR #20 (squash 12f5056).",
+  "learning": "docs/learnings/main-is-pr-only-by-rule-not-by-accident.md"
 }
