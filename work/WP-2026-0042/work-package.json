@@ -48,11 +48,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "9c934ef"
+    "base_revision": "9c934ef",
+    "landed_as": "42520a66f164633dd1ff78cf8f5faa32b41fb9e1"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Reuses the G01/G02 substrate -- no new validator module. Continues the one-gate-at-a-time march (G01 WP-0030, G02 WP-0041, G03 here)."
 }

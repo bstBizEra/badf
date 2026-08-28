@@ -50,6 +50,16 @@
       ],
       "status": "IMPLEMENTED",
       "digest": "sha256:7f10d20688feeae30effcf5689c8552dd153202b0137297003446c2d13bcb7a8"
+    },
+    {
+      "name": "badf-architecture",
+      "source": "skills/badf-architecture/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [],
+      "status": "DESIGNED",
+      "digest": "sha256:84104fece7a76380ed1ba3e015598210475e649cbf670a4c752eae8a474d1a10"
     }
   ]
 }
