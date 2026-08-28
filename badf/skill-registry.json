@@ -37,6 +37,19 @@
       "allowed_tools": [],
       "status": "DESIGNED",
       "digest": "sha256:71b58478ca0d8f55e051c994403a8045ff04db794c7181b20489ae3c8ad12bde"
+    },
+    {
+      "name": "repository-research",
+      "source": "skills/badf-research/subskills/repository-research/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem",
+        "local-shell"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:7f10d20688feeae30effcf5689c8552dd153202b0137297003446c2d13bcb7a8"
     }
   ]
 }

@@ -1,0 +1,57 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0040",
+  "title": "RSR-006: repository-research subskill + control 3 (a repo-type record's baseline must resolve)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0027",
+  "objective": "Land the first P0 research subskill: skills/badf-research/subskills/repository-research/SKILL.md + registry entry, and enforce control 3 -- for a repo-type (R02/R03) record, baseline.repository is registered and baseline.revision resolves there (UNRESOLVABLE_HERE for an absent mirror). A repository-research example validated in CI.",
+  "business_value": "repository-research is the most BADF-native research; enforcing that its baseline resolves stops a repo investigation from being anchored to a commit that does not exist.",
+  "in_scope": [
+    "skills/badf-research/subskills/repository-research/SKILL.md (concise, declarative)",
+    "skill-registry entry for repository-research",
+    "control 3 in validate_research_record (mirrors verify_foreign_revision resolution + UNRESOLVABLE_HERE)",
+    "examples/research-record-repo.json (R02); CI validates it",
+    "tests failing-first; mutation; own self-dossier"
+  ],
+  "out_of_scope": [
+    "control 6 (source-digest staleness -- needs a source fetch)",
+    "the other eight P0 subskills -- one WP each",
+    "a deterministic record producer (`research repo <path>`) -- a bigger later WP",
+    "registry activation (badf-research family stays DESIGNED)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the repo example and both prior examples pass `research`",
+    "an R02/R03 record whose baseline.revision does not resolve is refused naming it",
+    "an R02 record baselining to an unregistered repository is refused",
+    "an absent LOCAL_MIRROR baseline reports UNRESOLVABLE_HERE, not a refusal",
+    "the repository-research SKILL.md exists, is concise, and its registry digest == sha256(source)",
+    "mutation kills; compose green both shapes"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research.py",
+    "tests/test_badf_registry_digest.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "39dc6d9"
+  },
+  "note": "Lands IN_PROGRESS by design. Own G07 self-dossier. First P0 subskill; 16 of 18 controls; badf-research stays DESIGNED."
+}

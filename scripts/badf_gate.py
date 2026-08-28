@@ -2494,6 +2494,24 @@ def validate_research_record(path: Path) -> str:
     # schema's enum [false]; a separate check here would be dead code (a mutant
     # proved the schema catches it first).
     check_schema("research-record", rec)
+    # 3: repository research (R02/R03) baselines to a commit that RESOLVES in its
+    # repository -- an investigation cannot be anchored to a commit that does not
+    # exist. Mirrors verify_foreign_revision's resolution and UNRESOLVABLE_HERE.
+    if rec["type"] in {"R02", "R03"}:
+        repo_name = rec["baseline"]["repository"]
+        revision = rec["baseline"]["revision"]
+        registry = load_json(ROOT / REPOSITORIES)
+        entry = (registry.get("repositories") or {}).get(repo_name)
+        if not isinstance(entry, dict) or "local_path" not in entry:
+            raise ValidationError(f"repository research baselines to {repo_name}, which is not registered in {REPOSITORIES} (control 3)")
+        repo_root = (ROOT / entry["local_path"]).resolve() if not Path(entry["local_path"]).is_absolute() else Path(entry["local_path"])
+        top = _foreign_git(repo_root, "rev-parse", "--show-toplevel")
+        if top.returncode != 0:
+            if entry.get("resolution") == "LOCAL_MIRROR" and not repo_root.exists():
+                raise ValidationError(f"UNRESOLVABLE_HERE: {repo_name} is a LOCAL_MIRROR at {repo_root}, absent on this host; validate this record where the mirror exists")
+            raise ValidationError(f"registered path {repo_root} for {repo_name} is not a git repository")
+        if _foreign_git(repo_root, "cat-file", "-e", f"{revision}^{{commit}}").returncode != 0:
+            raise ValidationError(f"baseline revision {revision[:12]} does not resolve in {repo_name}; repository research must baseline to a real commit (control 3)")
     source_ids = [src["id"] for src in rec["sources"]]
     if len(source_ids) != len(set(source_ids)):
         raise ValidationError("research record has duplicate source ids")

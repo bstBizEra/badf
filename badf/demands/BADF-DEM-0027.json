@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0027",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 67,
+    "url": "https://github.com/bstBizEra/badf/issues/67",
+    "exported_at": "2026-08-28T14:23:25Z",
+    "body_digest": "sha256:88bcd34aa316b58c336d363ed4048c79fa314bb5f632ebff16490a985a44be53"
+  },
+  "title": "GOV-0023: no repository-research subskill; a repo-type research record's baseline is not required to resolve (RSR-006 / control 3)",
+  "problem": "## Observed\nThe frozen research contract (#50) names nine P0 subskills; none exist. `repository-research` \u2014 BADF-native investigation of a repository's commits, PRs, issues, code and history, binding findings to a commit SHA \u2014 has no `SKILL.md`. And control 3 (\"baseline is bound to a repository revision when repository research applies\") is not enforced: a record of type `R02` (REPOSITORY_INVESTIGATION) or `R03` (ROOT_CAUSE) can baseline to a commit that does not exist in the repo, and `badf_gate.py research` accepts it.\n\n## Expected\nA concise `skills/badf-research/subskills/repository-research/SKILL.md` (a declarative workflow, like `badf-delivery`), a registry entry for it, and control 3 enforced: for a repo-type record (R02/R03), `baseline.repository` must be registered and `baseline.revision` must resolve there (an absent LOCAL_MIRROR reports `UNRESOLVABLE_HERE`, like `verify_foreign_revision`). A shipped `examples/research-record-repo.json` (a real R02 investigation) validated in CI.\n\n## Evidence\n`ls skills/badf-research/subskills` \u2192 absent on `main` at `39dc6d9`; `grep -n '\"R02\"\\|\"R03\"' scripts/badf_gate.py` \u2192 `validate_research_record` never resolves a baseline.\n\n## Unknowns\nNone. Control 6 (source-digest staleness, needs a source fetch) remains a separate later WP; the other eight P0 subskills follow one at a time. `badf-research` stays `DESIGNED` until all controls and subskills land.\n\n## Proposed work package\n`BADF-WP-0040` (RSR-006). The `repository-research` SKILL.md + registry entry; control 3 in `validate_research_record`; `examples/research-record-repo.json`; tests + mutation. C2. Brings 16 of 18 controls to enforced.\n\ndiscovered-by: BADF-WP-0031 (frozen-contract roadmap) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T14:23:25Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Body exported verbatim and digest-bound. Roadmap item RSR-006 (first P0 subskill + control 3) under the frozen research contract (#50); authority: the operator's pick 'SKILL.md + control 3 + example' (2026-08-28). Worked as BADF-WP-0040."
+}
