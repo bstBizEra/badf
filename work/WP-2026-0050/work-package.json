@@ -2,7 +2,7 @@
   "$schema": "../../schemas/work-package.schema.json",
   "schema_version": "1.0.0",
   "id": "WP-2026-0050",
-  "title": "control 6 — source-digest freshness (freshness receipt field + fail-closed on STALE/UNKNOWN)",
+  "title": "control 6 \u2014 source-digest freshness (freshness receipt field + fail-closed on STALE/UNKNOWN)",
   "owner": "human_sponsor",
   "repository": "bstBizEra/badf",
   "demand": "BADF-DEM-0037",
@@ -45,11 +45,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "4f80a40"
+    "base_revision": "4f80a40",
+    "landed_as": "873acaa170f7b30a999e0c31108f0722ac7a0e69"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Control-only WP (no new subskill) implementing the long-pending acceptance control 6, enabled by deep-research (WP-0049). Reconciles WP-2026-0049. Research controls to 21 of 22 (only control 15 remains, owned by research-reconciliation)."
 }

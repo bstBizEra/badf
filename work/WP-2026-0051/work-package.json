@@ -1,0 +1,55 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0051",
+  "title": "technical-research: P0 research subskill 6/9 + control 23 (R04 grounded options, earned)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0038",
+  "objective": "Build the technical-research subskill: a concise SKILL.md that yields candidate engineering approaches (an option set, not one early answer) grounded in the record's evidence, and does not rank/choose. Add control 23 (earned by failing-first): an R04 (TECHNICAL_SOLUTION) record carries at least one alternative, and every alternative's evidence_refs resolves to a claim, finding or source in the record. Register IMPLEMENTED; badf-research stays DESIGNED (6 of 9 P0).",
+  "business_value": "technical-research widens the option space honestly before a choice is made; grounding each candidate in gathered evidence stops an approach from being asserted, and requiring a technical-solution run to yield options stops it from concluding with nothing.",
+  "in_scope": [
+    "skills/badf-research/subskills/technical-research/SKILL.md (option set; grounded alternatives; no ranking)",
+    "skill-registry entry technical-research IMPLEMENTED with a real digest",
+    "control 23 in validate_research_record (earned): R04 alternatives non-empty + evidence_refs resolve",
+    "acceptance.md control 23 row; root SKILL.md router (6 of 9)",
+    "tests failing-first + mutation; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "ranking/choosing among alternatives (comparative-evaluation)",
+    "adversarial-research, research-reconciliation (later units); control 15",
+    "#77/#83/#84; any move of badf-research off DESIGNED"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "technical-research/SKILL.md exists, is concise, registry digest == sha256(source), status IMPLEMENTED",
+    "an R04 record with zero alternatives is refused; an alternative citing non-existent evidence is refused",
+    "an R04 record with a grounded alternative passes; the three shipped examples pass unchanged",
+    "root SKILL.md routes technical-research (6 of 9); acceptance.md documents control 23 (22 of 23)",
+    "mutation kills; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research.py",
+    "tests/test_badf_registry_digest.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "873acaa"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Sixth P0 research subskill. Control 23 earned by a failing-first probe (R04-zero-alternatives + ungrounded-option both passed the gate). Reconciles WP-2026-0050. badf-research stays DESIGNED (6 of 9 P0); research controls to 22 of 23."
+}

@@ -2913,6 +2913,23 @@ def validate_research_record(path: Path) -> str:
         if missing:
             raise ValidationError(f"finding {f['id']} references claim(s) the record does not carry: {', '.join(missing)}")
 
+    # 23: a TECHNICAL_SOLUTION run yields candidate approaches, each grounded in
+    # the record's evidence (technical-research). An R04 record carries at least
+    # one alternative, and every alternative's evidence_refs resolves to a claim,
+    # finding or source the record holds -- an option is proposed on the strength
+    # of gathered evidence, not asserted.
+    if rec["type"] == "R04" and not rec["alternatives"]:
+        raise ValidationError("technical-solution research (R04) carries no alternatives; it must yield at least one candidate approach (control 23)")
+    # An evidence_ref that is shaped like a record id (C-/F-/S-nnn) must resolve to
+    # a claim, finding or source the record holds; free-form external references are
+    # left as-is. This catches a dangling in-record citation without forbidding an
+    # external pointer or a rationale string.
+    grounded = claim_ids | {f["id"] for f in rec["findings"]} | set(sources)
+    for alt in rec["alternatives"]:
+        for ref in alt.get("evidence_refs") or []:
+            if re.fullmatch(r"[CFS]-[0-9]{3,}", ref) and ref not in grounded:
+                raise ValidationError(f"alternative {alt['id']} cites in-record evidence {ref} that is absent; an id-shaped evidence_ref must resolve to a claim, finding or source it holds (control 23)")
+
     # ---- challenge / independence controls (RSR-003, BADF-WP-0037) ----
     # 10: source count is not source independence -- the basis cannot claim more
     # independent primary sources than the claim actually cites.
