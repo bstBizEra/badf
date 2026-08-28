@@ -36,7 +36,7 @@
       "risk_class": "C1",
       "allowed_tools": [],
       "status": "DESIGNED",
-      "digest": "sha256:0a42206045ae3c924180da9f4a4c88cfb047786ac55c912024a50cbc8153c48f"
+      "digest": "sha256:0eece10f963900c31c8440b5ddc57a0c0574f93b215e4f8471e792e85f24f5a1"
     },
     {
       "name": "repository-research",
@@ -125,6 +125,19 @@
       ],
       "status": "IMPLEMENTED",
       "digest": "sha256:7b5e4db5c9df5e40310c6ba49a1fe6b3628615faeb001e7d0ea34029b75e2a61"
+    },
+    {
+      "name": "comparative-evaluation",
+      "source": "skills/badf-research/subskills/comparative-evaluation/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem",
+        "local-shell"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:3a32d09b0efbe6589b8af57f7140a7e976ca0c42d58a98ae44ba095cbf1c0fa3"
     }
   ]
 }

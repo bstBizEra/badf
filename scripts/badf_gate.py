@@ -2929,6 +2929,10 @@ def validate_research_record(path: Path) -> str:
         for ref in alt.get("evidence_refs") or []:
             if re.fullmatch(r"[CFS]-[0-9]{3,}", ref) and ref not in grounded:
                 raise ValidationError(f"alternative {alt['id']} cites in-record evidence {ref} that is absent; an id-shaped evidence_ref must resolve to a claim, finding or source it holds (control 23)")
+    # 24: a comparison needs at least two options to weigh (comparative-evaluation).
+    # A COMPARATIVE (R07) run of one alternative is not a comparison.
+    if rec["type"] == "R07" and len(rec["alternatives"]) < 2:
+        raise ValidationError("comparative research (R07) carries fewer than two alternatives; a comparison needs at least two options to weigh (control 24)")
 
     # ---- challenge / independence controls (RSR-003, BADF-WP-0037) ----
     # 10: source count is not source independence -- the basis cannot claim more

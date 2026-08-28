@@ -1,0 +1,23 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index fb1d02b..16fbb0c 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -409,6 +409,18 @@ alternative's `evidence_refs` must resolve to a claim, finding or source the rec
+ is proposed on the strength of gathered evidence, not asserted. Research controls: **22 of 23**.
+ `badf-research` stays `DESIGNED` (6 of 9 P0).
+ 
++## comparative-evaluation — a comparison weighs two (`BADF-WP-0052`, Issue #95)
++
++The seventh P0 research subskill: `skills/badf-research/subskills/comparative-evaluation/SKILL.md`
++weighs the `alternatives` `technical-research` produced against explicit comparable dimensions and
++records the trade-off, **surfacing non-dominance rather than manufacturing a winner** (a null
++`recommendation` is valid) — a recommendation is epistemic weight, never authorization. **Control 24,
++earned by failing-first**: a probe showed a `COMPARATIVE` (R07) record passed with zero or one
++alternative, so an R07 run must now carry ≥2 alternatives — a comparison of one option is not a
++comparison. What the gate does *not* enforce is whether the evidence justifies a winner (it cannot),
++so honest non-dominance stays a null recommendation. Research controls: **23 of 24** — only control 15
++remains, for `research-reconciliation`, the last P0 subskill. `badf-research` stays `DESIGNED` (7 of 9).
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

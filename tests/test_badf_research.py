@@ -350,7 +350,7 @@ class RepositoryResearchTests(unittest.TestCase):
 
     def test_control_3_does_not_apply_to_non_repository_research(self):
         rec = copy.deepcopy(REPO)
-        rec["type"] = "R07"; rec["baseline"]["revision"] = "0" * 40   # bogus, but R07 is not repo-type
+        rec["type"] = "R10"; rec["baseline"]["revision"] = "0" * 40   # bogus, but R10 is not repo-type (and needs no alternatives)
         r = self.run_cli(self.rebind(rec))
         self.assertEqual(r.returncode, 0, r.stderr)
 
@@ -536,6 +536,35 @@ class TechnicalResearchTests(ResearchRecordTests):
         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
         entry = next((e for e in reg["skills"] if e["name"] == "technical-research"), None)
         self.assertIsNotNone(entry, "technical-research is not registered")
+        self.assertEqual(entry["status"], "IMPLEMENTED")
+        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
+
+
+class ComparativeEvaluationTests(ResearchRecordTests):
+    """Control 24 (BADF-WP-0052, comparative-evaluation): a COMPARATIVE (R07) run
+    weighs at least two alternatives. type/alternatives are not in the evidence_digest."""
+
+    def test_r07_with_one_alternative_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE); rec["type"] = "R07"
+        rec["alternatives"] = [{"id": "A-001", "mechanism": "only one option", "evidence_refs": []}]
+        self.refused(rec, "fewer than two alternatives")
+
+    def test_r07_with_zero_alternatives_is_refused(self):
+        rec = copy.deepcopy(EXAMPLE); rec["type"] = "R07"; rec["alternatives"] = []
+        self.refused(rec, "fewer than two alternatives")
+
+    def test_r07_with_two_alternatives_passes(self):
+        rec = copy.deepcopy(EXAMPLE); rec["type"] = "R07"
+        rec["alternatives"] = [{"id": "A-001", "mechanism": "option one", "evidence_refs": []},
+                               {"id": "A-002", "mechanism": "option two", "evidence_refs": []}]
+        r = self.run_cli(rec)
+        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
+
+    def test_comparative_evaluation_is_registered_implemented(self):
+        import hashlib
+        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
+        entry = next((e for e in reg["skills"] if e["name"] == "comparative-evaluation"), None)
+        self.assertIsNotNone(entry, "comparative-evaluation is not registered")
         self.assertEqual(entry["status"], "IMPLEMENTED")
         self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
 

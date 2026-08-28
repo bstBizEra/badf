@@ -1,0 +1,55 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0052",
+  "title": "comparative-evaluation: P0 research subskill 7/9 + control 24 (R07 needs >=2 alternatives, earned)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0039",
+  "objective": "Build the comparative-evaluation subskill: a concise SKILL.md that scores alternatives on explicit comparable dimensions, identifies dominance/non-dominance, and surfaces non-dominance rather than manufacturing a winner (a null recommendation is valid); a recommendation is epistemic weight, never authorization. Add control 24 (earned): a COMPARATIVE (R07) record carries at least two alternatives. Register IMPLEMENTED; badf-research stays DESIGNED (7 of 9 P0).",
+  "business_value": "Comparison is decision analysis, distinct from gathering evidence; requiring at least two options stops a 'comparison' of one from masquerading as one, and allowing a null recommendation keeps the skill honest when the evidence does not justify a winner.",
+  "in_scope": [
+    "skills/badf-research/subskills/comparative-evaluation/SKILL.md (explicit criteria; dominance/non-dominance; recommendation != authorization)",
+    "skill-registry entry comparative-evaluation IMPLEMENTED with a real digest",
+    "control 24 in validate_research_record (earned): R07 carries >=2 alternatives",
+    "acceptance.md control 24 row; root SKILL.md router (7 of 9)",
+    "tests failing-first + mutation; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "judging whether evidence justifies a winner (not deterministic; a null recommendation is allowed)",
+    "adversarial-research, research-reconciliation (later units); control 15",
+    "#77/#83/#84; any move of badf-research off DESIGNED"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "comparative-evaluation/SKILL.md exists, is concise, registry digest == sha256(source), status IMPLEMENTED",
+    "an R07 record with fewer than two alternatives is refused; an R07 record with two passes",
+    "the three shipped examples pass unchanged (the challenged R07 example has 2 alternatives)",
+    "root SKILL.md routes comparative-evaluation (7 of 9); acceptance.md documents control 24 (23 of 24)",
+    "mutation kills; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research.py",
+    "tests/test_badf_registry_digest.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "003afbd"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Seventh P0 research subskill. Control 24 earned by a failing-first probe (R07 with <2 alternatives passed). Reconciles WP-2026-0051. badf-research stays DESIGNED (7 of 9 P0); research controls to 23 of 24."
+}
