@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0039",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 95,
+    "url": "https://github.com/bstBizEra/badf/issues/95",
+    "exported_at": "2026-08-28T20:18:45Z",
+    "body_digest": "sha256:7592d0b3a0457ea006c778aa54fa5c475e5d4c47d4da29c4db0188d456c1b9c8"
+  },
+  "title": "GOV-0036: badf-research has no comparative-evaluation subskill; R07 passes with <2 alternatives (P0 7/9 + earned control 24)",
+  "problem": "## Observed\n`badf-research` has 6 of 9 P0 subskills; `comparative-evaluation` \u2014 which weighs the alternatives against explicit criteria and produces an evidence-backed trade-off \u2014 does not exist. Failing-first probe: a `COMPARATIVE` (R07) record passes the gate with **zero or one** alternative \u2014 a comparison of fewer than two options is not a comparison.\n\n## Expected\nBuild `comparative-evaluation` as P0 subskill **7 of 9**: a concise `SKILL.md` that scores alternatives on explicit comparable dimensions, identifies dominance/non-dominance, and **surfaces non-dominance rather than manufacturing a winner** (a null `recommendation` is valid); a recommendation carries epistemic weight, never authorization. Register `IMPLEMENTED`. **Control 24 (earned):** a `COMPARATIVE` (R07) record carries \u22652 `alternatives`.\n\n## Evidence\n- probe: `R07 + 0 alternatives` \u2192 PASS (gap); `R07 + 1 alternative` \u2192 PASS (gap)\n- the shipped challenged example is R07 with 2 alternatives (control 24 does not break it)\n\n## Unknowns\nNone. Non-dominance-vs-manufactured-winner is not deterministically enforceable (the gate cannot judge whether evidence justifies a winner); a null recommendation is allowed. Not in scope: adversarial-research, research-reconciliation (later), #77/#83/#84.\n\n## Proposed work package\n`BADF-WP-0052`. `comparative-evaluation/SKILL.md` + registry; control 24 (earned) + acceptance row; root router (7/9); tests + mutation; own G07 self-dossier. C2. Controls -> 23 of 24; `badf-research` stays `DESIGNED` (7 of 9 P0).\n\ndiscovered-by: operator research sequencing (2026-08-29) + BADF-WP-0051 \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T20:18:45Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "comparative-evaluation P0 7/9 + control 24 (R07 needs >=2 alternatives, earned). /loop research build. Worked as BADF-WP-0052."
+}
