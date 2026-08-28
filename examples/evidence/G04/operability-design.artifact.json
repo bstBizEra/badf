@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "failure_modes": [
+    {
+      "id": "FM-001",
+      "element": "EL-001",
+      "failure": "a malformed or defective dossier",
+      "recovery": "the gate exits non-zero naming the failing evidence type",
+      "detection": "non-zero exit in CI"
+    },
+    {
+      "id": "FM-002",
+      "element": "EL-002",
+      "failure": "a red composed tree",
+      "recovery": "compose exits non-zero and the PR cannot merge green",
+      "detection": "composed-tree CI step conclusion"
+    }
+  ],
+  "observability": [
+    "gate stderr names the failing file/type",
+    "CI step conclusions are the fitness signal"
+  ],
+  "capacity": "single-process; bounded by the reference suite size",
+  "operational_ownership": "the delivery team via PR"
+}

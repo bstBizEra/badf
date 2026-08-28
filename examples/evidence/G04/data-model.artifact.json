@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "entities": [
+    {
+      "id": "ENT-001",
+      "name": "gate dossier",
+      "owner_boundary": "BND-001",
+      "lifecycle": "assembled -> validated -> bound",
+      "persistence": "git",
+      "classification": "internal"
+    },
+    {
+      "id": "ENT-002",
+      "name": "evidence record",
+      "owner_boundary": "BND-001",
+      "lifecycle": "produced -> digest-bound",
+      "persistence": "git"
+    }
+  ]
+}

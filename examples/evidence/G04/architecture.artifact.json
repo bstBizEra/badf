@@ -1,0 +1,152 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "identity": "BADF",
+  "baseline_revision": "BADF-BASELINE-1.0.0",
+  "upstream_requirements": [
+    "REQ-001",
+    "REQ-002"
+  ],
+  "boundaries": [
+    {
+      "id": "BND-001",
+      "name": "control plane",
+      "kind": "control-plane"
+    },
+    {
+      "id": "BND-002",
+      "name": "CI surface",
+      "kind": "ownership"
+    }
+  ],
+  "elements": [
+    {
+      "id": "EL-001",
+      "name": "gate CLI",
+      "kind": "container",
+      "boundary": "BND-001",
+      "technology": "python-stdlib"
+    },
+    {
+      "id": "EL-002",
+      "name": "composed-tree gate",
+      "kind": "container",
+      "boundary": "BND-001",
+      "technology": "python-stdlib"
+    },
+    {
+      "id": "EL-003",
+      "name": "GitHub Actions runner",
+      "kind": "system",
+      "boundary": "BND-002",
+      "technology": "github-actions"
+    }
+  ],
+  "interfaces": [
+    {
+      "id": "IF-001",
+      "name": "dossier CLI",
+      "provider": "EL-001"
+    },
+    {
+      "id": "IF-002",
+      "name": "compose CLI",
+      "provider": "EL-002"
+    }
+  ],
+  "relationships": [
+    {
+      "from": "EL-002",
+      "to": "EL-001",
+      "intent": "validate the composed tree through the gate",
+      "direction": "outbound",
+      "interaction_type": "invoke",
+      "protocol": "cli",
+      "data_or_command": "command",
+      "trust_boundary_crossing": false,
+      "criticality": "high"
+    },
+    {
+      "from": "EL-003",
+      "to": "EL-002",
+      "intent": "run the composed-tree gate in CI",
+      "direction": "outbound",
+      "interaction_type": "invoke",
+      "protocol": "cli",
+      "data_or_command": "command",
+      "trust_boundary_crossing": true,
+      "criticality": "high",
+      "via_interface": "IF-002"
+    }
+  ],
+  "trust_boundaries": [
+    {
+      "id": "TB-001",
+      "name": "CI/local boundary"
+    }
+  ],
+  "data_flows": [
+    {
+      "id": "DF-001",
+      "source": "EL-003",
+      "destination": "EL-002",
+      "trust_boundary_crossing": true,
+      "data_classification": "internal",
+      "purpose": "run the gate on the candidate tree",
+      "protocol": "cli"
+    },
+    {
+      "id": "DF-002",
+      "source": "EL-002",
+      "destination": "EL-001",
+      "trust_boundary_crossing": false,
+      "purpose": "render a dossier verdict",
+      "protocol": "cli"
+    }
+  ],
+  "nfr_allocations": [
+    {
+      "nfr": "NFR-001",
+      "disposition": "ALLOCATED",
+      "element": "EL-002",
+      "mechanism": "composed-tree suite bounded by the reference test pattern",
+      "fitness_obligation": "FIT-001"
+    },
+    {
+      "nfr": "NFR-002",
+      "disposition": "DEFERRED_WITH_REASON",
+      "reason": "reliability target measured post-launch from push-run conclusions"
+    }
+  ],
+  "fitness_obligations": [
+    {
+      "id": "FIT-001",
+      "type": "PERFORMANCE",
+      "property": "the composed-tree gate completes within a bounded time on the reference suite",
+      "scope": "scripts/badf_compose.py",
+      "evaluation": "wall-clock <= 120 seconds"
+    }
+  ],
+  "adr_refs": [
+    "ADR-0001"
+  ],
+  "c4_views": [
+    {
+      "level": "container",
+      "elements": [
+        "EL-001",
+        "EL-002",
+        "EL-003"
+      ]
+    }
+  ],
+  "assumptions": [
+    "GitHub remains the ledger"
+  ],
+  "risks": [
+    "shared account identity"
+  ],
+  "non_coverage": [
+    "runtime network policy not modelled at G04"
+  ]
+}

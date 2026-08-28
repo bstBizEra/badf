@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "badf/operability-design.schema.json",
+  "title": "G04 operability-design evidence artifact -- failure, recovery, observability, capacity",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "prd_id", "failure_modes", "observability"],
+  "properties": {
+    "schema_version": {"type": "string", "enum": ["1.0.0"]},
+    "prd_id": {"type": "string", "pattern": "^PRD-[A-Za-z0-9._-]+$"},
+    "failure_modes": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "element", "failure", "recovery"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^FM-[0-9]{3,}$"},
+          "element": {"type": "string", "pattern": "^EL-[0-9]{3,}$"},
+          "failure": {"type": "string", "minLength": 1},
+          "recovery": {"type": "string"},
+          "detection": {"type": "string"}
+        }
+      }
+    },
+    "observability": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "capacity": {"type": "string"},
+    "operational_ownership": {"type": "string"}
+  }
+}

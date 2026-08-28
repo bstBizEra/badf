@@ -1,0 +1,29 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 29dc2a9..083e318 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -295,6 +295,24 @@ inferred compliance (`NO BASELINE ≠ COMPLIANT`), drift is evidence not authori
+ belong in the canonical gate). G04 is *mapped* (its five evidence types) but left exactly as declared;
+ the G04 DESIGN semantics (WP-ARCH-B) and the ASSURE substrate (WP-ARCH-C) are separate, later WPs.
+ 
++## Gate 04 — architecture DESIGN semantics (`BADF-WP-0044`, Issue #76)
++
++WP-ARCH-B implements the DESIGN-side controls of the frozen `badf-architecture` contract inside the
++canonical gate (ARCH-I11 — no second validator), advancing the capability `DESIGNED → IMPLEMENTED`.
++G04's five types now open their artifacts, with `architecture` as the **spine** the other four are
++consistent with. The baseline enforces the frozen controls: a relationship with no **intent** or a
++boundary crossing not through a **declared interface** is refused (an `A → B` is not architecture);
++an element outside every declared boundary is refused; a trust-boundary data flow with no
++**classification** is refused; an NFR that is neither `ALLOCATED` (to an element + mechanism +
++fitness obligation) nor deferred-with-reason is refused; a fitness obligation with no measurable
++property or scope is refused; and a C4-view element absent from the baseline is refused (ARCH-I02 —
++views are projections). `adr` binds each decision to real baseline elements and to declared
++requirement/NFR refs (`ADR-*` never a `BADF-DEC-*`); `data-model` entities resolve to a declared
++ownership boundary; `api-contract` interfaces resolve to declared architecture interfaces and are
++versioned; `operability-design` must declare failure modes with recovery and observability seams.
++Ships `examples/gate-dossier.G04.json` and a G03→G04 pair-acceptance (the full G00→G04 chain). The
++ASSURE substrate (controls 13–18) is WP-ARCH-C; VALIDATED awaits it.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

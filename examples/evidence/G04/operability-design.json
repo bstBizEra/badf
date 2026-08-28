@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G04",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G04-OPERABILITY-DESIGN-v1",
+  "claim": "Example operability-design bound to PRD-BADF-0001",
+  "evidence_type": "operability-design",
+  "producer": {
+    "id": "example-architect",
+    "type": "human"
+  },
+  "operation": "design operability",
+  "artifact": "examples/evidence/G04/operability-design.artifact.json",
+  "digest": "sha256:27bada5d661a0a6e842e54ff533f42e097eb3c98b2ee2bffcc1f5bc609c3f1d0"
+}

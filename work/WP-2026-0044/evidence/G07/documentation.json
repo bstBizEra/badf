@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0044-G07-documentation",
+  "work_package_id": "WP-2026-0044",
+  "gate": "G07",
+  "claim": "the documentation this change carries",
+  "evidence_type": "documentation",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-08-28T16:42:25Z",
+  "completed_at": "2026-08-28T16:42:25Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0044/evidence/G07/documentation.diff",
+  "digest": "sha256:222accb85c38ccef27ba53b4f309dac448bb080cd8c48c8f67d4fae9d7ce68ee"
+}

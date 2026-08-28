@@ -1,0 +1,1386 @@
+diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
+index 6982afa..67e56d4 100644
+--- a/.github/workflows/badf-gates.yml
++++ b/.github/workflows/badf-gates.yml
+@@ -44,6 +44,7 @@ jobs:
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G01.json
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G02.json
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G03.json
++          python3 scripts/badf_gate.py dossier examples/gate-dossier.G04.json
+           python3 scripts/badf_gate.py research examples/research-record.json
+           python3 scripts/badf_gate.py research examples/research-record-challenged.json
+           python3 scripts/badf_gate.py research examples/research-record-repo.json
+diff --git a/badf/demands/BADF-DEM-0031.json b/badf/demands/BADF-DEM-0031.json
+new file mode 100644
+index 0000000..90e4d0e
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0031.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0031",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 76,
++    "url": "https://github.com/bstBizEra/badf/issues/76",
++    "exported_at": "2026-08-28T16:28:31Z",
++    "body_digest": "sha256:eebcd3c3088fb9ff536ae213af3f1ee2b6665f6f9b0e3f65a3174fbecd73c6e8"
++  },
++  "title": "GOV-0027: Gate 04 declared but unenforced \u2014 implement the G04 DESIGN evidence semantics (WP-ARCH-B) on the frozen badf-architecture contract",
++  "problem": "## Observed\nG04 (Architecture, Data and API; owner `architecture_authority`) is the next declared-but-unenforced gate, and the `badf-architecture` contract was just frozen at DESIGNED (#74). `lifecycle.json` lists G04's five `required_evidence` types \u2014 **architecture, adr, data-model, api-contract, operability-design** \u2014 yet `validate_evidence` has **no per-type rule** for any of them, no G04 example dossier exists, and none of the five schemas exist. A G04 dossier today would pass on names alone.\n\n## Expected\nImplement the deterministic **G04 DESIGN evidence semantics** inside the canonical gate (WP-ARCH-B), advancing `badf-architecture` from DESIGNED to IMPLEMENTED. The five types get per-type rules in `validate_evidence` that OPEN each artifact and enforce the frozen contract's DESIGN-side controls (acceptance.md 1\u201312), with the `architecture` baseline as the spine the other four are consistent with:\n\n- `architecture` \u2014 elements each inside a declared boundary (ctrl 3); every material relationship carries a **direction** and an **intent** (ctrl 1,2) and, when it crosses a boundary, goes **through a declared interface** (ctrl 4); a data flow crossing a trust boundary carries a **classification** (ctrl 11); each NFR allocation is `ALLOCATED` / `DEFERRED_WITH_REASON` / `NOT_APPLICABLE_WITH_REASON`, ALLOCATED carrying a mechanism + fitness obligation (ctrl 7,8); a fitness obligation carries a measurable property + scope (ctrl 9); a C4-view element absent from the baseline is refused (ctrl 12, ARCH-I02).\n- `adr` \u2014 each `ADR-NNNN` has \u22651 affected element and \u22651 decision driver (ctrl 5); affected elements resolve to baseline elements; requirement/NFR refs resolve to the baseline's declared universe (ctrl 6).\n- `data-model` \u2014 each entity's owner boundary resolves to a declared architecture boundary.\n- `api-contract` \u2014 each interface resolves to a declared architecture interface and is versioned.\n- `operability-design` \u2014 failure modes (each with a recovery) and observability are present (ctrl 10); failure-mode elements resolve to the baseline.\n\nPlus `examples/gate-dossier.G04.json` (validated in CI beside G00\u2013G03), and a **G03\u2192G04** pair-acceptance.\n\n## Evidence\n- `G04 required_evidence = ['architecture', 'adr', 'data-model', 'api-contract', 'operability-design']` (badf/lifecycle.json)\n- enforced of 5 \u2192 `0`; `ls examples/gate-dossier.G04.json` \u2192 False; schemas present \u2192 `[]`\n- `badf-architecture` registry status \u2192 DESIGNED (#74)\n\n## Unknowns\nNone for the DESIGN semantics. **Deferred, named:** WP-ARCH-C (the ASSURE substrate \u2014 dependency graph, cycles, boundary rules, ADR compliance, baseline/observed binding; acceptance controls 13\u201318) and WP-ARCH-D (shadow). No `scripts/badf_architecture.py` (ARCH-I11) \u2014 the semantics live in the canonical gate. This WP does not change G04 authority.\n\n## Proposed work package\n`BADF-WP-0044` (WP-ARCH-B). Five `check_*` functions + registration; five schemas; `examples/gate-dossier.G04.json` + its five evidence/artifact pairs; `tests/test_badf_g04.py` (failing-first) + a G03\u2192G04 pair-acceptance; mutation; own G07 self-dossier; `badf-architecture` \u2192 IMPLEMENTED. C2.\n\ndiscovered-by: BADF-WP-0043 (the architecture contract freeze) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T16:28:31Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Body exported verbatim and digest-bound. G04 DESIGN evidence semantics (WP-ARCH-B) on the frozen badf-architecture contract (#74); advances badf-architecture DESIGNED->IMPLEMENTED. Authority: the operator's 'proceed on your call' (2026-08-28). Worked as BADF-WP-0044."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 5b96b67..4d0f512 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -58,8 +58,8 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "DESIGNED",
+-      "digest": "sha256:84104fece7a76380ed1ba3e015598210475e649cbf670a4c752eae8a474d1a10"
++      "status": "IMPLEMENTED",
++      "digest": "sha256:99f9bbe8111d4346b78b34c235b1ce06ba85ffe5ee9bf6db1d2a841e0486b56f"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 29dc2a9..083e318 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -295,6 +295,24 @@ inferred compliance (`NO BASELINE ≠ COMPLIANT`), drift is evidence not authori
+ belong in the canonical gate). G04 is *mapped* (its five evidence types) but left exactly as declared;
+ the G04 DESIGN semantics (WP-ARCH-B) and the ASSURE substrate (WP-ARCH-C) are separate, later WPs.
+ 
++## Gate 04 — architecture DESIGN semantics (`BADF-WP-0044`, Issue #76)
++
++WP-ARCH-B implements the DESIGN-side controls of the frozen `badf-architecture` contract inside the
++canonical gate (ARCH-I11 — no second validator), advancing the capability `DESIGNED → IMPLEMENTED`.
++G04's five types now open their artifacts, with `architecture` as the **spine** the other four are
++consistent with. The baseline enforces the frozen controls: a relationship with no **intent** or a
++boundary crossing not through a **declared interface** is refused (an `A → B` is not architecture);
++an element outside every declared boundary is refused; a trust-boundary data flow with no
++**classification** is refused; an NFR that is neither `ALLOCATED` (to an element + mechanism +
++fitness obligation) nor deferred-with-reason is refused; a fitness obligation with no measurable
++property or scope is refused; and a C4-view element absent from the baseline is refused (ARCH-I02 —
++views are projections). `adr` binds each decision to real baseline elements and to declared
++requirement/NFR refs (`ADR-*` never a `BADF-DEC-*`); `data-model` entities resolve to a declared
++ownership boundary; `api-contract` interfaces resolve to declared architecture interfaces and are
++versioned; `operability-design` must declare failure modes with recovery and observability seams.
++Ships `examples/gate-dossier.G04.json` and a G03→G04 pair-acceptance (the full G00→G04 chain). The
++ASSURE substrate (controls 13–18) is WP-ARCH-C; VALIDATED awaits it.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/examples/evidence/G04/adr.artifact.json b/examples/evidence/G04/adr.artifact.json
+new file mode 100644
+index 0000000..9b2fae1
+--- /dev/null
++++ b/examples/evidence/G04/adr.artifact.json
+@@ -0,0 +1,32 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "records": [
++    {
++      "id": "ADR-0001",
++      "title": "Keep the gate stdlib-only",
++      "status": "accepted",
++      "context": "CI runs bare python3 with no installed dependencies",
++      "decision": "the gate and its tests import only the standard library",
++      "decision_drivers": [
++        "a faithful CI runner reproduction"
++      ],
++      "alternatives": [
++        {
++          "option": "vendor PyYAML for parsing",
++          "rejected_because": "adds a runtime dependency the bare runner lacks, producing green-local red-CI"
++        }
++      ],
++      "affected_elements": [
++        "EL-001",
++        "EL-002"
++      ],
++      "requirement_refs": [
++        "REQ-001"
++      ],
++      "nfr_refs": [
++        "NFR-001"
++      ]
++    }
++  ]
++}
+diff --git a/examples/evidence/G04/adr.json b/examples/evidence/G04/adr.json
+new file mode 100644
+index 0000000..dd24d0d
+--- /dev/null
++++ b/examples/evidence/G04/adr.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G04",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G04-ADR-v1",
++  "claim": "Example adr bound to PRD-BADF-0001",
++  "evidence_type": "adr",
++  "producer": {
++    "id": "example-architect",
++    "type": "human"
++  },
++  "operation": "record architecture decisions",
++  "artifact": "examples/evidence/G04/adr.artifact.json",
++  "digest": "sha256:734c54e41b5c544146f0b8e8aea5bf384a05c029ab8f73ab7e24f7d315d152cf"
++}
+diff --git a/examples/evidence/G04/api-contract.artifact.json b/examples/evidence/G04/api-contract.artifact.json
+new file mode 100644
+index 0000000..30ded9e
+--- /dev/null
++++ b/examples/evidence/G04/api-contract.artifact.json
+@@ -0,0 +1,28 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "apis": [
++    {
++      "id": "API-001",
++      "name": "dossier validation CLI",
++      "interface": "IF-001",
++      "version": "1.0.0",
++      "kind": "internal",
++      "operations": [
++        "dossier",
++        "repo",
++        "advance"
++      ]
++    },
++    {
++      "id": "API-002",
++      "name": "composed-tree CLI",
++      "interface": "IF-002",
++      "version": "1.0.0",
++      "kind": "internal",
++      "operations": [
++        "compose"
++      ]
++    }
++  ]
++}
+diff --git a/examples/evidence/G04/api-contract.json b/examples/evidence/G04/api-contract.json
+new file mode 100644
+index 0000000..edc5df6
+--- /dev/null
++++ b/examples/evidence/G04/api-contract.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G04",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G04-API-CONTRACT-v1",
++  "claim": "Example api-contract bound to PRD-BADF-0001",
++  "evidence_type": "api-contract",
++  "producer": {
++    "id": "example-architect",
++    "type": "human"
++  },
++  "operation": "specify the interface contracts",
++  "artifact": "examples/evidence/G04/api-contract.artifact.json",
++  "digest": "sha256:844116bc1926366701566d3a627ef804249163a47692a5ec55351ed8a008d7e0"
++}
+diff --git a/examples/evidence/G04/architecture.artifact.json b/examples/evidence/G04/architecture.artifact.json
+new file mode 100644
+index 0000000..e03bdcd
+--- /dev/null
++++ b/examples/evidence/G04/architecture.artifact.json
+@@ -0,0 +1,152 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "identity": "BADF",
++  "baseline_revision": "BADF-BASELINE-1.0.0",
++  "upstream_requirements": [
++    "REQ-001",
++    "REQ-002"
++  ],
++  "boundaries": [
++    {
++      "id": "BND-001",
++      "name": "control plane",
++      "kind": "control-plane"
++    },
++    {
++      "id": "BND-002",
++      "name": "CI surface",
++      "kind": "ownership"
++    }
++  ],
++  "elements": [
++    {
++      "id": "EL-001",
++      "name": "gate CLI",
++      "kind": "container",
++      "boundary": "BND-001",
++      "technology": "python-stdlib"
++    },
++    {
++      "id": "EL-002",
++      "name": "composed-tree gate",
++      "kind": "container",
++      "boundary": "BND-001",
++      "technology": "python-stdlib"
++    },
++    {
++      "id": "EL-003",
++      "name": "GitHub Actions runner",
++      "kind": "system",
++      "boundary": "BND-002",
++      "technology": "github-actions"
++    }
++  ],
++  "interfaces": [
++    {
++      "id": "IF-001",
++      "name": "dossier CLI",
++      "provider": "EL-001"
++    },
++    {
++      "id": "IF-002",
++      "name": "compose CLI",
++      "provider": "EL-002"
++    }
++  ],
++  "relationships": [
++    {
++      "from": "EL-002",
++      "to": "EL-001",
++      "intent": "validate the composed tree through the gate",
++      "direction": "outbound",
++      "interaction_type": "invoke",
++      "protocol": "cli",
++      "data_or_command": "command",
++      "trust_boundary_crossing": false,
++      "criticality": "high"
++    },
++    {
++      "from": "EL-003",
++      "to": "EL-002",
++      "intent": "run the composed-tree gate in CI",
++      "direction": "outbound",
++      "interaction_type": "invoke",
++      "protocol": "cli",
++      "data_or_command": "command",
++      "trust_boundary_crossing": true,
++      "criticality": "high",
++      "via_interface": "IF-002"
++    }
++  ],
++  "trust_boundaries": [
++    {
++      "id": "TB-001",
++      "name": "CI/local boundary"
++    }
++  ],
++  "data_flows": [
++    {
++      "id": "DF-001",
++      "source": "EL-003",
++      "destination": "EL-002",
++      "trust_boundary_crossing": true,
++      "data_classification": "internal",
++      "purpose": "run the gate on the candidate tree",
++      "protocol": "cli"
++    },
++    {
++      "id": "DF-002",
++      "source": "EL-002",
++      "destination": "EL-001",
++      "trust_boundary_crossing": false,
++      "purpose": "render a dossier verdict",
++      "protocol": "cli"
++    }
++  ],
++  "nfr_allocations": [
++    {
++      "nfr": "NFR-001",
++      "disposition": "ALLOCATED",
++      "element": "EL-002",
++      "mechanism": "composed-tree suite bounded by the reference test pattern",
++      "fitness_obligation": "FIT-001"
++    },
++    {
++      "nfr": "NFR-002",
++      "disposition": "DEFERRED_WITH_REASON",
++      "reason": "reliability target measured post-launch from push-run conclusions"
++    }
++  ],
++  "fitness_obligations": [
++    {
++      "id": "FIT-001",
++      "type": "PERFORMANCE",
++      "property": "the composed-tree gate completes within a bounded time on the reference suite",
++      "scope": "scripts/badf_compose.py",
++      "evaluation": "wall-clock <= 120 seconds"
++    }
++  ],
++  "adr_refs": [
++    "ADR-0001"
++  ],
++  "c4_views": [
++    {
++      "level": "container",
++      "elements": [
++        "EL-001",
++        "EL-002",
++        "EL-003"
++      ]
++    }
++  ],
++  "assumptions": [
++    "GitHub remains the ledger"
++  ],
++  "risks": [
++    "shared account identity"
++  ],
++  "non_coverage": [
++    "runtime network policy not modelled at G04"
++  ]
++}
+diff --git a/examples/evidence/G04/architecture.json b/examples/evidence/G04/architecture.json
+new file mode 100644
+index 0000000..8af649e
+--- /dev/null
++++ b/examples/evidence/G04/architecture.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G04",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G04-ARCHITECTURE-v1",
++  "claim": "Example architecture bound to PRD-BADF-0001",
++  "evidence_type": "architecture",
++  "producer": {
++    "id": "example-architect",
++    "type": "human"
++  },
++  "operation": "author the architecture baseline",
++  "artifact": "examples/evidence/G04/architecture.artifact.json",
++  "digest": "sha256:82b229e2ca3ed3426ae09ae21621fba75bb0af559d97f99d77f7c574dadb64c4"
++}
+diff --git a/examples/evidence/G04/data-model.artifact.json b/examples/evidence/G04/data-model.artifact.json
+new file mode 100644
+index 0000000..003945b
+--- /dev/null
++++ b/examples/evidence/G04/data-model.artifact.json
+@@ -0,0 +1,21 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "entities": [
++    {
++      "id": "ENT-001",
++      "name": "gate dossier",
++      "owner_boundary": "BND-001",
++      "lifecycle": "assembled -> validated -> bound",
++      "persistence": "git",
++      "classification": "internal"
++    },
++    {
++      "id": "ENT-002",
++      "name": "evidence record",
++      "owner_boundary": "BND-001",
++      "lifecycle": "produced -> digest-bound",
++      "persistence": "git"
++    }
++  ]
++}
+diff --git a/examples/evidence/G04/data-model.json b/examples/evidence/G04/data-model.json
+new file mode 100644
+index 0000000..ea941b3
+--- /dev/null
++++ b/examples/evidence/G04/data-model.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G04",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G04-DATA-MODEL-v1",
++  "claim": "Example data-model bound to PRD-BADF-0001",
++  "evidence_type": "data-model",
++  "producer": {
++    "id": "example-architect",
++    "type": "human"
++  },
++  "operation": "model the data",
++  "artifact": "examples/evidence/G04/data-model.artifact.json",
++  "digest": "sha256:6db064c00983515c2663ea05f624c65dde0280471f98a98222ee9cedae836358"
++}
+diff --git a/examples/evidence/G04/operability-design.artifact.json b/examples/evidence/G04/operability-design.artifact.json
+new file mode 100644
+index 0000000..3bb5b71
+--- /dev/null
++++ b/examples/evidence/G04/operability-design.artifact.json
+@@ -0,0 +1,26 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "failure_modes": [
++    {
++      "id": "FM-001",
++      "element": "EL-001",
++      "failure": "a malformed or defective dossier",
++      "recovery": "the gate exits non-zero naming the failing evidence type",
++      "detection": "non-zero exit in CI"
++    },
++    {
++      "id": "FM-002",
++      "element": "EL-002",
++      "failure": "a red composed tree",
++      "recovery": "compose exits non-zero and the PR cannot merge green",
++      "detection": "composed-tree CI step conclusion"
++    }
++  ],
++  "observability": [
++    "gate stderr names the failing file/type",
++    "CI step conclusions are the fitness signal"
++  ],
++  "capacity": "single-process; bounded by the reference suite size",
++  "operational_ownership": "the delivery team via PR"
++}
+diff --git a/examples/evidence/G04/operability-design.json b/examples/evidence/G04/operability-design.json
+new file mode 100644
+index 0000000..c3a3a76
+--- /dev/null
++++ b/examples/evidence/G04/operability-design.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G04",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G04-OPERABILITY-DESIGN-v1",
++  "claim": "Example operability-design bound to PRD-BADF-0001",
++  "evidence_type": "operability-design",
++  "producer": {
++    "id": "example-architect",
++    "type": "human"
++  },
++  "operation": "design operability",
++  "artifact": "examples/evidence/G04/operability-design.artifact.json",
++  "digest": "sha256:27bada5d661a0a6e842e54ff533f42e097eb3c98b2ee2bffcc1f5bc609c3f1d0"
++}
+diff --git a/examples/gate-dossier.G04.json b/examples/gate-dossier.G04.json
+new file mode 100644
+index 0000000..14bd1ac
+--- /dev/null
++++ b/examples/gate-dossier.G04.json
+@@ -0,0 +1,62 @@
++{
++  "schema_version": "1.0.0",
++  "id": "DOS-WP-2026-0001-G04-v1",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G04",
++  "policy_epoch": "BADF-2026-08-25",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "change_class": "C1",
++  "evidence": [
++    {
++      "type": "architecture",
++      "path": "examples/evidence/G04/architecture.json"
++    },
++    {
++      "type": "adr",
++      "path": "examples/evidence/G04/adr.json"
++    },
++    {
++      "type": "data-model",
++      "path": "examples/evidence/G04/data-model.json"
++    },
++    {
++      "type": "api-contract",
++      "path": "examples/evidence/G04/api-contract.json"
++    },
++    {
++      "type": "operability-design",
++      "path": "examples/evidence/G04/operability-design.json"
++    }
++  ],
++  "approvals": [
++    {
++      "role": "engineering_owner",
++      "decision": "APPROVED",
++      "by": "example-engineering-owner",
++      "revision": "BADF-BASELINE-1.0.0",
++      "policy_epoch": "BADF-2026-08-25",
++      "approved_at": "2026-08-25T00:00:07Z",
++      "scope": "example-only",
++      "principal_type": "human"
++    },
++    {
++      "role": "independent_reviewer",
++      "decision": "APPROVED",
++      "by": "example-reviewer",
++      "revision": "BADF-BASELINE-1.0.0",
++      "policy_epoch": "BADF-2026-08-25",
++      "approved_at": "2026-08-25T00:00:07Z",
++      "scope": "example-only",
++      "principal_type": "human"
++    }
++  ],
++  "exceptions": [],
++  "risks": [],
++  "council": null,
++  "disposition": "PASS",
++  "created_at": "2026-08-25T00:00:06Z",
++  "author": "example-author",
++  "author_type": "human",
++  "conditions": []
++}
+diff --git a/schemas/adr.schema.json b/schemas/adr.schema.json
+new file mode 100644
+index 0000000..a273c90
+--- /dev/null
++++ b/schemas/adr.schema.json
+@@ -0,0 +1,43 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/adr.schema.json",
++  "title": "G04 adr evidence artifact -- material architecture decision records (ADR-*, not BADF-DEC-*)",
++  "type": "object",
++  "additionalProperties": false,
++  "required": ["schema_version", "prd_id", "records"],
++  "properties": {
++    "schema_version": {"type": "string", "enum": ["1.0.0"]},
++    "prd_id": {"type": "string", "pattern": "^PRD-[A-Za-z0-9._-]+$"},
++    "records": {
++      "type": "array", "minItems": 1,
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["id", "title", "status", "context", "decision", "decision_drivers", "alternatives", "affected_elements"],
++        "properties": {
++          "id": {"type": "string", "pattern": "^ADR-[0-9]{4,}$"},
++          "title": {"type": "string", "minLength": 1},
++          "status": {"type": "string", "enum": ["proposed", "accepted", "deprecated", "superseded"]},
++          "context": {"type": "string", "minLength": 1},
++          "decision": {"type": "string", "minLength": 1},
++          "decision_drivers": {"type": "array", "items": {"type": "string", "minLength": 1}},
++          "alternatives": {
++            "type": "array",
++            "items": {
++              "type": "object", "additionalProperties": false,
++              "required": ["option", "rejected_because"],
++              "properties": {
++                "option": {"type": "string", "minLength": 1},
++                "rejected_because": {"type": "string", "minLength": 1}
++              }
++            }
++          },
++          "affected_elements": {"type": "array", "items": {"type": "string", "pattern": "^EL-[0-9]{3,}$"}},
++          "requirement_refs": {"type": "array", "items": {"type": "string", "pattern": "^REQ-[0-9]{3,}$"}},
++          "nfr_refs": {"type": "array", "items": {"type": "string", "pattern": "^NFR-[0-9]{3,}$"}},
++          "supersedes": {"type": "string", "pattern": "^ADR-[0-9]{4,}$"},
++          "superseded_by": {"type": "string", "pattern": "^ADR-[0-9]{4,}$"}
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/api-contract.schema.json b/schemas/api-contract.schema.json
+new file mode 100644
+index 0000000..908498e
+--- /dev/null
++++ b/schemas/api-contract.schema.json
+@@ -0,0 +1,27 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/api-contract.schema.json",
++  "title": "G04 api-contract evidence artifact -- external/internal interface contracts and versioning",
++  "type": "object",
++  "additionalProperties": false,
++  "required": ["schema_version", "prd_id", "apis"],
++  "properties": {
++    "schema_version": {"type": "string", "enum": ["1.0.0"]},
++    "prd_id": {"type": "string", "pattern": "^PRD-[A-Za-z0-9._-]+$"},
++    "apis": {
++      "type": "array", "minItems": 1,
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["id", "name", "interface", "version", "kind"],
++        "properties": {
++          "id": {"type": "string", "pattern": "^API-[0-9]{3,}$"},
++          "name": {"type": "string", "minLength": 1},
++          "interface": {"type": "string", "pattern": "^IF-[0-9]{3,}$"},
++          "version": {"type": "string", "minLength": 1},
++          "kind": {"type": "string", "enum": ["internal", "external"]},
++          "operations": {"type": "array", "items": {"type": "string"}}
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/architecture.schema.json b/schemas/architecture.schema.json
+new file mode 100644
+index 0000000..0827a56
+--- /dev/null
++++ b/schemas/architecture.schema.json
+@@ -0,0 +1,156 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/architecture.schema.json",
++  "title": "G04 architecture evidence artifact -- the canonical architecture baseline (the spine)",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "schema_version",
++    "prd_id",
++    "identity",
++    "baseline_revision",
++    "boundaries",
++    "elements",
++    "interfaces",
++    "relationships",
++    "trust_boundaries",
++    "data_flows",
++    "nfr_allocations",
++    "fitness_obligations"
++  ],
++  "properties": {
++    "schema_version": {"type": "string", "enum": ["1.0.0"]},
++    "prd_id": {"type": "string", "pattern": "^PRD-[A-Za-z0-9._-]+$"},
++    "identity": {"type": "string", "minLength": 1},
++    "baseline_revision": {"type": "string", "minLength": 1},
++    "upstream_requirements": {"type": "array", "items": {"type": "string", "pattern": "^REQ-[0-9]{3,}$"}},
++    "boundaries": {
++      "type": "array", "minItems": 1,
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["id", "name", "kind"],
++        "properties": {
++          "id": {"type": "string", "pattern": "^BND-[0-9]{3,}$"},
++          "name": {"type": "string", "minLength": 1},
++          "kind": {"type": "string", "enum": ["system", "module", "ownership", "control-plane", "trust"]}
++        }
++      }
++    },
++    "elements": {
++      "type": "array", "minItems": 1,
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["id", "name", "kind", "boundary"],
++        "properties": {
++          "id": {"type": "string", "pattern": "^EL-[0-9]{3,}$"},
++          "name": {"type": "string", "minLength": 1},
++          "kind": {"type": "string", "enum": ["system", "container", "component"]},
++          "boundary": {"type": "string", "pattern": "^BND-[0-9]{3,}$"},
++          "technology": {"type": "string"}
++        }
++      }
++    },
++    "interfaces": {
++      "type": "array",
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["id", "name", "provider"],
++        "properties": {
++          "id": {"type": "string", "pattern": "^IF-[0-9]{3,}$"},
++          "name": {"type": "string", "minLength": 1},
++          "provider": {"type": "string", "pattern": "^EL-[0-9]{3,}$"}
++        }
++      }
++    },
++    "relationships": {
++      "type": "array", "minItems": 1,
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["from", "to", "intent", "direction", "interaction_type", "protocol", "data_or_command", "trust_boundary_crossing", "criticality"],
++        "properties": {
++          "from": {"type": "string", "pattern": "^EL-[0-9]{3,}$"},
++          "to": {"type": "string", "pattern": "^EL-[0-9]{3,}$"},
++          "intent": {"type": "string"},
++          "direction": {"type": "string", "enum": ["inbound", "outbound", "bidirectional"]},
++          "interaction_type": {"type": "string", "minLength": 1},
++          "protocol": {"type": "string", "minLength": 1},
++          "data_or_command": {"type": "string", "enum": ["data", "command", "event"]},
++          "trust_boundary_crossing": {"type": "boolean"},
++          "criticality": {"type": "string", "enum": ["low", "medium", "high"]},
++          "via_interface": {"type": "string", "pattern": "^IF-[0-9]{3,}$"}
++        }
++      }
++    },
++    "trust_boundaries": {
++      "type": "array",
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["id", "name"],
++        "properties": {
++          "id": {"type": "string", "pattern": "^TB-[0-9]{3,}$"},
++          "name": {"type": "string", "minLength": 1}
++        }
++      }
++    },
++    "data_flows": {
++      "type": "array",
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["id", "source", "destination", "trust_boundary_crossing", "purpose", "protocol"],
++        "properties": {
++          "id": {"type": "string", "pattern": "^DF-[0-9]{3,}$"},
++          "source": {"type": "string", "pattern": "^EL-[0-9]{3,}$"},
++          "destination": {"type": "string", "pattern": "^EL-[0-9]{3,}$"},
++          "trust_boundary_crossing": {"type": "boolean"},
++          "data_classification": {"type": "string"},
++          "purpose": {"type": "string", "minLength": 1},
++          "protocol": {"type": "string", "minLength": 1}
++        }
++      }
++    },
++    "nfr_allocations": {
++      "type": "array", "minItems": 1,
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["nfr", "disposition"],
++        "properties": {
++          "nfr": {"type": "string", "pattern": "^NFR-[0-9]{3,}$"},
++          "disposition": {"type": "string", "enum": ["ALLOCATED", "DEFERRED_WITH_REASON", "NOT_APPLICABLE_WITH_REASON"]},
++          "element": {"type": "string", "pattern": "^EL-[0-9]{3,}$"},
++          "mechanism": {"type": "string"},
++          "fitness_obligation": {"type": "string", "pattern": "^FIT-[0-9]{3,}$"},
++          "reason": {"type": "string"}
++        }
++      }
++    },
++    "fitness_obligations": {
++      "type": "array", "minItems": 1,
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["id", "type", "property", "scope"],
++        "properties": {
++          "id": {"type": "string", "pattern": "^FIT-[0-9]{3,}$"},
++          "type": {"type": "string", "enum": ["STRUCTURAL", "DEPENDENCY", "BOUNDARY", "CONTRACT", "SECURITY_BOUNDARY", "DATA", "OPERABILITY", "PERFORMANCE", "RESILIENCE", "COST"]},
++          "property": {"type": "string"},
++          "scope": {"type": "string"},
++          "evaluation": {"type": "string"}
++        }
++      }
++    },
++    "adr_refs": {"type": "array", "items": {"type": "string", "pattern": "^ADR-[0-9]{4,}$"}},
++    "c4_views": {
++      "type": "array",
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["level", "elements"],
++        "properties": {
++          "level": {"type": "string", "enum": ["context", "container", "component", "code"]},
++          "elements": {"type": "array", "items": {"type": "string", "pattern": "^EL-[0-9]{3,}$"}}
++        }
++      }
++    },
++    "assumptions": {"type": "array", "items": {"type": "string"}},
++    "risks": {"type": "array", "items": {"type": "string"}},
++    "non_coverage": {"type": "array", "items": {"type": "string"}}
++  }
++}
+diff --git a/schemas/data-model.schema.json b/schemas/data-model.schema.json
+new file mode 100644
+index 0000000..e7d5139
+--- /dev/null
++++ b/schemas/data-model.schema.json
+@@ -0,0 +1,27 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/data-model.schema.json",
++  "title": "G04 data-model evidence artifact -- entities, ownership, lifecycle and persistence",
++  "type": "object",
++  "additionalProperties": false,
++  "required": ["schema_version", "prd_id", "entities"],
++  "properties": {
++    "schema_version": {"type": "string", "enum": ["1.0.0"]},
++    "prd_id": {"type": "string", "pattern": "^PRD-[A-Za-z0-9._-]+$"},
++    "entities": {
++      "type": "array", "minItems": 1,
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["id", "name", "owner_boundary", "lifecycle", "persistence"],
++        "properties": {
++          "id": {"type": "string", "pattern": "^ENT-[0-9]{3,}$"},
++          "name": {"type": "string", "minLength": 1},
++          "owner_boundary": {"type": "string", "pattern": "^BND-[0-9]{3,}$"},
++          "lifecycle": {"type": "string", "minLength": 1},
++          "persistence": {"type": "string", "minLength": 1},
++          "classification": {"type": "string"}
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/operability-design.schema.json b/schemas/operability-design.schema.json
+new file mode 100644
+index 0000000..6a89b16
+--- /dev/null
++++ b/schemas/operability-design.schema.json
+@@ -0,0 +1,29 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/operability-design.schema.json",
++  "title": "G04 operability-design evidence artifact -- failure, recovery, observability, capacity",
++  "type": "object",
++  "additionalProperties": false,
++  "required": ["schema_version", "prd_id", "failure_modes", "observability"],
++  "properties": {
++    "schema_version": {"type": "string", "enum": ["1.0.0"]},
++    "prd_id": {"type": "string", "pattern": "^PRD-[A-Za-z0-9._-]+$"},
++    "failure_modes": {
++      "type": "array", "minItems": 1,
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["id", "element", "failure", "recovery"],
++        "properties": {
++          "id": {"type": "string", "pattern": "^FM-[0-9]{3,}$"},
++          "element": {"type": "string", "pattern": "^EL-[0-9]{3,}$"},
++          "failure": {"type": "string", "minLength": 1},
++          "recovery": {"type": "string"},
++          "detection": {"type": "string"}
++        }
++      }
++    },
++    "observability": {"type": "array", "items": {"type": "string", "minLength": 1}},
++    "capacity": {"type": "string"},
++    "operational_ownership": {"type": "string"}
++  }
++}
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 726fc3e..ab49f5b 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -1110,11 +1110,148 @@ def check_user_validation(artifact: Path, dossier: dict[str, Any], evidence: dic
+             raise ValidationError(f"user-validation: {f['id']} is {f['severity']} but carries no resolution; an unresolved major finding means the design is not validated")
+ 
+ 
++# ---- G04 evidence contract: architecture DESIGN semantics on the frozen badf-architecture contract (BADF-WP-0044, #76) ----
++def _unique_ids(items: list, key: str, label: str) -> set:
++    ids = [it[key] for it in items]
++    dupes = sorted({i for i in ids if ids.count(i) > 1})
++    if dupes:
++        raise ValidationError(f"{label}: duplicate id(s): {', '.join(dupes)}")
++    return set(ids)
++
++
++def check_architecture(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("architecture", doc)
++    _no_placeholders(doc, "architecture")
++    boundary_ids = _unique_ids(doc["boundaries"], "id", "architecture boundaries")
++    element_ids = _unique_ids(doc["elements"], "id", "architecture elements")
++    element_boundary = {e["id"]: e["boundary"] for e in doc["elements"]}
++    for e in doc["elements"]:
++        if e["boundary"] not in boundary_ids:
++            raise ValidationError(f"architecture: element {e['id']} is outside every declared boundary ({e['boundary']} is not a declared boundary)")
++    interface_ids = set()
++    for i in doc.get("interfaces") or []:
++        interface_ids.add(i["id"])
++        if i["provider"] not in element_ids:
++            raise ValidationError(f"architecture: interface {i['id']} is provided by unknown element {i['provider']}")
++    for idx, r in enumerate(doc["relationships"]):
++        where = f"relationship[{idx}] {r['from']}->{r['to']}"
++        if not (r.get("intent") or "").strip():
++            raise ValidationError(f"architecture: {where} has no intent; a bare A->B is not an architecture relationship")
++        if r["from"] not in element_ids or r["to"] not in element_ids:
++            raise ValidationError(f"architecture: {where} references an unknown element")
++        if element_boundary[r["from"]] != element_boundary[r["to"]]:
++            via = r.get("via_interface")
++            if not via or via not in interface_ids:
++                raise ValidationError(f"architecture: {where} crosses a boundary but not through a declared interface")
++    trust_ids = {t["id"] for t in (doc.get("trust_boundaries") or [])}  # noqa: F841 (declared universe; reserved for ASSURE)
++    for df in doc.get("data_flows") or []:
++        if df["source"] not in element_ids or df["destination"] not in element_ids:
++            raise ValidationError(f"architecture: data flow {df['id']} references an unknown element")
++        if df["trust_boundary_crossing"] and not (df.get("data_classification") or "").strip():
++            raise ValidationError(f"architecture: data flow {df['id']} crosses a trust boundary with no data classification")
++    fit_ids = set()
++    for f in doc["fitness_obligations"]:
++        fit_ids.add(f["id"])
++        if not (f.get("property") or "").strip() or not (f.get("scope") or "").strip():
++            raise ValidationError(f"architecture: fitness obligation {f['id']} has no measurable property or no scope")
++    for a in doc["nfr_allocations"]:
++        disp = a["disposition"]
++        if disp == "ALLOCATED":
++            if a.get("element") not in element_ids or not (a.get("mechanism") or "").strip() or a.get("fitness_obligation") not in fit_ids:
++                raise ValidationError(f"architecture: NFR allocation for {a['nfr']} is ALLOCATED but has no valid element, mechanism, and fitness obligation")
++        elif not (a.get("reason") or "").strip():
++            raise ValidationError(f"architecture: NFR allocation for {a['nfr']} is {disp} but carries no reason")
++    for v in doc.get("c4_views") or []:
++        unknown = sorted(set(v["elements"]) - element_ids)
++        if unknown:
++            raise ValidationError(f"architecture: C4 {v['level']} view names element(s) absent from the baseline: {', '.join(unknown)}")
++
++
++def check_adr(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("adr", doc)
++    _no_placeholders(doc, "adr")
++    records = doc["records"]
++    if not records:
++        raise ValidationError("adr: no records")
++    _unique_ids(records, "id", "adr")
++    _, arch = _sibling_artifact(dossier, "architecture", "adr")
++    element_ids = {e["id"] for e in (arch.get("elements") or [])}
++    req_universe = set(arch.get("upstream_requirements") or [])
++    nfr_universe = {a["nfr"] for a in (arch.get("nfr_allocations") or [])}
++    for adr in records:
++        if not (adr.get("affected_elements") or []):
++            raise ValidationError(f"adr: {adr['id']} affects no architecture element")
++        if not (adr.get("decision_drivers") or []):
++            raise ValidationError(f"adr: {adr['id']} has no decision driver")
++        unknown_el = sorted(set(adr["affected_elements"]) - element_ids)
++        if unknown_el:
++            raise ValidationError(f"adr: {adr['id']} affects element(s) absent from the baseline: {', '.join(unknown_el)}")
++        unknown_req = sorted(set(adr.get("requirement_refs") or []) - req_universe)
++        if unknown_req:
++            raise ValidationError(f"adr: {adr['id']} references unknown requirement(s): {', '.join(unknown_req)}")
++        unknown_nfr = sorted(set(adr.get("nfr_refs") or []) - nfr_universe)
++        if unknown_nfr:
++            raise ValidationError(f"adr: {adr['id']} references NFR(s) absent from the baseline: {', '.join(unknown_nfr)}")
++
++
++def check_data_model(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("data-model", doc)
++    _no_placeholders(doc, "data-model")
++    entities = doc["entities"]
++    if not entities:
++        raise ValidationError("data-model: no entities")
++    _unique_ids(entities, "id", "data-model")
++    _, arch = _sibling_artifact(dossier, "architecture", "data-model")
++    boundary_ids = {b["id"] for b in (arch.get("boundaries") or [])}
++    for ent in entities:
++        if ent["owner_boundary"] not in boundary_ids:
++            raise ValidationError(f"data-model: entity {ent['id']} owner boundary {ent['owner_boundary']} is not a declared architecture boundary")
++
++
++def check_api_contract(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("api-contract", doc)
++    _no_placeholders(doc, "api-contract")
++    apis = doc["apis"]
++    if not apis:
++        raise ValidationError("api-contract: no apis")
++    _unique_ids(apis, "id", "api-contract")
++    _, arch = _sibling_artifact(dossier, "architecture", "api-contract")
++    interface_ids = {i["id"] for i in (arch.get("interfaces") or [])}
++    for api in apis:
++        if api["interface"] not in interface_ids:
++            raise ValidationError(f"api-contract: {api['id']} declares interface {api['interface']} absent from the architecture baseline")
++
++
++def check_operability_design(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("operability-design", doc)
++    _no_placeholders(doc, "operability-design")
++    failure_modes = doc["failure_modes"]
++    if not failure_modes:
++        raise ValidationError("operability-design: no failure modes; architecture that explains only the happy path is incomplete")
++    if not (doc.get("observability") or []):
++        raise ValidationError("operability-design: no observability seams declared")
++    _unique_ids(failure_modes, "id", "operability-design")
++    _, arch = _sibling_artifact(dossier, "architecture", "operability-design")
++    element_ids = {e["id"] for e in (arch.get("elements") or [])}
++    for fm in failure_modes:
++        if not (fm.get("recovery") or "").strip():
++            raise ValidationError(f"operability-design: failure mode {fm['id']} declares no recovery")
++        if fm["element"] not in element_ids:
++            raise ValidationError(f"operability-design: failure mode {fm['id']} names element {fm['element']} absent from the baseline")
++
++
+ EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_criteria, "product-approval": check_product_approval,
+                   "requirements": check_requirements, "nfr": check_nfr, "traceability": check_traceability,
+                   "definition-of-ready": check_definition_of_ready,
+                   "journeys": check_journeys, "service-blueprint": check_service_blueprint,
+-                  "accessibility": check_accessibility, "user-validation": check_user_validation}
++                  "accessibility": check_accessibility, "user-validation": check_user_validation,
++                  "architecture": check_architecture, "adr": check_adr, "data-model": check_data_model,
++                  "api-contract": check_api_contract, "operability-design": check_operability_design}
+ 
+ 
+ def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -> None:
+diff --git a/skills/badf-architecture/SKILL.md b/skills/badf-architecture/SKILL.md
+index d9b0417..2373b3d 100644
+--- a/skills/badf-architecture/SKILL.md
++++ b/skills/badf-architecture/SKILL.md
+@@ -5,7 +5,7 @@ description: Govern architecture design, architectural decisions, architecture f
+ 
+ # BADF Architecture
+ 
+-Status: `DESIGNED` (contract frozen by `BADF-WP-0043`; nothing here runs yet). This is an architecture **engineering + assurance** capability, not a diagram skill. Its primary lifecycle gate is **G04 — Architecture, Data and API**; it also feeds G05 (trust boundaries + data flows), G08/G09 verification and post-merge drift review.
++Status: `IMPLEMENTED` for G04 DESIGN evidence (contract frozen by `BADF-WP-0043`; the five G04 DESIGN evidence types are enforced in the canonical gate by `BADF-WP-0044`). The ASSURE substrate and full validation are pending (WP-ARCH-C/D). This is an architecture **engineering + assurance** capability, not a diagram skill. Its primary lifecycle gate is **G04 — Architecture, Data and API**; it also feeds G05 (trust boundaries + data flows), G08/G09 verification and post-merge drift review.
+ 
+ Fundamental rule — four distinctions that never collapse:
+ 
+diff --git a/tests/test_badf_advance.py b/tests/test_badf_advance.py
+index 3416103..e4a4a4d 100644
+--- a/tests/test_badf_advance.py
++++ b/tests/test_badf_advance.py
+@@ -171,9 +171,45 @@ class AdvanceScratch(ValidatedInstance):
+         assert r.returncode == 0 and "APPROVED" in r.stdout, r.stdout + r.stderr
+         return f"work/{self.wp()}/gate-dossier.G03.json"
+ 
++    def make_g04(self):
++        """A G04 dossier for the same WP at the G04/C1 floor: the architecture
++        baseline plus adr, data-model, api-contract and operability-design,
++        modelled on the shipped G04 example and bound to the scratch PRD."""
++        d = self.wp_dir(); ev_dir = d / "evidence/G04"; ev_dir.mkdir(parents=True, exist_ok=True)
++        g03 = json.loads((d / "gate-dossier.G03.json").read_text())
++        ex = gate.ROOT / "examples/evidence/G04"
++        index = []
++        for t in ("architecture", "adr", "data-model", "api-contract", "operability-design"):
++            art = json.loads((ex / f"{t}.artifact.json").read_text()); art["prd_id"] = "PRD-SCRATCH-0001"
++            (ev_dir / f"{t}.artifact.json").write_text(json.dumps(art, indent=2) + "\n")
++            e = {"schema_version": "1.0.0", "id": f"EVD-{self.wp()}-G04-{t}", "work_package_id": self.wp(), "gate": "G04",
++                 "claim": f"{t} present", "evidence_type": t, "producer": HUMAN,
++                 "source_revision": g03["source_revision"], "target": g03["target"],
++                 "toolchain": {"name": "human-review", "version": "1"}, "operation": "review",
++                 "started_at": g03["created_at"], "completed_at": g03["created_at"], "outcome": "PASS",
++                 "artifact": f"work/{self.wp()}/evidence/G04/{t}.artifact.json", "digest": gate.sha256(ev_dir / f"{t}.artifact.json")}
++            (ev_dir / f"{t}.json").write_text(json.dumps(e, indent=2) + "\n")
++            index.append({"type": t, "path": f"work/{self.wp()}/evidence/G04/{t}.json"})
++        doc = dict(g03, id=f"DOS-{self.wp()}-G04-v1", gate="G04", evidence=index)
++        (d / "gate-dossier.G04.json").write_text(json.dumps(doc, indent=2) + "\n")
++        self.framework_lock()
++        r = self.dossier_cli(f"work/{self.wp()}/gate-dossier.G04.json")
++        assert r.returncode == 0 and "APPROVED" in r.stdout, r.stdout + r.stderr
++        return f"work/{self.wp()}/gate-dossier.G04.json"
++
+ 
+ class AdvanceTests(AdvanceScratch):
+ 
++    def test_g03_approved_instance_advances_to_g04(self):
++        self.approve_g00(); self.assertEqual(self.advance(f"work/{self.wp()}/gate-dossier.G00.json").returncode, 0)
++        self.assertEqual(self.advance(self.make_g01()).returncode, 0)
++        self.assertEqual(self.advance(self.make_g02()).returncode, 0)
++        self.assertEqual(self.advance(self.make_g03()).returncode, 0)
++        g04 = self.make_g04()
++        r = self.advance(g04); self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
++        self.assertEqual(self.state()["lifecycle"], {"current_gate": "G04", "state": "APPROVED", "target": "PRODUCTION"})
++        r = self.instance(); self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("G04 / APPROVED", r.stdout)
++
+     def test_g02_approved_instance_advances_to_g03(self):
+         self.approve_g00(); self.assertEqual(self.advance(f"work/{self.wp()}/gate-dossier.G00.json").returncode, 0)
+         self.assertEqual(self.advance(self.make_g01()).returncode, 0)
+diff --git a/tests/test_badf_architecture_contract.py b/tests/test_badf_architecture_contract.py
+index 50a3171..5a0cb18 100644
+--- a/tests/test_badf_architecture_contract.py
++++ b/tests/test_badf_architecture_contract.py
+@@ -37,9 +37,9 @@ class StructureTests(unittest.TestCase):
+         for r in REFERENCES:
+             self.assertIn(r, text, f"SKILL.md does not name {r}")
+ 
+-    def test_skill_is_designed_and_states_its_authority_boundary(self):
++    def test_skill_states_its_authority_boundary(self):
++        # The authority boundary is invariant across status (DESIGNED -> IMPLEMENTED -> ...).
+         text = SKILL.read_text(encoding="utf-8")
+-        self.assertIn("`DESIGNED`", text)
+         self.assertIn("does **not** approve G04", text)
+         self.assertIn("does **not** advance lifecycle", text)
+ 
+@@ -72,11 +72,11 @@ class InvariantTests(unittest.TestCase):
+ 
+ class RegistryAndAuthorityTests(unittest.TestCase):
+ 
+-    def test_registry_entry_is_designed_with_a_real_digest(self):
++    def test_registry_entry_is_implemented_with_a_real_digest(self):
++        # WP-ARCH-B advanced the capability DESIGNED -> IMPLEMENTED (G04 DESIGN semantics enforced).
+         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
+         entry = next(e for e in reg["skills"] if e["name"] == "badf-architecture")
+-        self.assertEqual(entry["status"], "DESIGNED")
+-        self.assertEqual(entry["allowed_tools"], [], "a DESIGNED capability that does not run grants no tools")
++        self.assertEqual(entry["status"], "IMPLEMENTED")
+         self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
+ 
+     def test_g04_is_mapped_but_unchanged(self):
+@@ -89,20 +89,25 @@ class RegistryAndAuthorityTests(unittest.TestCase):
+         self.assertEqual(g04["owner_role"], "architecture_authority", "the freeze must not change G04 authority")
+ 
+ 
+-class NothingImplementedYetTests(unittest.TestCase):
++class ImplementationStatusTests(unittest.TestCase):
+ 
+     def test_no_architecture_validator_beside_the_gate(self):
++        # ARCH-I11 holds at every status: the semantics live in the canonical gate, not a second validator.
+         self.assertEqual(sorted(p.name for p in (gate.ROOT / "scripts").glob("*architecture*")), [],
+                          "a competing architecture validator exists (ARCH-I11)")
+ 
+-    def test_architecture_evidence_types_are_not_enforced_yet(self):
++    def test_g04_design_evidence_types_are_enforced(self):
++        # WP-ARCH-B: the five G04 DESIGN evidence types now open their artifacts in the gate.
+         for t in G04_EVIDENCE:
+-            self.assertNotIn(t, gate.EVIDENCE_RULES, f"{t} is enforced, but the capability is only DESIGNED")
+-
+-    def test_no_architecture_schema_yet(self):
+-        for name in ("architecture", "adr", "data-model", "api-contract", "operability-design", "architecture-assurance"):
+-            self.assertFalse((gate.ROOT / "schemas" / f"{name}.schema.json").exists(),
+-                             f"schemas/{name}.schema.json exists, but WP-ARCH-A is DESIGNED-only")
++            self.assertIn(t, gate.EVIDENCE_RULES, f"{t} is a G04 type but has no per-type rule")
++
++    def test_g04_design_schemas_exist_but_assurance_does_not(self):
++        for name in G04_EVIDENCE:
++            self.assertTrue((gate.ROOT / "schemas" / f"{name}.schema.json").is_file(),
++                            f"schemas/{name}.schema.json is missing")
++        # the ASSURE substrate (WP-ARCH-C) is not built yet
++        self.assertFalse((gate.ROOT / "schemas" / "architecture-assurance.schema.json").exists(),
++                         "an architecture-assurance schema exists, but ASSURE is WP-ARCH-C")
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/tests/test_badf_g04.py b/tests/test_badf_g04.py
+new file mode 100644
+index 0000000..8838b83
+--- /dev/null
++++ b/tests/test_badf_g04.py
+@@ -0,0 +1,171 @@
++"""G04 evidence contract (BADF-WP-0044, Issue #76; WP-ARCH-B on the frozen
++badf-architecture contract).
++
++G04's five required evidence types have semantics the gate enforces by opening
++the artifact, inside validate_evidence, with the architecture baseline as the
++spine the other four are consistent with: relationships carry direction + intent
++and cross boundaries only through a declared interface; elements live inside a
++declared boundary; trust-boundary data flows carry a classification; NFRs are
++allocated (or deferred with reason) to a mechanism + fitness obligation;
++fitness obligations are measurable; ADRs bind to real elements/requirements/NFRs;
++data-model entities and api-contract interfaces resolve to the baseline; and
++operability declares failure/recovery/observability. Faithful-runner shape.
++"""
++import hashlib
++import json
++import os
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++from tests._scratch import seed_clone  # noqa: E402
++
++DOSSIER = "examples/gate-dossier.G04.json"
++EV = "examples/evidence/G04"
++
++
++class G04Scratch(unittest.TestCase):
++    def setUp(self):
++        self.tmp = tempfile.mkdtemp(); self.root = Path(self.tmp) / "badf"
++        seed_clone(self.root, carry_working_state=True)
++        for rel in ("schemas", "tests"):
++            shutil.rmtree(self.root / rel, ignore_errors=True); shutil.copytree(gate.ROOT / rel, self.root / rel)
++        self.env = {k: v for k, v in os.environ.items() if not k.startswith("BADF_")}
++
++    def tearDown(self):
++        shutil.rmtree(self.tmp, ignore_errors=True)
++
++    def cli(self):
++        subprocess.run([sys.executable, "scripts/badf_gate.py", "lock"], cwd=self.root, env=self.env, capture_output=True, check=True)
++        return subprocess.run([sys.executable, "scripts/badf_gate.py", "dossier", DOSSIER], cwd=self.root, env=self.env, capture_output=True, text=True)
++
++    def artifact(self, t):
++        return json.loads((self.root / EV / f"{t}.artifact.json").read_text())
++
++    def rewrite(self, t, obj):
++        p = self.root / EV / f"{t}.artifact.json"; p.write_text(json.dumps(obj, indent=2) + "\n")
++        rec_p = self.root / EV / f"{t}.json"; rec = json.loads(rec_p.read_text())
++        rec["digest"] = "sha256:" + hashlib.sha256(p.read_bytes()).hexdigest(); rec_p.write_text(json.dumps(rec, indent=2) + "\n")
++
++    def refused(self, needle):
++        r = self.cli()
++        self.assertNotEqual(r.returncode, 0, "a defective G04 dossier rendered APPROVED")
++        self.assertIn(needle, r.stderr, r.stderr)
++
++
++class G04ExampleTests(G04Scratch):
++
++    def test_shipped_example_renders_approved(self):
++        r = self.cli(); self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("APPROVED", r.stdout)
++
++    def test_missing_required_evidence_is_still_refused(self):
++        d = json.loads((self.root / DOSSIER).read_text()); d["evidence"] = [e for e in d["evidence"] if e["type"] != "operability-design"]
++        (self.root / DOSSIER).write_text(json.dumps(d, indent=2) + "\n")
++        self.refused("missing evidence")
++
++
++class ArchitectureRuleTests(G04Scratch):
++
++    def test_a_relationship_without_intent_is_refused(self):
++        a = self.artifact("architecture"); a["relationships"][0]["intent"] = ""; self.rewrite("architecture", a)
++        self.refused("has no intent")
++
++    def test_an_element_outside_every_boundary_is_refused(self):
++        a = self.artifact("architecture"); a["elements"][0]["boundary"] = "BND-404"; self.rewrite("architecture", a)
++        self.refused("is outside every declared boundary")
++
++    def test_a_boundary_crossing_without_a_declared_interface_is_refused(self):
++        a = self.artifact("architecture")
++        for r in a["relationships"]:
++            r.pop("via_interface", None)
++        self.rewrite("architecture", a)
++        self.refused("not through a declared interface")
++
++    def test_a_trust_boundary_flow_without_classification_is_refused(self):
++        a = self.artifact("architecture")
++        for df in a["data_flows"]:
++            if df["trust_boundary_crossing"]:
++                df.pop("data_classification", None)
++        self.rewrite("architecture", a)
++        self.refused("crosses a trust boundary with no data classification")
++
++    def test_an_allocated_nfr_without_a_mechanism_is_refused(self):
++        a = self.artifact("architecture")
++        for al in a["nfr_allocations"]:
++            if al["disposition"] == "ALLOCATED":
++                al["mechanism"] = ""
++        self.rewrite("architecture", a)
++        self.refused("is ALLOCATED but has no valid element, mechanism")
++
++    def test_a_deferred_nfr_without_a_reason_is_refused(self):
++        a = self.artifact("architecture")
++        for al in a["nfr_allocations"]:
++            if al["disposition"] != "ALLOCATED":
++                al.pop("reason", None)
++        self.rewrite("architecture", a)
++        self.refused("carries no reason")
++
++    def test_a_fitness_obligation_without_scope_is_refused(self):
++        a = self.artifact("architecture"); a["fitness_obligations"][0]["scope"] = ""; self.rewrite("architecture", a)
++        self.refused("no measurable property or no scope")
++
++    def test_a_c4_view_element_absent_from_the_baseline_is_refused(self):
++        a = self.artifact("architecture"); a["c4_views"][0]["elements"].append("EL-404"); self.rewrite("architecture", a)
++        self.refused("absent from the baseline")
++
++
++class AdrRuleTests(G04Scratch):
++
++    def test_an_adr_with_no_affected_element_is_refused(self):
++        d = self.artifact("adr"); d["records"][0]["affected_elements"] = []; self.rewrite("adr", d)
++        self.refused("affects no architecture element")
++
++    def test_an_adr_with_no_decision_driver_is_refused(self):
++        d = self.artifact("adr"); d["records"][0]["decision_drivers"] = []; self.rewrite("adr", d)
++        self.refused("has no decision driver")
++
++    def test_an_adr_referencing_an_unknown_requirement_is_refused(self):
++        d = self.artifact("adr"); d["records"][0]["requirement_refs"] = ["REQ-999"]; self.rewrite("adr", d)
++        self.refused("references unknown requirement")
++
++    def test_an_adr_referencing_an_unknown_nfr_is_refused(self):
++        d = self.artifact("adr"); d["records"][0]["nfr_refs"] = ["NFR-999"]; self.rewrite("adr", d)
++        self.refused("absent from the baseline")
++
++
++class DataModelRuleTests(G04Scratch):
++
++    def test_an_entity_with_an_unknown_owner_boundary_is_refused(self):
++        d = self.artifact("data-model"); d["entities"][0]["owner_boundary"] = "BND-404"; self.rewrite("data-model", d)
++        self.refused("is not a declared architecture boundary")
++
++
++class ApiContractRuleTests(G04Scratch):
++
++    def test_an_api_with_an_unknown_interface_is_refused(self):
++        d = self.artifact("api-contract"); d["apis"][0]["interface"] = "IF-404"; self.rewrite("api-contract", d)
++        self.refused("absent from the architecture baseline")
++
++
++class OperabilityRuleTests(G04Scratch):
++
++    def test_operability_without_failure_modes_is_refused(self):
++        d = self.artifact("operability-design"); d["failure_modes"] = []; self.rewrite("operability-design", d)
++        self.refused("no failure modes")
++
++    def test_a_failure_mode_without_recovery_is_refused(self):
++        d = self.artifact("operability-design"); d["failure_modes"][0]["recovery"] = ""; self.rewrite("operability-design", d)
++        self.refused("declares no recovery")
++
++    def test_operability_without_observability_is_refused(self):
++        d = self.artifact("operability-design"); d["observability"] = []; self.rewrite("operability-design", d)
++        self.refused("no observability seams")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0043/work-package.json b/work/WP-2026-0043/work-package.json
+index 6fc6504..a5adf85 100644
+--- a/work/WP-2026-0043/work-package.json
++++ b/work/WP-2026-0043/work-package.json
+@@ -48,11 +48,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "42520a6"
++    "base_revision": "42520a6",
++    "landed_as": "82d659ad0c7f68fc9c9978f920c75fa0e28f7c87"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Docs + registry only -- no new gate branch, so mutation is N/A; the contract test guards the meaning. Mirrors the badf-research freeze WP-0031 (C2/G07)."
+ }

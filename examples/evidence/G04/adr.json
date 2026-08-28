@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G04",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G04-ADR-v1",
+  "claim": "Example adr bound to PRD-BADF-0001",
+  "evidence_type": "adr",
+  "producer": {
+    "id": "example-architect",
+    "type": "human"
+  },
+  "operation": "record architecture decisions",
+  "artifact": "examples/evidence/G04/adr.artifact.json",
+  "digest": "sha256:734c54e41b5c544146f0b8e8aea5bf384a05c029ab8f73ab7e24f7d315d152cf"
+}
