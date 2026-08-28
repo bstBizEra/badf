@@ -131,6 +131,19 @@ def compose(args: argparse.Namespace) -> int:
         print(f"  repo: PASS -- {wp} " + ("LANDED_UNRECONCILED on the composed ledger (reconciled by the next work package)"
                                          if debt else "record present and already reconciled (a follow-up under a closed work package)"))
 
+        # If the work package ships its own G07 gate dossier, validate it on the
+        # tree that would land: BADF's own work is governed like any project's
+        # (BADF-WP-0033). exit 0 = APPROVED, 3 = HELD (a HUMAN_REQUIRED request);
+        # 1/2 = a defective dossier and the merge is unsafe.
+        self_dossier = work / "work" / wp / "gate-dossier.G07.json"
+        if self_dossier.is_file():
+            rd = sh([sys.executable, "scripts/badf_gate.py", "dossier", f"work/{wp}/gate-dossier.G07.json"], work, env=env)
+            last = ((rd.stdout + rd.stderr).strip().splitlines() or ["(no output)"])[-1]
+            if rd.returncode not in (0, 3):
+                print(f"  self-dossier: FAIL -- {last}")
+                return fail(f"{wp}'s own G07 dossier does not validate on the composed tree")
+            print(f"  self-dossier: {'APPROVED' if rd.returncode == 0 else 'HELD (HUMAN_REQUIRED)'} -- {last}")
+
         shape = "host"
         if args.ci_shape:
             shape = "CI"

@@ -130,6 +130,19 @@ it rather than trusting the record.
   shape (WP-0029: 13 advance tests red there, green in the composed run). Scratch clones pin
   `origin/main` explicitly (`tests/_scratch.pin_origin_main`).
 
+## Self-work-package dossiers (`BADF-WP-0033`, Issue #28)
+
+BADF governs other projects through gate dossiers; its own work packages had only CI and
+traceability. `badf_gate.py self-dossier <WP>` assembles a **G07 dossier** for one of BADF's own
+work packages from measured evidence — the change diff, `py_compile`, a pointer to the
+composed-tree gate for tests, the docs diff — as a `HUMAN_REQUIRED` request. It binds evidence;
+it never approves. The composed-tree gate validates a candidate's G07 dossier on the tree that
+would land (`exit 0` = APPROVED, `3` = HELD; `1`/`2` fail the gate). A self-work-package's
+source-change diff is taken against `HEAD` excluding the work package's own directory and the
+lockfile — its branch commits do not survive the squash, so `base..HEAD` is the same tree
+comparison on the branch, in the composed tree, and on `main`. A carried `OPEN` condition records
+the missing independent reviewer under a single collaborator: recorded, not hidden.
+
 ## Research records (`BADF-WP-0031`, Issue #50)
 
 Research sits between discovery and decision: **Issue → demand → research record → decision → work
