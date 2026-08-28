@@ -1,0 +1,218 @@
+diff --git a/badf/demands/BADF-DEM-0035.json b/badf/demands/BADF-DEM-0035.json
+new file mode 100644
+index 0000000..88dd1e5
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0035.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0035",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 87,
++    "url": "https://github.com/bstBizEra/badf/issues/87",
++    "exported_at": "2026-08-28T18:53:35Z",
++    "body_digest": "sha256:9bf2116b13897d94b986b65560cccbd895b8494492d4d593cbf0f975ec99a1b9"
++  },
++  "title": "GOV-0032: badf-research has no evidence-synthesis subskill, and ungrounded findings pass (P0 4/9 + earned control 22)",
++  "problem": "## Observed\n`badf-research` has 3 of 9 P0 subskills; `evidence-synthesis` \u2014 which turns adjudicated claims + contradictions + non-coverage into decision-relevant findings \u2014 does not exist. A failing-first probe of the current gate shows a real, deterministically-enforceable defect: a **finding with empty `claim_refs`** (a synthesis conclusion grounded in no claim) passes the gate.\n\n## Expected\nBuild `evidence-synthesis` as P0 subskill **4 of 9**: a concise `SKILL.md` that organises evidence by consensus / strength / dispute / gap (not source-by-source), produces `findings`, surfaces contradictions and declares gaps, with no acquisition/decision/authority. Register `IMPLEMENTED`. **Control 22 (earned): every finding references at least one claim** \u2014 a synthesis conclusion rests on adjudicated evidence, not free assertion.\n\n## Evidence\n- `ls skills/badf-research/subskills` \u2192 `repository-research`, `problem-framing`, `fact-checking` (no `evidence-synthesis`)\n- probe: a finding with `claim_refs: []` \u2192 **PASS (gap)** on the current gate\n\n## Unknowns\nNone for this subskill. A second measured gap \u2014 `RESEARCH_SUFFICIENT` with zero findings \u2014 is the disposition owner's; left for `research-reconciliation` to earn. Not in scope: control 6, the other subskills, #77, #83.\n\n## Proposed work package\n`BADF-WP-0048`. `evidence-synthesis/SKILL.md` + registry entry; control 22 (earned) + acceptance.md row; root router; tests failing-first + mutation; own G07 self-dossier. C2. Research controls -> 20 of 22; `badf-research` stays `DESIGNED` (4 of 9 P0).\n\ndiscovered-by: operator research sequencing (2026-08-29) + BADF-WP-0047 \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T18:53:35Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "evidence-synthesis P0 subskill 4/9 + control 22 (grounded findings, earned failing-first). /loop research build. Worked as BADF-WP-0048."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 064af3b..e18e551 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -36,7 +36,7 @@
+       "risk_class": "C1",
+       "allowed_tools": [],
+       "status": "DESIGNED",
+-      "digest": "sha256:71e2fe9825be4ddcd8891763a230d51013f59760ec93d15dc116d8b78c470f18"
++      "digest": "sha256:f84f34f80bbe622629efbce51a5e355e8e906ea15840933eba3e418bf4dcc446"
+     },
+     {
+       "name": "repository-research",
+@@ -86,6 +86,19 @@
+       ],
+       "status": "IMPLEMENTED",
+       "digest": "sha256:fa87749db7df5512f1f3cfdddba25e4b1f9f19ed9b56fdb8f01ee0a12c8669f8"
++    },
++    {
++      "name": "evidence-synthesis",
++      "source": "skills/badf-research/subskills/evidence-synthesis/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [
++        "local-filesystem",
++        "local-shell"
++      ],
++      "status": "IMPLEMENTED",
++      "digest": "sha256:7911b15caacfbd8724317ad8c2451613f4a42eb966c9ce7c09ac6d85b721ec92"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 48a96ab..aa5b098 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -359,6 +359,18 @@ source's content entails the claim — has no content locator in the machine con
+ **not** forced into a weak verifier here; it is filed as its own issue (RSR-I06 candidate). Research
+ controls: **19 of 21**. `badf-research` stays `DESIGNED` (3 of 9 P0).
+ 
++## evidence-synthesis — grounded findings (`BADF-WP-0048`, Issue #87)
++
++The fourth P0 research subskill: `skills/badf-research/subskills/evidence-synthesis/SKILL.md`
++reduces adjudicated `claims`, `contradictions` and `non_coverage` into decision-relevant `findings`
++organised by consensus / strength / dispute / gap — *organising* evidence, not accumulating it
++source-by-source. **Control 22, earned by failing-first**: a probe showed an *ungrounded* finding
++(empty `claim_refs`) passed the gate, so the gate now requires every finding to reference at least
++one claim — a synthesis conclusion rests on adjudicated evidence, not free assertion. (A second
++measured gap — `RESEARCH_SUFFICIENT` with zero findings — is genuinely the disposition owner's, and
++is left for `research-reconciliation` to earn rather than grabbed here.) Research controls: **20 of
++22**. `badf-research` stays `DESIGNED` (4 of 9 P0).
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 1ce2888..4ad2408 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -2897,6 +2897,10 @@ def validate_research_record(path: Path) -> str:
+         if c["status"] == "DISPUTED" and not (c["supporting_sources"] and c["contradicting_sources"]):
+             raise ValidationError(f"claim {cid} is DISPUTED but does not carry both supporting and contradicting evidence; a dispute is support and contradiction coexisting (control 21)")
+     for f in rec["findings"]:
++        # 22: a finding is grounded in the claims it synthesises (evidence-synthesis).
++        # A synthesis conclusion rests on adjudicated claims, not free assertion.
++        if not f["claim_refs"]:
++            raise ValidationError(f"finding {f['id']} rests on no claim; a finding is synthesis of adjudicated evidence, not a free assertion (control 22)")
+         missing = sorted(set(f["claim_refs"]) - claim_ids)
+         if missing:
+             raise ValidationError(f"finding {f['id']} references claim(s) the record does not carry: {', '.join(missing)}")
+diff --git a/skills/badf-research/SKILL.md b/skills/badf-research/SKILL.md
+index 4232706..2da6d0c 100644
+--- a/skills/badf-research/SKILL.md
++++ b/skills/badf-research/SKILL.md
+@@ -5,7 +5,7 @@ description: Govern evidence-based research for BADF questions, issues, defects,
+ 
+ # BADF Research
+ 
+-Status: `DESIGNED` (contract frozen by `BADF-WP-0031`). The `research` gate command enforces the record contract, and the `problem-framing`, `repository-research` and `fact-checking` subskills exist; the family is not yet activated for autonomous use (3 of 9 P0 subskills). Research determines what the evidence supports; `badf-delivery` governs what authorised actors may do with that conclusion.
++Status: `DESIGNED` (contract frozen by `BADF-WP-0031`). The `research` gate command enforces the record contract, and the `problem-framing`, `repository-research`, `fact-checking` and `evidence-synthesis` subskills exist; the family is not yet activated for autonomous use (4 of 9 P0 subskills). Research determines what the evidence supports; `badf-delivery` governs what authorised actors may do with that conclusion.
+ 
+ 1. Read the repository `AGENTS.md` and the documents it marks required.
+ 2. Resolve the research question, the originating Issue and its demand record, the research type and depth (`references/research-types.md`), scope and non-goals, source and data boundaries, authority and mutation constraints, required evidence, and the bounded scope contract — non-empty **stop conditions** (when the run stops), the **assumptions** it rests on (kept distinct from evidence), and the **decision it serves** — all first-class in the record (`schemas/research-record.schema.json`, control 19).
+diff --git a/skills/badf-research/references/acceptance.md b/skills/badf-research/references/acceptance.md
+index 75c68c3..2a75234 100644
+--- a/skills/badf-research/references/acceptance.md
++++ b/skills/badf-research/references/acceptance.md
+@@ -27,10 +27,11 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows
+ | 19 | the research scope is bounded and machine-readable: a material run declares non-empty `stop_conditions`, `assumptions` distinct from evidence, and a `decision_context` naming the decision it serves (framing, excluded from the `evidence_digest`) |
+ | 20 | framing precedes evidence: a record in a pre-evidence state (`PROPOSED`/`FRAMED`/`BASELINED`) carries no `claims`, `sources`, or `findings` (the `problem-framing` invariant — sharpen the question, do not answer it) |
+ | 21 | a claim's status is consistent with its evidence (the `fact-checking` invariant): a `FALSIFIED` claim carries a contradicting source (no evidence ≠ false), and a `DISPUTED` claim carries both supporting and contradicting sources (support and contradiction coexist). Whether a source's *content* entails the claim is not machine-checkable here — the source carries no content locator — and is tracked separately |
++| 22 | a finding is grounded (the `evidence-synthesis` invariant): every finding references at least one claim — a synthesis conclusion rests on adjudicated evidence, not free assertion |
+ 
+ ## Admission
+ 
+-- `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time). Present: `repository-research`, `problem-framing`, `fact-checking` (3 of 9).
+-- `VALIDATED`: the 21 controls above pass as gate tests with mutation. Enforced today: 1–5, 7–14, 16–21 (19 of 21); control 6 (source-digest freshness) awaits a source-fetch mechanism, control 15 rides the state machine.
++- `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time). Present: `repository-research`, `problem-framing`, `fact-checking`, `evidence-synthesis` (4 of 9).
++- `VALIDATED`: the 22 controls above pass as gate tests with mutation. Enforced today: 1–5, 7–14, 16–22 (20 of 22); control 6 (source-digest freshness) awaits a source-fetch mechanism, control 15 rides the state machine.
+ - `SHADOWED`: the family is run retrospectively on historical BADF findings (the authority-downgrade defect, schema drift, foreign-revision resolution, the composed-tree reds of 2026-08-28) without knowing the answer; `examples/research-record.json` is the first such shadow record.
+ - `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. Until then the registry entry stays `DESIGNED`.
+diff --git a/skills/badf-research/subskills/evidence-synthesis/SKILL.md b/skills/badf-research/subskills/evidence-synthesis/SKILL.md
+new file mode 100644
+index 0000000..73bff7a
+--- /dev/null
++++ b/skills/badf-research/subskills/evidence-synthesis/SKILL.md
+@@ -0,0 +1,30 @@
++---
++name: evidence-synthesis
++description: Transform adjudicated claims, contradictions and non-coverage into decision-relevant findings -- organised by consensus, strength, dispute and gap, not source-by-source. Use after claims are bound and (where required) fact-checked, before challenge and reconciliation. It produces findings; it does not acquire evidence, decide, or authorise anything.
++---
++
++# evidence-synthesis
++
++A subskill of `badf-research` (`../../SKILL.md`). It reduces the record's `claims`, `contradictions`
++and `non_coverage` into `findings` in the research record at
++`work/research/<BADF-RSR-NNNN>/research-record.json` against `schemas/research-record.schema.json`.
++It has no authority; a finding is decision-relevant evidence, never a decision (RSR-I01).
++
++**It organises evidence, it does not accumulate it.** The output is not "source A says … source B
++says …" but findings grouped by **consensus**, **strong** vs **weak** evidence, **contradiction**,
++**outlier**, **unknown** and **evidence gap**, each carrying its **decision implication**.
++
++**Its integrity invariant: every finding is grounded in the claims it synthesises.** A finding
++references at least one claim; it is a conclusion drawn *from* adjudicated evidence, never a free
++assertion (control 22). Contradictions are surfaced in the finding, not buried (RSR-I04); what the
++evidence does not cover is declared in `non_coverage`, not silently closed.
++
++## Do
++
++1. Read the record's `claims` (with their fact-checked `status`), `contradictions` and `non_coverage`.
++2. Cluster claims by what they bear on; within each cluster separate agreement from dispute and strong evidence from weak.
++3. Write each **finding** as a decision-relevant statement, referencing the claim(s) it rests on (`claim_refs`, non-empty).
++4. Preserve every contradiction the cluster contains -- a finding that ignores an available contradiction is invalid.
++5. Name the **unknowns** and **evidence gaps** the synthesis exposes; add them to `non_coverage` where they were not already declared.
++6. State each finding's **decision implication** without choosing the decision -- direction, not authority.
++7. Hand the findings to `adversarial-research` (challenge) and `research-reconciliation`; grant no downstream authority.
+diff --git a/tests/test_badf_research.py b/tests/test_badf_research.py
+index 5c9a1cc..7dd2503 100644
+--- a/tests/test_badf_research.py
++++ b/tests/test_badf_research.py
+@@ -497,5 +497,28 @@ class ProblemFramingRegistrationTests(unittest.TestCase):
+         self.assertTrue((gate.ROOT / "skills/badf-research/subskills/fact-checking/SKILL.md").is_file())
+ 
+ 
++class EvidenceSynthesisTests(ResearchRecordTests):
++    """Control 22 (BADF-WP-0048, evidence-synthesis): a finding is grounded in the
++    claims it synthesises -- a finding references at least one claim (findings are
++    not part of the evidence_digest, so no recompute is needed)."""
++
++    def test_a_finding_with_no_claim_refs_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); rec["findings"][0]["claim_refs"] = []
++        self.refused(rec, "rests on no claim")
++
++    def test_a_grounded_finding_passes(self):
++        r = self.run_cli(copy.deepcopy(EXAMPLE))
++        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
++
++    def test_evidence_synthesis_is_registered_implemented_with_a_real_digest(self):
++        import hashlib
++        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
++        entry = next((e for e in reg["skills"] if e["name"] == "evidence-synthesis"), None)
++        self.assertIsNotNone(entry, "evidence-synthesis is not registered")
++        self.assertEqual(entry["status"], "IMPLEMENTED")
++        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
++        self.assertTrue((gate.ROOT / "skills/badf-research/subskills/evidence-synthesis/SKILL.md").is_file())
++
++
+ if __name__ == "__main__":
+     unittest.main()
+diff --git a/work/WP-2026-0047/work-package.json b/work/WP-2026-0047/work-package.json
+index 12a84dd..800db7a 100644
+--- a/work/WP-2026-0047/work-package.json
++++ b/work/WP-2026-0047/work-package.json
+@@ -49,11 +49,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "936169f"
++    "base_revision": "936169f",
++    "landed_as": "c62c32a00d921e75822e74aebc0a33897a523641"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Third P0 research subskill. Control 21 was EARNED by a failing-first adversarial probe (not added because prior subskills happened to land with a control); the non-enforceable semantic half is issue #84. Reconciles WP-2026-0046. badf-research stays DESIGNED (3 of 9 P0); research controls to 19 of 21."
+ }
