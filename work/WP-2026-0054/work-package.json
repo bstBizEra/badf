@@ -44,11 +44,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "e1da61c"
+    "base_revision": "e1da61c",
+    "landed_as": "45b1a8c012031de349030379ac88883d122a853b"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Ninth and final P0 research subskill -- completes the family. Control 26 earned by a failing-first probe (RESEARCH_SUFFICIENT + zero findings passed), deferred here from evidence-synthesis. Control 15 was already enforced since RSR-004/WP-0038; this WP corrects the mistracking. Reconciles WP-2026-0053. badf-research stays DESIGNED (9 of 9 P0, all 26 controls enforced -- IMPLEMENTED/VALIDATED criteria met; status advance is the operator's admission call)."
 }

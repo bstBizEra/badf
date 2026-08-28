@@ -543,6 +543,31 @@ class TechnicalResearchTests(ResearchRecordTests):
 CHALLENGED = json.loads((gate.ROOT / "examples/research-record-challenged.json").read_text())
 
 
+class ShadowEvidenceTests(ResearchRecordTests):
+    """BADF-WP-0055: the three shadow records over real historical BADF cases are
+    gate-valid, and each exercises the part of the contract it was chosen for."""
+
+    SHADOWS = ("control15", "composed-red", "ci-parity")
+
+    def test_all_three_shadow_records_pass(self):
+        for name in self.SHADOWS:
+            rec = json.loads((gate.ROOT / f"examples/research-record-shadow-{name}.json").read_text())
+            r = self.run_cli(rec)
+            self.assertEqual(r.returncode, 0, f"{name}: {r.stderr}")
+            self.assertIn("RESEARCH PASS", r.stdout)
+
+    def test_the_falsification_case_carries_a_preserved_contradiction(self):
+        rec = json.loads((gate.ROOT / "examples/research-record-shadow-ci-parity.json").read_text())
+        self.assertEqual(rec["claims"][0]["status"], "FALSIFIED")
+        self.assertTrue(rec["claims"][0]["contradicting_sources"])
+        self.assertTrue(rec["contradictions"])
+
+    def test_the_repository_case_baselines_to_a_real_revision(self):
+        rec = json.loads((gate.ROOT / "examples/research-record-shadow-control15.json").read_text())
+        self.assertEqual(rec["type"], "R02")
+        self.assertEqual(rec["baseline"]["revision"], "e7ea929")
+
+
 class ResearchReconciliationTests(ResearchRecordTests):
     """Control 26 (BADF-WP-0054, research-reconciliation): sufficiency means synthesis
     -- a RESEARCH_SUFFICIENT record carries at least one finding. findings are not in

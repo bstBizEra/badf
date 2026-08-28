@@ -1,0 +1,53 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0055",
+  "title": "Shadow-evaluate the badf-research P0 family on real historical BADF cases (SHADOWED admission evidence)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0042",
+  "objective": "Produce the SHADOWED admission evidence for the completed badf-research P0 family: author three digest-bound, gate-valid research records over distinct real historical BADF cases (R02 control-15 mistracking @ e7ea929, R03 composed-tree red @ 30186c5, R10 local-vs-CI parity FALSIFIED), each exercising a different part of the contract; add them to CI; and write an admission-evidence note measuring whether the contract represented each case faithfully. badf-research stays DESIGNED; the status advance is the operator's admission decision.",
+  "business_value": "Turns 'the family is built' into 'the family holds on reality': running the contract retrospectively on cases whose outcomes are known independently tests whether it would have surfaced the real uncertainty, evidence, contradiction and decision boundary -- stronger than synthetic examples, and the gate to APPROVED/ACTIVE.",
+  "in_scope": [
+    "examples/research-record-shadow-{control15,composed-red,ci-parity}.json (three gate-valid shadow records)",
+    "CI validation of the three shadow records",
+    "skills/badf-research/references/shadow-evidence.md (the admission-evidence note + measurement)",
+    "acceptance.md SHADOWED ladder entry",
+    "tests validating the shadow records; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "advancing badf-research off DESIGNED (the status advance is the operator's admission decision)",
+    "any new gate control or schema change (the records exercise the existing 26 controls)",
+    "P1 research skills; #77/#83/#84"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the three shadow records pass `research` (all 26 controls) with derived confidence matching each basis",
+    "the R02 record baselines to a resolving revision (control 3); the R10 record is FALSIFIED with a preserved contradiction (controls 21, 8)",
+    "the three records are validated in CI; shadow-evidence.md records the measurement (no contract gap surfaced)",
+    "acceptance.md documents the SHADOWED evidence; badf-research stays DESIGNED",
+    "compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "45b1a8c"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Shadow evaluation of the completed P0 family: 3 real historical cases, faithfully represented, no contract gap surfaced. Reconciles WP-2026-0054. badf-research stays DESIGNED; SHADOWED evidence produced -- the status advance up the admission ladder is the operator's call."
+}
