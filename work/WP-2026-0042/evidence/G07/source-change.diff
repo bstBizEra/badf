@@ -1,0 +1,975 @@
+diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
+index aa6569d..6982afa 100644
+--- a/.github/workflows/badf-gates.yml
++++ b/.github/workflows/badf-gates.yml
+@@ -43,6 +43,7 @@ jobs:
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G00.json
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G01.json
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G02.json
++          python3 scripts/badf_gate.py dossier examples/gate-dossier.G03.json
+           python3 scripts/badf_gate.py research examples/research-record.json
+           python3 scripts/badf_gate.py research examples/research-record-challenged.json
+           python3 scripts/badf_gate.py research examples/research-record-repo.json
+diff --git a/badf/demands/BADF-DEM-0029.json b/badf/demands/BADF-DEM-0029.json
+new file mode 100644
+index 0000000..5846c64
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0029.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0029",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 72,
++    "url": "https://github.com/bstBizEra/badf/issues/72",
++    "exported_at": "2026-08-28T15:43:22Z",
++    "body_digest": "sha256:9ff013a201cf22f1cc0a1450bcfa8365c9ebae8fe2abcf4da1ef4d509c1df1ce"
++  },
++  "title": "GOV-0025: Gate 03 declared but unenforced \u2014 no per-type rules, schemas, or example for journeys/service-blueprint/accessibility/user-validation",
++  "problem": "## Observed\nGate 03 is the next declared-but-unenforced gate, the same defect class #70 closed for G02. `badf/lifecycle.json` lists G03 (UX and service design) with `required_evidence` **journeys, service-blueprint, accessibility, user-validation** and exit criteria \"happy and unhappy paths designed / accessibility addressed / support operations defined / design validated\" \u2014 yet `validate_evidence` has **no per-type rule** for any of the four, no G03 example dossier exists, and none of the four schemas exist. A G03 dossier today would pass on names alone.\n\n## Expected\nThe four G03 evidence types get per-type rules in `validate_evidence`, exactly as G01/G02 do \u2014 the gate OPENS each artifact, and each rule maps to one exit criterion:\n- `journeys` \u2014 unique `JRN-NNN`, each with a persona and non-empty steps; the set must design **both** a happy and an unhappy path (\"happy and unhappy paths designed\").\n- `service-blueprint` \u2014 one lane per journey (bidirectional coverage: every journey blueprinted, no lane for an unknown journey), each lane with non-empty support actions (\"support operations defined\").\n- `accessibility` \u2014 a declared standard and enumerated criteria, each `met` or `not_applicable` with a rationale (\"accessibility addressed\").\n- `user-validation` \u2014 a **human**-produced record with a method, a positive participant count, and findings whose major/critical items carry a resolution (\"design validated\").\nPlus `examples/gate-dossier.G03.json` (validated in CI beside G00\u2013G02), and a G02\u2192G03 pair-acceptance.\n\n## Evidence\n- `G03 required_evidence = ['journeys', 'service-blueprint', 'accessibility', 'user-validation']` (badf/lifecycle.json)\n- `grep -cE 'def check_(journeys|service_blueprint|accessibility|user_validation)' scripts/badf_gate.py` \u2192 `0` (no G03 rule exists)\n- `EVIDENCE_RULES keys = ['prd', 'acceptance-criteria', 'product-approval', 'requirements', 'nfr', 'traceability', 'definition-of-ready']` (G00\u2013G02 types only)\n- `ls examples/gate-dossier.G03.json` \u2192 `No such file or directory`; the four G03 schemas absent \u2192 `4/4` missing\n\n## Unknowns\nNone for the gate contract. This WP is the deterministic G03 evidence contract only \u2014 no design-authoring skill, no vendored UX toolkit. Reuses the G01/G02 substrate.\n\n## Proposed work package\n`BADF-WP-0042` (G03). Four `check_*` functions + registration; four schemas; `examples/gate-dossier.G03.json` + its four evidence/artifact pairs; `tests/test_badf_g03.py` (failing-first) + a G02\u2192G03 pair-acceptance; mutation; own G07 self-dossier. C2.\n\ndiscovered-by: BADF-WP-0041 (the G02 gate contract) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T15:43:22Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Body exported verbatim and digest-bound. G03 gate contract, the next declared-but-unenforced gate after G02 (#70). Authority: the operator's 'proceed on your call' (2026-08-28). Worked as BADF-WP-0042."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 3fc9954..331ca4f 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -263,6 +263,21 @@ substrate — reusing `validate_evidence`, no competing `scripts/badf_requiremen
+ Spec-Kit; the `badf-requirements` authoring skill and the capability/epic hierarchy are named,
+ deferred WPs.
+ 
++## Gate 03 — UX and service design (`BADF-WP-0042`, Issue #72)
++
++The gate march continues one gate at a time: G03's four types (`journeys`, `service-blueprint`,
++`accessibility`, `user-validation`) were declared but unenforced. Each now has a per-type rule in
++`validate_evidence`, and each maps to one of G03's exit criteria. `journeys` — unique `JRN-NNN`
++with non-empty steps, and the set must design **both** a happy and an unhappy path (an all-happy
++design is refused). `service-blueprint` — one lane per journey, reached through the `journeys`
++sibling: no uncovered journey, no lane for an unknown journey (the coverage cross-reference, G03's
++RTM analogue), and every lane must define support actions. `accessibility` — a declared standard
++and enumerated criteria, each `met` or `not_applicable` **with a rationale**. `user-validation` —
++**human**-produced, a positive participant count, and every `major`/`critical` finding carrying a
++resolution (an unresolved major finding means the design is not validated). Ships
++`examples/gate-dossier.G03.json` and a G02→G03 pair-acceptance. Same lean substrate as G01/G02 —
++no design-authoring skill, no vendored UX toolkit.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/examples/evidence/G03/accessibility.artifact.json b/examples/evidence/G03/accessibility.artifact.json
+new file mode 100644
+index 0000000..83598e6
+--- /dev/null
++++ b/examples/evidence/G03/accessibility.artifact.json
+@@ -0,0 +1,23 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "standard": "WCAG 2.1 AA",
++  "criteria": [
++    {
++      "id": "A11Y-001",
++      "requirement": "the dashboard is fully keyboard navigable",
++      "status": "met"
++    },
++    {
++      "id": "A11Y-002",
++      "requirement": "verdict colour is paired with a text label (not colour alone)",
++      "status": "met"
++    },
++    {
++      "id": "A11Y-003",
++      "requirement": "audio captioning",
++      "status": "not_applicable",
++      "rationale": "the control plane has no audio surface"
++    }
++  ]
++}
+diff --git a/examples/evidence/G03/accessibility.json b/examples/evidence/G03/accessibility.json
+new file mode 100644
+index 0000000..bb83c23
+--- /dev/null
++++ b/examples/evidence/G03/accessibility.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G03",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G03-ACCESSIBILITY-v1",
++  "claim": "Example accessibility bound to PRD-BADF-0001",
++  "evidence_type": "accessibility",
++  "producer": {
++    "id": "example-designer",
++    "type": "human"
++  },
++  "operation": "assess accessibility",
++  "artifact": "examples/evidence/G03/accessibility.artifact.json",
++  "digest": "sha256:a42df69a43a4bb38a70a21922ba02d8fe407086ead5df9d4312f1e235ce8b2bd"
++}
+diff --git a/examples/evidence/G03/journeys.artifact.json b/examples/evidence/G03/journeys.artifact.json
+new file mode 100644
+index 0000000..a137e7c
+--- /dev/null
++++ b/examples/evidence/G03/journeys.artifact.json
+@@ -0,0 +1,26 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "journeys": [
++    {
++      "id": "JRN-001",
++      "persona": "operator",
++      "path_type": "happy",
++      "steps": [
++        "opens the gate dashboard",
++        "reads a green composed-tree verdict",
++        "merges the PR"
++      ]
++    },
++    {
++      "id": "JRN-002",
++      "persona": "operator",
++      "path_type": "unhappy",
++      "steps": [
++        "opens a red PR",
++        "reads the failing evidence type named by the gate",
++        "requests changes"
++      ]
++    }
++  ]
++}
+diff --git a/examples/evidence/G03/journeys.json b/examples/evidence/G03/journeys.json
+new file mode 100644
+index 0000000..639eab1
+--- /dev/null
++++ b/examples/evidence/G03/journeys.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G03",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G03-JOURNEYS-v1",
++  "claim": "Example journeys bound to PRD-BADF-0001",
++  "evidence_type": "journeys",
++  "producer": {
++    "id": "example-designer",
++    "type": "human"
++  },
++  "operation": "design the user journeys",
++  "artifact": "examples/evidence/G03/journeys.artifact.json",
++  "digest": "sha256:48bebb0fd8790e84cfc9a60e88000c9e78ef4a60fdedc8940d2f941a6ad06520"
++}
+diff --git a/examples/evidence/G03/service-blueprint.artifact.json b/examples/evidence/G03/service-blueprint.artifact.json
+new file mode 100644
+index 0000000..c5adff3
+--- /dev/null
++++ b/examples/evidence/G03/service-blueprint.artifact.json
+@@ -0,0 +1,30 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "lanes": [
++    {
++      "journey": "JRN-001",
++      "frontstage": [
++        "dashboard shows the APPROVED verdict"
++      ],
++      "backstage": [
++        "compose runs the full suite on the composed tree"
++      ],
++      "support_actions": [
++        "operator can re-run CI from the PR"
++      ]
++    },
++    {
++      "journey": "JRN-002",
++      "frontstage": [
++        "red banner names the failing type"
++      ],
++      "backstage": [
++        "gate exits non-zero and names the evidence type"
++      ],
++      "support_actions": [
++        "reviewer posts a Request-Changes comment"
++      ]
++    }
++  ]
++}
+diff --git a/examples/evidence/G03/service-blueprint.json b/examples/evidence/G03/service-blueprint.json
+new file mode 100644
+index 0000000..73efa46
+--- /dev/null
++++ b/examples/evidence/G03/service-blueprint.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G03",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G03-SERVICE-BLUEPRINT-v1",
++  "claim": "Example service-blueprint bound to PRD-BADF-0001",
++  "evidence_type": "service-blueprint",
++  "producer": {
++    "id": "example-designer",
++    "type": "human"
++  },
++  "operation": "map the service blueprint",
++  "artifact": "examples/evidence/G03/service-blueprint.artifact.json",
++  "digest": "sha256:5aff1d420f7215d7d52d5703810140d490fd211a5aa58d9dd237665e44b6366d"
++}
+diff --git a/examples/evidence/G03/user-validation.artifact.json b/examples/evidence/G03/user-validation.artifact.json
+new file mode 100644
+index 0000000..bd0dcad
+--- /dev/null
++++ b/examples/evidence/G03/user-validation.artifact.json
+@@ -0,0 +1,19 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "method": "moderated usability test",
++  "participants": 5,
++  "findings": [
++    {
++      "id": "UV-001",
++      "observation": "operators read the green verdict without hesitation",
++      "severity": "info"
++    },
++    {
++      "id": "UV-002",
++      "observation": "the red path did not say WHICH evidence type failed",
++      "severity": "major",
++      "resolution": "the banner now names the failing type, mirroring the gate stderr"
++    }
++  ]
++}
+diff --git a/examples/evidence/G03/user-validation.json b/examples/evidence/G03/user-validation.json
+new file mode 100644
+index 0000000..23708c5
+--- /dev/null
++++ b/examples/evidence/G03/user-validation.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G03",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G03-USER-VALIDATION-v1",
++  "claim": "Example user-validation bound to PRD-BADF-0001",
++  "evidence_type": "user-validation",
++  "producer": {
++    "id": "example-researcher",
++    "type": "human"
++  },
++  "operation": "validate the design with users",
++  "artifact": "examples/evidence/G03/user-validation.artifact.json",
++  "digest": "sha256:dc3f47b5c7ff5f012917e08663559421edfb334bc93546e2d89b47bf19ced1f9"
++}
+diff --git a/examples/gate-dossier.G03.json b/examples/gate-dossier.G03.json
+new file mode 100644
+index 0000000..15cf094
+--- /dev/null
++++ b/examples/gate-dossier.G03.json
+@@ -0,0 +1,58 @@
++{
++  "schema_version": "1.0.0",
++  "id": "DOS-WP-2026-0001-G03-v1",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G03",
++  "policy_epoch": "BADF-2026-08-25",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "change_class": "C1",
++  "evidence": [
++    {
++      "type": "journeys",
++      "path": "examples/evidence/G03/journeys.json"
++    },
++    {
++      "type": "service-blueprint",
++      "path": "examples/evidence/G03/service-blueprint.json"
++    },
++    {
++      "type": "accessibility",
++      "path": "examples/evidence/G03/accessibility.json"
++    },
++    {
++      "type": "user-validation",
++      "path": "examples/evidence/G03/user-validation.json"
++    }
++  ],
++  "approvals": [
++    {
++      "role": "engineering_owner",
++      "decision": "APPROVED",
++      "by": "example-engineering-owner",
++      "revision": "BADF-BASELINE-1.0.0",
++      "policy_epoch": "BADF-2026-08-25",
++      "approved_at": "2026-08-25T00:00:07Z",
++      "scope": "example-only",
++      "principal_type": "human"
++    },
++    {
++      "role": "independent_reviewer",
++      "decision": "APPROVED",
++      "by": "example-reviewer",
++      "revision": "BADF-BASELINE-1.0.0",
++      "policy_epoch": "BADF-2026-08-25",
++      "approved_at": "2026-08-25T00:00:07Z",
++      "scope": "example-only",
++      "principal_type": "human"
++    }
++  ],
++  "exceptions": [],
++  "risks": [],
++  "council": null,
++  "disposition": "PASS",
++  "created_at": "2026-08-25T00:00:06Z",
++  "author": "example-author",
++  "author_type": "human",
++  "conditions": []
++}
+diff --git a/schemas/accessibility.schema.json b/schemas/accessibility.schema.json
+new file mode 100644
+index 0000000..5da4118
+--- /dev/null
++++ b/schemas/accessibility.schema.json
+@@ -0,0 +1,62 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/accessibility.schema.json",
++  "title": "G03 accessibility evidence artifact -- a declared standard and enumerated criteria",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "schema_version",
++    "prd_id",
++    "standard",
++    "criteria"
++  ],
++  "properties": {
++    "schema_version": {
++      "type": "string",
++      "enum": [
++        "1.0.0"
++      ]
++    },
++    "prd_id": {
++      "type": "string",
++      "pattern": "^PRD-[A-Za-z0-9._-]+$"
++    },
++    "standard": {
++      "type": "string",
++      "minLength": 1
++    },
++    "criteria": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "object",
++        "required": [
++          "id",
++          "requirement",
++          "status"
++        ],
++        "additionalProperties": false,
++        "properties": {
++          "id": {
++            "type": "string",
++            "pattern": "^A11Y-[0-9]{3,}$"
++          },
++          "requirement": {
++            "type": "string",
++            "minLength": 1
++          },
++          "status": {
++            "type": "string",
++            "enum": [
++              "met",
++              "not_applicable"
++            ]
++          },
++          "rationale": {
++            "type": "string"
++          }
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/journeys.schema.json b/schemas/journeys.schema.json
+new file mode 100644
+index 0000000..920979e
+--- /dev/null
++++ b/schemas/journeys.schema.json
+@@ -0,0 +1,63 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/journeys.schema.json",
++  "title": "G03 journeys evidence artifact -- user journeys covering happy and unhappy paths",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "schema_version",
++    "prd_id",
++    "journeys"
++  ],
++  "properties": {
++    "schema_version": {
++      "type": "string",
++      "enum": [
++        "1.0.0"
++      ]
++    },
++    "prd_id": {
++      "type": "string",
++      "pattern": "^PRD-[A-Za-z0-9._-]+$"
++    },
++    "journeys": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "object",
++        "required": [
++          "id",
++          "persona",
++          "path_type",
++          "steps"
++        ],
++        "additionalProperties": false,
++        "properties": {
++          "id": {
++            "type": "string",
++            "pattern": "^JRN-[0-9]{3,}$"
++          },
++          "persona": {
++            "type": "string",
++            "minLength": 1
++          },
++          "path_type": {
++            "type": "string",
++            "enum": [
++              "happy",
++              "unhappy"
++            ]
++          },
++          "steps": {
++            "type": "array",
++            "minItems": 1,
++            "items": {
++              "type": "string",
++              "minLength": 1
++            }
++          }
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/service-blueprint.schema.json b/schemas/service-blueprint.schema.json
+new file mode 100644
+index 0000000..c8f5703
+--- /dev/null
++++ b/schemas/service-blueprint.schema.json
+@@ -0,0 +1,65 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/service-blueprint.schema.json",
++  "title": "G03 service-blueprint evidence artifact -- one lane per journey, frontstage/backstage/support",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "schema_version",
++    "prd_id",
++    "lanes"
++  ],
++  "properties": {
++    "schema_version": {
++      "type": "string",
++      "enum": [
++        "1.0.0"
++      ]
++    },
++    "prd_id": {
++      "type": "string",
++      "pattern": "^PRD-[A-Za-z0-9._-]+$"
++    },
++    "lanes": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "object",
++        "required": [
++          "journey",
++          "frontstage",
++          "backstage",
++          "support_actions"
++        ],
++        "additionalProperties": false,
++        "properties": {
++          "journey": {
++            "type": "string",
++            "pattern": "^JRN-[0-9]{3,}$"
++          },
++          "frontstage": {
++            "type": "array",
++            "items": {
++              "type": "string",
++              "minLength": 1
++            }
++          },
++          "backstage": {
++            "type": "array",
++            "items": {
++              "type": "string",
++              "minLength": 1
++            }
++          },
++          "support_actions": {
++            "type": "array",
++            "items": {
++              "type": "string",
++              "minLength": 1
++            }
++          }
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/user-validation.schema.json b/schemas/user-validation.schema.json
+new file mode 100644
+index 0000000..284de4a
+--- /dev/null
++++ b/schemas/user-validation.schema.json
+@@ -0,0 +1,68 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/user-validation.schema.json",
++  "title": "G03 user-validation evidence artifact -- the design validated with real users",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "schema_version",
++    "prd_id",
++    "method",
++    "participants",
++    "findings"
++  ],
++  "properties": {
++    "schema_version": {
++      "type": "string",
++      "enum": [
++        "1.0.0"
++      ]
++    },
++    "prd_id": {
++      "type": "string",
++      "pattern": "^PRD-[A-Za-z0-9._-]+$"
++    },
++    "method": {
++      "type": "string",
++      "minLength": 1
++    },
++    "participants": {
++      "type": "number"
++    },
++    "findings": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "object",
++        "required": [
++          "id",
++          "observation",
++          "severity"
++        ],
++        "additionalProperties": false,
++        "properties": {
++          "id": {
++            "type": "string",
++            "pattern": "^UV-[0-9]{3,}$"
++          },
++          "observation": {
++            "type": "string",
++            "minLength": 1
++          },
++          "severity": {
++            "type": "string",
++            "enum": [
++              "info",
++              "minor",
++              "major",
++              "critical"
++            ]
++          },
++          "resolution": {
++            "type": "string"
++          }
++        }
++      }
++    }
++  }
++}
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index a59729f..726fc3e 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -1025,9 +1025,96 @@ def check_definition_of_ready(artifact: Path, dossier: dict[str, Any], evidence:
+         raise ValidationError(f"definition-of-ready: G02 exit criterion not met: {'; '.join(unmet)}")
+ 
+ 
++# ---- G03 evidence contract: UX and service design -- journeys, blueprint, accessibility, validation (BADF-WP-0042, #72) ----
++def check_journeys(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("journeys", doc)
++    _no_placeholders(doc, "journeys")
++    journeys = doc["journeys"]
++    if not journeys:
++        raise ValidationError("journeys: no journeys; an empty list designs no path")
++    ids = [j["id"] for j in journeys]
++    dupes = sorted({i for i in ids if ids.count(i) > 1})
++    if dupes:
++        raise ValidationError(f"journeys: duplicate journey id(s): {', '.join(dupes)}")
++    for j in journeys:
++        if not j.get("steps"):
++            raise ValidationError(f"journeys: {j['id']} has no steps")
++    kinds = {j["path_type"] for j in journeys}
++    missing = {"happy", "unhappy"} - kinds
++    if missing:
++        raise ValidationError(f"journeys: no {', '.join(sorted(missing))} path designed; both a happy and an unhappy path are required")
++
++
++def check_service_blueprint(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("service-blueprint", doc)
++    _no_placeholders(doc, "service-blueprint")
++    lanes = doc["lanes"]
++    if not lanes:
++        raise ValidationError("service-blueprint: no lanes")
++    _, jr = _sibling_artifact(dossier, "journeys", "service-blueprint")
++    journey_ids = {j["id"] for j in (jr.get("journeys") or [])}
++    covered: dict[str, Any] = {}
++    for lane in lanes:
++        jid = lane["journey"]
++        if jid in covered:
++            raise ValidationError(f"service-blueprint: journey {jid} has more than one lane")
++        covered[jid] = lane
++        if not lane.get("support_actions"):
++            raise ValidationError(f"service-blueprint: lane for {jid} defines no support actions; support operations must be defined")
++    dangling = sorted(set(covered) - journey_ids)
++    if dangling:
++        raise ValidationError(f"service-blueprint: lane(s) for journey(s) absent from the journeys artifact: {', '.join(dangling)}")
++    uncovered = sorted(journey_ids - set(covered))
++    if uncovered:
++        raise ValidationError(f"service-blueprint: uncovered journey(s) with no lane: {', '.join(uncovered)}")
++
++
++def check_accessibility(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("accessibility", doc)
++    _no_placeholders(doc, "accessibility")
++    if not (doc.get("standard") or "").strip():
++        raise ValidationError("accessibility: no standard declared")
++    criteria = doc["criteria"]
++    if not criteria:
++        raise ValidationError("accessibility: no criteria; accessibility is not addressed by an empty list")
++    ids = [c["id"] for c in criteria]
++    dupes = sorted({i for i in ids if ids.count(i) > 1})
++    if dupes:
++        raise ValidationError(f"accessibility: duplicate criterion id(s): {', '.join(dupes)}")
++    for c in criteria:
++        if c["status"] == "not_applicable" and not (c.get("rationale") or "").strip():
++            raise ValidationError(f"accessibility: {c['id']} is not_applicable without a rationale")
++
++
++def check_user_validation(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("user-validation", doc)
++    _no_placeholders(doc, "user-validation")
++    if evidence["producer"].get("type") != "human":
++        raise ValidationError("user-validation must be produced by a human; validation with users is a human activity")
++    participants = doc["participants"]
++    if isinstance(participants, bool) or not isinstance(participants, (int, float)) or participants < 1:
++        raise ValidationError(f"user-validation: participants must be a positive number; got {participants!r}; a design is not validated with zero users")
++    findings = doc["findings"]
++    if not findings:
++        raise ValidationError("user-validation: no findings recorded")
++    ids = [f["id"] for f in findings]
++    dupes = sorted({i for i in ids if ids.count(i) > 1})
++    if dupes:
++        raise ValidationError(f"user-validation: duplicate finding id(s): {', '.join(dupes)}")
++    for f in findings:
++        if f["severity"] in {"major", "critical"} and not (f.get("resolution") or "").strip():
++            raise ValidationError(f"user-validation: {f['id']} is {f['severity']} but carries no resolution; an unresolved major finding means the design is not validated")
++
++
+ EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_criteria, "product-approval": check_product_approval,
+                   "requirements": check_requirements, "nfr": check_nfr, "traceability": check_traceability,
+-                  "definition-of-ready": check_definition_of_ready}
++                  "definition-of-ready": check_definition_of_ready,
++                  "journeys": check_journeys, "service-blueprint": check_service_blueprint,
++                  "accessibility": check_accessibility, "user-validation": check_user_validation}
+ 
+ 
+ def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -> None:
+diff --git a/tests/test_badf_advance.py b/tests/test_badf_advance.py
+index 7984608..3416103 100644
+--- a/tests/test_badf_advance.py
++++ b/tests/test_badf_advance.py
+@@ -143,9 +143,46 @@ class AdvanceScratch(ValidatedInstance):
+         assert r.returncode == 0 and "APPROVED" in r.stdout, r.stdout + r.stderr
+         return f"work/{self.wp()}/gate-dossier.G02.json"
+ 
++    def make_g03(self):
++        """A G03 dossier for the same WP at the G03/C1 floor: journeys, blueprint,
++        accessibility and a human user-validation, modelled on the shipped G03
++        example and bound to this instance's scratch PRD."""
++        d = self.wp_dir(); ev_dir = d / "evidence/G03"; ev_dir.mkdir(parents=True, exist_ok=True)
++        g02 = json.loads((d / "gate-dossier.G02.json").read_text())
++        ex = gate.ROOT / "examples/evidence/G03"
++        producers = {"journeys": HUMAN, "service-blueprint": HUMAN, "accessibility": HUMAN,
++                     "user-validation": {"id": "scratch-researcher", "type": "human"}}
++        index = []
++        for t in ("journeys", "service-blueprint", "accessibility", "user-validation"):
++            art = json.loads((ex / f"{t}.artifact.json").read_text()); art["prd_id"] = "PRD-SCRATCH-0001"
++            (ev_dir / f"{t}.artifact.json").write_text(json.dumps(art, indent=2) + "\n")
++            e = {"schema_version": "1.0.0", "id": f"EVD-{self.wp()}-G03-{t}", "work_package_id": self.wp(), "gate": "G03",
++                 "claim": f"{t} present", "evidence_type": t, "producer": producers[t],
++                 "source_revision": g02["source_revision"], "target": g02["target"],
++                 "toolchain": {"name": "human-review", "version": "1"}, "operation": "review",
++                 "started_at": g02["created_at"], "completed_at": g02["created_at"], "outcome": "PASS",
++                 "artifact": f"work/{self.wp()}/evidence/G03/{t}.artifact.json", "digest": gate.sha256(ev_dir / f"{t}.artifact.json")}
++            (ev_dir / f"{t}.json").write_text(json.dumps(e, indent=2) + "\n")
++            index.append({"type": t, "path": f"work/{self.wp()}/evidence/G03/{t}.json"})
++        doc = dict(g02, id=f"DOS-{self.wp()}-G03-v1", gate="G03", evidence=index)
++        (d / "gate-dossier.G03.json").write_text(json.dumps(doc, indent=2) + "\n")
++        self.framework_lock()
++        r = self.dossier_cli(f"work/{self.wp()}/gate-dossier.G03.json")
++        assert r.returncode == 0 and "APPROVED" in r.stdout, r.stdout + r.stderr
++        return f"work/{self.wp()}/gate-dossier.G03.json"
++
+ 
+ class AdvanceTests(AdvanceScratch):
+ 
++    def test_g02_approved_instance_advances_to_g03(self):
++        self.approve_g00(); self.assertEqual(self.advance(f"work/{self.wp()}/gate-dossier.G00.json").returncode, 0)
++        self.assertEqual(self.advance(self.make_g01()).returncode, 0)
++        self.assertEqual(self.advance(self.make_g02()).returncode, 0)
++        g03 = self.make_g03()
++        r = self.advance(g03); self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
++        self.assertEqual(self.state()["lifecycle"], {"current_gate": "G03", "state": "APPROVED", "target": "PRODUCTION"})
++        r = self.instance(); self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("G03 / APPROVED", r.stdout)
++
+     def test_g01_approved_instance_advances_to_g02(self):
+         self.approve_g00(); self.assertEqual(self.advance(f"work/{self.wp()}/gate-dossier.G00.json").returncode, 0)
+         g01 = self.make_g01(); self.assertEqual(self.advance(g01).returncode, 0)
+diff --git a/tests/test_badf_g03.py b/tests/test_badf_g03.py
+new file mode 100644
+index 0000000..f0b4db7
+--- /dev/null
++++ b/tests/test_badf_g03.py
+@@ -0,0 +1,139 @@
++"""G03 evidence contract (BADF-WP-0042, Issue #72; the gate march after G02).
++
++G03's four required evidence types have semantics the gate enforces by opening
++the artifact, inside validate_evidence: journeys that design both a happy and an
++unhappy path; a service blueprint that covers every journey and no unknown one,
++each lane with support actions; accessibility criteria under a declared standard,
++each met or justified not-applicable; and a human user-validation with real
++participants and every major finding resolved. Every test runs the real CLI on
++the shipped G03 example, mutated in a scratch clone -- the faithful-runner shape.
++"""
++import hashlib
++import json
++import os
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++from tests._scratch import seed_clone  # noqa: E402
++
++DOSSIER = "examples/gate-dossier.G03.json"
++EV = "examples/evidence/G03"
++
++
++class G03Scratch(unittest.TestCase):
++    def setUp(self):
++        self.tmp = tempfile.mkdtemp(); self.root = Path(self.tmp) / "badf"
++        seed_clone(self.root, carry_working_state=True)
++        for rel in ("schemas", "tests"):
++            shutil.rmtree(self.root / rel, ignore_errors=True); shutil.copytree(gate.ROOT / rel, self.root / rel)
++        self.env = {k: v for k, v in os.environ.items() if not k.startswith("BADF_")}
++
++    def tearDown(self):
++        shutil.rmtree(self.tmp, ignore_errors=True)
++
++    def cli(self):
++        subprocess.run([sys.executable, "scripts/badf_gate.py", "lock"], cwd=self.root, env=self.env, capture_output=True, check=True)
++        return subprocess.run([sys.executable, "scripts/badf_gate.py", "dossier", DOSSIER], cwd=self.root, env=self.env, capture_output=True, text=True)
++
++    def artifact(self, t):
++        return json.loads((self.root / EV / f"{t}.artifact.json").read_text())
++
++    def rewrite(self, t, obj):
++        p = self.root / EV / f"{t}.artifact.json"; p.write_text(json.dumps(obj, indent=2) + "\n")
++        rec_p = self.root / EV / f"{t}.json"; rec = json.loads(rec_p.read_text())
++        rec["digest"] = "sha256:" + hashlib.sha256(p.read_bytes()).hexdigest(); rec_p.write_text(json.dumps(rec, indent=2) + "\n")
++
++    def record(self, t, fn):
++        rec_p = self.root / EV / f"{t}.json"; rec = json.loads(rec_p.read_text()); fn(rec); rec_p.write_text(json.dumps(rec, indent=2) + "\n")
++
++    def refused(self, needle):
++        r = self.cli()
++        self.assertNotEqual(r.returncode, 0, "a defective G03 dossier rendered APPROVED")
++        self.assertIn(needle, r.stderr, r.stderr)
++
++
++class G03ExampleTests(G03Scratch):
++
++    def test_shipped_example_renders_approved(self):
++        r = self.cli(); self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("APPROVED", r.stdout)
++
++    def test_missing_required_evidence_is_still_refused(self):
++        d = json.loads((self.root / DOSSIER).read_text()); d["evidence"] = [e for e in d["evidence"] if e["type"] != "journeys"]
++        (self.root / DOSSIER).write_text(json.dumps(d, indent=2) + "\n")
++        self.refused("missing evidence")
++
++
++class JourneysRuleTests(G03Scratch):
++
++    def test_only_a_happy_path_is_refused(self):
++        j = self.artifact("journeys")
++        for jr in j["journeys"]:
++            jr["path_type"] = "happy"
++        self.rewrite("journeys", j)
++        self.refused("no unhappy path designed")
++
++    def test_a_journey_with_no_steps_is_refused(self):
++        j = self.artifact("journeys"); j["journeys"][0]["steps"] = []; self.rewrite("journeys", j)
++        self.refused("has no steps")
++
++    def test_a_duplicate_journey_id_is_refused(self):
++        j = self.artifact("journeys"); j["journeys"][1]["id"] = j["journeys"][0]["id"]; self.rewrite("journeys", j)
++        self.refused("duplicate journey id")
++
++
++class ServiceBlueprintRuleTests(G03Scratch):
++
++    def test_an_uncovered_journey_is_refused(self):
++        b = self.artifact("service-blueprint"); b["lanes"] = [b["lanes"][0]]; self.rewrite("service-blueprint", b)
++        self.refused("uncovered journey")
++
++    def test_a_lane_for_an_unknown_journey_is_refused(self):
++        b = self.artifact("service-blueprint")
++        b["lanes"].append({"journey": "JRN-404", "frontstage": ["x"], "backstage": ["y"], "support_actions": ["z"]})
++        self.rewrite("service-blueprint", b)
++        self.refused("absent from the journeys artifact")
++
++    def test_a_lane_without_support_actions_is_refused(self):
++        b = self.artifact("service-blueprint"); b["lanes"][0]["support_actions"] = []; self.rewrite("service-blueprint", b)
++        self.refused("defines no support actions")
++
++
++class AccessibilityRuleTests(G03Scratch):
++
++    def test_a_not_applicable_criterion_without_a_rationale_is_refused(self):
++        a = self.artifact("accessibility")
++        a["criteria"].append({"id": "A11Y-009", "requirement": "screen-reader labels", "status": "not_applicable"})
++        self.rewrite("accessibility", a)
++        self.refused("not_applicable without a rationale")
++
++    def test_no_declared_standard_is_refused(self):
++        a = self.artifact("accessibility"); a["standard"] = ""; self.rewrite("accessibility", a)
++        self.refused("no standard declared")
++
++
++class UserValidationRuleTests(G03Scratch):
++
++    def test_zero_participants_is_refused(self):
++        v = self.artifact("user-validation"); v["participants"] = 0; self.rewrite("user-validation", v)
++        self.refused("positive number")
++
++    def test_an_unresolved_major_finding_is_refused(self):
++        v = self.artifact("user-validation")
++        for f in v["findings"]:
++            f.pop("resolution", None)
++        self.rewrite("user-validation", v)
++        self.refused("carries no resolution")
++
++    def test_a_non_human_user_validation_is_refused(self):
++        self.record("user-validation", lambda rec: rec.__setitem__("producer", {"id": "bot", "type": "automation"}))
++        self.refused("must be produced by a human")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0041/work-package.json b/work/WP-2026-0041/work-package.json
+index 1294c88..29821f0 100644
+--- a/work/WP-2026-0041/work-package.json
++++ b/work/WP-2026-0041/work-package.json
+@@ -48,11 +48,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "8896a37"
++    "base_revision": "8896a37",
++    "landed_as": "9c934efefa7a3cc7493b0e3ae42ae77cea37991a"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Reuses the G01 substrate -- no new validator module. G02's own minimum_change_class for instances is C1 (lifecycle.json); this WP that BUILDS the G02 gate is C2, mirroring WP-0030 which built G01."
+ }
