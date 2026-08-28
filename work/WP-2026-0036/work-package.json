@@ -45,11 +45,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "d398e10"
+    "base_revision": "d398e10",
+    "landed_as": "30160d463e03bd57e40dbd18eb5cd227d1fd2392"
   },
   "note": "Lands IN_PROGRESS by design. Carries its own G07 self-dossier. First of the research-track WPs after the contract freeze."
 }

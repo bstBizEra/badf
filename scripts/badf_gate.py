@@ -2509,6 +2509,44 @@ def validate_research_record(path: Path) -> str:
         missing = sorted(set(f["claim_refs"]) - claim_ids)
         if missing:
             raise ValidationError(f"finding {f['id']} references claim(s) the record does not carry: {', '.join(missing)}")
+
+    # ---- challenge / independence controls (RSR-003, BADF-WP-0037) ----
+    # 10: source count is not source independence -- the basis cannot claim more
+    # independent primary sources than the claim actually cites.
+    for c in rec["claims"]:
+        cited_primary = len({r for r in c["supporting_sources"] if sources[r]["source_type"] == "PRIMARY"})
+        if c["confidence"]["basis"]["independent_primary_sources"] > cited_primary:
+            raise ValidationError(f"claim {c['id']}: basis claims {c['confidence']['basis']['independent_primary_sources']} independent primary sources but cites {cited_primary}; source count is not independence")
+    # challenge is REQUIRED (computed, not asserted) at depth D4/D5 or type R06.
+    required = rec["challenge"]["required"]
+    must_challenge = rec["depth"] in {"D4", "D5"} or rec["type"] == "R06"
+    if must_challenge and not required:
+        raise ValidationError(f"{rec['type']}/{rec['depth']} requires independent challenge, but challenge.required is false; the requirement is computed, not asserted")
+    council = rec["challenge"]["council"]
+    if council is not None:
+        if not isinstance(council, dict) or not isinstance(council.get("ballots"), list) or not council["ballots"]:
+            raise ValidationError("challenge council must be an object with a non-empty ballots array")
+        researcher = rec["researcher"]["principal"]
+        reviewers = []
+        for i, ballot in enumerate(council["ballots"]):
+            if not isinstance(ballot, dict) or not {"reviewer", "principal_type", "verdict", "non_coverage"} <= set(ballot):
+                raise ValidationError(f"council ballot[{i}] must carry reviewer, principal_type, verdict, non_coverage")
+            if ballot["verdict"] not in {"CONFIRMED", "REFUTED", "INCONCLUSIVE"}:
+                raise ValidationError(f"council ballot[{i}] verdict {ballot['verdict']!r} is not one of CONFIRMED, REFUTED, INCONCLUSIVE")
+            if not isinstance(ballot["non_coverage"], list):
+                raise ValidationError(f"council ballot[{i}] must declare non_coverage as a list (a reviewer states what they did not cover)")
+            if ballot["reviewer"] == researcher:
+                raise ValidationError(f"council ballot[{i}]: the researcher {researcher!r} cannot ballot on their own research (RSR-I05)")
+            reviewers.append(ballot["reviewer"])
+        if len(reviewers) != len(set(reviewers)):
+            raise ValidationError("council has a duplicate reviewer identity; one identity cannot increase quorum")
+    if required:
+        if not isinstance(council, dict):
+            raise ValidationError("challenge is required but no council record is present")
+        distinct = {b["reviewer"] for b in council["ballots"]}
+        if len(distinct) < 2:
+            raise ValidationError(f"a required independent challenge needs at least two distinct reviewers; found {len(distinct)}")
+
     return f"BADF RESEARCH PASS: {rec['id']} ({rec['type']}/{rec['depth']}) -- {len(rec['claims'])} claims, disposition {rec['disposition']['state']}; grants no implementation authority"
 
 

@@ -125,6 +125,10 @@
     }
   ],
   "recommendation": "nest one level (BADF_COMPOSE_DEPTH) and make every fixture candidate differ from base by construction",
+  "researcher": {
+    "principal": "badf-research-agent",
+    "principal_type": "agent"
+  },
   "challenge": {
     "required": false,
     "council": null

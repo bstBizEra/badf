@@ -1,0 +1,457 @@
+diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
+index 168bb48..e828886 100644
+--- a/.github/workflows/badf-gates.yml
++++ b/.github/workflows/badf-gates.yml
+@@ -43,6 +43,7 @@ jobs:
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G00.json
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G01.json
+           python3 scripts/badf_gate.py research examples/research-record.json
++          python3 scripts/badf_gate.py research examples/research-record-challenged.json
+       - name: PR traceability (Work-Package + Closes #N)
+         # BADF-MAIN-001. Only a PR has a body; a push to main has already been
+         # traced by the PR that produced it. Reports on the PR event only.
+diff --git a/badf/demands/BADF-DEM-0024.json b/badf/demands/BADF-DEM-0024.json
+new file mode 100644
+index 0000000..e08e861
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0024.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0024",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 61,
++    "url": "https://github.com/bstBizEra/badf/issues/61",
++    "exported_at": "2026-08-28T13:05:51Z",
++    "body_digest": "sha256:b5e756c355895cee1b36334e1d90999fe902883cd4899bf14fc3a0c189fa37ff"
++  },
++  "title": "GOV-0020: research challenge and independence controls are not enforced (RSR-003)",
++  "problem": "## Observed\n`BADF-WP-0036` (RSR-002) enforced the research contract's record/source/claim controls, but the challenge/independence half (`skills/badf-research/references/acceptance.md` controls 10\u201313) is not enforced. A research record can assert `independent_primary_sources: 5` while citing one source; a `D4`/`D5` or `R06` record can set `challenge.required: false`; a council can list the researcher as a reviewer or the same identity twice; a ballot can omit its non-coverage. The record has no `researcher` field at all, so RSR-I05 (\"the author cannot satisfy required independent challenge\") has nothing to compare against.\n\n## Expected\n`badf_gate.py research` enforces: `independent_primary_sources` \u2264 distinct PRIMARY sources cited (control 10); challenge **required** (computed) at `D4`/`D5` or `R06` (control 11 precondition); when required, a council with \u22652 distinct reviewers, none of them the researcher (RSR-I05, control 11); no duplicate reviewer identity (control 12); every ballot declares `non_coverage` as a list (control 13). A required `researcher` field. A challenged example validated in CI.\n\n## Evidence\n`grep -n \"researcher\" schemas/research-record.schema.json` \u2192 absent on `main` at `30160d4`. `validate_research_record` has no council/independence checks.\n\n## Unknowns\nNone of substance. State-transition (control 16) and traceability (18) remain later WPs; `badf-research` stays `DESIGNED` until all 18 pass.\n\n## Proposed work package\n`BADF-WP-0037` (RSR-003). `researcher` field; challenge/council structure validated in code (a nullable object defeats the schema walker); the four controls; a challenged example; tests + mutation. C2.\n\ndiscovered-by: BADF-WP-0031 (frozen-contract roadmap) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T13:05:51Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Body exported verbatim and digest-bound. Roadmap item RSR-003 under the frozen research contract (#50); authority: the operator's pick of RSR-003 (2026-08-28). Worked as BADF-WP-0037."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 632f63f..0e5cbfc 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -130,6 +130,19 @@ it rather than trusting the record.
+   shape (WP-0029: 13 advance tests red there, green in the composed run). Scratch clones pin
+   `origin/main` explicitly (`tests/_scratch.pin_origin_main`).
+ 
++## Research challenge and independence (`BADF-WP-0037`, RSR-003)
++
++Four more of the 18 controls, about who challenges research and how independence is counted:
++a claim's `independent_primary_sources` cannot exceed the distinct PRIMARY sources it cites
++(source *count* is not independence); challenge is **required** — computed, not asserted — at
++depth `D4`/`D5` or type `R06`; when required, a council must carry at least two **distinct**
++reviewers; the **researcher cannot ballot** on their own research (RSR-I05); a **duplicate
++reviewer identity cannot** increase quorum; and every ballot **declares non-coverage** (a list
++of surfaces it did not review). The record gains a required `researcher` field. Council
++structure is validated in code (a nullable object defeats the schema walker). `examples/
++research-record-challenged.json` exercises the council path in CI. The state-transition and
++traceability controls remain later work packages; `badf-research` stays `DESIGNED`.
++
+ ## Research record checks (`BADF-WP-0036`, RSR-002)
+ 
+ The frozen research contract (`BADF-WP-0031`) begins to be enforced. `badf_gate.py research
+diff --git a/examples/research-record-challenged.json b/examples/research-record-challenged.json
+new file mode 100644
+index 0000000..4a959e1
+--- /dev/null
++++ b/examples/research-record-challenged.json
+@@ -0,0 +1,153 @@
++{
++  "schema_version": "1.0.0",
++  "id": "BADF-RSR-0002",
++  "demand": "BADF-DEM-0023",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 59
++  },
++  "researcher": {
++    "principal": "badf-research-agent",
++    "principal_type": "agent"
++  },
++  "type": "R07",
++  "depth": "D4",
++  "question": "Should BADF verify a self-work-package's source-change diff against HEAD (excluding the WP dir) or against a pinned branch SHA?",
++  "scope": {
++    "include": [
++      "the squash-merge behaviour on main",
++      "verify_foreign_revision"
++    ],
++    "exclude": [
++      "foreign (LOCAL_MIRROR) work packages"
++    ]
++  },
++  "baseline": {
++    "repository": "bstBizEra/badf",
++    "revision": "684539e",
++    "observed_at": "2026-08-28T14:00:00Z"
++  },
++  "known": [
++    "a branch's intermediate commits do not survive a squash merge",
++    "landed_as is derived, not recorded, for the same reason"
++  ],
++  "unknown": [
++    "whether a pinned SHA can be made to survive the squash"
++  ],
++  "hypotheses": [
++    {
++      "id": "H-001",
++      "statement": "a pinned branch SHA cannot survive the squash; HEAD with path exclusions can",
++      "status": "RETAINED"
++    }
++  ],
++  "sources": [
++    {
++      "id": "S-001",
++      "uri": "git:bstBizEra/badf reconciliation design (WP-0019)",
++      "source_type": "PRIMARY",
++      "retrieved_at": "2026-08-28T14:01:00Z",
++      "digest": null
++    },
++    {
++      "id": "S-002",
++      "uri": "git:bstBizEra/badf composed-tree gate (WP-0024)",
++      "source_type": "PRIMARY",
++      "retrieved_at": "2026-08-28T14:02:00Z",
++      "digest": null
++    }
++  ],
++  "claims": [
++    {
++      "id": "C-001",
++      "statement": "a self-WP diff taken against HEAD excluding the WP dir is identical on the branch, in the composed tree and on main",
++      "classification": "INFERRED",
++      "supporting_sources": [
++        "S-001",
++        "S-002"
++      ],
++      "contradicting_sources": [],
++      "status": "VERIFIED",
++      "confidence": {
++        "level": "VERY_HIGH",
++        "basis": {
++          "independent_primary_sources": 2,
++          "reproducible": true,
++          "contradictions": 0
++        }
++      }
++    }
++  ],
++  "findings": [
++    {
++      "id": "F-001",
++      "statement": "HEAD-with-exclusions is the only diff basis that survives the squash",
++      "claim_refs": [
++        "C-001"
++      ]
++    }
++  ],
++  "alternatives": [
++    {
++      "id": "A-001",
++      "mechanism": "pin the branch tip SHA in source_revision",
++      "evidence_refs": [
++        "the SHA is discarded by the squash"
++      ]
++    },
++    {
++      "id": "A-002",
++      "mechanism": "diff base..HEAD excluding the WP dir and the lockfile",
++      "evidence_refs": [
++        "tree-identical across branch/composed/main"
++      ]
++    }
++  ],
++  "experiments": [],
++  "contradictions": [],
++  "non_coverage": [
++    {
++      "surface": "non-squash merge strategies",
++      "reason": "main is squash-only under the ruleset"
++    }
++  ],
++  "recommendation": "diff base..HEAD excluding the WP's own directory and the lockfile (adopted in WP-0033)",
++  "challenge": {
++    "required": true,
++    "council": {
++      "convened_at": "2026-08-28T14:10:00Z",
++      "ballots": [
++        {
++          "reviewer": "human-reviewer-a",
++          "principal_type": "human",
++          "verdict": "CONFIRMED",
++          "non_coverage": [
++            "did not re-derive the tree hashes by hand"
++          ],
++          "sealed": true
++        },
++        {
++          "reviewer": "human-reviewer-b",
++          "principal_type": "human",
++          "verdict": "CONFIRMED",
++          "non_coverage": [],
++          "sealed": true
++        }
++      ]
++    }
++  },
++  "state": "RECONCILED",
++  "disposition": {
++    "state": "RESEARCH_SUFFICIENT",
++    "reason": "the tree-identity argument is confirmed by two independent reviewers"
++  },
++  "downstream": {
++    "decision_id": null,
++    "work_package_id": null
++  },
++  "authority": {
++    "implementation_authority": false
++  },
++  "evidence_digest": null,
++  "recorded_at": "2026-08-28T14:20:00Z"
++}
+diff --git a/examples/research-record.json b/examples/research-record.json
+index 1115461..349c5c1 100644
+--- a/examples/research-record.json
++++ b/examples/research-record.json
+@@ -125,6 +125,10 @@
+     }
+   ],
+   "recommendation": "nest one level (BADF_COMPOSE_DEPTH) and make every fixture candidate differ from base by construction",
++  "researcher": {
++    "principal": "badf-research-agent",
++    "principal_type": "agent"
++  },
+   "challenge": {
+     "required": false,
+     "council": null
+diff --git a/schemas/research-record.schema.json b/schemas/research-record.schema.json
+index f7f635d..e33e52e 100644
+--- a/schemas/research-record.schema.json
++++ b/schemas/research-record.schema.json
+@@ -25,6 +25,7 @@
+     "contradictions",
+     "non_coverage",
+     "recommendation",
++    "researcher",
+     "challenge",
+     "state",
+     "disposition",
+@@ -500,7 +501,7 @@
+             "object",
+             "null"
+           ],
+-          "description": "the framework's council record, when required; the originating researcher cannot ballot (RSR-I05)"
++          "description": "The framework council record when challenge is required, else null. Its structure and independence are validated in code (a nullable object defeats the schema walker): distinct reviewers, none of them the researcher (RSR-I05), each declaring non_coverage (BADF-WP-0037)."
+         }
+       }
+     },
+@@ -595,6 +596,30 @@
+     "recorded_at": {
+       "type": "string",
+       "minLength": 1
++    },
++    "researcher": {
++      "type": "object",
++      "required": [
++        "principal",
++        "principal_type"
++      ],
++      "additionalProperties": false,
++      "properties": {
++        "principal": {
++          "type": "string",
++          "minLength": 1
++        },
++        "principal_type": {
++          "type": "string",
++          "enum": [
++            "human",
++            "agent",
++            "service",
++            "controller"
++          ]
++        }
++      },
++      "description": "Who produced this record. A required independent challenge cannot be balloted by this principal (RSR-I05, BADF-WP-0037)."
+     }
+   }
+ }
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 6357fe8..4feb853 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -2509,6 +2509,44 @@ def validate_research_record(path: Path) -> str:
+         missing = sorted(set(f["claim_refs"]) - claim_ids)
+         if missing:
+             raise ValidationError(f"finding {f['id']} references claim(s) the record does not carry: {', '.join(missing)}")
++
++    # ---- challenge / independence controls (RSR-003, BADF-WP-0037) ----
++    # 10: source count is not source independence -- the basis cannot claim more
++    # independent primary sources than the claim actually cites.
++    for c in rec["claims"]:
++        cited_primary = len({r for r in c["supporting_sources"] if sources[r]["source_type"] == "PRIMARY"})
++        if c["confidence"]["basis"]["independent_primary_sources"] > cited_primary:
++            raise ValidationError(f"claim {c['id']}: basis claims {c['confidence']['basis']['independent_primary_sources']} independent primary sources but cites {cited_primary}; source count is not independence")
++    # challenge is REQUIRED (computed, not asserted) at depth D4/D5 or type R06.
++    required = rec["challenge"]["required"]
++    must_challenge = rec["depth"] in {"D4", "D5"} or rec["type"] == "R06"
++    if must_challenge and not required:
++        raise ValidationError(f"{rec['type']}/{rec['depth']} requires independent challenge, but challenge.required is false; the requirement is computed, not asserted")
++    council = rec["challenge"]["council"]
++    if council is not None:
++        if not isinstance(council, dict) or not isinstance(council.get("ballots"), list) or not council["ballots"]:
++            raise ValidationError("challenge council must be an object with a non-empty ballots array")
++        researcher = rec["researcher"]["principal"]
++        reviewers = []
++        for i, ballot in enumerate(council["ballots"]):
++            if not isinstance(ballot, dict) or not {"reviewer", "principal_type", "verdict", "non_coverage"} <= set(ballot):
++                raise ValidationError(f"council ballot[{i}] must carry reviewer, principal_type, verdict, non_coverage")
++            if ballot["verdict"] not in {"CONFIRMED", "REFUTED", "INCONCLUSIVE"}:
++                raise ValidationError(f"council ballot[{i}] verdict {ballot['verdict']!r} is not one of CONFIRMED, REFUTED, INCONCLUSIVE")
++            if not isinstance(ballot["non_coverage"], list):
++                raise ValidationError(f"council ballot[{i}] must declare non_coverage as a list (a reviewer states what they did not cover)")
++            if ballot["reviewer"] == researcher:
++                raise ValidationError(f"council ballot[{i}]: the researcher {researcher!r} cannot ballot on their own research (RSR-I05)")
++            reviewers.append(ballot["reviewer"])
++        if len(reviewers) != len(set(reviewers)):
++            raise ValidationError("council has a duplicate reviewer identity; one identity cannot increase quorum")
++    if required:
++        if not isinstance(council, dict):
++            raise ValidationError("challenge is required but no council record is present")
++        distinct = {b["reviewer"] for b in council["ballots"]}
++        if len(distinct) < 2:
++            raise ValidationError(f"a required independent challenge needs at least two distinct reviewers; found {len(distinct)}")
++
+     return f"BADF RESEARCH PASS: {rec['id']} ({rec['type']}/{rec['depth']}) -- {len(rec['claims'])} claims, disposition {rec['disposition']['state']}; grants no implementation authority"
+ 
+ 
+diff --git a/tests/test_badf_research.py b/tests/test_badf_research.py
+index 72fa763..9305808 100644
+--- a/tests/test_badf_research.py
++++ b/tests/test_badf_research.py
+@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+ import badf_gate as gate  # noqa: E402
+ 
+ EXAMPLE = json.loads((gate.ROOT / "examples/research-record.json").read_text())
++CHALLENGED = json.loads((gate.ROOT / "examples/research-record-challenged.json").read_text())
+ 
+ 
+ class DeriveConfidenceTests(unittest.TestCase):
+@@ -113,5 +114,73 @@ class ResearchRecordTests(unittest.TestCase):
+         self.refused(rec, "C-999")
+ 
+ 
++class ChallengeAndIndependenceTests(unittest.TestCase):
++    def run_cli(self, rec):
++        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
++            json.dump(rec, f); path = Path(f.name)
++        try:
++            return subprocess.run([sys.executable, "scripts/badf_gate.py", "research", str(path)],
++                                  cwd=str(gate.ROOT), capture_output=True, text=True)
++        finally:
++            path.unlink()
++
++    def refused(self, rec, needle):
++        r = self.run_cli(rec)
++        self.assertNotEqual(r.returncode, 0, "a defective research record passed")
++        self.assertIn(needle, r.stderr, r.stderr)
++
++    def test_challenged_example_passes(self):
++        r = self.run_cli(copy.deepcopy(CHALLENGED))
++        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
++
++    def test_more_independent_primaries_than_cited_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["claims"][1]["confidence"]["basis"]["independent_primary_sources"] = 3  # cites one primary (S-002)
++        rec["claims"][1]["confidence"]["level"] = "VERY_HIGH"  # keep confidence derivation consistent so control 10 fires
++        self.refused(rec, "source count is not independence")
++
++    def test_deep_research_without_a_required_challenge_is_refused(self):
++        rec = copy.deepcopy(CHALLENGED)
++        rec["challenge"] = {"required": False, "council": None}
++        self.refused(rec, "requires independent challenge")
++
++    def test_required_challenge_with_no_council_is_refused(self):
++        rec = copy.deepcopy(CHALLENGED)
++        rec["challenge"]["council"] = None
++        self.refused(rec, "no council record")
++
++    def test_the_researcher_cannot_ballot_on_their_own_research(self):
++        rec = copy.deepcopy(CHALLENGED)
++        rec["challenge"]["council"]["ballots"][0]["reviewer"] = rec["researcher"]["principal"]
++        self.refused(rec, "cannot ballot on their own")
++
++    def test_a_duplicate_reviewer_identity_is_refused(self):
++        rec = copy.deepcopy(CHALLENGED)
++        rec["challenge"]["council"]["ballots"][1]["reviewer"] = rec["challenge"]["council"]["ballots"][0]["reviewer"]
++        self.refused(rec, "duplicate reviewer")
++
++    def test_a_ballot_without_declared_non_coverage_is_refused(self):
++        rec = copy.deepcopy(CHALLENGED)
++        del rec["challenge"]["council"]["ballots"][0]["non_coverage"]
++        self.refused(rec, "reviewer, principal_type, verdict, non_coverage")
++
++    def test_non_coverage_that_is_not_a_list_is_refused(self):
++        """The key present is not enough -- a reviewer declares non-coverage as
++        a list of surfaces, not a bare string (control 13)."""
++        rec = copy.deepcopy(CHALLENGED)
++        rec["challenge"]["council"]["ballots"][0]["non_coverage"] = "none"
++        self.refused(rec, "non_coverage as a list")
++
++    def test_a_single_reviewer_does_not_meet_quorum(self):
++        rec = copy.deepcopy(CHALLENGED)
++        rec["challenge"]["council"]["ballots"] = rec["challenge"]["council"]["ballots"][:1]
++        self.refused(rec, "at least two distinct reviewers")
++
++    def test_an_invalid_ballot_verdict_is_refused(self):
++        rec = copy.deepcopy(CHALLENGED)
++        rec["challenge"]["council"]["ballots"][0]["verdict"] = "APPROVE"
++        self.refused(rec, "verdict")
++
++
+ if __name__ == "__main__":
+     unittest.main()
+diff --git a/tests/test_badf_schema_drift.py b/tests/test_badf_schema_drift.py
+index b1a660f..2b7fda5 100644
+--- a/tests/test_badf_schema_drift.py
++++ b/tests/test_badf_schema_drift.py
+@@ -23,7 +23,7 @@ SHIPPED = {
+     "prd": [gate.ROOT / "examples/evidence/G01/prd.artifact.json"],
+     "acceptance-criteria": [gate.ROOT / "examples/evidence/G01/acceptance-criteria.artifact.json"],
+     "product-approval": [gate.ROOT / "examples/evidence/G01/product-approval.artifact.json"],
+-    "research-record": [gate.ROOT / "examples/research-record.json"],
++    "research-record": [gate.ROOT / "examples/research-record.json", gate.ROOT / "examples/research-record-challenged.json"],
+     "lifecycle": [gate.ROOT / "badf/lifecycle.json"],
+     "demand": sorted((gate.ROOT / "badf/demands").glob("BADF-DEM-*.json")),
+     "work-package": sorted(gate.ROOT.glob("work/WP-*/work-package.json")),
+diff --git a/work/WP-2026-0036/work-package.json b/work/WP-2026-0036/work-package.json
+index 85781f6..18517c1 100644
+--- a/work/WP-2026-0036/work-package.json
++++ b/work/WP-2026-0036/work-package.json
+@@ -45,11 +45,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "d398e10"
++    "base_revision": "d398e10",
++    "landed_as": "30160d463e03bd57e40dbd18eb5cd227d1fd2392"
+   },
+   "note": "Lands IN_PROGRESS by design. Carries its own G07 self-dossier. First of the research-track WPs after the contract freeze."
+ }

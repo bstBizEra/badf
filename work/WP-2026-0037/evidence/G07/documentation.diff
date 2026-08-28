@@ -1,0 +1,24 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 632f63f..0e5cbfc 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -130,6 +130,19 @@ it rather than trusting the record.
+   shape (WP-0029: 13 advance tests red there, green in the composed run). Scratch clones pin
+   `origin/main` explicitly (`tests/_scratch.pin_origin_main`).
+ 
++## Research challenge and independence (`BADF-WP-0037`, RSR-003)
++
++Four more of the 18 controls, about who challenges research and how independence is counted:
++a claim's `independent_primary_sources` cannot exceed the distinct PRIMARY sources it cites
++(source *count* is not independence); challenge is **required** — computed, not asserted — at
++depth `D4`/`D5` or type `R06`; when required, a council must carry at least two **distinct**
++reviewers; the **researcher cannot ballot** on their own research (RSR-I05); a **duplicate
++reviewer identity cannot** increase quorum; and every ballot **declares non-coverage** (a list
++of surfaces it did not review). The record gains a required `researcher` field. Council
++structure is validated in code (a nullable object defeats the schema walker). `examples/
++research-record-challenged.json` exercises the council path in CI. The state-transition and
++traceability controls remain later work packages; `badf-research` stays `DESIGNED`.
++
+ ## Research record checks (`BADF-WP-0036`, RSR-002)
+ 
+ The frozen research contract (`BADF-WP-0031`) begins to be enforced. `badf_gate.py research

@@ -1,0 +1,53 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0037",
+  "title": "RSR-003: research challenge and independence controls in the gate",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0024",
+  "objective": "Enforce the frozen research contract's challenge/independence controls (10-13): source-count-is-not-independence, computed challenge requirement, distinct researcher-excluded reviewers, no duplicate identity, declared non-coverage. Add a required researcher field.",
+  "business_value": "A frozen contract is only real once its independence controls bite; a council that lets the author ballot or one identity count twice is theatre.",
+  "in_scope": [
+    "researcher field (schema, required)",
+    "challenge/council structure validated in code",
+    "controls 10-13 in validate_research_record",
+    "examples/research-record-challenged.json + CI",
+    "tests failing-first; mutation; own self-dossier"
+  ],
+  "out_of_scope": [
+    "state-transition (16) and traceability (18) controls -- later WPs",
+    "the nine P0 subskills; registry activation (badf-research stays DESIGNED)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the challenged example passes; the plain example still passes",
+    "independent_primary_sources > cited primaries refused",
+    "D4/D5/R06 without challenge.required refused",
+    "researcher-as-reviewer, duplicate reviewer, single reviewer, missing/non-list non_coverage, bad verdict all refused",
+    "mutation kills; compose green both shapes"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "30160d4"
+  },
+  "note": "Lands IN_PROGRESS by design. Carries its own G07 self-dossier. Second research-track WP; 10 of 18 controls now enforced (1,2,4,5,7,9,10,11,12,13)."
+}

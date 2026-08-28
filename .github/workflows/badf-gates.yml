@@ -43,6 +43,7 @@ jobs:
           python3 scripts/badf_gate.py dossier examples/gate-dossier.G00.json
           python3 scripts/badf_gate.py dossier examples/gate-dossier.G01.json
           python3 scripts/badf_gate.py research examples/research-record.json
+          python3 scripts/badf_gate.py research examples/research-record-challenged.json
       - name: PR traceability (Work-Package + Closes #N)
         # BADF-MAIN-001. Only a PR has a body; a push to main has already been
         # traced by the PR that produced it. Reports on the PR event only.
