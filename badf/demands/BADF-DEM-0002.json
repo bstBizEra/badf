@@ -17,5 +17,6 @@
   "recorded_at": "2026-08-28T00:00:00Z",
   "provenance": "RECONSTRUCTED",
   "status": "RESOLVED",
-  "note": "RECONSTRUCTED under BADF-WP-0018. The demand was 'proceed on your call' in session; the branch selection was the agent's. Both predate GITHUB_CONTROL_PLANE.md."
+  "note": "RECONSTRUCTED under BADF-WP-0018. The demand was 'proceed on your call' in session; the branch selection was the agent's. Both predate GITHUB_CONTROL_PLANE.md.",
+  "learning": "docs/learnings/a-foreign-revision-must-verify-the-diff.md"
 }

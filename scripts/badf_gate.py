@@ -726,6 +726,29 @@ def reconcile_work_package(wp_arg: str) -> str:
 DIGEST_FORM = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 
+DEMAND_TERMINAL = {"RESOLVED", "REJECTED"}
+LEARNING_FORM = re.compile(r"^(NONE_DECLARED|docs/learnings/[a-z0-9-]+\.md)$")
+
+
+def verify_demand_learnings() -> None:
+    """Every resolved Issue becomes potential institutional learning
+    (GITHUB_CONTROL_PLANE.md). A demand that reached a terminal status
+    (RESOLVED or REJECTED) must carry a `learning`: a docs/learnings/<slug>.md
+    path that exists, or the literal NONE_DECLARED. Silence is not 'nothing
+    learned' -- it is drift (BADF-WP-0035, #29)."""
+    for path in sorted((ROOT / DEMANDS_DIR).glob("*.json")):
+        rec = load_json(path)
+        did = rec.get("demand_id", path.name)
+        learning = rec.get("learning")
+        if learning is not None and not (isinstance(learning, str) and LEARNING_FORM.match(learning)):
+            raise ValidationError(f"demand {did} learning {learning!r} is malformed (expected NONE_DECLARED or docs/learnings/<slug>.md)")
+        if rec.get("status") in DEMAND_TERMINAL:
+            if not isinstance(learning, str) or not LEARNING_FORM.match(learning):
+                raise ValidationError(f"demand {did} is {rec.get('status')} but declares no learning; a concluded demand states docs/learnings/<slug>.md or NONE_DECLARED")
+            if learning != "NONE_DECLARED" and not (ROOT / learning).is_file():
+                raise ValidationError(f"demand {did} learning file {learning} does not exist")
+
+
 def verify_registry_digests() -> None:
     """Every skill-registry entry's digest is the sha256 of the source it
     names (BADF-WP-0032, #52). docs/07 makes ACTIVE mean a pinned digest; the
@@ -782,6 +805,7 @@ def validate_repo() -> None:
 
     verify_integrity()
     verify_registry_digests()
+    verify_demand_learnings()
     verify_monotonic_authority()
     verify_work_ledger()
 

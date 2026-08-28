@@ -130,6 +130,17 @@ it rather than trusting the record.
   shape (WP-0029: 13 advance tests red there, green in the composed run). Scratch clones pin
   `origin/main` explicitly (`tests/_scratch.pin_origin_main`).
 
+## Resolved Issues become learning (`BADF-WP-0035`, Issue #29)
+
+The Doctrine's last clause — *every resolved Issue becomes potential institutional learning* —
+is now enforced, not aspirational. A demand that reaches a terminal status (`RESOLVED` or
+`REJECTED`) carries a `learning`: a `docs/learnings/<slug>.md` file that exists, or the literal
+`NONE_DECLARED`. `badf_gate.py repo` refuses a terminal demand with neither — an explicit
+"nothing learned" is a claim; silence is drift. Learnings are extend-only (`docs/learnings/`).
+Flipping a demand from `AUTHORIZED` to `RESOLVED` when its Issue closes is not yet automatic
+(the same shape as the reconciliation debt); the requirement bites the moment a demand *is*
+marked terminal.
+
 ## Issue and PR body shape (`BADF-WP-0034`, Issue #27)
 
 Shape is **requested** on GitHub and **enforced** where BADF reads it — the two are

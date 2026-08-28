@@ -54,7 +54,7 @@ def seed_clone(dest: Path, *, carry_working_state: bool = False) -> str:
         # EVERY locked input the working gate reads -- piecemeal lists missed badf/demands,
         # templates and then badf/skill-registry.json (WP-0032: 30 red on the runner, green
         # composed, because the composed world's origin/main IS the candidate).
-        for rel in ("scripts/badf_gate.py", "badf", "skills", "schemas", "templates", "examples", "work"):
+        for rel in ("scripts/badf_gate.py", "badf", "skills", "schemas", "templates", "examples", "docs", "work"):
             src = gate.ROOT / rel; dst = dest / rel
             if src.is_dir():
                 shutil.rmtree(dst, ignore_errors=True); shutil.copytree(src, dst)
