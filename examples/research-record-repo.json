@@ -42,6 +42,16 @@
       "status": "RETAINED"
     }
   ],
+  "stop_conditions": [
+    "every finding is bound to a commit SHA",
+    "no material PR or issue for the change remains unread"
+  ],
+  "assumptions": [
+    "the git history is complete on this host"
+  ],
+  "decision_context": {
+    "decision_question": "what change, if any, does the enforcement-history investigation justify?"
+  },
   "sources": [
     {
       "id": "S-001",

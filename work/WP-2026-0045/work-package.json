@@ -1,0 +1,59 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0045",
+  "title": "Research scope-contract hardening: stop_conditions / assumptions / decision_context first-class + bounded-termination control (control 19)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0032",
+  "objective": "Close the SKILL<->schema asymmetry in the frozen badf-research contract: the root skill instructs resolving stop conditions but the record schema carries no first-class stop_conditions, assumptions, or decision_context. Add them extend-only as required fields, add a deterministic control 19 (a material research run declares bounded, non-empty stop_conditions; assumptions distinct from evidence; decision_context names the decision served), update the three examples and align the docs. badf-research stays DESIGNED.",
+  "business_value": "Makes the bounded research scope machine-readable, so a research run cannot be recorded without declaring when it stops, what it assumes (distinct from what it observed), and which decision it serves -- reinforcing the RESEARCH != DECISION topology without granting implementation authority.",
+  "in_scope": [
+    "schemas/research-record.schema.json: add stop_conditions, assumptions, decision_context (required, extend-only)",
+    "validate_research_record: control 19 -- stop_conditions non-empty; each assumption a non-empty string; decision_context.decision_question present",
+    "examples/research-record.json, research-record-challenged.json, research-record-repo.json updated to carry the three fields",
+    "skills/badf-research/SKILL.md + references/acceptance.md aligned (control 19 added)",
+    "tests/test_badf_research.py failing-first + mutation; own G07 self-dossier; doctrine note"
+  ],
+  "out_of_scope": [
+    "control 6 (source-digest freshness -- needs a source fetch)",
+    "the remaining 8 P0 research subskills -- one WP each",
+    "#77's canonical reference split (a docs refactor, deferrable)",
+    "any change to evidence_digest (the new fields are framing, not evidence)",
+    "any move of badf-research off DESIGNED; external #69/#77 branches/issues untouched"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the three shipped examples pass `research` with the new fields present",
+    "a record with absent or empty stop_conditions is refused naming it",
+    "a record whose assumptions contains an empty string is refused",
+    "a record with no decision_context.decision_question is refused",
+    "the new fields are absent from the evidence_digest computation (control 17 unchanged: digest stable when only framing changes)",
+    "acceptance.md documents control 19; SKILL.md references the three first-class fields",
+    "mutation kills; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research.py",
+    "tests/test_badf_research_contract.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "a4ff5a8"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Extend-only hardening of the frozen contract through a governed WP (not a reopen of #50). Brings research controls to 17 of 19; control 6 (freshness) still open. Overlaps external #69/#77 -- built fresh under my own issue #79, their work untouched."
+}

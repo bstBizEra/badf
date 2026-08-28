@@ -36,7 +36,7 @@
       "risk_class": "C1",
       "allowed_tools": [],
       "status": "DESIGNED",
-      "digest": "sha256:71b58478ca0d8f55e051c994403a8045ff04db794c7181b20489ae3c8ad12bde"
+      "digest": "sha256:638866d82f2d37f03b8ec70f796b9b035411dd0b34026f7f22efe2a272c41678"
     },
     {
       "name": "repository-research",

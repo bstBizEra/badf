@@ -2829,6 +2829,18 @@ def validate_research_record(path: Path) -> str:
     # schema's enum [false]; a separate check here would be dead code (a mutant
     # proved the schema catches it first).
     check_schema("research-record", rec)
+    # 19: the scope contract is bounded and machine-readable (WP-0045). The root
+    # skill instructs resolving stop conditions; the record must carry non-empty
+    # stop_conditions (no unbounded research), assumptions distinct from evidence,
+    # and the decision it serves. These are framing, not evidence -- they are
+    # excluded from the evidence_digest, so control 17 is unaffected.
+    if not [s for s in rec["stop_conditions"] if s.strip()]:
+        raise ValidationError("research record declares no bounded stop_conditions; a material research run states when it stops (control 19)")
+    for a in rec["assumptions"]:
+        if not a.strip():
+            raise ValidationError("research record has an empty assumption; an assumption is a non-empty statement kept distinct from evidence (control 19)")
+    if not rec["decision_context"]["decision_question"].strip():
+        raise ValidationError("research record decision_context.decision_question is empty; research must name the decision it serves (control 19)")
     # 3: repository research (R02/R03) baselines to a commit that RESOLVES in its
     # repository -- an investigation cannot be anchored to a commit that does not
     # exist. Mirrors verify_foreign_revision's resolution and UNRESOLVABLE_HERE.

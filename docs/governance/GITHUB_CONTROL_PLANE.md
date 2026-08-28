@@ -313,6 +313,21 @@ versioned; `operability-design` must declare failure modes with recovery and obs
 Ships `examples/gate-dossier.G04.json` and a G03→G04 pair-acceptance (the full G00→G04 chain). The
 ASSURE substrate (controls 13–18) is WP-ARCH-C; VALIDATED awaits it.
 
+## Research scope-contract hardening (`BADF-WP-0045`, Issue #79)
+
+The frozen research contract (#50) had a SKILL↔schema asymmetry: `badf-research/SKILL.md`
+instructs the researcher to *resolve stop conditions*, but the record schema carried no
+`stop_conditions`, `assumptions`, or `decision_context`. Fixed **extend-only through a governed WP,
+not by reopening #50**: the three fields are now first-class, required record fields, and
+**control 19** enforces a bounded, machine-readable scope — non-empty `stop_conditions` (no
+unbounded research), each `assumption` a non-empty statement kept distinct from evidence, and a
+`decision_context.decision_question` naming the decision the run serves (reinforcing RESEARCH ≠
+DECISION while `authority.implementation_authority` stays `false`). These are **framing, not
+evidence**, so they are excluded from the `evidence_digest` — control 17 is unaffected, proven by a
+test that changing only framing leaves a record valid. Research controls: **17 of 19** enforced
+(control 6 freshness needs a source fetch; control 15 rides the state machine). `badf-research`
+stays `DESIGNED`. Overlaps external #69/#77, built fresh under #79 with their work untouched.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
