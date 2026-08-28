@@ -2974,6 +2974,14 @@ def validate_research_record(path: Path) -> str:
     # ---- conclusion integrity + traceability (RSR-004, BADF-WP-0038) ----
     disposition = rec["disposition"]["state"]
     state = rec["state"]
+    # 25: an independent refutation cannot be erased by declaring sufficiency
+    # (adversarial-research). If the challenge council carries a REFUTED ballot,
+    # the research is not RESEARCH_SUFFICIENT -- a critical contradiction is not
+    # overridden by a majority or by the disposition; it reconciles to a
+    # non-sufficient state (CONTRADICTORY_EVIDENCE, MORE_RESEARCH_REQUIRED, ...).
+    if council is not None and disposition == "RESEARCH_SUFFICIENT":
+        if any(b["verdict"] == "REFUTED" for b in council["ballots"]):
+            raise ValidationError("the challenge council carries a REFUTED ballot but the disposition is RESEARCH_SUFFICIENT; an independent refutation cannot be erased by declaring sufficiency (control 25)")
     # 16: a disposition other than the in-flight RESEARCH_BLOCKED means the record
     # concluded, which is the RECONCILED state -- an invalid state fails closed.
     if disposition != "RESEARCH_BLOCKED" and state != "RECONCILED":

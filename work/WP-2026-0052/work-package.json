@@ -45,11 +45,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "003afbd"
+    "base_revision": "003afbd",
+    "landed_as": "a51f1f7edf76b23ebf322a75d5b139009ec2cf2d"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Seventh P0 research subskill. Control 24 earned by a failing-first probe (R07 with <2 alternatives passed). Reconciles WP-2026-0051. badf-research stays DESIGNED (7 of 9 P0); research controls to 23 of 24."
 }

@@ -1,0 +1,237 @@
+diff --git a/badf/demands/BADF-DEM-0040.json b/badf/demands/BADF-DEM-0040.json
+new file mode 100644
+index 0000000..4e0fe94
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0040.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0040",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 97,
++    "url": "https://github.com/bstBizEra/badf/issues/97",
++    "exported_at": "2026-08-28T20:41:10Z",
++    "body_digest": "sha256:545bda275061ee0f0461c3276765d58c2b7a971a4e347ca52f5be7561fb9cdf8"
++  },
++  "title": "GOV-0037: badf-research has no adversarial-research subskill; a REFUTED challenge still reconciles to RESEARCH_SUFFICIENT (P0 8/9 + earned control 25)",
++  "problem": "## Observed\n`badf-research` has 7 of 9 P0 subskills; `adversarial-research` \u2014 the independent challenge team that tries to refute the recommendation \u2014 does not exist. The challenge/independence machinery (controls 11\u201313) is enforced, but a failing-first probe shows a real gap: a challenge council can carry a **`REFUTED`** ballot while the record still reconciles to **`RESEARCH_SUFFICIENT`** \u2014 an independent refutation erased by declaring sufficiency.\n\n## Expected\nBuild `adversarial-research` as P0 subskill **8 of 9**: a concise `SKILL.md` for the **independent** challenge (attempt to refute; find omitted/non-independent evidence, counterexamples, unsupported assumptions, uninspected surface, confirmation bias), separate from the originating run, casting sealed `CONFIRMED`/`REFUTED`/`INCONCLUSIVE` ballots through the framework council. Register `IMPLEMENTED`. **Control 25 (earned):** a challenge council carrying a `REFUTED` ballot cannot reconcile to `RESEARCH_SUFFICIENT` \u2014 a critical contradiction is not overridden by a majority or the disposition.\n\n## Evidence\n- verdict vocabulary: `CONFIRMED` / `REFUTED` / `INCONCLUSIVE`\n- probe: `one REFUTED ballot + RESEARCH_SUFFICIENT` \u2192 PASS (gap); `all REFUTED + RESEARCH_SUFFICIENT` \u2192 PASS (gap)\n\n## Unknowns\nWhether the ballot actually *attempted* refutation is not machine-checkable (that is the reviewer's honesty, declared via non_coverage). The enforceable part is the outcome\u2194disposition consistency. Not in scope: research-reconciliation (final unit) + control 15; #77/#83/#84.\n\n## Proposed work package\n`BADF-WP-0053`. `adversarial-research/SKILL.md` + registry; control 25 (earned) + acceptance row; root router (8/9); tests + mutation; own G07 self-dossier. C2. Controls -> 24 of 25; `badf-research` stays `DESIGNED` (8 of 9 P0).\n\ndiscovered-by: operator research sequencing (2026-08-29) + BADF-WP-0052 \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T20:41:10Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "adversarial-research P0 8/9 + control 25 (REFUTED blocks RESEARCH_SUFFICIENT, earned). /loop research build. Worked as BADF-WP-0053."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index a02f915..a5aea3b 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -36,7 +36,7 @@
+       "risk_class": "C1",
+       "allowed_tools": [],
+       "status": "DESIGNED",
+-      "digest": "sha256:0eece10f963900c31c8440b5ddc57a0c0574f93b215e4f8471e792e85f24f5a1"
++      "digest": "sha256:c7b88160969791e749051206a9380cdea3cdca73d8331ceac3aadc2010efbf92"
+     },
+     {
+       "name": "repository-research",
+@@ -138,6 +138,19 @@
+       ],
+       "status": "IMPLEMENTED",
+       "digest": "sha256:3a32d09b0efbe6589b8af57f7140a7e976ca0c42d58a98ae44ba095cbf1c0fa3"
++    },
++    {
++      "name": "adversarial-research",
++      "source": "skills/badf-research/subskills/adversarial-research/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [
++        "local-filesystem",
++        "local-shell"
++      ],
++      "status": "IMPLEMENTED",
++      "digest": "sha256:148f961b89538e66b60f9cd25bca9c8f2d23d48b5d7fb1cb8ec58e60f7387306"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 16fbb0c..22cc223 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -421,6 +421,21 @@ comparison. What the gate does *not* enforce is whether the evidence justifies a
+ so honest non-dominance stays a null recommendation. Research controls: **23 of 24** — only control 15
+ remains, for `research-reconciliation`, the last P0 subskill. `badf-research` stays `DESIGNED` (7 of 9).
+ 
++## adversarial-research — a refutation is not erased (`BADF-WP-0053`, Issue #97)
++
++The eighth P0 research subskill: `skills/badf-research/subskills/adversarial-research/SKILL.md` is the
++**independent** challenge team — it tries to refute the recommendation (omitted/non-independent
++evidence, counterexamples, unsupported assumptions, uninspected surface, confirmation bias), separate
++from the originating run, casting sealed `CONFIRMED`/`REFUTED`/`INCONCLUSIVE` ballots through the
++framework council (the independence/quorum/non-coverage controls 11–13 already hold). **Control 25,
++earned by failing-first**: a probe showed a council carrying a `REFUTED` ballot could still reconcile
++to `RESEARCH_SUFFICIENT`, so a `REFUTED` ballot now forecloses `RESEARCH_SUFFICIENT` — an independent
++refutation is not overridden by a majority or by the disposition; it reconciles to
++`CONTRADICTORY_EVIDENCE`, `MORE_RESEARCH_REQUIRED`, or another non-sufficient state. What the gate does
++*not* check is whether a ballot genuinely attempted refutation (the reviewer's honesty, declared via
++non-coverage). Research controls: **24 of 25** — only control 15 remains, for the last subskill,
++`research-reconciliation`. `badf-research` stays `DESIGNED` (8 of 9 P0).
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 8dcb2d0..dadafac 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -2974,6 +2974,14 @@ def validate_research_record(path: Path) -> str:
+     # ---- conclusion integrity + traceability (RSR-004, BADF-WP-0038) ----
+     disposition = rec["disposition"]["state"]
+     state = rec["state"]
++    # 25: an independent refutation cannot be erased by declaring sufficiency
++    # (adversarial-research). If the challenge council carries a REFUTED ballot,
++    # the research is not RESEARCH_SUFFICIENT -- a critical contradiction is not
++    # overridden by a majority or by the disposition; it reconciles to a
++    # non-sufficient state (CONTRADICTORY_EVIDENCE, MORE_RESEARCH_REQUIRED, ...).
++    if council is not None and disposition == "RESEARCH_SUFFICIENT":
++        if any(b["verdict"] == "REFUTED" for b in council["ballots"]):
++            raise ValidationError("the challenge council carries a REFUTED ballot but the disposition is RESEARCH_SUFFICIENT; an independent refutation cannot be erased by declaring sufficiency (control 25)")
+     # 16: a disposition other than the in-flight RESEARCH_BLOCKED means the record
+     # concluded, which is the RECONCILED state -- an invalid state fails closed.
+     if disposition != "RESEARCH_BLOCKED" and state != "RECONCILED":
+diff --git a/skills/badf-research/SKILL.md b/skills/badf-research/SKILL.md
+index 88e6350..6ce17e3 100644
+--- a/skills/badf-research/SKILL.md
++++ b/skills/badf-research/SKILL.md
+@@ -5,7 +5,7 @@ description: Govern evidence-based research for BADF questions, issues, defects,
+ 
+ # BADF Research
+ 
+-Status: `DESIGNED` (contract frozen by `BADF-WP-0031`). The `research` gate command enforces the record contract, and the `problem-framing`, `repository-research`, `fact-checking`, `evidence-synthesis`, `deep-research`, `technical-research` and `comparative-evaluation` subskills exist; the family is not yet activated for autonomous use (7 of 9 P0 subskills). Research determines what the evidence supports; `badf-delivery` governs what authorised actors may do with that conclusion.
++Status: `DESIGNED` (contract frozen by `BADF-WP-0031`). The `research` gate command enforces the record contract, and the `problem-framing`, `repository-research`, `fact-checking`, `evidence-synthesis`, `deep-research`, `technical-research`, `comparative-evaluation` and `adversarial-research` subskills exist; the family is not yet activated for autonomous use (8 of 9 P0 subskills). Research determines what the evidence supports; `badf-delivery` governs what authorised actors may do with that conclusion.
+ 
+ 1. Read the repository `AGENTS.md` and the documents it marks required.
+ 2. Resolve the research question, the originating Issue and its demand record, the research type and depth (`references/research-types.md`), scope and non-goals, source and data boundaries, authority and mutation constraints, required evidence, and the bounded scope contract — non-empty **stop conditions** (when the run stops), the **assumptions** it rests on (kept distinct from evidence), and the **decision it serves** — all first-class in the record (`schemas/research-record.schema.json`, control 19).
+diff --git a/skills/badf-research/references/acceptance.md b/skills/badf-research/references/acceptance.md
+index 042ecd5..b8751b4 100644
+--- a/skills/badf-research/references/acceptance.md
++++ b/skills/badf-research/references/acceptance.md
+@@ -30,10 +30,11 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows
+ | 22 | a finding is grounded (the `evidence-synthesis` invariant): every finding references at least one claim — a synthesis conclusion rests on adjudicated evidence, not free assertion |
+ | 23 | a technical-solution run yields grounded options (the `technical-research` invariant): an `R04` record carries at least one `alternative`, and every id-shaped `evidence_ref` resolves to a claim, finding or source the record holds |
+ | 24 | a comparison weighs at least two options (the `comparative-evaluation` invariant): a `COMPARATIVE` (R07) record carries two or more `alternatives` |
++| 25 | an independent refutation is not erased by declaring sufficiency (the `adversarial-research` invariant): a challenge council carrying a `REFUTED` ballot cannot reconcile to `RESEARCH_SUFFICIENT` |
+ 
+ ## Admission
+ 
+-- `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time). Present: `repository-research`, `problem-framing`, `fact-checking`, `evidence-synthesis`, `deep-research`, `technical-research`, `comparative-evaluation` (7 of 9).
+-- `VALIDATED`: the 24 controls above pass as gate tests with mutation. Enforced today: 1–14, 16–24 (23 of 24); only control 15 remains (it rides the state machine, earned by `research-reconciliation`).
++- `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time). Present: `repository-research`, `problem-framing`, `fact-checking`, `evidence-synthesis`, `deep-research`, `technical-research`, `comparative-evaluation`, `adversarial-research` (8 of 9).
++- `VALIDATED`: the 25 controls above pass as gate tests with mutation. Enforced today: 1–14, 16–25 (24 of 25); only control 15 remains (it rides the state machine, earned by `research-reconciliation`).
+ - `SHADOWED`: the family is run retrospectively on historical BADF findings (the authority-downgrade defect, schema drift, foreign-revision resolution, the composed-tree reds of 2026-08-28) without knowing the answer; `examples/research-record.json` is the first such shadow record.
+ - `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. Until then the registry entry stays `DESIGNED`.
+diff --git a/skills/badf-research/subskills/adversarial-research/SKILL.md b/skills/badf-research/subskills/adversarial-research/SKILL.md
+new file mode 100644
+index 0000000..26e3828
+--- /dev/null
++++ b/skills/badf-research/subskills/adversarial-research/SKILL.md
+@@ -0,0 +1,30 @@
++---
++name: adversarial-research
++description: Independently challenge a research recommendation -- attempt to refute it, find omitted or non-independent evidence, counterexamples, unsupported assumptions and uninspected surface. It is separate from the originating research run and casts sealed ballots through the framework council. It does not gather first-round evidence, decide, or authorise; a refutation is evidence for reconciliation, not a veto.
++---
++
++# adversarial-research
++
++A subskill of `badf-research` (`../../SKILL.md`). It is the **challenge** team: given a research record
++at `work/research/<BADF-RSR-NNNN>/research-record.json`, it tries to falsify the recommendation and
++records the outcome as sealed ballots in `challenge.council` against
++`schemas/research-record.schema.json`. It has no authority; a verdict is evidence for
++`research-reconciliation`, never a decision (RSR-I01).
++
++**It is independent of the originating research (RSR-I05).** The researcher cannot ballot on their own
++research; a required challenge needs at least two distinct reviewers; one identity cannot count twice;
++each reviewer declares what they did not cover. First-round ballots are sealed before synthesis.
++
++**A refutation cannot be erased by declaring sufficiency.** Each ballot is `CONFIRMED`, `REFUTED` or
++`INCONCLUSIVE`. If the council carries a `REFUTED` ballot, the record cannot reconcile to
++`RESEARCH_SUFFICIENT` — an independent refutation is not overridden by a majority or by the disposition
++(control 25); it reconciles to `CONTRADICTORY_EVIDENCE`, `MORE_RESEARCH_REQUIRED`, or another
++non-sufficient state.
++
++## Do
++
++1. Receive the record's recommendation, findings and evidence — **without** having gathered them.
++2. Try to **refute**: what evidence would reverse the conclusion? Which sources are not actually independent? What counterexample exists? What assumption carries the recommendation? What relevant surface was not inspected? Is an alternate causal explanation plausible? Did the researchers optimise for confirmation?
++3. Cast a sealed ballot — `CONFIRMED` / `REFUTED` / `INCONCLUSIVE` — and **declare your non-coverage** (what you did not check).
++4. Preserve any contradiction you surface as a `contradictions[]` entry; never discard it (RSR-I04).
++5. Hand the challenged record to `research-reconciliation`; a `REFUTED` outcome forecloses `RESEARCH_SUFFICIENT`. Grant no downstream authority.
+diff --git a/tests/test_badf_research.py b/tests/test_badf_research.py
+index 5d019bb..a552240 100644
+--- a/tests/test_badf_research.py
++++ b/tests/test_badf_research.py
+@@ -540,6 +540,40 @@ class TechnicalResearchTests(ResearchRecordTests):
+         self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
+ 
+ 
++CHALLENGED = json.loads((gate.ROOT / "examples/research-record-challenged.json").read_text())
++
++
++class AdversarialResearchTests(ResearchRecordTests):
++    """Control 25 (BADF-WP-0053, adversarial-research): an independent refutation is
++    not erased by declaring sufficiency -- a challenge council carrying a REFUTED
++    ballot cannot reconcile to RESEARCH_SUFFICIENT. Challenge is not in the digest."""
++
++    def test_a_refuted_ballot_blocks_research_sufficient(self):
++        rec = copy.deepcopy(CHALLENGED)
++        rec["challenge"]["council"]["ballots"][0]["verdict"] = "REFUTED"
++        self.assertEqual(rec["disposition"]["state"], "RESEARCH_SUFFICIENT")
++        self.refused(rec, "REFUTED ballot but the disposition is RESEARCH_SUFFICIENT")
++
++    def test_a_refuted_ballot_with_a_non_sufficient_disposition_passes(self):
++        rec = copy.deepcopy(CHALLENGED)
++        rec["challenge"]["council"]["ballots"][0]["verdict"] = "REFUTED"
++        rec["disposition"]["state"] = "CONTRADICTORY_EVIDENCE"
++        r = self.run_cli(rec)
++        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
++
++    def test_confirmed_ballots_remain_sufficient(self):
++        r = self.run_cli(copy.deepcopy(CHALLENGED))
++        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
++
++    def test_adversarial_research_is_registered_implemented(self):
++        import hashlib
++        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
++        entry = next((e for e in reg["skills"] if e["name"] == "adversarial-research"), None)
++        self.assertIsNotNone(entry, "adversarial-research is not registered")
++        self.assertEqual(entry["status"], "IMPLEMENTED")
++        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
++
++
+ class ComparativeEvaluationTests(ResearchRecordTests):
+     """Control 24 (BADF-WP-0052, comparative-evaluation): a COMPARATIVE (R07) run
+     weighs at least two alternatives. type/alternatives are not in the evidence_digest."""
+diff --git a/work/WP-2026-0052/work-package.json b/work/WP-2026-0052/work-package.json
+index 9c39415..2c2a055 100644
+--- a/work/WP-2026-0052/work-package.json
++++ b/work/WP-2026-0052/work-package.json
+@@ -45,11 +45,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "003afbd"
++    "base_revision": "003afbd",
++    "landed_as": "a51f1f7edf76b23ebf322a75d5b139009ec2cf2d"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Seventh P0 research subskill. Control 24 earned by a failing-first probe (R07 with <2 alternatives passed). Reconciles WP-2026-0051. badf-research stays DESIGNED (7 of 9 P0); research controls to 23 of 24."
+ }

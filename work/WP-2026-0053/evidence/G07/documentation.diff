@@ -1,0 +1,26 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 16fbb0c..22cc223 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -421,6 +421,21 @@ comparison. What the gate does *not* enforce is whether the evidence justifies a
+ so honest non-dominance stays a null recommendation. Research controls: **23 of 24** — only control 15
+ remains, for `research-reconciliation`, the last P0 subskill. `badf-research` stays `DESIGNED` (7 of 9).
+ 
++## adversarial-research — a refutation is not erased (`BADF-WP-0053`, Issue #97)
++
++The eighth P0 research subskill: `skills/badf-research/subskills/adversarial-research/SKILL.md` is the
++**independent** challenge team — it tries to refute the recommendation (omitted/non-independent
++evidence, counterexamples, unsupported assumptions, uninspected surface, confirmation bias), separate
++from the originating run, casting sealed `CONFIRMED`/`REFUTED`/`INCONCLUSIVE` ballots through the
++framework council (the independence/quorum/non-coverage controls 11–13 already hold). **Control 25,
++earned by failing-first**: a probe showed a council carrying a `REFUTED` ballot could still reconcile
++to `RESEARCH_SUFFICIENT`, so a `REFUTED` ballot now forecloses `RESEARCH_SUFFICIENT` — an independent
++refutation is not overridden by a majority or by the disposition; it reconciles to
++`CONTRADICTORY_EVIDENCE`, `MORE_RESEARCH_REQUIRED`, or another non-sufficient state. What the gate does
++*not* check is whether a ballot genuinely attempted refutation (the reviewer's honesty, declared via
++non-coverage). Research controls: **24 of 25** — only control 15 remains, for the last subskill,
++`research-reconciliation`. `badf-research` stays `DESIGNED` (8 of 9 P0).
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
