@@ -1,0 +1,255 @@
+diff --git a/badf/demands/BADF-DEM-0038.json b/badf/demands/BADF-DEM-0038.json
+new file mode 100644
+index 0000000..2f93ba7
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0038.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0038",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 93,
++    "url": "https://github.com/bstBizEra/badf/issues/93",
++    "exported_at": "2026-08-28T19:51:15Z",
++    "body_digest": "sha256:a292b6b7573b2ec098400bbb9e8e36c427b57dac55a23b8022362680bcda5ad6"
++  },
++  "title": "GOV-0035: badf-research has no technical-research subskill; R04 passes with zero alternatives and ungrounded options (P0 6/9 + earned control 23)",
++  "problem": "## Observed\n`badf-research` has 5 of 9 P0 subskills; `technical-research` \u2014 which finds the viable engineering approaches (an option set, not one early answer) \u2014 does not exist. Failing-first probes show two real, enforceable gaps: an `R04` (TECHNICAL_SOLUTION) record passes with **zero alternatives**, and an alternative can cite **non-existent evidence** (`evidence_refs` are unenforced).\n\n## Expected\nBuild `technical-research` as P0 subskill **6 of 9**: a concise `SKILL.md` that yields candidate approaches (mechanism, limitations, security, compatibility, cost, migration, reversibility), grounded in the record's evidence, and does not rank/choose (that is `comparative-evaluation`). Register `IMPLEMENTED`. **Control 23 (earned):** an `R04` record carries \u22651 `alternative`, and every alternative's `evidence_refs` resolves to a claim, finding or source in the record.\n\n## Evidence\n- probe: `R04 + zero alternatives` \u2192 PASS (gap); `R04 + alternative citing C-999` \u2192 PASS (gap)\n- `alternatives[]` schema has `evidence_refs` but the gate enforces nothing about them\n\n## Unknowns\nNone. Not in scope: comparative-evaluation/adversarial/reconciliation (later units), #77/#83/#84.\n\n## Proposed work package\n`BADF-WP-0051`. `technical-research/SKILL.md` + registry; control 23 (earned) + acceptance row; root router (6/9); tests + mutation; own G07 self-dossier. C2. Controls -> 22 of 23; `badf-research` stays `DESIGNED` (6 of 9 P0).\n\ndiscovered-by: operator research sequencing (2026-08-29) + BADF-WP-0050 \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T19:51:15Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "technical-research P0 6/9 + control 23 (R04 alternatives non-empty + grounded evidence_refs, earned). /loop research build. Worked as BADF-WP-0051."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 76e6a4c..2734f3e 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -36,7 +36,7 @@
+       "risk_class": "C1",
+       "allowed_tools": [],
+       "status": "DESIGNED",
+-      "digest": "sha256:04f5b2142f28a8e75f063e151ffc36f9fbcea1e71e38d12a8aef6107db3a7808"
++      "digest": "sha256:0a42206045ae3c924180da9f4a4c88cfb047786ac55c912024a50cbc8153c48f"
+     },
+     {
+       "name": "repository-research",
+@@ -112,6 +112,19 @@
+       ],
+       "status": "IMPLEMENTED",
+       "digest": "sha256:517725564d6faf36b11a79a54dc9c820d9f6f07fb24334f36e5996a7dd81cacb"
++    },
++    {
++      "name": "technical-research",
++      "source": "skills/badf-research/subskills/technical-research/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [
++        "local-filesystem",
++        "local-shell"
++      ],
++      "status": "IMPLEMENTED",
++      "digest": "sha256:7b5e4db5c9df5e40310c6ba49a1fe6b3628615faeb001e7d0ea34029b75e2a61"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 63454fb..fb1d02b 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -397,6 +397,18 @@ going stale *is* an evidence change, so control 17 stays coherent); the three ex
+ with recomputed digests. This distinguishes *a URL still exists* from *the evidence is current*.
+ Research controls: **21 of 22** — only control 15 remains, owned by `research-reconciliation`.
+ 
++## technical-research — grounded options (`BADF-WP-0051`, Issue #93)
++
++The sixth P0 research subskill: `skills/badf-research/subskills/technical-research/SKILL.md` asks
++*what approaches exist to solve it?* and yields an **option set** — candidate approaches with their
++mechanism, limitations, security, compatibility, cost, migration and reversibility — without ranking
++or choosing (that is `comparative-evaluation`). **Control 23, earned by failing-first**: probes showed
++an `R04` (TECHNICAL_SOLUTION) record passed with *zero alternatives*, and an alternative could cite
++*non-existent evidence*. So an `R04` record must now carry at least one `alternative`, and every
++alternative's `evidence_refs` must resolve to a claim, finding or source the record holds — an option
++is proposed on the strength of gathered evidence, not asserted. Research controls: **22 of 23**.
++`badf-research` stays `DESIGNED` (6 of 9 P0).
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index dab34f1..32a6d47 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -2913,6 +2913,23 @@ def validate_research_record(path: Path) -> str:
+         if missing:
+             raise ValidationError(f"finding {f['id']} references claim(s) the record does not carry: {', '.join(missing)}")
+ 
++    # 23: a TECHNICAL_SOLUTION run yields candidate approaches, each grounded in
++    # the record's evidence (technical-research). An R04 record carries at least
++    # one alternative, and every alternative's evidence_refs resolves to a claim,
++    # finding or source the record holds -- an option is proposed on the strength
++    # of gathered evidence, not asserted.
++    if rec["type"] == "R04" and not rec["alternatives"]:
++        raise ValidationError("technical-solution research (R04) carries no alternatives; it must yield at least one candidate approach (control 23)")
++    # An evidence_ref that is shaped like a record id (C-/F-/S-nnn) must resolve to
++    # a claim, finding or source the record holds; free-form external references are
++    # left as-is. This catches a dangling in-record citation without forbidding an
++    # external pointer or a rationale string.
++    grounded = claim_ids | {f["id"] for f in rec["findings"]} | set(sources)
++    for alt in rec["alternatives"]:
++        for ref in alt.get("evidence_refs") or []:
++            if re.fullmatch(r"[CFS]-[0-9]{3,}", ref) and ref not in grounded:
++                raise ValidationError(f"alternative {alt['id']} cites in-record evidence {ref} that is absent; an id-shaped evidence_ref must resolve to a claim, finding or source it holds (control 23)")
++
+     # ---- challenge / independence controls (RSR-003, BADF-WP-0037) ----
+     # 10: source count is not source independence -- the basis cannot claim more
+     # independent primary sources than the claim actually cites.
+diff --git a/skills/badf-research/SKILL.md b/skills/badf-research/SKILL.md
+index 5ecf5c1..27e7d61 100644
+--- a/skills/badf-research/SKILL.md
++++ b/skills/badf-research/SKILL.md
+@@ -5,7 +5,7 @@ description: Govern evidence-based research for BADF questions, issues, defects,
+ 
+ # BADF Research
+ 
+-Status: `DESIGNED` (contract frozen by `BADF-WP-0031`). The `research` gate command enforces the record contract, and the `problem-framing`, `repository-research`, `fact-checking`, `evidence-synthesis` and `deep-research` subskills exist; the family is not yet activated for autonomous use (5 of 9 P0 subskills). Research determines what the evidence supports; `badf-delivery` governs what authorised actors may do with that conclusion.
++Status: `DESIGNED` (contract frozen by `BADF-WP-0031`). The `research` gate command enforces the record contract, and the `problem-framing`, `repository-research`, `fact-checking`, `evidence-synthesis`, `deep-research` and `technical-research` subskills exist; the family is not yet activated for autonomous use (6 of 9 P0 subskills). Research determines what the evidence supports; `badf-delivery` governs what authorised actors may do with that conclusion.
+ 
+ 1. Read the repository `AGENTS.md` and the documents it marks required.
+ 2. Resolve the research question, the originating Issue and its demand record, the research type and depth (`references/research-types.md`), scope and non-goals, source and data boundaries, authority and mutation constraints, required evidence, and the bounded scope contract — non-empty **stop conditions** (when the run stops), the **assumptions** it rests on (kept distinct from evidence), and the **decision it serves** — all first-class in the record (`schemas/research-record.schema.json`, control 19).
+diff --git a/skills/badf-research/references/acceptance.md b/skills/badf-research/references/acceptance.md
+index 632630b..accf949 100644
+--- a/skills/badf-research/references/acceptance.md
++++ b/skills/badf-research/references/acceptance.md
+@@ -28,10 +28,11 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows
+ | 20 | framing precedes evidence: a record in a pre-evidence state (`PROPOSED`/`FRAMED`/`BASELINED`) carries no `claims`, `sources`, or `findings` (the `problem-framing` invariant — sharpen the question, do not answer it) |
+ | 21 | a claim's status is consistent with its evidence (the `fact-checking` invariant): a `FALSIFIED` claim carries a contradicting source (no evidence ≠ false), and a `DISPUTED` claim carries both supporting and contradicting sources (support and contradiction coexist). Whether a source's *content* entails the claim is not machine-checkable here — the source carries no content locator — and is tracked separately |
+ | 22 | a finding is grounded (the `evidence-synthesis` invariant): every finding references at least one claim — a synthesis conclusion rests on adjudicated evidence, not free assertion |
++| 23 | a technical-solution run yields grounded options (the `technical-research` invariant): an `R04` record carries at least one `alternative`, and every alternative's `evidence_refs` resolves to a claim, finding or source the record holds |
+ 
+ ## Admission
+ 
+-- `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time). Present: `repository-research`, `problem-framing`, `fact-checking`, `evidence-synthesis`, `deep-research` (5 of 9).
+-- `VALIDATED`: the 22 controls above pass as gate tests with mutation. Enforced today: 1–14, 16–22 (21 of 22); only control 15 remains (it rides the state machine, earned by `research-reconciliation`).
++- `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family (later work packages, one at a time). Present: `repository-research`, `problem-framing`, `fact-checking`, `evidence-synthesis`, `deep-research`, `technical-research` (6 of 9).
++- `VALIDATED`: the 23 controls above pass as gate tests with mutation. Enforced today: 1–14, 16–23 (22 of 23); only control 15 remains (it rides the state machine, earned by `research-reconciliation`).
+ - `SHADOWED`: the family is run retrospectively on historical BADF findings (the authority-downgrade defect, schema drift, foreign-revision resolution, the composed-tree reds of 2026-08-28) without knowing the answer; `examples/research-record.json` is the first such shadow record.
+ - `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. Until then the registry entry stays `DESIGNED`.
+diff --git a/skills/badf-research/subskills/technical-research/SKILL.md b/skills/badf-research/subskills/technical-research/SKILL.md
+new file mode 100644
+index 0000000..129af99
+--- /dev/null
++++ b/skills/badf-research/subskills/technical-research/SKILL.md
+@@ -0,0 +1,31 @@
++---
++name: technical-research
++description: Find the technically viable approaches that could solve a problem -- an option set, not one early answer. For research types R04 (technical solution) and R05 (architecture). Produces candidate solutions grounded in the record's evidence, with their mechanisms, limitations, security, compatibility, cost, migration and reversibility. It does not compare-and-choose (comparative-evaluation), decide, or authorise.
++---
++
++# technical-research
++
++A subskill of `badf-research` (`../../SKILL.md`). Where `repository-research` asks *what is happening
++here?*, technical-research asks *what approaches exist to solve it?* It adds `alternatives` to the
++research record at `work/research/<BADF-RSR-NNNN>/research-record.json` against
++`schemas/research-record.schema.json`. It has no authority; an option set is evidence for a decision,
++never a decision (RSR-I01).
++
++**It yields an option set, not an early answer.** The deliverable is several candidate approaches,
++each with its `mechanism` and — in the fuller record — applicability, advantages, limitations,
++security, compatibility, operational cost, migration and reversibility. Choosing among them is
++`comparative-evaluation`'s job; this subskill widens the option space honestly rather than narrowing
++to the first idea.
++
++**Each candidate is grounded in evidence.** An alternative's `evidence_refs` resolve to a claim,
++finding or source the record holds — an approach is proposed on the strength of gathered evidence,
++not asserted (control 23). A `TECHNICAL_SOLUTION` (R04) run carries at least one alternative; a
++technical-solution study that proposes nothing has not been done.
++
++## Do
++
++1. Read the framed question and the record's evidence (`problem-framing`, `deep-research`, `repository-research`).
++2. Discover candidate approaches from authoritative sources — official docs, standards, reference implementations, mature OSS, upstream issues, benchmark data — preferring primary sources.
++3. Record each as an `alternative` with its `mechanism`, and where captured its applicability, limitations, security, compatibility, operational cost, migration and reversibility.
++4. Ground each alternative: its `evidence_refs` point to claims, findings or sources already in the record (add the evidence first if it is missing).
++5. Do **not** rank or choose — hand the option set to `comparative-evaluation`; grant no downstream authority.
+diff --git a/tests/test_badf_research.py b/tests/test_badf_research.py
+index e3933c5..8c36b9f 100644
+--- a/tests/test_badf_research.py
++++ b/tests/test_badf_research.py
+@@ -504,6 +504,42 @@ class SourceFreshnessTests(ResearchRecordTests):
+         self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
+ 
+ 
++class TechnicalResearchTests(ResearchRecordTests):
++    """Control 23 (BADF-WP-0051, technical-research): a TECHNICAL_SOLUTION (R04) run
++    yields grounded options -- >=1 alternative, each with evidence_refs resolving to
++    a claim, finding or source. alternatives/type are not in the evidence_digest."""
++
++    def test_r04_with_zero_alternatives_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); rec["type"] = "R04"; rec["alternatives"] = []
++        self.refused(rec, "carries no alternatives")
++
++    def test_an_ungrounded_alternative_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); rec["type"] = "R04"
++        rec["alternatives"] = [{"id": "A-001", "mechanism": "an approach", "evidence_refs": ["C-999"]}]
++        self.refused(rec, "cites in-record evidence C-999 that is absent")
++
++    def test_a_free_form_evidence_ref_is_allowed(self):
++        # evidence_refs are free-form; only id-shaped refs must resolve.
++        rec = copy.deepcopy(EXAMPLE); rec["type"] = "R04"
++        rec["alternatives"] = [{"id": "A-001", "mechanism": "an approach", "evidence_refs": ["see the upstream design note"]}]
++        r = self.run_cli(rec)
++        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
++
++    def test_a_grounded_alternative_passes(self):
++        rec = copy.deepcopy(EXAMPLE); rec["type"] = "R04"
++        rec["alternatives"] = [{"id": "A-001", "mechanism": "an approach", "evidence_refs": [rec["claims"][0]["id"]]}]
++        r = self.run_cli(rec)
++        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("RESEARCH PASS", r.stdout)
++
++    def test_technical_research_is_registered_implemented(self):
++        import hashlib
++        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
++        entry = next((e for e in reg["skills"] if e["name"] == "technical-research"), None)
++        self.assertIsNotNone(entry, "technical-research is not registered")
++        self.assertEqual(entry["status"], "IMPLEMENTED")
++        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
++
++
+ class ProblemFramingRegistrationTests(unittest.TestCase):
+ 
+     def test_problem_framing_is_registered_implemented_with_a_real_digest(self):
+diff --git a/work/WP-2026-0050/work-package.json b/work/WP-2026-0050/work-package.json
+index c89f23d..2a57ea9 100644
+--- a/work/WP-2026-0050/work-package.json
++++ b/work/WP-2026-0050/work-package.json
+@@ -2,7 +2,7 @@
+   "$schema": "../../schemas/work-package.schema.json",
+   "schema_version": "1.0.0",
+   "id": "WP-2026-0050",
+-  "title": "control 6 — source-digest freshness (freshness receipt field + fail-closed on STALE/UNKNOWN)",
++  "title": "control 6 \u2014 source-digest freshness (freshness receipt field + fail-closed on STALE/UNKNOWN)",
+   "owner": "human_sponsor",
+   "repository": "bstBizEra/badf",
+   "demand": "BADF-DEM-0037",
+@@ -45,11 +45,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "4f80a40"
++    "base_revision": "4f80a40",
++    "landed_as": "873acaa170f7b30a999e0c31108f0722ac7a0e69"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Control-only WP (no new subskill) implementing the long-pending acceptance control 6, enabled by deep-research (WP-0049). Reconciles WP-2026-0049. Research controls to 21 of 22 (only control 15 remains, owned by research-reconciliation)."
+ }

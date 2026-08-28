@@ -1,0 +1,23 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 63454fb..fb1d02b 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -397,6 +397,18 @@ going stale *is* an evidence change, so control 17 stays coherent); the three ex
+ with recomputed digests. This distinguishes *a URL still exists* from *the evidence is current*.
+ Research controls: **21 of 22** — only control 15 remains, owned by `research-reconciliation`.
+ 
++## technical-research — grounded options (`BADF-WP-0051`, Issue #93)
++
++The sixth P0 research subskill: `skills/badf-research/subskills/technical-research/SKILL.md` asks
++*what approaches exist to solve it?* and yields an **option set** — candidate approaches with their
++mechanism, limitations, security, compatibility, cost, migration and reversibility — without ranking
++or choosing (that is `comparative-evaluation`). **Control 23, earned by failing-first**: probes showed
++an `R04` (TECHNICAL_SOLUTION) record passed with *zero alternatives*, and an alternative could cite
++*non-existent evidence*. So an `R04` record must now carry at least one `alternative`, and every
++alternative's `evidence_refs` must resolve to a claim, finding or source the record holds — an option
++is proposed on the strength of gathered evidence, not asserted. Research controls: **22 of 23**.
++`badf-research` stays `DESIGNED` (6 of 9 P0).
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
