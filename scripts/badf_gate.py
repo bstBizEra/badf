@@ -2888,6 +2888,14 @@ def validate_research_record(path: Path) -> str:
                 raise ValidationError(f"claim {cid} is VERIFIED but rests on no independent primary source (RSR-I02)")
         if c["classification"] == "OBSERVED" and not supporting_primary:
             raise ValidationError(f"claim {cid} is OBSERVED but cites no primary source; an observation is of the thing itself, not a report of it (RSR-I03)")
+        # 21: a claim's status is consistent with its evidence (fact-checking). NO
+        # EVIDENCE != FALSE; and a dispute is support and contradiction coexisting.
+        # (Whether a source's CONTENT entails the claim is not machine-checkable
+        # here -- the source carries no content locator -- and is tracked separately.)
+        if c["status"] == "FALSIFIED" and not c["contradicting_sources"]:
+            raise ValidationError(f"claim {cid} is FALSIFIED but cites no contradicting source; no evidence is not falsification (control 21)")
+        if c["status"] == "DISPUTED" and not (c["supporting_sources"] and c["contradicting_sources"]):
+            raise ValidationError(f"claim {cid} is DISPUTED but does not carry both supporting and contradicting evidence; a dispute is support and contradiction coexisting (control 21)")
     for f in rec["findings"]:
         missing = sorted(set(f["claim_refs"]) - claim_ids)
         if missing:
