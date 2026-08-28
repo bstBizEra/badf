@@ -1,0 +1,15 @@
+{
+  "$schema": "../schemas/acceptance-criteria.schema.json",
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-__REQUIRED__",
+  "criteria": [
+    {
+      "id": "AC-001",
+      "statement": "__REQUIRED__",
+      "verification": "__REQUIRED__",
+      "objective_refs": [
+        "OBJ-001"
+      ]
+    }
+  ]
+}

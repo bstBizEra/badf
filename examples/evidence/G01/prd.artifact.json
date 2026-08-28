@@ -1,0 +1,148 @@
+{
+  "schema_version": "1.0.0",
+  "id": "PRD-BADF-0001",
+  "author": {
+    "principal": "example-author",
+    "principal_type": "human"
+  },
+  "product": {
+    "name": "BADF",
+    "type": "governance-framework",
+    "stage": "baseline",
+    "owner": "BST",
+    "target_market": "AI delivery teams"
+  },
+  "overview": "A deterministic control plane that governs AI delivery agents from intake to production.",
+  "problem": {
+    "statement": "Agent output is accepted on its own account of itself.",
+    "affected_users": [
+      "operators",
+      "reviewers"
+    ],
+    "current_limitations": [
+      "no evidence binding",
+      "no authority separation"
+    ],
+    "business_impact": [
+      "unreviewable change",
+      "silent policy drift"
+    ],
+    "why_now": "agents now ship code unattended"
+  },
+  "target_users": [
+    {
+      "segment": "platform teams",
+      "role": "operator",
+      "needs": [
+        "fail-closed gates"
+      ],
+      "pain_points": [
+        "green tests that measure nothing"
+      ]
+    }
+  ],
+  "value_proposition": {
+    "statement": "A run is measured by its side effects, never by its own account of itself.",
+    "benefits": [
+      "auditability",
+      "reversibility"
+    ]
+  },
+  "vision": "Every material change carries its authority and its evidence.",
+  "objectives": [
+    {
+      "id": "OBJ-001",
+      "statement": "No merge without a composed-tree verification.",
+      "metric_refs": [
+        "KPI-001"
+      ]
+    },
+    {
+      "id": "OBJ-002",
+      "statement": "No work package without a demand record.",
+      "metric_refs": [
+        "KPI-002"
+      ]
+    }
+  ],
+  "scope": {
+    "in_scope": [
+      "gate validation",
+      "evidence binding",
+      "authority floors"
+    ],
+    "out_of_scope": [
+      "model training",
+      "hosting"
+    ]
+  },
+  "capabilities": [
+    {
+      "name": "gate dossier validation",
+      "description": "deterministic PASS/FAIL/HELD",
+      "priority": "Must Have"
+    },
+    {
+      "name": "composed-tree gate",
+      "description": "verify the tree that would land",
+      "priority": "Must Have"
+    }
+  ],
+  "differentiation": [
+    "deny unless established",
+    "designed != implemented != enforced != verified"
+  ],
+  "success_metrics": [
+    {
+      "id": "KPI-001",
+      "name": "red merges",
+      "baseline": "2 in 2026-08",
+      "target": "0",
+      "measurement": "push-to-main run conclusions"
+    },
+    {
+      "id": "KPI-002",
+      "name": "work packages without demand",
+      "baseline": "3",
+      "target": "0",
+      "measurement": "repo check"
+    }
+  ],
+  "stakeholders": [
+    {
+      "role": "Product Owner",
+      "accountability": "G01 product approval"
+    },
+    {
+      "role": "Engineering Owner",
+      "accountability": "delivery"
+    }
+  ],
+  "assumptions": [
+    "GitHub remains the ledger"
+  ],
+  "constraints": [
+    "stdlib only"
+  ],
+  "raid": {
+    "risks": [
+      {
+        "id": "R-001",
+        "statement": "shared account identity",
+        "severity": "Major"
+      }
+    ],
+    "assumptions": [],
+    "issues": [],
+    "dependencies": [
+      "git",
+      "GitHub Actions"
+    ]
+  },
+  "legal_regulatory_data": {
+    "legal": [],
+    "regulatory": [],
+    "data_classification": "internal",
+    "privacy": []
+  }
+}

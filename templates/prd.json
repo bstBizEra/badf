@@ -1,0 +1,149 @@
+{
+  "schema_version": "1.0.0",
+  "id": "PRD-__REQUIRED__",
+  "author": {
+    "principal": "__REQUIRED__",
+    "principal_type": "human"
+  },
+  "product": {
+    "name": "__REQUIRED__",
+    "type": "__REQUIRED__",
+    "stage": "__REQUIRED__",
+    "owner": "__REQUIRED__",
+    "target_market": "__REQUIRED__"
+  },
+  "overview": "__REQUIRED__",
+  "problem": {
+    "statement": "__REQUIRED__",
+    "affected_users": [
+      "__REQUIRED__",
+      "__REQUIRED__"
+    ],
+    "current_limitations": [
+      "__REQUIRED__",
+      "__REQUIRED__"
+    ],
+    "business_impact": [
+      "__REQUIRED__",
+      "__REQUIRED__"
+    ],
+    "why_now": "__REQUIRED__"
+  },
+  "target_users": [
+    {
+      "segment": "__REQUIRED__",
+      "role": "__REQUIRED__",
+      "needs": [
+        "__REQUIRED__"
+      ],
+      "pain_points": [
+        "__REQUIRED__"
+      ]
+    }
+  ],
+  "value_proposition": {
+    "statement": "__REQUIRED__",
+    "benefits": [
+      "__REQUIRED__",
+      "__REQUIRED__"
+    ]
+  },
+  "vision": "__REQUIRED__",
+  "objectives": [
+    {
+      "id": "OBJ-001",
+      "statement": "__REQUIRED__",
+      "metric_refs": [
+        "__REQUIRED__"
+      ]
+    },
+    {
+      "id": "OBJ-002",
+      "statement": "__REQUIRED__",
+      "metric_refs": [
+        "__REQUIRED__"
+      ]
+    }
+  ],
+  "scope": {
+    "in_scope": [
+      "__REQUIRED__",
+      "__REQUIRED__",
+      "__REQUIRED__"
+    ],
+    "out_of_scope": [
+      "__REQUIRED__",
+      "__REQUIRED__"
+    ]
+  },
+  "capabilities": [
+    {
+      "name": "__REQUIRED__",
+      "description": "__REQUIRED__",
+      "priority": "__REQUIRED__"
+    },
+    {
+      "name": "__REQUIRED__",
+      "description": "__REQUIRED__",
+      "priority": "__REQUIRED__"
+    }
+  ],
+  "differentiation": [
+    "__REQUIRED__",
+    "__REQUIRED__"
+  ],
+  "success_metrics": [
+    {
+      "id": "KPI-001",
+      "name": "__REQUIRED__",
+      "baseline": "__REQUIRED__",
+      "target": "__REQUIRED__",
+      "measurement": "__REQUIRED__"
+    },
+    {
+      "id": "KPI-002",
+      "name": "__REQUIRED__",
+      "baseline": "__REQUIRED__",
+      "target": "__REQUIRED__",
+      "measurement": "__REQUIRED__"
+    }
+  ],
+  "stakeholders": [
+    {
+      "role": "__REQUIRED__",
+      "accountability": "__REQUIRED__"
+    },
+    {
+      "role": "__REQUIRED__",
+      "accountability": "__REQUIRED__"
+    }
+  ],
+  "assumptions": [
+    "__REQUIRED__"
+  ],
+  "constraints": [
+    "__REQUIRED__"
+  ],
+  "raid": {
+    "risks": [
+      {
+        "id": "R-001",
+        "statement": "__REQUIRED__",
+        "severity": "__REQUIRED__"
+      }
+    ],
+    "assumptions": [],
+    "issues": [],
+    "dependencies": [
+      "__REQUIRED__",
+      "__REQUIRED__"
+    ]
+  },
+  "legal_regulatory_data": {
+    "legal": [],
+    "regulatory": [],
+    "data_classification": "__REQUIRED__",
+    "privacy": []
+  },
+  "$schema": "../schemas/prd.schema.json"
+}

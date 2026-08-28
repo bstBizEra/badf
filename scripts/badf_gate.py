@@ -782,6 +782,95 @@ def check_non_coverage(dossier: dict[str, Any], evidence_type: str, outcome: str
             f"an undeclared non-applicability is a missing test, not a non-coverage")
 
 
+
+# ---- G01 evidence contract: per-type rules the gate enforces by OPENING the artifact (BADF-WP-0030, #51) ----
+PLACEHOLDER = re.compile(r"__[A-Z_]+__|\bTBD\b|\bTODO\b|\{\{[^}]*\}\}")
+
+
+def _strings(obj: Any, where: str = ""):
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            yield from _strings(v, f"{where}.{k}" if where else k)
+    elif isinstance(obj, list):
+        for i, v in enumerate(obj):
+            yield from _strings(v, f"{where}[{i}]")
+    elif isinstance(obj, str):
+        yield where, obj
+
+
+def _no_placeholders(doc: Any, label: str) -> None:
+    for where, text in _strings(doc):
+        if PLACEHOLDER.search(text):
+            raise ValidationError(f"{label}: unresolved placeholder at {where}: {text[:60]!r}")
+
+
+def _sibling_artifact(dossier: dict[str, Any], evidence_type: str, label: str) -> tuple[Path, dict[str, Any]]:
+    """The artifact of another evidence type in the SAME dossier, by the
+    dossier's own index -- never by guessing a path."""
+    for item in dossier.get("evidence") or []:
+        if isinstance(item, dict) and item.get("type") == evidence_type:
+            rec = load_json(safe_repo_path(item["path"], f"{evidence_type} evidence path"))
+            art = safe_repo_path(rec["artifact"], f"{evidence_type} artifact")
+            return art, load_json(art)
+    raise ValidationError(f"{label} requires a {evidence_type} evidence in the same dossier")
+
+
+def check_prd(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("prd", doc)
+    _no_placeholders(doc, "prd")
+    inside, outside = set(doc["scope"]["in_scope"]), set(doc["scope"]["out_of_scope"])
+    both = sorted(inside & outside)
+    if both:
+        raise ValidationError(f"prd: same item in both in_scope and out_of_scope: {', '.join(both)}")
+    metrics = {m["id"] for m in doc["success_metrics"]}
+    for objective in doc["objectives"]:
+        unknown = sorted(set(objective.get("metric_refs") or []) - metrics)
+        if unknown:
+            raise ValidationError(f"prd: objective {objective['id']} references unknown metric(s): {', '.join(unknown)}")
+
+
+def check_acceptance_criteria(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("acceptance-criteria", doc)
+    _no_placeholders(doc, "acceptance-criteria")
+    if not doc["criteria"]:
+        raise ValidationError("acceptance-criteria: no criteria; an empty list is not acceptance")
+    ids = [c["id"] for c in doc["criteria"]]
+    dupes = sorted({i for i in ids if ids.count(i) > 1})
+    if dupes:
+        raise ValidationError(f"acceptance-criteria: duplicate criterion id(s): {', '.join(dupes)}")
+    _, prd = _sibling_artifact(dossier, "prd", "acceptance-criteria")
+    if doc["prd_id"] != prd["id"]:
+        raise ValidationError(f"acceptance-criteria: prd_id {doc['prd_id']!r} is not the dossier's PRD {prd['id']!r}")
+    objectives = {o["id"] for o in prd["objectives"]}
+    for c in doc["criteria"]:
+        unknown = sorted(set(c.get("objective_refs") or []) - objectives)
+        if unknown:
+            raise ValidationError(f"acceptance-criteria: criterion {c['id']} references unknown objective(s): {', '.join(unknown)}")
+
+
+def check_product_approval(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("product-approval", doc)
+    _no_placeholders(doc, "product-approval")
+    producer = evidence["producer"]
+    if producer.get("type") != "human":
+        raise ValidationError("product-approval must be produced by a human product_owner; a non-human producer cannot approve a product")
+    if producer.get("id") != doc["approved_by"]["principal"]:
+        raise ValidationError(f"product-approval producer {producer.get('id')!r} is not approved_by.principal {doc['approved_by']['principal']!r}")
+    prd_path, prd = _sibling_artifact(dossier, "prd", "product-approval")
+    if doc["prd_id"] != prd["id"]:
+        raise ValidationError(f"product-approval: prd_id {doc['prd_id']!r} is not the dossier's PRD {prd['id']!r}")
+    if doc["approved_by"]["principal"] == prd["author"]["principal"]:
+        raise ValidationError(f"product-approval: the PRD author {prd['author']['principal']!r} cannot approve their own PRD")
+    if doc["prd_digest"] != sha256(prd_path):
+        raise ValidationError("product-approval: prd_digest does not match the prd artifact in this dossier (the PRD changed after approval, or the approval is for other bytes)")
+
+
+EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_criteria, "product-approval": check_product_approval}
+
+
 def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -> None:
     evidence = load_json(path)
     require_fields(evidence, EVIDENCE_FIELDS, f"evidence {path}")
@@ -809,6 +898,9 @@ def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -
     artifact = safe_repo_path(evidence["artifact"], f"evidence {path} artifact")
     if evidence["digest"] != sha256(artifact):
         raise ValidationError(f"evidence {path} artifact digest mismatch")
+    rule = EVIDENCE_RULES.get(expected_type)
+    if rule is not None and outcome == "PASS":
+        rule(artifact, dossier, evidence)   # the gate opens the artifact; a name is not evidence
 
 
 def validate_authority(dossier: dict[str, Any], require_quorum: bool = True) -> None:

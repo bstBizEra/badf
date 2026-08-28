@@ -1,0 +1,58 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0030",
+  "title": "G01 evidence contract inside the gate: prd, acceptance-criteria, product-approval have semantics",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0017",
+  "objective": "Give G01's three required evidence types deterministic semantics in validate_evidence -- PRD structure and three semantic rules, acceptance criteria shape, a human product-owner approval bound by digest to the exact PRD and not by its author -- so an instance reaching G01 / APPROVED means something.",
+  "business_value": "With advance landed, G01 / APPROVED is reachable on evidence nobody opens. The first real gate must not be decorative.",
+  "in_scope": [
+    "schemas/prd.schema.json, acceptance-criteria.schema.json, product-approval.schema.json",
+    "EVIDENCE_RULES in validate_evidence for the three types",
+    "examples/gate-dossier.G01.json + evidence; CI validates it",
+    "templates/prd.json; skills/badf-prd (salvaged from PR #44 as references; registry entry)",
+    "docs: G01 evidence contract",
+    "tests failing-first; mutation per rule; compose"
+  ],
+  "out_of_scope": [
+    "scripts/badf_prd.py or any second validator",
+    "G02+",
+    "PRD authoring automation",
+    "any project"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "examples/gate-dossier.G01.json renders APPROVED via the CLI",
+    "scope overlap, unknown metric_ref, placeholder -> refused naming the defect",
+    "acceptance criteria empty or duplicate ids -> refused",
+    "product-approval by non-human, by the PRD author, or with a stale prd_digest -> refused",
+    "each rule has a killed mutant",
+    "compose green both shapes"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_g01.py",
+    "tests/test_badf_schema_drift.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "2c5cb71"
+  },
+  "note": "Lands IN_PROGRESS by design; reconciled by the next WP's branch. Salvage credit: PR #44 (e3cfde1)."
+}

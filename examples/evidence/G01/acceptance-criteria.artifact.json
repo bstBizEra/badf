@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "criteria": [
+    {
+      "id": "AC-001",
+      "statement": "A PR whose composed tree is red cannot merge green.",
+      "verification": "badf_compose.py on a red candidate exits 1",
+      "objective_refs": [
+        "OBJ-001"
+      ]
+    },
+    {
+      "id": "AC-002",
+      "statement": "init refuses an intent without a demand.",
+      "verification": "tests/test_badf_demand.py",
+      "objective_refs": [
+        "OBJ-002"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G01",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G01-PRD-v1",
+  "claim": "Example PRD for the BADF baseline product",
+  "evidence_type": "prd",
+  "producer": {
+    "id": "example-author",
+    "type": "human"
+  },
+  "operation": "author the product definition",
+  "artifact": "examples/evidence/G01/prd.artifact.json",
+  "digest": "sha256:bc0e03d1facc6501896ca3de8020aed3d54266e85139057fd6068794f9eb66b1"
+}

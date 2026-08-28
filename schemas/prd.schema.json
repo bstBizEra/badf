@@ -1,0 +1,330 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "badf/prd.schema.json",
+  "title": "G01 prd evidence artifact -- the product definition (salvaged from PR #44's prd-baseline, trimmed: acceptance criteria and approval are their own evidence)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "author",
+    "product",
+    "overview",
+    "problem",
+    "target_users",
+    "value_proposition",
+    "vision",
+    "objectives",
+    "scope",
+    "capabilities",
+    "differentiation",
+    "success_metrics",
+    "stakeholders",
+    "assumptions",
+    "constraints",
+    "raid",
+    "legal_regulatory_data"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": [
+        "1.0.0"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^PRD-[A-Za-z0-9._-]+$"
+    },
+    "author": {
+      "type": "object",
+      "required": [
+        "principal",
+        "principal_type"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "principal": {
+          "type": "string",
+          "minLength": 1
+        },
+        "principal_type": {
+          "type": "string",
+          "enum": [
+            "human",
+            "agent"
+          ]
+        }
+      },
+      "description": "Who wrote the PRD. The product-approval artifact must be by a different principal."
+    },
+    "product": {
+      "type": "object",
+      "required": [
+        "name",
+        "type",
+        "stage",
+        "owner",
+        "target_market"
+      ],
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/text"
+        },
+        "type": {
+          "$ref": "#/$defs/text"
+        },
+        "stage": {
+          "$ref": "#/$defs/text"
+        },
+        "owner": {
+          "$ref": "#/$defs/text"
+        },
+        "target_market": {
+          "$ref": "#/$defs/text"
+        }
+      }
+    },
+    "overview": {
+      "$ref": "#/$defs/text"
+    },
+    "problem": {
+      "type": "object",
+      "required": [
+        "statement",
+        "affected_users",
+        "current_limitations",
+        "business_impact",
+        "why_now"
+      ],
+      "properties": {
+        "statement": {
+          "$ref": "#/$defs/text"
+        },
+        "affected_users": {
+          "$ref": "#/$defs/nonEmptyStrings"
+        },
+        "current_limitations": {
+          "$ref": "#/$defs/nonEmptyStrings"
+        },
+        "business_impact": {
+          "$ref": "#/$defs/nonEmptyStrings"
+        },
+        "why_now": {
+          "$ref": "#/$defs/text"
+        }
+      }
+    },
+    "target_users": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "segment",
+          "role",
+          "needs",
+          "pain_points"
+        ],
+        "properties": {
+          "segment": {
+            "$ref": "#/$defs/text"
+          },
+          "role": {
+            "$ref": "#/$defs/text"
+          },
+          "needs": {
+            "$ref": "#/$defs/nonEmptyStrings"
+          },
+          "pain_points": {
+            "$ref": "#/$defs/nonEmptyStrings"
+          }
+        }
+      }
+    },
+    "value_proposition": {
+      "type": "object",
+      "required": [
+        "statement",
+        "benefits"
+      ],
+      "properties": {
+        "statement": {
+          "$ref": "#/$defs/text"
+        },
+        "benefits": {
+          "$ref": "#/$defs/nonEmptyStrings"
+        }
+      }
+    },
+    "vision": {
+      "$ref": "#/$defs/text"
+    },
+    "objectives": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "statement",
+          "metric_refs"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/text"
+          },
+          "statement": {
+            "$ref": "#/$defs/text"
+          },
+          "metric_refs": {
+            "$ref": "#/$defs/nonEmptyStrings"
+          }
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "required": [
+        "in_scope",
+        "out_of_scope"
+      ],
+      "properties": {
+        "in_scope": {
+          "$ref": "#/$defs/nonEmptyStrings"
+        },
+        "out_of_scope": {
+          "$ref": "#/$defs/nonEmptyStrings"
+        }
+      }
+    },
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "description",
+          "priority"
+        ],
+        "properties": {
+          "name": {
+            "$ref": "#/$defs/text"
+          },
+          "description": {
+            "$ref": "#/$defs/text"
+          },
+          "priority": {
+            "$ref": "#/$defs/text"
+          }
+        }
+      }
+    },
+    "differentiation": {
+      "$ref": "#/$defs/nonEmptyStrings"
+    },
+    "success_metrics": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "baseline",
+          "target",
+          "measurement"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/text"
+          },
+          "name": {
+            "$ref": "#/$defs/text"
+          },
+          "baseline": {
+            "$ref": "#/$defs/text"
+          },
+          "target": {
+            "$ref": "#/$defs/text"
+          },
+          "measurement": {
+            "$ref": "#/$defs/text"
+          }
+        }
+      }
+    },
+    "stakeholders": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "role",
+          "accountability"
+        ],
+        "properties": {
+          "role": {
+            "$ref": "#/$defs/text"
+          },
+          "accountability": {
+            "$ref": "#/$defs/text"
+          }
+        }
+      }
+    },
+    "assumptions": {
+      "$ref": "#/$defs/strings"
+    },
+    "constraints": {
+      "$ref": "#/$defs/strings"
+    },
+    "raid": {
+      "type": "object",
+      "required": [
+        "risks",
+        "assumptions",
+        "issues",
+        "dependencies"
+      ],
+      "properties": {
+        "risks": {
+          "$ref": "#/$defs/strings"
+        },
+        "assumptions": {
+          "$ref": "#/$defs/strings"
+        },
+        "issues": {
+          "$ref": "#/$defs/strings"
+        },
+        "dependencies": {
+          "$ref": "#/$defs/strings"
+        }
+      }
+    },
+    "legal_regulatory_data": {
+      "type": "object",
+      "required": [
+        "legal",
+        "regulatory",
+        "data_classification",
+        "privacy"
+      ],
+      "properties": {
+        "legal": {
+          "$ref": "#/$defs/strings"
+        },
+        "regulatory": {
+          "$ref": "#/$defs/strings"
+        },
+        "data_classification": {
+          "$ref": "#/$defs/text"
+        },
+        "privacy": {
+          "$ref": "#/$defs/strings"
+        }
+      }
+    }
+  }
+}

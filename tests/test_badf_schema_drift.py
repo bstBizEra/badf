@@ -18,8 +18,11 @@ import scripts.badf_gate as gate
 
 SRC = (gate.ROOT / "scripts" / "badf_gate.py").read_text(encoding="utf-8")
 SHIPPED = {
-    "gate-dossier": [gate.ROOT / "examples/gate-dossier.G00.json"],
-    "evidence": [gate.ROOT / "examples/evidence/G00/authority.json"],
+    "gate-dossier": [gate.ROOT / "examples/gate-dossier.G00.json", gate.ROOT / "examples/gate-dossier.G01.json"],
+    "evidence": [gate.ROOT / "examples/evidence/G00/authority.json", gate.ROOT / "examples/evidence/G01/prd.json"],
+    "prd": [gate.ROOT / "examples/evidence/G01/prd.artifact.json"],
+    "acceptance-criteria": [gate.ROOT / "examples/evidence/G01/acceptance-criteria.artifact.json"],
+    "product-approval": [gate.ROOT / "examples/evidence/G01/product-approval.artifact.json"],
     "lifecycle": [gate.ROOT / "badf/lifecycle.json"],
     "demand": sorted((gate.ROOT / "badf/demands").glob("BADF-DEM-*.json")),
     "work-package": sorted(gate.ROOT.glob("work/WP-*/work-package.json")),
@@ -109,7 +112,7 @@ class SchemaInternalConsistencyTests(unittest.TestCase):
     """Every schema, read or not: a required property must be defined."""
 
     def test_no_schema_requires_an_undefined_property(self):
-        for name in ("gate-dossier", "evidence", "lifecycle", "memory", "session", "work-package", "demand", "project", "state", "init-receipt", "charter"):
+        for name in ("gate-dossier", "evidence", "lifecycle", "memory", "session", "work-package", "demand", "project", "state", "init-receipt", "charter", "prd", "acceptance-criteria", "product-approval"):
             with self.subTest(schema=name):
                 s = schema(name)
                 undefined = set(s.get("required", [])) - set(s.get("properties", {}))
