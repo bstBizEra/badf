@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0059",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 135,
+    "url": "https://github.com/bstBizEra/badf/issues/135",
+    "exported_at": "2026-08-29T18:50:15Z",
+    "body_digest": "sha256:73492d533737a884ed2887a5155aa8f7c60cb476c40529004f8e358176343ba2"
+  },
+  "title": "GOV-0051: WP-SOL-C \u2014 matrix-internal seam controls SOL-C04/05/06 (badf-solution-design -> VALIDATED)",
+  "problem": "## Observed\n\n`badf-solution-design` is `IMPLEMENTED` (WP-SOL-B): the composition matrix has a schema and a `solution` validator with **structural** controls (unique ids, non-empty binding). But the reason the skill exists \u2014 **cross-artifact seam coherence** (SOL-I01\u2026I12) \u2014 is not yet enforced. A composition can bind an API operation with **no authorization**, an authorization decision that records **no audit**, or a UX interaction with **no accessibility**, and pass. The refund example the contract warns about would still pass structurally.\n\nThe full seams (reconciling the matrix against the specialist artifacts) need those adapters, which do not exist yet. But the **matrix-internal co-occurrence seams** are enforceable now and are the composition's coherence.\n\n## Expected\n\n**WP-SOL-C \u2014 matrix-internal seam controls \u2192 `VALIDATED`.** Add to the `solution` command, each earned failing-first + mutation-killed:\n\n- **SOL-C04** (SOL-I04, API\u2194authorization): a row that composes `api_refs` **must** compose `authorization_refs` \u2014 a protected operation carries its authorization tuple.\n- **SOL-C05** (SOL-I06, authorization\u2194audit): a row that composes `authorization_refs` **must** compose `audit_refs` \u2014 a security decision carries its audit obligation.\n- **SOL-C06** (SOL-I09, accessibility binds behavior): a row that composes `ux_refs` **must** compose `accessibility_refs` \u2014 a UX interaction carries its accessibility behavior.\n\nAdvance the registry `IMPLEMENTED \u2192 VALIDATED`. Update `cross-artifact-consistency.md` to mark which seams are now matrix-internal-enforced (SOL-C04/05/06) vs. which await the specialist adapters.\n\n**Boundaries (honest scope):** the seams that need **external** artifacts \u2014 SOL-I02 (architecture baseline), SOL-I05 (default-deny in the authz model), SOL-I07 (API\u2194data schemas), SOL-I10/I11 (migration / API-compat) \u2014 **cannot** be enforced until the specialist adapters exist; they are deferred to those WPs, not faked here. No `lifecycle.json` change, no second validator (SOL-I12), no specialist activation.\n\n## Evidence\n\n- The `solution` command already opens the matrix; the co-occurrence seams are deterministic refinements of it.\n- `badf-research`/`badf-architecture` reached `VALIDATED` by enforcing their controls with mutation-tested tests \u2014 the same bar.\n\n## Unknowns\n\nWhether SOL-I03 (UX\u2194API, \"or an explicit non-API mechanism\") needs a matrix field to disambiguate \u2014 deferred; the co-occurrence set above is the unambiguous, earned subset.\n\ndiscovered-by: BADF-WP-0071 (badf-solution-design landed IMPLEMENTED) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-29T18:50:15Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "WP-SOL-C advances badf-solution-design IMPLEMENTED->VALIDATED via matrix-internal seam controls SOL-C04/05/06. External-artifact seams deferred to adapter WPs. Operator /loop 'to active' 2026-08-30. Worked as BADF-WP-0072. Rebased onto 0343c8e (2nd lander after GIT-B); reconciles WP-2026-0070."
+}

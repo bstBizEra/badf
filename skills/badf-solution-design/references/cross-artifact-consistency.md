@@ -6,6 +6,24 @@ question to ask, and the failure it prevents. These are **design controls**; det
 where a seam earns it, lands in the canonical gate through a separate failing-first WP — never a second
 validator here (SOL-I12).
 
+## Enforcement status
+
+WP-SOL-C enforces the **matrix-internal** seams — the co-occurrence a composition can be judged on from
+the matrix alone — in the canonical `solution` command, each mutation-killed:
+
+| Control | Seam | Rule (matrix-internal) | Status |
+| :--- | :--- | :--- | :--- |
+| SOL-C04 | SOL-I04 | a row with `api_refs` carries `authorization_refs` | **enforced** (WP-SOL-C) |
+| SOL-C05 | SOL-I06 | a row with `authorization_refs` carries `audit_refs` | **enforced** (WP-SOL-C) |
+| SOL-C06 | SOL-I09 | a row with `ux_refs` carries `accessibility_refs` | **enforced** (WP-SOL-C) |
+
+The **external-artifact** seams — SOL-I02 (against the architecture baseline), SOL-I05 (default-deny in
+the authorization model), SOL-I07 (API↔data schemas), SOL-I10 / SOL-I11 (migration / API-compat) — and
+the *semantic* resolution of every ref against its specialist artifact **cannot** be enforced until the
+specialist adapters exist; they are **deferred to those WPs**, honestly, not faked. SOL-I01 is structural
+(WP-SOL-B, schema-enforced). SOL-I03 / SOL-I08 await a matrix field to disambiguate the non-API / recovery
+cases.
+
 ## The seams
 
 ### SOL-I01 — Requirement provenance

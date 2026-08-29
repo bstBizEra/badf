@@ -1,0 +1,55 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0072",
+  "title": "WP-SOL-C: matrix-internal seam controls SOL-C04/05/06 (badf-solution-design -> VALIDATED)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0059",
+  "repository": "bstBizEra/badf",
+  "objective": "Advance badf-solution-design IMPLEMENTED -> VALIDATED by enforcing the cross-artifact seam coherence the skill exists for, at the level achievable now: matrix-internal co-occurrence. Add to the `solution` command SOL-C04 (SOL-I04, a row composing api_refs must compose authorization_refs), SOL-C05 (SOL-I06, a row composing authorization_refs must compose audit_refs), SOL-C06 (SOL-I09, a row composing ux_refs must compose accessibility_refs). Each earned failing-first + mutation-killed. Advance the registry to VALIDATED and mark in cross-artifact-consistency.md which seams are enforced vs which await the specialist adapters.",
+  "business_value": "The refund example the contract warns about -- an API op with no authorization, an authorization with no audit, a UX interaction with no accessibility -- still passes WP-SOL-B's structural checks. WP-SOL-C makes the composition's cross-concern coherence a deterministic gate refusal at the level that does not require the (not-yet-built) specialist artifacts. It validates the matrix's seam integrity honestly: the co-occurrence seams now; the external-artifact seams explicitly deferred rather than faked.",
+  "in_scope": [
+    "SOL-C04/C05/C06 in validate_solution_composition (co-occurrence seams: api=>authz, authz=>audit, ux=>a11y)",
+    "tests/test_badf_solution_composition.py: failing-first refusals for each seam + a data-only row admitted + the example still passing; mutation kills each seam branch",
+    "registry badf-solution-design IMPLEMENTED -> VALIDATED (operator /loop 'to active')",
+    "skills/badf-solution-design/references/cross-artifact-consistency.md: mark SOL-C04/05/06 ENFORCED; note SOL-I02/05/07/10/11 await the specialist adapters",
+    "GITHUB_CONTROL_PLANE.md doctrine section; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "the external-artifact seams (SOL-I02/05/07/10/11) -- they need the specialist adapters that do not exist; deferred, not faked",
+    "specialist adapters; scripts/badf_solution_design.py or any second validator (SOL-I12); a lifecycle.json change",
+    "advancing past VALIDATED here (SHADOWED = WP-SOL-D; ACTIVE is the loop's later operator-authorized step)",
+    "BARCHI-2's badf-git GIT-C; the measured-gate ADR"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "a row with api_refs but no authorization_refs is refused (SOL-C04); authorization_refs but no audit_refs refused (SOL-C05); ux_refs but no accessibility_refs refused (SOL-C06)",
+    "the shipped examples/solution-composition.json (all ref kinds) still renders PASS; a data-only row is admitted (co-occurrence, not blanket)",
+    "badf-solution-design is registered VALIDATED; no scripts/badf_solution_design.py; lifecycle.json unchanged",
+    "each seam branch is mutation-killed; repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_solution_composition.py",
+    "tests/test_badf_solution_design_contract.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "0343c8e"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Extends the `solution` command (canonical gate, SOL-I12); no lifecycle change. Rebased onto 0343c8e as the 2nd lander after BARCHI-2's GIT-B (#134); reconciles WP-2026-0070 (the land-time-current LANDED_UNRECONCILED WP). Built in an isolated worktree (badf-wt-solc, GIT-I04). Shipped via operator /loop 'badf-solution-design to active'. Resolves #135 / GOV-0051."
+}

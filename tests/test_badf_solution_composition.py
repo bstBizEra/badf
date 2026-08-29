@@ -84,11 +84,37 @@ class SchemaEnforcedProvenanceTests(SolutionCompositionBase):
         self.refused(rec, "solutions")
 
 
+class MatrixInternalSeamTests(SolutionCompositionBase):
+    """WP-SOL-C: the composition is coherent across concerns (co-occurrence seams).
+    The example carries all ref kinds, so it satisfies every seam."""
+
+    def test_api_without_authorization_is_refused(self):  # SOL-C04 / SOL-I04
+        rec = copy.deepcopy(EXAMPLE)
+        rec["solutions"][0].pop("authorization_refs", None)
+        self.refused(rec, "no authorization_refs")
+
+    def test_authorization_without_audit_is_refused(self):  # SOL-C05 / SOL-I06
+        rec = copy.deepcopy(EXAMPLE)
+        rec["solutions"][0].pop("audit_refs", None)
+        self.refused(rec, "no audit_refs")
+
+    def test_ux_without_accessibility_is_refused(self):  # SOL-C06 / SOL-I09
+        rec = copy.deepcopy(EXAMPLE)
+        rec["solutions"][0].pop("accessibility_refs", None)
+        self.refused(rec, "no accessibility_refs")
+
+    def test_a_row_with_no_api_needs_no_authorization(self):
+        # the seam is co-occurrence, not a blanket requirement: a data-only row is fine.
+        rec = copy.deepcopy(EXAMPLE)
+        rec["solutions"][0] = {"solution_id": "SOL-001", "requirement_ref": "REQ-001", "data_refs": ["ENT-X"]}
+        self.admitted(rec)
+
+
 class RegistryStatusTests(unittest.TestCase):
-    def test_badf_solution_design_is_registered_implemented(self):
+    def test_badf_solution_design_is_registered_validated(self):
         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
         entry = next(e for e in reg["skills"] if e["name"] == "badf-solution-design")
-        self.assertEqual(entry["status"], "IMPLEMENTED")
+        self.assertEqual(entry["status"], "VALIDATED")
 
 
 if __name__ == "__main__":
