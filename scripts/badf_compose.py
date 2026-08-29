@@ -36,7 +36,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_BRANCH = "main"
 FULL_PATTERN = "test_*.py"
-WP_LINE = re.compile(r"^Work-Package:\s*(?:BADF-WP-|WP-2026-)([0-9]{4})\s*$", re.M)
+# The Work-Package line and the machine-id namespace are defined once, in
+# badf_gate.py (BADF-WP-0070 / GIT-B); this script must not repeat the literal.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from badf_gate import WP_LINE, WP_NAMESPACE  # noqa: E402
 
 
 def sh(cmd: list[str], cwd: Path, env: dict | None = None, input: str | None = None) -> subprocess.CompletedProcess:
@@ -56,7 +59,7 @@ def compose(args: argparse.Namespace) -> int:
     m = WP_LINE.search(message)
     if not m:
         return fail("candidate message carries no Work-Package line; the composed ledger would not see this landing")
-    wp = f"WP-2026-{m.group(1)}"
+    wp = f"{WP_NAMESPACE}{m.group(1)}"
     repo = Path(args.repo).resolve()
 
     def rev(ref: str) -> str | None:

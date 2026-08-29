@@ -1,0 +1,58 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0070",
+  "title": "GIT-B identity contract: freeze WP-2026-NNNN (machine id), BADF-WP-NNNN (display label), wp/WP-2026-NNNN-<slug> (branch); enforce in check_pr_traceability",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0057",
+  "repository": "bstBizEra/badf",
+  "objective": "Freeze one work-package identity with three faces and one binding, and make the existing BADF-MAIN-001 control enforce it. Machine id WP-2026-NNNN, where WP-2026- is a fixed ledger namespace constant (the ledger's genesis namespace, not a calendar field; no rollover) defined once in badf_gate.py and shared by badf_compose.py and check_pr_traceability.py. Display label BADF-WP-NNNN permitted only in the PR title / squash subject (BADF-WP-NNNN: <outcome>) with NNNN equal to the trailer's. Branch wp/WP-2026-NNNN-<slug> with NNNN equal to the trailer's. Binding: the body trailer Work-Package: WP-2026-NNNN; the display form in the trailer is refused with the exact fix printed. The CI step passes the PR title and head ref as required arguments; absence is a usage error, never a silent skip. History is never rewritten: the ledger keeps resolving historical BADF-WP-NNNN trailers.",
+  "business_value": "Today title, branch and trailer can each name a different work package and CI stays green; the machine id year is a hardcoded literal in three regex copies; the control-plane doc contradicts the frozen badf-git contract on the branch form; and seven of the last twenty merged PRs came from feat/ branches. One frozen identity makes the chain Issue -> WP -> branch -> PR -> main deterministic and unblocks the rest of the badf-git program (GIT-C..J), exactly as GTGM v0.1 section 6 and section 17 require.",
+  "in_scope": [
+    "badf_gate.py: WP_NAMESPACE constant defined once; WP_LINE / WP_ID_FORMS / ledger_landings / self_work_packages / reconcile / dossier-path / next_wp_id built from it (no behaviour change for history)",
+    "badf_compose.py and check_pr_traceability.py import the constant (no literal of their own)",
+    "check_pr_traceability.py: canonical trailer required (display form refused with the fix), required --title (BADF-WP-NNNN: <outcome>, NNNN == trailer) and --head-ref (wp/WP-2026-NNNN-<slug>, NNNN == trailer, lowercase-kebab slug); usage error on missing args",
+    ".github/workflows/badf-gates.yml: traceability step passes github.event.pull_request.title and .head.ref",
+    ".github/pull_request_template.md, docs/governance/GITHUB_CONTROL_PLANE.md (branch classes + GIT-B doctrine section), skills/badf-git/references/branch-pr-contract.md (enforcement live from WP-2026-0070)",
+    "tests/test_badf_traceability.py extended (13 new tests, failing-first) + the two assertions in tests/test_badf_git_contract.py that guarded the deferred wording, moved with the contract",
+    "own G07 self-dossier; lockfile re-signed"
+  ],
+  "out_of_scope": [
+    "rewriting any historical branch, commit subject, work/ id or tag (GIT-I06); rebasing or force-pushing existing open branches",
+    "scripts/badf_git.py, schema pattern changes, GitHub rulesets or platform branch rules (GIT-F)",
+    "calendar-year rollover semantics (rejected in favour of a namespace constant)",
+    "removing the unused research/ namespace; GIT-C (#127) and later units"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "canonical trailer + BADF-WP-NNNN: title + wp/WP-2026-NNNN-<slug> head with one NNNN passes; display-form trailer, unlabeled or mismatched title, and any head outside wp/WP-2026-NNNN-<slug> or with a mismatched NNNN are each refused naming the exact fix; missing --title/--head-ref is a usage error",
+    "each refusal branch is load-bearing (mutation); WP-2026- is defined once and shared by the three scripts",
+    "ledger_landings() still resolves every historical BADF-WP-NNNN trailer; doc-drift guards pass for the control plane, the PR template and branch-pr-contract.md",
+    "this PR is its own first subject on the CI runner; repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_traceability.py",
+    "tests/test_badf_git_contract.py"
+  ],
+  "evidence": [
+    "failing-first run",
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "aba7de3"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-B per GTGM v0.1 section 17 (design order: B before C; GIT-C queued as #127 / WP-2026-0069). Resolves #129 / GOV-0049. Reconciles WP-2026-0067, WP-2026-0068 (c04981d) and WP-2026-0071 (aba7de3) -- both landed while this branch was open; branch rebased onto aba7de3. Engineered by BARCHI-2 in a linked worktree; parallel seat BARCHI-1 holds WP-2026-0068 (badf-solution-design)."
+}

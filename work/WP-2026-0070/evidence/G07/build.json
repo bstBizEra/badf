@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0070-G07-build",
+  "work_package_id": "WP-2026-0070",
+  "gate": "G07",
+  "claim": "the modules compile",
+  "evidence_type": "build",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "py_compile",
+    "version": "1"
+  },
+  "operation": "py_compile",
+  "started_at": "2026-08-29T18:31:49Z",
+  "completed_at": "2026-08-29T18:31:49Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0070/evidence/G07/build.txt",
+  "digest": "sha256:72b8c609edaf2f1bb7f9d4fdefee6a3aa089239b7dc6dac61b5a144e8cf39a57"
+}

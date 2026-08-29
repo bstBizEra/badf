@@ -1,8 +1,9 @@
 """badf-git declarative contract tests.
 
-The skill is a router/constraint layer, not Git authority, merge bot, release authority
-or a second gate. The v0.2 contract makes GitHub remote refs/objects the workspace
-substrate and explicitly excludes local git-worktree isolation.
+GIT-A froze the declarative contract, GIT-B froze/enforced one Work-Package
+identity across branch/title/trailer, and GIT-A2 replaces local-worktree
+isolation with GitHub Remote Workspace. The skill remains a router/constraint
+layer, not Git authority, merge bot, release authority or a second gate.
 """
 import hashlib
 import json
@@ -44,9 +45,14 @@ class BadfGitContractTests(unittest.TestCase):
             "OBSERVE → READ → PATCH → BUILD TREE → CREATE COMMIT → ADVANCE REF → VERIFY → RECONCILE → ↺",
             text,
         )
-        self.assertIn("SOURCE_HEAD_GREEN != INTEGRATION_SAFE", text)
-        self.assertIn("GIT_CAPABILITY != GIT_AUTHORITY", text)
-        self.assertIn("GITHUB_REMOTE_WORKSPACE != NATIVE_GIT_WORKTREE", text)
+        for token in (
+            "SOURCE_HEAD_GREEN != INTEGRATION_SAFE",
+            "GIT_CAPABILITY != GIT_AUTHORITY",
+            "GITHUB_REMOTE_WORKSPACE != NATIVE_GIT_WORKTREE",
+            "REUSED_RESOLUTION != VERIFIED_RESOLUTION",
+            "MERGED != RELEASED",
+        ):
+            self.assertIn(token, text)
 
     def test_state_machine_contains_progression_and_hold_states(self):
         text = (REFERENCES / "git-state-machine.md").read_text(encoding="utf-8")
@@ -60,14 +66,23 @@ class BadfGitContractTests(unittest.TestCase):
         for token in required:
             self.assertIn(token, text)
 
+    def test_branch_contract_preserves_git_b_identity_and_adds_remote_workspace(self):
+        text = (REFERENCES / "branch-pr-contract.md").read_text(encoding="utf-8")
+        self.assertIn("wp/<CANONICAL-WORK-PACKAGE-ID>-<short-slug>", text)
+        self.assertIn("WP-2026-0070", text)
+        self.assertNotIn("branch-name enforcement is deferred", text)
+        self.assertIn("github_remote_workspace", text)
+        for token in ("target_base_sha", "source_head_sha", "source_head_tree", "pr_number"):
+            self.assertIn(token, text)
+        self.assertIn("expected prior remote SHA", text)
+        self.assertIn("--force-with-lease", text)
+        self.assertIn("Bare `--force` is not a normal BADF workflow", text)
+        self.assertIn("`git range-diff`", text)
+
     def test_remote_workspace_replaces_local_worktree_isolation(self):
         root = SKILL.read_text(encoding="utf-8")
-        branch = (REFERENCES / "branch-pr-contract.md").read_text(encoding="utf-8")
         evidence = (REFERENCES / "evidence-contract.md").read_text(encoding="utf-8")
         self.assertIn("GitHub Remote Workspace", root)
-        self.assertIn("github_remote_workspace", branch)
-        for token in ("target_base_sha", "source_head_sha", "source_head_tree", "pr_number"):
-            self.assertIn(token, branch)
         self.assertNotIn("worktree_path:", evidence)
         self.assertNotIn("index_state:", evidence)
         for path in [SKILL, *sorted(REFERENCES.glob("*.md"))]:
@@ -76,19 +91,11 @@ class BadfGitContractTests(unittest.TestCase):
             self.assertNotIn("git worktree remove", text, path.name)
             self.assertNotIn("linked worktree", text.lower(), path.name)
 
-    def test_branch_contract_is_proposed_and_optimistic(self):
-        text = (REFERENCES / "branch-pr-contract.md").read_text(encoding="utf-8")
-        self.assertIn("wp/<CANONICAL-WORK-PACKAGE-ID>-<short-slug>", text)
-        self.assertIn("branch-name enforcement is deferred", text)
-        self.assertIn("expected prior remote SHA", text)
-        self.assertIn("Bare `--force` is not a normal BADF workflow", text)
-        self.assertIn("`git range-diff`", text)
-
     def test_operation_matrix_is_remote_first(self):
         text = (REFERENCES / "operation-authority-matrix.md").read_text(encoding="utf-8")
         for token in ("GIT-O0", "GIT-O1", "GIT-O2", "GIT-O3", "GIT-O4", "GIT-O5"):
             self.assertIn(token, text)
-        for token in ("create branch", "create a blob/tree/commit", "non-force", "expected prior SHA"):
+        for token in ("Remote Observe", "Remote Workspace Mutation", "create branch", "create a blob/tree/commit", "non-force"):
             self.assertIn(token, text)
 
     def test_composition_contract_binds_exact_identity(self):
@@ -100,7 +107,7 @@ class BadfGitContractTests(unittest.TestCase):
         ):
             self.assertIn(token, text)
 
-    def test_remote_recovery_does_not_rewrite_shared_identity(self):
+    def test_remote_recovery_and_release_do_not_rewrite_shared_identity(self):
         recovery = (REFERENCES / "recovery-contract.md").read_text(encoding="utf-8")
         release = (REFERENCES / "release-versioning.md").read_text(encoding="utf-8")
         self.assertIn("git revert", recovery)
