@@ -1,0 +1,37 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index e700a87..f5579aa 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -939,6 +939,32 @@ the rule that the next branch's reconcile is the verification. Approval-freshnes
+ merge queues stay outside (single collaborator; C-1 open and recorded); recovery automation is GIT-G;
+ releases are GIT-H.
+ 
++## badf-git GIT-G — preservation and classification, measured (`BADF-WP-0080`, Issue #153 / GOV-0060)
++
++The recovery contract opens with `PRESERVE → IDENTIFY → CLASSIFY → RECOVER → VERIFY → RECONCILE`, stops
++mutation until unknown state is classified, and `GIT-O5` requires an inventory and a preservation of
++unique state before any exception. Nothing produced either; GIT-F's `BLOCKED` reconcile ended at the
++words "open recovery"; this program's own preservation was a hand-typed `git branch backup/…` before
++every rebase, and the integrity-test residue that blocked a rebase was unclassified unique state met
++with a hand-run `git checkout --`.
++
++**`python3 scripts/badf_gate.py git-recovery [<path>]`** renders the before-state record the contract
++requires: the git-baseline plus the **unique-state inventory** — uncommitted changes (a count), stash
++entries, **dangling commits** (reflog entries of HEAD reachable from no ref), **unpushed commits** per
++local branch, **other worktrees** of the same repository with the branch each holds — and derives the
++**recovery class** (`EVIDENCE_ONLY` / `LOCAL` / `TOPIC` / `PROTECTED`) and the **disposition**
++(`RECOVERABLE`, or `RECOVERY_REQUIRED` — HELD — when unique state must be preserved first), printing
++the least-destructive path. Unmerged paths are `BLOCKED`: classification is impossible until conflicts
++are resolved, and the tool never cleans around them. **`--preserve <label> --wp <WP>`** establishes
++preservation the only way that cannot lose anything: `refs/recovery/<WP>/<label>` at HEAD and, for a
++dirty tree, a `-worktree` ref at a `git stash create` snapshot — objects are written, nothing else
++moves, and an existing label is never overwritten. The tool never runs `reset`, `clean`, `checkout`,
++`push`, a branch/worktree deletion or a ref deletion. The revert pattern for landed work — including the
++`BLOCKED`-reconcile path GIT-F introduced — stays a procedure in the `git-recovery` subskill: a **new
++recovery work package** with `git revert`, composed against current `main`, head-bound squash,
++post-merge reconcile; `main` is never rewritten. The runner renders its own record every run
++(`EVIDENCE_ONLY` on a clean, detached checkout). Release-ref recovery is GIT-H.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
