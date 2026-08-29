@@ -3715,6 +3715,120 @@ def git_staleness(record: dict[str, Any], root: Path) -> dict[str, Any]:
     }
 
 
+# ---- badf-git GIT-G: recovery inventory and preservation (BADF-WP-0080) ----------------
+RECOVERY_LABEL = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+
+
+def git_recovery(root: Path, *, preserve: str | None = None, wp: str | None = None) -> dict[str, Any]:
+    """`badf_gate.py git-recovery [<path>] [--preserve <label> --wp <WP>]`: the recovery
+    contract's PRESERVE -> IDENTIFY -> CLASSIFY, measured. Renders the before-state record
+    the contract requires -- the git-baseline plus the UNIQUE-STATE inventory (uncommitted
+    changes as a count, stash entries, dangling commits = reflog entries of HEAD unreachable
+    from any ref, unpushed topic commits, other worktrees of the same repository) -- and
+    derives the recovery class (EVIDENCE_ONLY / LOCAL / TOPIC / PROTECTED) and disposition
+    (RECOVERABLE / RECOVERY_REQUIRED). Read-only (GIT-O0). With --preserve it establishes
+    preservation the only way that cannot lose anything (GIT-O1): refs/recovery/<WP>/<label>
+    at HEAD and, for a dirty tree, refs/recovery/<WP>/<label>-worktree at a `git stash
+    create` snapshot -- which writes objects and touches neither the worktree, the index nor
+    the stash list. It never resets, cleans, checks out, or deletes a ref. Unmerged paths
+    make classification impossible and are a refusal, not a guess.
+    """
+    from datetime import datetime, timezone
+    baseline = git_baseline(root)
+    root = Path(baseline["worktree"]["path"]); top = Path(baseline["repository"]["root"])
+    if baseline["index"]["unmerged"]:
+        raise ValidationError(f"BLOCKED: {baseline['index']['unmerged']} unmerged path(s) in {top}; recovery cannot be classified "
+                              "until the conflicts are resolved -- resolve or abort the merge/rebase first, never clean around it")
+    head = baseline["source_head_sha"]
+    reflog = (_git_at(root, "reflog", "show", "--format=%H", "HEAD") or "").split()
+    reachable = set((_git_at(root, "rev-list", "--all") or "").split())
+    dangling = [sha for sha in dict.fromkeys(reflog) if sha not in reachable]
+    unpushed = []
+    for line in (_git_at(root, "for-each-ref", "--format=%(refname) %(upstream) %(objectname)", "refs/heads") or "").splitlines():
+        parts = line.split(); ref, upstream = parts[0], (parts[1] if len(parts) == 3 else None)
+        count = _git_at(root, "rev-list", "--count", f"{upstream}..{ref}") if upstream else _git_at(root, "rev-list", "--count", ref, "--not", "--remotes")
+        ahead = int(count) if count and count.isdigit() else 0
+        if ahead:
+            unpushed.append({"branch": ref, "ahead": ahead, "upstream": upstream})
+    others = []
+    entry: dict[str, Any] = {}
+    for line in (_git_at(root, "worktree", "list", "--porcelain") or "").splitlines() + [""]:
+        if not line:
+            if entry:
+                if Path(entry["path"]).resolve() != top.resolve():
+                    others.append({"path": entry["path"], "branch": entry.get("branch"), "head": entry.get("head")})
+                entry = {}
+            continue
+        key, _, value = line.partition(" ")
+        if key == "worktree": entry["path"] = value
+        elif key == "HEAD": entry["head"] = value
+        elif key == "branch": entry["branch"] = value
+        elif key == "detached": entry["branch"] = None
+    idx = baseline["index"]
+    uncommitted = idx["staged"] + idx["unstaged"] + idx["untracked"]
+    unique = {"uncommitted": uncommitted, "stash": idx["stash"], "dangling_commits": dangling,
+              "unpushed_commits": unpushed, "other_worktrees": others}
+    on_default = baseline["source_ref"] == f"refs/heads/{DEFAULT_BRANCH}"
+    if on_default:
+        klass = "PROTECTED"
+    elif unpushed:
+        klass = "TOPIC"
+    elif uncommitted or idx["stash"] or dangling:
+        klass = "LOCAL"
+    else:
+        klass = "EVIDENCE_ONLY"
+    has_unique = bool(uncommitted or idx["stash"] or dangling or unpushed)
+    disposition = "RECOVERY_REQUIRED" if has_unique else "RECOVERABLE"
+    paths = {
+        "EVIDENCE_ONLY": "nothing unique here: any stale evidence is recomputed (git-staleness, --record), nothing needs preserving",
+        "LOCAL": ("PRESERVE first -- `git-recovery --preserve <label> --wp <WP>` creates refs/recovery/<WP>/<label> (HEAD) and a "
+                  "-worktree snapshot of uncommitted state; recover any dangling commit from the reflog into a recovery ref "
+                  "(refs/recovery/...) and verify it BEFORE any reset --hard or clean; stash entries are not durable handoff"),
+        "TOPIC": ("PRESERVE first (refs/recovery/<WP>/<label>); the unpushed commits exist only here -- publish the topic or keep "
+                  "a recovery ref before deleting or rewriting the branch; --force-with-lease only after preservation"),
+        "PROTECTED": (f"HEAD is the protected branch {DEFAULT_BRANCH}: a landed change is repaired FORWARD with `git revert` under a "
+                      f"new work package, composed against current {DEFAULT_BRANCH}; never rewrite {DEFAULT_BRANCH}"),
+    }
+    preservation = None
+    if preserve is not None:
+        if not wp or not WP_ID_FORMS.match(wp):
+            raise ValidationError("BLOCKED: --preserve requires --wp <work package id> to namespace refs/recovery/<WP>/")
+        if not RECOVERY_LABEL.match(preserve):
+            raise ValidationError(f"BLOCKED: recovery label {preserve!r} must be lowercase kebab ([a-z0-9][a-z0-9-]*)")
+        wp = f"{WP_NAMESPACE}{WP_ID_FORMS.match(wp).group(1)}"
+        ref = f"refs/recovery/{wp}/{preserve}"
+        if _git_at(root, "rev-parse", "--verify", "-q", ref) is not None:
+            raise ValidationError(f"BLOCKED: {ref} already exists; a recovery ref is never overwritten -- choose another label")
+        refs = []
+        r = subprocess.run(["git", "-C", str(root), "update-ref", ref, head], capture_output=True, text=True)
+        if r.returncode:
+            raise ValidationError(f"BLOCKED: cannot create {ref}: {r.stderr.strip()}")
+        refs.append(ref)
+        snapshot = None
+        if uncommitted:
+            snapshot = _git_at(root, "stash", "create") or None
+            if snapshot:
+                r = subprocess.run(["git", "-C", str(root), "update-ref", f"{ref}-worktree", snapshot], capture_output=True, text=True)
+                if r.returncode:
+                    raise ValidationError(f"BLOCKED: cannot create {ref}-worktree: {r.stderr.strip()}")
+                refs.append(f"{ref}-worktree")
+        preservation = {"refs": refs, "before_head": head, "worktree_snapshot": snapshot}
+    return {
+        "record": "git-recovery",
+        "schema_version": "1.0.0",
+        "observed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "baseline": baseline,
+        "unique_state": unique,
+        "recovery_class": klass,
+        "disposition": disposition,
+        "least_destructive_path": paths[klass],
+        "preservation": preservation,
+        "non_coverage": ["another actor's reliance on a branch/worktree is reported (other_worktrees), not decided",
+                         "remote-topic and release-ref recovery are procedures (git-recovery subskill; GIT-H), not this record",
+                         *baseline.get("non_coverage", [])],
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -3728,6 +3842,10 @@ def main() -> int:
     gs_parser = subparsers.add_parser("git-staleness", help="compare a stored git-baseline record with <path> now: CURRENT (0) / SOURCE_ADVANCED, STALE_EVIDENCE, TARGET_MOVED (HELD 3); read-only (badf-git GIT-I05)")
     gs_parser.add_argument("record", type=Path, help="a git-baseline record (stdout of `git-baseline`, PASS line tolerated)")
     gs_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
+    gr_parser = subparsers.add_parser("git-recovery", help="inventory unique state and classify the recovery path of <path> (read-only); --preserve <label> --wp <WP> adds refs/recovery/<WP>/ refs and touches nothing else (badf-git GIT-G)")
+    gr_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
+    gr_parser.add_argument("--preserve", metavar="LABEL", help="create refs/recovery/<WP>/<LABEL> at HEAD (+ -worktree snapshot of a dirty tree)")
+    gr_parser.add_argument("--wp", help="work package id that namespaces the recovery refs (required with --preserve)")
     charter_parser = subparsers.add_parser("charter", help="bind an instance to the framework's authority floor at its pinned revision")
     charter_parser.add_argument("path", type=Path)
     adv_parser = subparsers.add_parser("advance", help="bind an APPROVED dossier for the instance's next gate; the gate is derived from the chain")
@@ -3776,6 +3894,22 @@ def main() -> int:
                 print(f"BADF GATE PASS: {summary}")
                 return 0
             print(f"BADF GATE HELD: {summary}; recovery is recomputation, not relabelling")
+            return 3
+        elif args.command == "git-recovery":
+            if args.preserve is not None and not args.wp:
+                parser.error("--preserve requires --wp <work package id>")
+            rec = git_recovery(args.path, preserve=args.preserve, wp=args.wp)
+            print(json.dumps(rec, indent=2))
+            u = rec["unique_state"]
+            summary = (f"git-recovery -- {rec['recovery_class']} {rec['disposition']}: uncommitted {u['uncommitted']}, "
+                       f"stash {u['stash']}, dangling {len(u['dangling_commits'])}, unpushed {len(u['unpushed_commits'])}, "
+                       f"other worktrees {len(u['other_worktrees'])}")
+            if rec["preservation"]:
+                summary += "; preserved " + ", ".join(rec["preservation"]["refs"])
+            if rec["disposition"] == "RECOVERABLE":
+                print(f"BADF GATE PASS: {summary}")
+                return 0
+            print(f"BADF GATE HELD: {summary}; preserve before any destructive step")
             return 3
         elif args.command == "charter":
             print(write_charter(args.path))

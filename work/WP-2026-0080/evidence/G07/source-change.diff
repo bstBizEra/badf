@@ -1,0 +1,555 @@
+diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
+index bbed5e5..b6b1282 100644
+--- a/.github/workflows/badf-gates.yml
++++ b/.github/workflows/badf-gates.yml
+@@ -42,6 +42,10 @@ jobs:
+         run: |
+           python3 scripts/badf_gate.py git-baseline > "$RUNNER_TEMP/git-baseline.json"
+           python3 scripts/badf_gate.py git-staleness "$RUNNER_TEMP/git-baseline.json"
++      - name: Git recovery inventory (read-only; the runner's own checkout is EVIDENCE_ONLY)
++        # BADF-WP-0080 (badf-git GIT-G): the before-state record on real infrastructure -- a clean,
++        # detached checkout has nothing unique to preserve. Read-only; --preserve is never run here.
++        run: python3 scripts/badf_gate.py git-recovery
+       # QA finding m1: fail-fast hid every violation after the first. Negative
+       # control 1 went red at step 4 and steps 5-6 were skipped, so the
+       # authority refusal was never exercised and the operator saw one problem
+diff --git a/badf/demands/BADF-DEM-0067.json b/badf/demands/BADF-DEM-0067.json
+new file mode 100644
+index 0000000..0df6b4e
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0067.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0067",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 153,
++    "url": "https://github.com/bstBizEra/badf/issues/153",
++    "exported_at": "2026-08-29T21:54:22Z",
++    "body_digest": "sha256:edc3b0cd7f6eabea44dfd9c5d6a4c2344721e77221c47b4ae7eac3b7e553777c"
++  },
++  "title": "GOV-0060: BADF-WP-GIT-G — recovery: `git-recovery` inventories unique state and classifies the recovery path (read-only), `--preserve` adds recovery refs and touches nothing else; git-recovery subskill",
++  "problem": "## Observed\n\n`badf-git`'s recovery contract (`references/recovery-contract.md`) opens with one rule — `PRESERVE → IDENTIFY → CLASSIFY → RECOVER → VERIFY → RECONCILE`; \"never start with `reset --hard`, destructive `clean`, forced protected-ref movement, or deletion of unknown branches/worktrees merely because the repository is inconvenient\" — and says that when state is unknown, recovery **stops mutation until it is classified**, listing the ten questions to answer first (which worktree, which ref, what is HEAD, what is staged/unstaged/untracked, which commits exist only locally, what is authoritative, is any content the only copy, is another actor relying on the branch/worktree, what authority covers the recovery, which evidence goes stale). `GIT-O5` requires \"inventory/preservation of unique state\" and \"evidence of the before state\" before any exception. Measured after GIT-F: **nothing produces that inventory, nothing preserves anything, and the recovery trigger GIT-F introduced — a `BLOCKED` reconcile — ends with the words \"open recovery\" and no tooling behind them.** In this program the \"preservation\" practised so far was a hand-typed `git branch backup/...` before every rebase; the `test_badf_integrity` residue that blocked a rebase earlier today was exactly unclassified unique state met with a hand-run `git checkout --`. GTGM v0.1 §12 (reverse/rollback/recovery contract), §15 (`git-recovery` subskill), §17 **GIT-G — Recovery**.\n\n## Expected\n\n**Preservation and classification become measured records; nothing destructive is added.**\n\n1. **`badf_gate.py git-recovery [<path>]`** (read-only, `GIT-O0`) renders one JSON **git-recovery record** — the before-state evidence the contract requires: the `git-baseline` identity (reused: worktree, HEAD, target, ahead/behind, counts) plus the **unique-state inventory**: uncommitted changes (counts only), stash entries, **dangling commits** (reflog entries of HEAD unreachable from any ref — the only copy of a commit), **unpushed topic commits** (local branches ahead of their upstream, or with none), and **other worktrees** of the same repository with the branch each holds (another actor may be relying on it). From that it derives the contract's **recovery class** — `EVIDENCE_ONLY` (nothing unique; only records may be stale), `LOCAL` (unique uncommitted/stashed/dangling state), `TOPIC` (unpushed commits), `PROTECTED` (HEAD is the default branch, or the target moved past the recorded base) — and a **disposition**: `RECOVERABLE` (unique state exists and can be preserved), `RECOVERY_REQUIRED` (unique state exists **and** a preservation would be needed before any destructive step), `BLOCKED` (state cannot be classified: not a repository, unborn HEAD, unmerged paths). It prints the **least-destructive path** as text (preserve → then the class's recipe). Deterministic modulo `observed_at`; counts only, never a path or content.\n2. **`badf_gate.py git-recovery --preserve <label> --wp <WP> [<path>]`** (`GIT-O1`, opt-in) establishes preservation the only way that cannot lose anything: `refs/recovery/<WP>/<label>` at HEAD, and — when the worktree/index is dirty — `refs/recovery/<WP>/<label>-worktree` at a commit produced by `git stash create` (which writes objects and **touches neither the worktree, the index nor the stash list**). It refuses to overwrite an existing recovery ref of the same label, refuses without `--wp`, and never runs `reset`, `clean`, `checkout` or any ref *deletion*. The record then carries `preservation: {refs, before_head, worktree_snapshot}` — the contract's \"preservation step\".\n3. **The revert pattern for landed work stays a procedure**, not code: the `git-recovery` subskill (GTGM §15) maps the six stages to commands — inventory, preserve, classify, then per class: reflog → recovery ref → verify (local); `--force-with-lease` only on a private topic after preservation (topic); **a new recovery WP with a `git revert` composed against current `main`** (protected — the `BLOCKED`-reconcile path from GIT-F); tags never rewritten (release, GIT-H). Registered `IMPLEMENTED`, C1, `allowed_tools: []`; the `badf-git` root stays `DESIGNED`.\n4. **CI positive control:** the runner renders its own recovery record (`EVIDENCE_ONLY` on a clean checkout).\n\n## Acceptance criteria\n\n1. Clean checkout at the target → class `EVIDENCE_ONLY`, disposition `RECOVERABLE`, every unique-state count zero, no dangling commits, no unpushed commits.\n2. Uncommitted and stashed changes → class `LOCAL`, disposition `RECOVERY_REQUIRED`, counts reported **without paths or contents**.\n3. A commit made then `reset --hard` away → reported as a **dangling commit** (reflog-only), `LOCAL`, `RECOVERY_REQUIRED`; the path text names the reflog → recovery-ref recipe.\n4. A topic branch with commits not on any upstream → `TOPIC`; HEAD on the default branch → `PROTECTED`.\n5. A second (linked) worktree of the same repository → listed with its branch; the record never reports the caller's own worktree as \"another\".\n6. `--preserve` on a dirty tree → creates exactly the two refs, HEAD unchanged, index digest unchanged, `git status` unchanged, stash list unchanged; on a clean tree → one ref; an existing label → refused; missing `--wp` → usage error; the preserved worktree ref's tree equals the dirty tree's content (verified by checking it out in a scratch clone).\n7. Refusals (`BLOCKED`): outside a repository; unborn HEAD; unmerged paths present (classification impossible until conflicts are resolved).\n8. Read-only proven for the inventory (status/reflog/stash/index/refs byte-identical); deterministic modulo `observed_at`; each classification and refusal branch **load-bearing** (mutation).\n9. `git-recovery` subskill registered `IMPLEMENTED` C1 `allowed_tools: []` with a real digest; root stays `DESIGNED`; no new script, no schema, no authority change; `repo` clean; full suite + compose green in CI; the runner's own record renders.\n\n## Tests (`tests/test_badf_git_recovery.py`, scratch clones via `tests/_scratch.seed_clone`)\n\n- `test_clean_checkout_is_EVIDENCE_ONLY_and_RECOVERABLE`\n- `test_uncommitted_and_stash_are_LOCAL_RECOVERY_REQUIRED_without_paths`\n- `test_dangling_reflog_commit_is_inventoried`\n- `test_unpushed_topic_commits_are_TOPIC`\n- `test_head_on_default_branch_is_PROTECTED`\n- `test_other_worktrees_are_listed_but_not_self`\n- `test_preserve_adds_refs_and_touches_nothing_else`\n- `test_preserve_refuses_existing_label_and_requires_wp`\n- `test_refusals_outside_repo_unborn_head_and_unmerged_paths`\n- `test_inventory_is_read_only_and_deterministic`\n- `test_git_recovery_subskill_registered_and_root_stays_designed`\n\n## Out of scope\n\n- Any destructive operation (`reset --hard`, `clean`, forced ref moves, branch/worktree deletion, tag rewrites) — the tool never performs them; it makes them safe to *consider*.\n- Executing a revert or opening the recovery WP — a human/agent action under a new work package (the procedure).\n- Release-ref recovery — **GIT-H**; `rerere` policy beyond what `commit-integrity` already states; the remote-workspace mode (#133).\n\n## Risk / authority / stop conditions\n\n- Change class **C1** (read-only inventory; opt-in ref *creation* only). Target gate **G07**, `HUMAN_REQUIRED`.\n- Stop if preservation would require anything beyond creating refs, if classification would need network, or if scope grows past one subcommand (two modes) + one subskill + tests + doctrine.\n- Lean mode: **enforced** — reuse `git_baseline`, `_git_at`, the scratch fixture; `git stash create` + `update-ref` as the entire preservation mechanism.\n\n## Identity\n\n- Ledger **WP-2026-0080** · demand **BADF-DEM-0067** · this issue **GOV-0060** · phase label BADF-WP-GIT-G. Ids measured across `main`, every remote branch head and all issues.\n- Branch `wp/WP-2026-0080-git-recovery` in a linked worktree from `928fc6b`; reconciles whatever is `LANDED_UNRECONCILED` at branch time (WP-2026-0079 now — already verified `composition_verified: true`).\n- Sequence: A ✓ B ✓ C ✓ D ✓ E ✓ F ✓ → **G (this)** → H → I → J.\n\nsource: GTGM v0.1 §12, §15, §17 (GIT-G); `recovery-contract.md`; `git-state-machine.md` recovery transitions; `operation-authority-matrix.md` GIT-O5 · discovered-by: BARCHI-2, the `BLOCKED`-reconcile path GIT-F left unbacked and the hand-typed backups of this program · status: PROPOSED\n\n🧠 **BARCHI-2** — plan posted; engineered under the operator's `/loop your goal on badf-git`.\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T21:54:22Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "BADF-WP-GIT-G recovery: read-only `badf_gate.py git-recovery` (unique-state inventory, recovery class, disposition) + `--preserve` (recovery refs only) + git-recovery subskill. Ids measured across main, every remote branch head and all issues. Authority: operator `/loop your goal on badf-git` + 'proceed on your call' (2026-08-29), design order GTGM v0.1 section 17 after GIT-F (WP-2026-0079, 928fc6b). Worked as BADF-WP-0080."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 8eab7da..ccaf559 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -260,6 +260,16 @@
+       "allowed_tools": [],
+       "status": "IMPLEMENTED",
+       "digest": "sha256:fe791d3c83645bea915c6bc65325cadda46034f91047363c40585c728981095c"
++    },
++    {
++      "name": "git-recovery",
++      "source": "skills/badf-git/subskills/git-recovery/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [],
++      "status": "IMPLEMENTED",
++      "digest": "sha256:7d0dbbbcf8e81f507423541e07265fa78bdbc6c04468c189953a73a80156599d"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index e700a87..f5579aa 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -939,6 +939,32 @@ the rule that the next branch's reconcile is the verification. Approval-freshnes
+ merge queues stay outside (single collaborator; C-1 open and recorded); recovery automation is GIT-G;
+ releases are GIT-H.
+ 
++## badf-git GIT-G — preservation and classification, measured (`BADF-WP-0080`, Issue #153 / GOV-0060)
++
++The recovery contract opens with `PRESERVE → IDENTIFY → CLASSIFY → RECOVER → VERIFY → RECONCILE`, stops
++mutation until unknown state is classified, and `GIT-O5` requires an inventory and a preservation of
++unique state before any exception. Nothing produced either; GIT-F's `BLOCKED` reconcile ended at the
++words "open recovery"; this program's own preservation was a hand-typed `git branch backup/…` before
++every rebase, and the integrity-test residue that blocked a rebase was unclassified unique state met
++with a hand-run `git checkout --`.
++
++**`python3 scripts/badf_gate.py git-recovery [<path>]`** renders the before-state record the contract
++requires: the git-baseline plus the **unique-state inventory** — uncommitted changes (a count), stash
++entries, **dangling commits** (reflog entries of HEAD reachable from no ref), **unpushed commits** per
++local branch, **other worktrees** of the same repository with the branch each holds — and derives the
++**recovery class** (`EVIDENCE_ONLY` / `LOCAL` / `TOPIC` / `PROTECTED`) and the **disposition**
++(`RECOVERABLE`, or `RECOVERY_REQUIRED` — HELD — when unique state must be preserved first), printing
++the least-destructive path. Unmerged paths are `BLOCKED`: classification is impossible until conflicts
++are resolved, and the tool never cleans around them. **`--preserve <label> --wp <WP>`** establishes
++preservation the only way that cannot lose anything: `refs/recovery/<WP>/<label>` at HEAD and, for a
++dirty tree, a `-worktree` ref at a `git stash create` snapshot — objects are written, nothing else
++moves, and an existing label is never overwritten. The tool never runs `reset`, `clean`, `checkout`,
++`push`, a branch/worktree deletion or a ref deletion. The revert pattern for landed work — including the
++`BLOCKED`-reconcile path GIT-F introduced — stays a procedure in the `git-recovery` subskill: a **new
++recovery work package** with `git revert`, composed against current `main`, head-bound squash,
++post-merge reconcile; `main` is never rewritten. The runner renders its own record every run
++(`EVIDENCE_ONLY` on a clean, detached checkout). Release-ref recovery is GIT-H.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 77ab7c9..d31cda5 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -3715,6 +3715,120 @@ def git_staleness(record: dict[str, Any], root: Path) -> dict[str, Any]:
+     }
+ 
+ 
++# ---- badf-git GIT-G: recovery inventory and preservation (BADF-WP-0080) ----------------
++RECOVERY_LABEL = re.compile(r"^[a-z0-9][a-z0-9-]*$")
++
++
++def git_recovery(root: Path, *, preserve: str | None = None, wp: str | None = None) -> dict[str, Any]:
++    """`badf_gate.py git-recovery [<path>] [--preserve <label> --wp <WP>]`: the recovery
++    contract's PRESERVE -> IDENTIFY -> CLASSIFY, measured. Renders the before-state record
++    the contract requires -- the git-baseline plus the UNIQUE-STATE inventory (uncommitted
++    changes as a count, stash entries, dangling commits = reflog entries of HEAD unreachable
++    from any ref, unpushed topic commits, other worktrees of the same repository) -- and
++    derives the recovery class (EVIDENCE_ONLY / LOCAL / TOPIC / PROTECTED) and disposition
++    (RECOVERABLE / RECOVERY_REQUIRED). Read-only (GIT-O0). With --preserve it establishes
++    preservation the only way that cannot lose anything (GIT-O1): refs/recovery/<WP>/<label>
++    at HEAD and, for a dirty tree, refs/recovery/<WP>/<label>-worktree at a `git stash
++    create` snapshot -- which writes objects and touches neither the worktree, the index nor
++    the stash list. It never resets, cleans, checks out, or deletes a ref. Unmerged paths
++    make classification impossible and are a refusal, not a guess.
++    """
++    from datetime import datetime, timezone
++    baseline = git_baseline(root)
++    root = Path(baseline["worktree"]["path"]); top = Path(baseline["repository"]["root"])
++    if baseline["index"]["unmerged"]:
++        raise ValidationError(f"BLOCKED: {baseline['index']['unmerged']} unmerged path(s) in {top}; recovery cannot be classified "
++                              "until the conflicts are resolved -- resolve or abort the merge/rebase first, never clean around it")
++    head = baseline["source_head_sha"]
++    reflog = (_git_at(root, "reflog", "show", "--format=%H", "HEAD") or "").split()
++    reachable = set((_git_at(root, "rev-list", "--all") or "").split())
++    dangling = [sha for sha in dict.fromkeys(reflog) if sha not in reachable]
++    unpushed = []
++    for line in (_git_at(root, "for-each-ref", "--format=%(refname) %(upstream) %(objectname)", "refs/heads") or "").splitlines():
++        parts = line.split(); ref, upstream = parts[0], (parts[1] if len(parts) == 3 else None)
++        count = _git_at(root, "rev-list", "--count", f"{upstream}..{ref}") if upstream else _git_at(root, "rev-list", "--count", ref, "--not", "--remotes")
++        ahead = int(count) if count and count.isdigit() else 0
++        if ahead:
++            unpushed.append({"branch": ref, "ahead": ahead, "upstream": upstream})
++    others = []
++    entry: dict[str, Any] = {}
++    for line in (_git_at(root, "worktree", "list", "--porcelain") or "").splitlines() + [""]:
++        if not line:
++            if entry:
++                if Path(entry["path"]).resolve() != top.resolve():
++                    others.append({"path": entry["path"], "branch": entry.get("branch"), "head": entry.get("head")})
++                entry = {}
++            continue
++        key, _, value = line.partition(" ")
++        if key == "worktree": entry["path"] = value
++        elif key == "HEAD": entry["head"] = value
++        elif key == "branch": entry["branch"] = value
++        elif key == "detached": entry["branch"] = None
++    idx = baseline["index"]
++    uncommitted = idx["staged"] + idx["unstaged"] + idx["untracked"]
++    unique = {"uncommitted": uncommitted, "stash": idx["stash"], "dangling_commits": dangling,
++              "unpushed_commits": unpushed, "other_worktrees": others}
++    on_default = baseline["source_ref"] == f"refs/heads/{DEFAULT_BRANCH}"
++    if on_default:
++        klass = "PROTECTED"
++    elif unpushed:
++        klass = "TOPIC"
++    elif uncommitted or idx["stash"] or dangling:
++        klass = "LOCAL"
++    else:
++        klass = "EVIDENCE_ONLY"
++    has_unique = bool(uncommitted or idx["stash"] or dangling or unpushed)
++    disposition = "RECOVERY_REQUIRED" if has_unique else "RECOVERABLE"
++    paths = {
++        "EVIDENCE_ONLY": "nothing unique here: any stale evidence is recomputed (git-staleness, --record), nothing needs preserving",
++        "LOCAL": ("PRESERVE first -- `git-recovery --preserve <label> --wp <WP>` creates refs/recovery/<WP>/<label> (HEAD) and a "
++                  "-worktree snapshot of uncommitted state; recover any dangling commit from the reflog into a recovery ref "
++                  "(refs/recovery/...) and verify it BEFORE any reset --hard or clean; stash entries are not durable handoff"),
++        "TOPIC": ("PRESERVE first (refs/recovery/<WP>/<label>); the unpushed commits exist only here -- publish the topic or keep "
++                  "a recovery ref before deleting or rewriting the branch; --force-with-lease only after preservation"),
++        "PROTECTED": (f"HEAD is the protected branch {DEFAULT_BRANCH}: a landed change is repaired FORWARD with `git revert` under a "
++                      f"new work package, composed against current {DEFAULT_BRANCH}; never rewrite {DEFAULT_BRANCH}"),
++    }
++    preservation = None
++    if preserve is not None:
++        if not wp or not WP_ID_FORMS.match(wp):
++            raise ValidationError("BLOCKED: --preserve requires --wp <work package id> to namespace refs/recovery/<WP>/")
++        if not RECOVERY_LABEL.match(preserve):
++            raise ValidationError(f"BLOCKED: recovery label {preserve!r} must be lowercase kebab ([a-z0-9][a-z0-9-]*)")
++        wp = f"{WP_NAMESPACE}{WP_ID_FORMS.match(wp).group(1)}"
++        ref = f"refs/recovery/{wp}/{preserve}"
++        if _git_at(root, "rev-parse", "--verify", "-q", ref) is not None:
++            raise ValidationError(f"BLOCKED: {ref} already exists; a recovery ref is never overwritten -- choose another label")
++        refs = []
++        r = subprocess.run(["git", "-C", str(root), "update-ref", ref, head], capture_output=True, text=True)
++        if r.returncode:
++            raise ValidationError(f"BLOCKED: cannot create {ref}: {r.stderr.strip()}")
++        refs.append(ref)
++        snapshot = None
++        if uncommitted:
++            snapshot = _git_at(root, "stash", "create") or None
++            if snapshot:
++                r = subprocess.run(["git", "-C", str(root), "update-ref", f"{ref}-worktree", snapshot], capture_output=True, text=True)
++                if r.returncode:
++                    raise ValidationError(f"BLOCKED: cannot create {ref}-worktree: {r.stderr.strip()}")
++                refs.append(f"{ref}-worktree")
++        preservation = {"refs": refs, "before_head": head, "worktree_snapshot": snapshot}
++    return {
++        "record": "git-recovery",
++        "schema_version": "1.0.0",
++        "observed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
++        "baseline": baseline,
++        "unique_state": unique,
++        "recovery_class": klass,
++        "disposition": disposition,
++        "least_destructive_path": paths[klass],
++        "preservation": preservation,
++        "non_coverage": ["another actor's reliance on a branch/worktree is reported (other_worktrees), not decided",
++                         "remote-topic and release-ref recovery are procedures (git-recovery subskill; GIT-H), not this record",
++                         *baseline.get("non_coverage", [])],
++    }
++
++
+ def main() -> int:
+     parser = argparse.ArgumentParser(description=__doc__)
+     subparsers = parser.add_subparsers(dest="command", required=True)
+@@ -3728,6 +3842,10 @@ def main() -> int:
+     gs_parser = subparsers.add_parser("git-staleness", help="compare a stored git-baseline record with <path> now: CURRENT (0) / SOURCE_ADVANCED, STALE_EVIDENCE, TARGET_MOVED (HELD 3); read-only (badf-git GIT-I05)")
+     gs_parser.add_argument("record", type=Path, help="a git-baseline record (stdout of `git-baseline`, PASS line tolerated)")
+     gs_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
++    gr_parser = subparsers.add_parser("git-recovery", help="inventory unique state and classify the recovery path of <path> (read-only); --preserve <label> --wp <WP> adds refs/recovery/<WP>/ refs and touches nothing else (badf-git GIT-G)")
++    gr_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
++    gr_parser.add_argument("--preserve", metavar="LABEL", help="create refs/recovery/<WP>/<LABEL> at HEAD (+ -worktree snapshot of a dirty tree)")
++    gr_parser.add_argument("--wp", help="work package id that namespaces the recovery refs (required with --preserve)")
+     charter_parser = subparsers.add_parser("charter", help="bind an instance to the framework's authority floor at its pinned revision")
+     charter_parser.add_argument("path", type=Path)
+     adv_parser = subparsers.add_parser("advance", help="bind an APPROVED dossier for the instance's next gate; the gate is derived from the chain")
+@@ -3777,6 +3895,22 @@ def main() -> int:
+                 return 0
+             print(f"BADF GATE HELD: {summary}; recovery is recomputation, not relabelling")
+             return 3
++        elif args.command == "git-recovery":
++            if args.preserve is not None and not args.wp:
++                parser.error("--preserve requires --wp <work package id>")
++            rec = git_recovery(args.path, preserve=args.preserve, wp=args.wp)
++            print(json.dumps(rec, indent=2))
++            u = rec["unique_state"]
++            summary = (f"git-recovery -- {rec['recovery_class']} {rec['disposition']}: uncommitted {u['uncommitted']}, "
++                       f"stash {u['stash']}, dangling {len(u['dangling_commits'])}, unpushed {len(u['unpushed_commits'])}, "
++                       f"other worktrees {len(u['other_worktrees'])}")
++            if rec["preservation"]:
++                summary += "; preserved " + ", ".join(rec["preservation"]["refs"])
++            if rec["disposition"] == "RECOVERABLE":
++                print(f"BADF GATE PASS: {summary}")
++                return 0
++            print(f"BADF GATE HELD: {summary}; preserve before any destructive step")
++            return 3
+         elif args.command == "charter":
+             print(write_charter(args.path))
+             return 0
+diff --git a/skills/badf-git/subskills/git-recovery/SKILL.md b/skills/badf-git/subskills/git-recovery/SKILL.md
+new file mode 100644
+index 0000000..f56e257
+--- /dev/null
++++ b/skills/badf-git/subskills/git-recovery/SKILL.md
+@@ -0,0 +1,76 @@
++---
++name: git-recovery
++description: Recover Git state the way badf-git's recovery contract requires -- PRESERVE, IDENTIFY and CLASSIFY before anything destructive -- by rendering the unique-state inventory with the read-only `badf_gate.py git-recovery` inspector, establishing preservation with `--preserve` (recovery refs only), and then following the least-destructive path for the class: reflog recovery for local loss, a preserved topic for unpushed work, and a forward `git revert` under a new work package for anything that landed on the protected branch. Use whenever state is unknown, a reconcile is BLOCKED, or a reset/clean/force is being considered. Do not use to perform destructive operations, to rewrite the protected branch, or to grant recovery authority.
++---
++
++# git-recovery
++
++A subskill of `badf-git` (`../../SKILL.md`) for the recovery contract
++(`../../references/recovery-contract.md`) and the `RECOVERY_REQUIRED` transitions of the state
++machine. Its admission status is recorded in `badf/skill-registry.json`; this file defines
++behaviour and hardcodes no lifecycle status.
++
++**The invariant: `PRESERVE → IDENTIFY → CLASSIFY → RECOVER → VERIFY → RECONCILE`.** Never start
++with `reset --hard`, a destructive `clean`, a forced protected-ref movement or the deletion of an
++unknown branch or worktree because the repository is inconvenient. Unknown state stops mutation
++until it is classified — and classification is measured, not guessed.
++
++## IDENTIFY + CLASSIFY (read-only, `GIT-O0`)
++
++```text
++python3 scripts/badf_gate.py git-recovery [<path>]
++```
++
++renders the **git-recovery record**: the git-baseline, the **unique-state inventory** —
++uncommitted changes (a count), stash entries, **dangling commits** (reflog entries of HEAD reachable
++from no ref: the only copy of a commit), **unpushed commits** per local branch, **other worktrees** of
++the same repository and the branch each holds (another actor may be relying on it) — the
++**recovery class** and the **disposition**:
++
++| Class | Meaning | Least-destructive path |
++| --- | --- | --- |
++| `EVIDENCE_ONLY` | nothing unique; only records may be stale | recompute (`git-staleness`, `--record`) |
++| `LOCAL` | uncommitted, stashed or dangling state exists only here | preserve; recover from the reflog into a recovery ref; verify; then decide |
++| `TOPIC` | commits exist only on a local branch | preserve; publish or keep a recovery ref before deleting/rewriting; `--force-with-lease` only after preservation |
++| `PROTECTED` | HEAD is the protected branch | repair **forward** with `git revert` under a **new work package**, composed against current `main`; never rewrite `main` |
++
++`RECOVERABLE` (exit 0) means nothing unique needs preserving; `RECOVERY_REQUIRED` (HELD, exit 3)
++means unique state exists and must be preserved before any destructive step. Unmerged paths are
++`BLOCKED` (exit 1): resolve or abort first, never clean around a conflict.
++
++## PRESERVE (`GIT-O1`, opt-in, additive only)
++
++```text
++python3 scripts/badf_gate.py git-recovery --preserve <label> --wp <WP> [<path>]
++```
++
++creates `refs/recovery/<WP>/<label>` at HEAD and, when the tree is dirty,
++`refs/recovery/<WP>/<label>-worktree` at a `git stash create` snapshot — which writes objects and
++touches neither the worktree, the index nor the stash list. An existing label is never overwritten.
++This is the contract's "preservation step" and its "evidence of the before state", in one record.
++
++## RECOVER → VERIFY → RECONCILE (procedure)
++
++- **Local loss:** `git reflog` → inspect the candidate → it is already a recovery ref if preserved,
++  otherwise `git update-ref refs/recovery/<WP>/<label> <sha>` → verify the content → decide how to
++  reconcile with the current branch. Do not move the primary branch pointer before the candidate is
++  preserved and inspected.
++- **Unpushed topic:** preserve, then publish (`git push -u`) or keep the recovery ref; a rewrite of a
++  private topic is `GIT-O2` and invalidates its evidence (`commit-integrity`).
++- **Landed on `main` (incl. a `BLOCKED` reconcile — landed content ≠ the composition record):**
++  open a **recovery work package**; `git revert <landed sha>` as a new change on a `wp/` branch;
++  compose it against current `main` (`--record`); independent challenge; head-bound squash;
++  post-merge `reconcile`. The bad landing and its remediation stay attributable; `main` is never
++  rewritten.
++- **Release refs:** never rewritten — GIT-H.
++
++Record the recovery evidence (trigger, identities, before-state SHAs, preservation refs, operation
++class, after-state, invalidated evidence, verification outcome, residual uncertainty). Failed
++recovery attempts are evidence; keep them.
++
++## Boundaries
++
++- The tool never runs `reset`, `clean`, `checkout`, `push`, `branch -D`, `worktree remove` or any
++  ref deletion; it makes those decisions safe to *take*, and records what they would cost.
++- Another actor's reliance on a branch/worktree is reported, not decided; remote-topic and
++  release-ref recovery are procedures, not this record.
+diff --git a/tests/test_badf_git_recovery.py b/tests/test_badf_git_recovery.py
+new file mode 100644
+index 0000000..d91ffb2
+--- /dev/null
++++ b/tests/test_badf_git_recovery.py
+@@ -0,0 +1,186 @@
++"""GIT-G (BADF-WP-0080): PRESERVE -> IDENTIFY -> CLASSIFY before anything destructive.
++
++The recovery contract stops mutation until unknown state is classified, and GIT-O5
++requires an inventory and a preservation of unique state before any exception. Nothing
++produced either, and GIT-F's BLOCKED reconcile ended at the words "open recovery".
++`badf_gate.py git-recovery [<path>]` renders the before-state record: the baseline plus
++the unique-state inventory (uncommitted, stash, dangling reflog commits, unpushed topic
++commits, other worktrees), the recovery class and the disposition. `--preserve <label>
++--wp <WP>` adds refs under refs/recovery/<WP>/ (HEAD, and `git stash create` of a dirty
++tree) and touches nothing else.
++
++Every fixture is a scratch clone removed in cleanup.
++"""
++import hashlib
++import json
++import os
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++from tests._scratch import seed_clone  # noqa: E402
++
++WP = "WP-2026-9001"
++TARGET = f"refs/remotes/origin/{gate.DEFAULT_BRANCH}"
++
++
++def g(repo: Path, *args: str) -> str:
++    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, check=True).stdout.strip()
++
++
++def cli(*args: str) -> subprocess.CompletedProcess:
++    return subprocess.run([sys.executable, "scripts/badf_gate.py", "git-recovery", *args], cwd=str(gate.ROOT), capture_output=True, text=True)
++
++
++def record_of(r: subprocess.CompletedProcess) -> dict:
++    lines = r.stdout.rstrip("\n").splitlines()
++    assert lines and lines[-1].startswith("BADF GATE "), r.stdout + r.stderr
++    return json.loads("\n".join(lines[:-1]))
++
++
++def commit_file(repo: Path, name: str, text: str, msg: str) -> str:
++    (repo / name).write_text(text, encoding="utf-8"); g(repo, "add", name); g(repo, "commit", "-q", "-m", msg)
++    return g(repo, "rev-parse", "HEAD")
++
++
++class _Scratch(unittest.TestCase):
++    def setUp(self):
++        self.tmp = Path(tempfile.mkdtemp(prefix="badf-git-recovery-"))
++        self.addCleanup(shutil.rmtree, self.tmp, True)
++        self.repo = self.tmp / "badf"
++        self.base = seed_clone(self.repo)
++
++    def snapshot(self) -> tuple:
++        return (g(self.repo, "status", "--porcelain=v2"), len(g(self.repo, "reflog").splitlines()), g(self.repo, "stash", "list"),
++                hashlib.sha256(g(self.repo, "ls-files", "-s").encode()).hexdigest(), g(self.repo, "rev-parse", "HEAD"),
++                sorted(g(self.repo, "for-each-ref", "--format=%(refname) %(objectname)").splitlines()))
++
++
++class InventoryTests(_Scratch):
++    def test_clean_checkout_is_EVIDENCE_ONLY_and_RECOVERABLE(self):
++        g(self.repo, "checkout", "-q", "--detach")   # not the default branch: no PROTECTED signal
++        r = cli(str(self.repo)); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        rec = record_of(r)
++        self.assertEqual((rec["record"], rec["recovery_class"], rec["disposition"]), ("git-recovery", "EVIDENCE_ONLY", "RECOVERABLE"))
++        u = rec["unique_state"]
++        self.assertEqual((u["uncommitted"], u["stash"], u["dangling_commits"], u["unpushed_commits"]), (0, 0, [], []))
++        self.assertIn("baseline", rec); self.assertEqual(rec["baseline"]["source_head_sha"], self.base)
++        self.assertIn("BADF GATE PASS: git-recovery -- EVIDENCE_ONLY", r.stdout.splitlines()[-1])
++
++    def test_uncommitted_and_stash_are_LOCAL_RECOVERY_REQUIRED_without_paths(self):
++        g(self.repo, "checkout", "-q", "--detach")
++        (self.repo / "README.md").write_text("private-edit-3c9e\n", encoding="utf-8")
++        (self.repo / "only-copy-secret.txt").write_text("SECRET-71ab\n", encoding="utf-8")
++        (self.repo / "docs/00-operating-model.md").write_text("stash me\n", encoding="utf-8"); g(self.repo, "stash", "push", "-q", "--", "docs/00-operating-model.md")
++        r = cli(str(self.repo)); self.assertEqual(r.returncode, 3, r.stdout + r.stderr)   # HELD: unique state needs preserving
++        rec = record_of(r)
++        self.assertEqual((rec["recovery_class"], rec["disposition"]), ("LOCAL", "RECOVERY_REQUIRED"))
++        self.assertEqual(rec["unique_state"]["uncommitted"], 2); self.assertEqual(rec["unique_state"]["stash"], 1)
++        for leak in ("README.md", "only-copy-secret", "SECRET-71ab", "3c9e"):
++            self.assertNotIn(leak, json.dumps(rec), leak)
++        self.assertIn("preserve", rec["least_destructive_path"].lower())
++
++    def test_dangling_reflog_commit_is_inventoried(self):
++        g(self.repo, "checkout", "-q", "--detach")
++        lost = commit_file(self.repo, "lost.txt", "the only copy\n", "will be reset away")
++        g(self.repo, "reset", "-q", "--hard", "HEAD~1")
++        rec = record_of(cli(str(self.repo)))
++        self.assertIn(lost, rec["unique_state"]["dangling_commits"])
++        self.assertEqual((rec["recovery_class"], rec["disposition"]), ("LOCAL", "RECOVERY_REQUIRED"))
++        self.assertIn("reflog", rec["least_destructive_path"].lower()); self.assertIn("refs/recovery", rec["least_destructive_path"])
++
++    def test_unpushed_topic_commits_are_TOPIC(self):
++        g(self.repo, "checkout", "-q", "-b", "wp/WP-2026-9001-topic"); commit_file(self.repo, "t.txt", "t\n", "topic")
++        rec = record_of(cli(str(self.repo)))
++        self.assertEqual(rec["recovery_class"], "TOPIC")
++        self.assertEqual(len(rec["unique_state"]["unpushed_commits"]), 1)
++        self.assertEqual(rec["unique_state"]["unpushed_commits"][0]["branch"], "refs/heads/wp/WP-2026-9001-topic")
++
++    def test_head_on_default_branch_is_PROTECTED(self):
++        rec = record_of(cli(str(self.repo)))   # seed_clone leaves HEAD on the default branch
++        self.assertEqual(rec["recovery_class"], "PROTECTED")
++        self.assertIn("revert", rec["least_destructive_path"].lower())
++
++    def test_other_worktrees_are_listed_but_not_self(self):
++        other = self.tmp / "other-wt"
++        g(self.repo, "worktree", "add", "-q", str(other), "-b", "wp/WP-2026-9001-elsewhere")
++        rec = record_of(cli(str(self.repo)))
++        others = rec["unique_state"]["other_worktrees"]
++        self.assertEqual(len(others), 1); self.assertEqual(others[0]["branch"], "refs/heads/wp/WP-2026-9001-elsewhere")
++        self.assertNotEqual(Path(others[0]["path"]).resolve(), self.repo.resolve())
++        rec2 = record_of(cli(str(other)))
++        self.assertEqual([Path(o["path"]).resolve() for o in rec2["unique_state"]["other_worktrees"]], [self.repo.resolve()])
++
++
++class PreserveTests(_Scratch):
++    def test_preserve_adds_refs_and_touches_nothing_else(self):
++        g(self.repo, "checkout", "-q", "--detach")
++        (self.repo / "README.md").write_text("dirty\n", encoding="utf-8"); (self.repo / "new.txt").write_text("new\n", encoding="utf-8"); g(self.repo, "add", "new.txt")
++        before = self.snapshot()
++        r = cli("--preserve", "before-cleanup", "--wp", WP, str(self.repo)); self.assertEqual(r.returncode, 3, r.stdout + r.stderr)
++        rec = record_of(r); p = rec["preservation"]
++        self.assertEqual(p["refs"], [f"refs/recovery/{WP}/before-cleanup", f"refs/recovery/{WP}/before-cleanup-worktree"])
++        after = self.snapshot()
++        self.assertEqual(after[:5], before[:5], "status, reflog, stash, index and HEAD must not move")
++        self.assertEqual(set(after[5]) - set(before[5]), {f"refs/recovery/{WP}/before-cleanup {self.base}",
++                                                          f"refs/recovery/{WP}/before-cleanup-worktree {p['worktree_snapshot']}"})
++        # The snapshot holds the dirty content: check it out in a second clone and compare.
++        check = self.tmp / "check"; g(self.repo, "worktree", "add", "-q", "--detach", str(check), p["worktree_snapshot"])
++        self.assertEqual((check / "README.md").read_text(encoding="utf-8"), "dirty\n"); self.assertEqual((check / "new.txt").read_text(encoding="utf-8"), "new\n")
++
++    def test_preserve_on_clean_tree_adds_one_ref(self):
++        g(self.repo, "checkout", "-q", "--detach")
++        rec = record_of(cli("--preserve", "clean", "--wp", WP, str(self.repo)))
++        self.assertEqual(rec["preservation"]["refs"], [f"refs/recovery/{WP}/clean"]); self.assertIsNone(rec["preservation"]["worktree_snapshot"])
++
++    def test_preserve_refuses_existing_label_and_requires_wp(self):
++        g(self.repo, "checkout", "-q", "--detach")
++        self.assertEqual(cli("--preserve", "x", "--wp", WP, str(self.repo)).returncode, 0)
++        r = cli("--preserve", "x", "--wp", WP, str(self.repo)); self.assertEqual(r.returncode, 1, r.stdout + r.stderr); self.assertIn("BLOCKED", r.stderr)
++        self.assertEqual(g(self.repo, "rev-parse", f"refs/recovery/{WP}/x"), self.base, "an existing recovery ref is never overwritten")
++        r = cli("--preserve", "y", str(self.repo)); self.assertEqual(r.returncode, 2, r.stdout + r.stderr); self.assertNotIn("PASS", r.stdout)
++
++
++class RefusalAndPropertyTests(_Scratch):
++    def test_refusals_outside_repo_unborn_head_and_unmerged_paths(self):
++        plain = self.tmp / "plain"; plain.mkdir()
++        r = cli(str(plain)); self.assertEqual(r.returncode, 1, r.stdout + r.stderr); self.assertIn("BLOCKED", r.stderr)
++        unborn = self.tmp / "unborn"; unborn.mkdir(); g(unborn, "init", "-q")
++        g(unborn, "remote", "add", "origin", str(self.repo)); g(unborn, "fetch", "-q", "origin", self.base); g(unborn, "update-ref", TARGET, self.base)
++        r = cli(str(unborn)); self.assertEqual(r.returncode, 1, r.stdout + r.stderr); self.assertIn("BLOCKED", r.stderr)
++        g(self.repo, "checkout", "-q", "-b", "a"); commit_file(self.repo, "c.txt", "A\n", "A")
++        g(self.repo, "checkout", "-q", "-b", "b", self.base); commit_file(self.repo, "c.txt", "B\n", "B")
++        subprocess.run(["git", "-C", str(self.repo), "merge", "-q", "a"], capture_output=True)   # conflict on c.txt
++        r = cli(str(self.repo)); self.assertEqual(r.returncode, 1, r.stdout + r.stderr); self.assertIn("unmerged", r.stderr.lower())
++
++    def test_inventory_is_read_only_and_deterministic(self):
++        g(self.repo, "checkout", "-q", "--detach"); (self.repo / "README.md").write_text("dirty\n", encoding="utf-8")
++        lost = commit_file(self.repo, "lost.txt", "x\n", "lost"); g(self.repo, "reset", "-q", "--hard", "HEAD~1"); (self.repo / "README.md").write_text("dirty again\n", encoding="utf-8")
++        before = self.snapshot()
++        a = gate.git_recovery(self.repo); b = gate.git_recovery(self.repo)
++        self.assertEqual(self.snapshot(), before)
++        a.pop("observed_at"); b.pop("observed_at"); a["baseline"].pop("observed_at"); b["baseline"].pop("observed_at"); self.assertEqual(a, b)
++        self.assertIn(lost, a["unique_state"]["dangling_commits"])
++
++
++class GitRecoverySubskillTests(unittest.TestCase):
++    def test_git_recovery_subskill_registered_and_root_stays_designed(self):
++        reg = gate.load_json(gate.ROOT / "badf/skill-registry.json"); by = {s["name"]: s for s in reg["skills"]}
++        self.assertIn("git-recovery", by); entry = by["git-recovery"]
++        self.assertEqual(entry["source"], "skills/badf-git/subskills/git-recovery/SKILL.md")
++        self.assertEqual((entry["status"], entry["risk_class"], entry["allowed_tools"]), ("IMPLEMENTED", "C1", []))
++        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
++        self.assertEqual(by["badf-git"]["status"], "DESIGNED")
++        text = (gate.ROOT / entry["source"]).read_text(encoding="utf-8")
++        self.assertIn("badf/skill-registry.json", text); self.assertNotIn("Status: `", text)
++        for token in ("PRESERVE", "git-recovery", "--preserve", "refs/recovery/", "RECOVERY_REQUIRED", "git revert", "reflog", "stash create"):
++            self.assertIn(token, text)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0079/work-package.json b/work/WP-2026-0079/work-package.json
+index bc67983..4596b03 100644
+--- a/work/WP-2026-0079/work-package.json
++++ b/work/WP-2026-0079/work-package.json
+@@ -44,11 +44,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "2d080e0"
++    "base_revision": "2d080e0",
++    "landed_content_tree": "a3482b675dc2650fa8cf5864446e6e01607a2713",
++    "composition_verified": true,
++    "landed_as": "928fc6bca7cbf572783feb699bd559052176721e"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-F per GTGM v0.1 section 17, after GIT-E (WP-2026-0076 / 5aaeb62). Resolves #151 / GOV-0059. Reconciles WP-2026-0076 (re-verified with the new reconcile: composition_verified true) and WP-2026-0078 (WP-SEC-A, 2d080e0, landed while this branch was open; no record -> composition_verified false) -- branch rebased onto 2d080e0. Engineered by BARCHI-2 in a linked worktree under the operator's /loop ('proceed on your call'); parallel seat BARCHI-1 on WP-2026-0078 (WP-SEC-A)."
+ }

@@ -1,0 +1,54 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0080",
+  "title": "GIT-G recovery: `git-recovery` inventories unique state and classifies the recovery path (read-only); `--preserve` adds recovery refs and touches nothing else; git-recovery subskill",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0067",
+  "repository": "bstBizEra/badf",
+  "objective": "Make PRESERVE -> IDENTIFY -> CLASSIFY measured records. `badf_gate.py git-recovery [<path>]` renders the before-state record the recovery contract requires: the git-baseline plus the unique-state inventory (uncommitted changes as a count, stash entries, dangling commits = reflog entries of HEAD unreachable from any ref, unpushed commits per local branch, other worktrees of the same repository), the recovery class (EVIDENCE_ONLY / LOCAL / TOPIC / PROTECTED) and the disposition (RECOVERABLE, or RECOVERY_REQUIRED when unique state must be preserved first), with the least-destructive path as text; unmerged paths are BLOCKED. `--preserve <label> --wp <WP>` creates refs/recovery/<WP>/<label> at HEAD and, for a dirty tree, a -worktree ref at a `git stash create` snapshot (objects written, nothing else moved; an existing label is never overwritten). The tool never resets, cleans, checks out, pushes, deletes a branch/worktree or a ref. The revert pattern for landed work -- including GIT-F's BLOCKED-reconcile path -- is the git-recovery subskill's procedure: a new recovery work package with git revert composed against current main; main is never rewritten.",
+  "business_value": "The contract stops mutation until unknown state is classified and GIT-O5 requires an inventory and a preservation before any exception, yet nothing produced either; GIT-F's BLOCKED reconcile ended at 'open recovery'; this program's preservation was hand-typed backup branches and its one unclassified residue was met with a hand-run checkout. With the record, a destructive step is safe to CONSIDER and its cost is written down first -- GTGM v0.1 sections 12, 15 and 17 (GIT-G).",
+  "in_scope": [
+    "badf_gate.py: git_recovery() + `git-recovery` subcommand (read-only inventory; --preserve adds refs under refs/recovery/<WP>/ only)",
+    "skills/badf-git/subskills/git-recovery/SKILL.md registered IMPLEMENTED, C1, allowed_tools []; badf-git root stays DESIGNED",
+    ".github/workflows/badf-gates.yml: a read-only git-recovery step on the runner (EVIDENCE_ONLY on a clean detached checkout)",
+    "tests/test_badf_git_recovery.py (12 tests, failing-first, scratch clones; read-only + determinism + mutation)",
+    "GITHUB_CONTROL_PLANE.md doctrine section; own composition record + G07 self-dossier; lockfile re-signed"
+  ],
+  "out_of_scope": [
+    "any destructive operation (reset --hard, clean, forced ref moves, branch/worktree deletion, tag rewrites) -- the tool makes them safe to consider, never performs them",
+    "executing a revert or opening the recovery work package (the procedure); release-ref recovery -- GIT-H; the remote-workspace mode (#133)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "clean detached checkout -> EVIDENCE_ONLY RECOVERABLE with zero unique state; uncommitted + stash -> LOCAL RECOVERY_REQUIRED, counts only, no path or content; a reset-away commit -> inventoried as dangling with the reflog -> recovery-ref path; unpushed topic commits -> TOPIC; HEAD on the default branch -> PROTECTED; other worktrees listed, never the caller's own",
+    "--preserve on a dirty tree adds exactly two refs (HEAD + stash-create snapshot whose tree holds the dirty content) and leaves status, index, stash list, reflog and HEAD unchanged; on a clean tree one ref; an existing label is refused; --preserve without --wp is a usage error",
+    "refusals BLOCKED outside a repository, on an unborn HEAD and on unmerged paths; the inventory is read-only and deterministic modulo observed_at; each classification, preservation and refusal branch load-bearing (mutation)",
+    "git-recovery registered IMPLEMENTED C1 allowed_tools [] with a real digest; root stays DESIGNED; no new script/schema/authority change; repo clean; compose green; the runner renders its own record"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_git_recovery.py"
+  ],
+  "evidence": [
+    "failing-first run",
+    "mutation",
+    "compose output incl. composition: CURRENT",
+    "CI runner git-recovery step output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "928fc6b"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-G per GTGM v0.1 section 17, after GIT-F (WP-2026-0079 / 928fc6b). Resolves #153 / GOV-0060. Reconciles WP-2026-0079 (composition_verified true). Engineered by BARCHI-2 in a linked worktree under the operator's /loop ('proceed on your call')."
+}
