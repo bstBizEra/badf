@@ -1,0 +1,23 @@
+{
+  "record": "git-release",
+  "schema_version": "1.0.0",
+  "observed_at": "2026-08-29T22:25:21Z",
+  "version": "BADF-BASELINE-1.0.0",
+  "tag_ref": "refs/tags/BADF-BASELINE-1.0.0",
+  "source_ref": "refs/heads/main",
+  "source_revision": "3f6119b05ae4a5158d40f5d9965d4ebe57bee794",
+  "source_result_tree": "3c222735fadcbf23442bba928a4ba0f30ae83337",
+  "policy_epoch": "BADF-2026-08-25",
+  "provenance": {
+    "annotated": true,
+    "signed": false,
+    "tagger": "BADF Baseline <badf@bizera.local>"
+  },
+  "release_authority": "HUMAN_REQUIRED",
+  "disposition": "HUMAN_REQUIRED",
+  "non_coverage": [
+    "the tag is created by the release authority (git tag -a / gh release), never by this tool",
+    "artifact/SBOM/attestation identity (docs/11) is G10/G11 evidence, not bound here",
+    "provenance limitation: the tag is unsigned; recorded, not rewritten"
+  ]
+}
