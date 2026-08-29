@@ -27,13 +27,13 @@ index 0000000..46dd9ca
 +  "note": "WP-SEC-A freezes badf-security-design (G05 security-design composition/router, DESIGNED) per the operator's detailed design directive 2026-08-30. Pre-implementation design only; assurance deferred to a future badf-security-assurance (G08/G09); OWASP adapt-not-authority; security-approval reserved to security_authority; no gate/schema/lifecycle change. DEM-0065/GOV-0058/WP-0078. Reconciles WP-2026-0077."
 +}
 diff --git a/badf/skill-registry.json b/badf/skill-registry.json
-index 08655fd..10d98e9 100644
+index e7d0522..43e062d 100644
 --- a/badf/skill-registry.json
 +++ b/badf/skill-registry.json
-@@ -230,6 +230,16 @@
+@@ -240,6 +240,16 @@
        "allowed_tools": [],
        "status": "IMPLEMENTED",
-       "digest": "sha256:941dded6c33ac5793ed56063cb2ff7cf8dcbd25e3c8fa808d70533cff3196268"
+       "digest": "sha256:257649dd0b700fdf9c9f51a2b9edc651793b65154dec7eb8219ba79d77505e74"
 +    },
 +    {
 +      "name": "badf-security-design",
@@ -48,13 +48,13 @@ index 08655fd..10d98e9 100644
    ]
  }
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 2610b45..bf1bf1a 100644
+index 06ebc66..70e3a80 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -859,6 +859,33 @@ representative, and the owed real-project re-shadow is filed as a tracked follow
- the capability is admitted for use, its trust is honestly bounded to a representative shadow, and the
- debt to re-shadow on real data is tracked rather than lost. Registry `SHADOWED → ACTIVE`.
- 
+@@ -884,6 +884,32 @@ point). The `composition-verification` subskill carries the author's order of op
+ content change recomputes the record, never edits it. This work package's own PR carried its record
+ and CI verified it. Approval staleness and the expected-head merge guard are GIT-F; the landed-tree
+ comparison after merge is GIT-F/G.
 +## badf-security-design — G05 security-design contract freeze (`BADF-WP-0078` / WP-SEC-A, Issue #149 / GOV-0058)
 +
 +BADF had G05 evidence types (`threat-model`, `privacy-assessment`, `supply-chain-plan`,
@@ -81,10 +81,9 @@ index 2610b45..bf1bf1a 100644
 +on `CAPABILITY ≠ AUTHORITY`. No `scripts/badf_security_design.py`, no schema, no `lifecycle.json`
 +change, no gate-code, no specialist activated. Ladder WP-SEC-A…E mirrors solution-design; the deferred
 +`badf-security-assurance` is named, not built.
-+
+ 
  ## Discovery ≠ scope expansion
  
- Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
 diff --git a/skills/badf-security-design/SKILL.md b/skills/badf-security-design/SKILL.md
 new file mode 100644
 index 0000000..16094d5
@@ -1063,22 +1062,22 @@ index 0000000..e01350c
 +
 +if __name__ == "__main__":
 +    unittest.main()
-diff --git a/work/WP-2026-0077/work-package.json b/work/WP-2026-0077/work-package.json
-index 0ac1cd9..36c9d1f 100644
---- a/work/WP-2026-0077/work-package.json
-+++ b/work/WP-2026-0077/work-package.json
-@@ -44,11 +44,12 @@
+diff --git a/work/WP-2026-0076/work-package.json b/work/WP-2026-0076/work-package.json
+index 1842a94..5f7baf8 100644
+--- a/work/WP-2026-0076/work-package.json
++++ b/work/WP-2026-0076/work-package.json
+@@ -45,11 +45,12 @@
      "reversible": true,
-     "method": "revert the squash commit via PR (registry back to SHADOWED)"
+     "method": "revert the squash commit via PR"
    },
 -  "status": "IN_PROGRESS",
 +  "status": "CLOSED",
    "external_target": {
      "repository": "bstBizEra/badf",
      "branch": "main",
--    "base_revision": "dc6b608"
-+    "base_revision": "dc6b608",
-+    "landed_as": "1b80d7c9d20e1f39c6287aa033904e6cbff17dc3"
+-    "base_revision": "1b80d7c"
++    "base_revision": "1b80d7c",
++    "landed_as": "5aaeb62bb7029a00b487ff9746acd791d5235373"
    },
-   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Registry admission SHADOWED->ACTIVE on the operator's explicit decision (AskUserQuestion 2026-08-30 'activate now, accept representative'); grants no authority (SOL-I12); caveat preserved; real re-shadow deferred to #145. No gate control (controls are WP-SOL-B/C) -> no mutation. Built in isolated worktree (badf-wt-sole, GIT-I04) parallel to BARCHI-2's badf-git GIT-E (#144). Ids WP-0077/DEM-0064/GOV-0056. Reconciles WP-2026-0074 (GIT-... no: WP-SOL-D, landed dc6b608). Resolves #146 / GOV-0056."
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-E per GTGM v0.1 section 17, after GIT-D (WP-2026-0075 / f1a0a5c). Resolves #144 / GOV-0055. Reconciles WP-2026-0077 (badf-solution-design ACTIVE, 1b80d7c, landed while this branch was open; 0074/0075 were reconciled upstream) -- branch rebased onto dc6b608 then 1b80d7c. Engineered by BARCHI-2 in a linked worktree under the operator's /loop ('proceed on your call'); parallel seat BARCHI-1 on WP-2026-0074 (#143)."
  }
