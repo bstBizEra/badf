@@ -1,0 +1,35 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index e5406fb..70d7f33 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -586,6 +586,30 @@ This is the **P1 gate lifted by operator request**, not by precedent: the deferr
+ only once the operator selected the research track, and its control was earned by two failing-first
+ probes, not added because the P0 subskills each landed with one.
+ 
++## badf-requirements — salvage over repair (`BADF-WP-0063`, Issue #115 / GOV-0033, supersedes PR #47)
++
++PR #47 proposed a G02 requirements skill but duplicated the gate: a standalone
++`scripts/badf_requirements.py` + a custom `requirements-rtm.schema.json`, re-using the already-occupied
++`WP-2026-0028` / `BADF-DEM-0015` identities and a lockfile rewritten against ancient `main`. G02 was
++**already solved** by `BADF-WP-0041` (PR #71), which enforces `requirements`/`nfr`/`traceability`/
++`definition-of-ready` directly in the canonical gate and deliberately rejected a second validator. So
++#47 is **superseded, not repaired**: closing it and rebasing would mean reconstructing it. The recovery
++is **salvage over repair** — the same move `badf-prd` made with PR #44: keep the authoring layer, discard
++the obsolete implementation.
++
++`badf-requirements` is built fresh from current `main` as a top-level **authoring** skill (registered
++`IMPLEMENTED`): it decomposes an approved PRD baseline into the four canonical G02 artifacts and
++validates them with `badf_gate.py dossier` — **it has no validator of its own**. Its invariants run
++`REQ-I01` (no gate authority) … `REQ-I06` (security provenance). The rich `OBJ→CAP→EPIC→REQ→NFR→AC→
++TEST→EVDREQ` chain is preserved as the *authoring model*; the gate consumes only its lean canonical
++subset (`OBJ←REQ→NFR`, `REQ↔AC`, human readiness), and `CAP`/`EPIC`/`TEST`/`EVDREQ` stay authoring
++intermediates — first-class enforcement waits for a failing-first WP, not speculation. Test guards
++lock the architecture: no `scripts/badf_requirements.py`, no custom RTM schema, `badf_gate.py` the sole
++G02 authority. It adds **no gate code**, so there is no new control and nothing to mutate; the test
++proves existence and the anti-duplication boundary. It lands `IMPLEMENTED` — `VALIDATED` is a separate
++WP (cases: valid PRD → clean artifacts; orphan/qualitative → rework; a G05-born security requirement →
++provenance preserved). **Separation: the skill authors, the gate verifies, an authority decides.**
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

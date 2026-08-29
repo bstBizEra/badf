@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0050",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 115,
+    "url": "https://github.com/bstBizEra/badf/issues/115",
+    "exported_at": "2026-08-29T14:27:11Z",
+    "body_digest": "sha256:43ae171d2619eadc6504990218a0a5e6d5c1648473881e2380f48365fd295235"
+  },
+  "title": "GOV-0033: build badf-requirements authoring skill \u2014 salvage PR #47 onto the canonical G02 gate (supersedes #47)",
+  "problem": "## Observed\n\n`main` (`a20df5e`) has **no `skills/badf-requirements/` directory** \u2014 there is no authoring skill for G02 requirement decomposition, even though the canonical G02 gate (`BADF-WP-0041`/PR #71) already enforces the four artifacts (`requirements`, `nfr`, `traceability`, `definition-of-ready`). PR #47 proposed such a skill but is **superseded and non-mergeable**: it duplicated the G02 gate as a standalone `scripts/badf_requirements.py` + a custom `schemas/requirements-rtm.schema.json`, re-used the already-occupied `WP-2026-0028` / `BADF-DEM-0015` identities, and rewrote the lockfile against ancient `main`. Its Actions run fails. Issue #46 (which #47 claimed) is already closed as completed. **#47 must not be repaired or merged in place.**\n\nBut #47's **authoring layer is still valuable**: the RTM decomposition model, the quantified-NFR discipline, the security-provenance rule, and the authority boundary \"author requirements, never approve G02\".\n\n## Expected\n\nBuild **badf-requirements** as a top-level **authoring** skill (sibling of `badf-prd`), salvaging only the authoring layer onto the **canonical** G02 gate \u2014 the same pattern by which `badf-prd` salvaged external methodology from PR #44. Land at **`IMPLEMENTED`**; do **not** advance to VALIDATED/ACTIVE (a separate WP validates it with cases A/B/C).\n\nKeep: `skills/badf-requirements/SKILL.md` + `references/requirements-decomposition.md` + `references/methodology-provenance.md`; register `IMPLEMENTED`; `tests/test_badf_requirements_skill.py`.\n\nDo NOT port: `scripts/badf_requirements.py`, `schemas/requirements-rtm.schema.json`, `templates/requirements-rtm.json`, the old `WP-2026-0028` / `BADF-DEM-0015` / old lockfile, or any duplicate G02 gate logic. **`badf_gate.py` remains the sole G02 enforcement authority.**\n\nThe skill authors toward the canonical artifacts and validates with `python3 scripts/badf_gate.py dossier <g02-dossier>` (like `badf-prd`). It declares the invariants **REQ-I01 (no gate authority)** \u2026 **REQ-I06 (security provenance)**. The rich `OBJ\u2192CAP\u2192EPIC\u2192REQ\u2192NFR\u2192AC\u2192TEST\u2192EVDREQ` chain is retained as the **authoring model**; the gate consumes only its **canonical subset** (capability/epic/test-obligation/evidence-obligation are NOT made first-class gate objects \u2014 no schema growth by speculation; a later failing-first WP adds them only if real project use proves the need).\n\n## Evidence\n\n- Canonical G02 (measured): `requirements` (unique `REQ`, each \u2192 \u22651 objective), `nfr` (quantified target), `traceability` (bidirectional complete RTM), `definition-of-ready` (human sign-off covering the exit criteria). Leaner than #47's graph by design (PR #71 deferred the capability/epic hierarchy).\n- `badf-prd` is the template: an authoring skill, `IMPLEMENTED`, no validator of its own, salvaged provenance in `references/`.\n\n## Unknowns\n\nWhether capability/epic/test-obligation ever need first-class gate enforcement \u2014 deferred to a future failing-first WP, not decided here.\n\ndiscovered-by: BADF-WP-0062 (operator directed the #47 recovery) \u00b7 supersedes: PR #47 \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-29T14:27:11Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Salvage #47's authoring layer onto the canonical G02 gate. Top-level authoring skill (sibling of badf-prd), IMPLEMENTED only. NO standalone validator/schema (badf_gate.py is the sole G02 authority). Supersedes PR #47 (operator directed, close is operator's action). Worked as BADF-WP-0063."
+}

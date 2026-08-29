@@ -2,7 +2,7 @@
   "$schema": "../../schemas/work-package.schema.json",
   "schema_version": "1.0.0",
   "id": "WP-2026-0062",
-  "title": "experimental-research (P1, R08) + control 28 — an empirical run carries a real experiment bound to a held hypothesis",
+  "title": "experimental-research (P1, R08) + control 28 \u2014 an empirical run carries a real experiment bound to a held hypothesis",
   "owner": "human_sponsor",
   "demand": "BADF-DEM-0049",
   "repository": "bstBizEra/badf",
@@ -46,11 +46,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "467406f"
+    "base_revision": "467406f",
+    "landed_as": "a20df5ed8453d6e86093d5be1c022e94e7aa4d67"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Extends the frozen research contract (extend-only): control 27 -> 28, 10th subskill at IMPLEMENTED, family stays ACTIVE. P1 gate lifted by operator selection 2026-08-29. Resolves #113 / GOV-0032. Reconciles WP-2026-0061."
 }
