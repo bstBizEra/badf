@@ -1,0 +1,2392 @@
+diff --git a/badf/demands/BADF-DEM-0053.json b/badf/demands/BADF-DEM-0053.json
+new file mode 100644
+index 0000000..1999c11
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0053.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0053",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 123,
++    "url": "https://github.com/bstBizEra/badf/issues/123",
++    "exported_at": "2026-08-29T16:03:15Z",
++    "body_digest": "sha256:3c03f85d7b7b04dea985edb782115e2239e1a0f9a76e0f00484f7e5c8bf1a892"
++  },
++  "title": "GOV-0045: freeze badf-git capability contract (GTGM, DESIGNED, no Git authority) \u2014 salvage PR #122",
++  "problem": "## Observed\n\nBADF has no `badf-git` capability \u2014 no frozen, governed contract for how Git state, branches, worktrees, staging, commits, rebases, PRs, composition, integration, recovery, tags and releases are handled for a work package. The operator's *BADF Git Cycle & Git Loop \u2014 Research + Design v0.1* recommends standardizing on the **Governed Trunk Git Model (GTGM)** \u2014 one protected `main` ledger + short-lived WP branches + one governed integration PR + deterministic composed-tree verification + squash integration + immutable release evidence + explicit recovery \u2014 as an evolution of the live repo (which already enforces squash-only, linear history, composed-tree CI via `badf_compose.py`).\n\nAn external actor opened **PR #122** attempting this exact freeze, but it is draft, **CONFLICTING**, and re-uses already-consumed identities (`BADF-DEM-0052`, `WP-2026-0064`, `WP-2026-0065` \u2014 all landed on `main`). It can never merge cleanly. **This is the #47 situation:** its contract content is valuable; its ledger state is not.\n\n## Expected\n\n**Salvage over repair** (the path `badf-prd`\u2190#44 and `badf-requirements`\u2190#47 took): build **badf-git** fresh from current `main` as a top-level **declarative** capability \u2014 a router and constraint layer, **not** a Git authority, merge bot, release authority, or second gate \u2014 porting #122's authoring content onto a clean WP.\n\n**BADF-WP-GIT-A \u2014 contract freeze, `DESIGNED` only:** `skills/badf-git/SKILL.md` + eight reference contracts (`git-cycle`, `git-state-machine`, `branch-pr-contract`, `operation-authority-matrix`, `composition-and-staleness`, `recovery-contract`, `release-versioning`, `evidence-contract`). Invariants `GIT-I01` (no Git authority) \u2026 `GIT-I12` (no second gate/mutation engine). **No `scripts/badf_git.py`, no new schema, no Git authority** \u2014 `badf_gate.py` and the platform rules remain the sole authorities; the canonical composition mechanism remains `badf_compose.py`. Registered `DESIGNED`.\n\n## Evidence\n\n- Live `main` already enforces the GTGM substrate (squash-only, linear history, composed-tree CI). All docs the contract references exist (`docs/00,01,02,05,07,08,11,13`, `schemas/evidence.schema.json`, `badf/tool-registry.json`, `badf/authority-matrix.json`).\n- #122 content is high quality (GIT-I01\u2013I12, GIT-O0\u2013O5 operation classes, the state machine) but carries a temporary lockfile-probe scaffolding test and three id collisions \u2014 dropped/fixed in the salvage.\n\n## Unknowns\n\nThe later program (WP-GIT-B identity contract \u2026 WP-GIT-J activation) is out of scope here. Branch-name enforcement, a Git inspector, and any mutation tooling are deferred to their own failing-first WPs \u2014 no mutation script or Git authority in a contract freeze.\n\ndiscovered-by: operator design directive (GTGM v0.1) \u00b7 supersedes: #119, PR #122 \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T16:03:15Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Salvage #122's authoring layer onto a fresh WP from current main (operator directed 'salvage #122's references first'). Top-level declarative capability, DESIGNED only, no scripts/badf_git.py, no schema, no Git authority (badf_gate.py + platform rules remain sole authorities; badf_compose.py the canonical composition). Supersedes #119/#122 (external, operator's to close). Worked as BADF-WP-0066."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 78c28bb..026fd75 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -190,6 +190,16 @@
+       ],
+       "status": "IMPLEMENTED",
+       "digest": "sha256:f76127dac7c11db5ed6d4300ba415e1d1b9eeeb28e2adc704c92cff50faace48"
++    },
++    {
++      "name": "badf-git",
++      "source": "skills/badf-git/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [],
++      "status": "DESIGNED",
++      "digest": "sha256:17ea1e412a1c5b35cf87b66797a82872cb2e414cb26be573a8f5ee66fba61778"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 791cc6a..1e02bad 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -645,6 +645,29 @@ gate code, so no new control and nothing to mutate. Both capability families are
+ live status line — they point to `badf/skill-registry.json` — closing the same drift class fixed for the
+ research `acceptance.md` and `badf-requirements`.
+ 
++## badf-git — Governed Trunk Git Model, contract freeze (`BADF-WP-0066`, Issue #123 / GOV-0045, supersedes PR #122)
++
++The operator's *GTGM v0.1* design standardizes BADF Git on **one protected `main` ledger + short-lived
++WP branches + one governed integration PR + deterministic composed-tree verification + squash
++integration + immutable release evidence + explicit recovery** — an evolution of the live repo, which
++already enforces squash-only, linear history, and composed-tree CI (`badf_compose.py`). An external
++actor's **PR #122** attempted this exact freeze but was draft, CONFLICTING, and re-used three consumed
++identities (`BADF-DEM-0052`, `WP-2026-0064`, `WP-2026-0065`). **Salvage over repair** again: `badf-git`
++is built fresh from current `main` (this WP), re-homing #122's genuine authoring content onto a clean
++WP with fresh ids — the collided-id examples fixed, and #122's temporary lockfile-probe scaffolding test
++dropped (kept the real contract checks).
++
++`badf-git` is a top-level **declarative** capability, registered `DESIGNED`: a router and constraint
++layer, **not** a Git authority, merge bot, release authority, or second gate. Its invariants run
++`GIT-I01` (no Git authority) … `GIT-I12` (no second gate/mutation engine); `SKILL.md` + eight reference
++contracts freeze the GTGM cycle, the state machine, the `GIT-O0…O5` operation classes, the composition
++invariant (`SOURCE_HEAD_GREEN != INTEGRATION_SAFE`), and the recovery/release contracts (repair forward
++via revert/reflog; immutable tags). **No `scripts/badf_git.py`, no new schema, no Git authority** —
++`badf_gate.py` and the platform rules remain the sole authorities, `badf_compose.py` the canonical
++composition. No gate code, so no new control and nothing to mutate; the test guards the declarative
++surface. Contract Freeze is deliberately first (WP-GIT-B…J deferred): an incorrect mutation model would
++spread into every future BADF autonomous engineering loop.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/skills/badf-git/SKILL.md b/skills/badf-git/SKILL.md
+new file mode 100644
+index 0000000..78199d2
+--- /dev/null
++++ b/skills/badf-git/SKILL.md
+@@ -0,0 +1,185 @@
++---
++name: badf-git
++description: Govern Git state, worktrees, branches, staging, commits, synchronization, private-history rewrites, pull requests, composition verification, integration, recovery, tags, and release refs for BADF work packages. Use whenever a BADF task changes Git state or makes a claim about repository history or integration readiness. Do not use to grant authority, bypass repository rules, rewrite protected history, or substitute source-branch success for composed-result evidence.
++---
++
++# BADF Git
++
++`badf-git` is the declarative Git contract for BADF delivery work. It coordinates Git actions with the repository charter, work-package authority, evidence binding, composed-tree verification, and protected integration. It is a **router and constraint layer**, not a Git authority, merge bot, release authority, or second gate.
++
++The skill's admission status is recorded in `badf/skill-registry.json`; this file defines behavior and must not hardcode a lifecycle status that can drift from the registry.
++
++## Fundamental rule
++
++```text
++GIT_CAPABILITY != GIT_AUTHORITY
++SOURCE_HEAD_GREEN != INTEGRATION_SAFE
++REUSED_RESOLUTION != VERIFIED_RESOLUTION
++MERGED != RELEASED
++RELEASED != PRODUCTION_VERIFIED
++```
++
++## Required reading
++
++Before a material Git operation:
++
++1. Read repository `AGENTS.md` and its applicable instruction chain.
++2. Read `docs/00-operating-model.md`, `docs/01-lifecycle-gates.md`, `docs/02-engineering-loop.md`, `docs/05-evidence-and-provenance.md`, `docs/07-skills-governance.md`, `docs/08-mcp-and-tools.md`, and `docs/13-artifact-model.md` as applicable.
++3. Resolve the active work package, target gate, change class, repository, target ref, permitted tools/environments/mutations, acceptance criteria, evidence requirements, rollback, reviewers, and stop conditions.
++4. Treat repository settings, rulesets, branch protection, tool registration, authority matrix, and platform controls as higher authority than this skill.
++
++## Invariants
++
++```text
++GIT-I01 — No Git Authority
++  This skill can guide, constrain and document Git operations. It MUST NOT
++  grant repository, credential, merge, release, production, policy, bypass,
++  destructive or administrative authority.
++
++GIT-I02 — Source Head Is Not Integration Safety
++  A green source branch is insufficient. Integration evidence binds the
++  intended target base, source head, merge base, merge method, expected result
++  tree, policy epoch and test-set epoch.
++
++GIT-I03 — Exact Identity
++  Every material Git change binds one canonical work-package identity, one
++  repository, target ref, source ref, before/after revision and evidence set.
++  Display labels and branch names are not authority records.
++
++GIT-I04 — Isolation By Default
++  Independent agents or work packages use distinct branches and worktrees.
++  Overlapping edits require an explicit integrator/composition plan.
++
++GIT-I05 — History Rewrite Invalidates Evidence
++  Rebase, amend, reset, cherry-pick or any equivalent source-history change
++  makes affected source-head/composition evidence stale until recomputed.
++
++GIT-I06 — Shared History Repairs Forward
++  Protected/shared history is not rewritten. Normal rollback of landed work is
++  a new forward change, normally a revert. Local lost work is recovered from
++  reflog or a recovery branch before destructive cleanup is considered.
++
++GIT-I07 — Intentional Staging
++  Inspect the worktree and staged diff before commit. Do not discard unrelated
++  state to obtain a clean checkout. `git stash` is not durable handoff or proof.
++
++GIT-I08 — Reused Resolution Is A Candidate
++  `rerere` may recall a prior conflict resolution, but recalled content is
++  inspected and tested like any new edit. Auto-staging a recalled resolution is
++  not evidence of correctness.
++
++GIT-I09 — Exact Protected Integration
++  Protected integration must use the repository-approved merge method and the
++  exact reviewed head against current composed evidence. Source, target, rules,
++  policy or evidence drift makes prior merge authorization stale.
++
++GIT-I10 — Release Refs Are Governance Artifacts
++  Release tags and release records bind an authorized, verified `main`
++  revision and immutable release evidence. This skill cannot create release
++  authority merely by knowing a tag or release command.
++
++GIT-I11 — Destructive Git Is Deny By Default
++  Hard reset, destructive clean, forced protected-ref movement, tag rewrite and
++  equivalent hard-to-reverse operations require separately granted destructive
++  or administrative authority and exact target verification.
++
++GIT-I12 — No Second Gate Or Mutation Engine
++  `badf-git` does not introduce a competing Git validator, lifecycle gate,
++  ruleset, authority matrix, tool permission, workflow controller, merge bot or
++  release bot. Deterministic enforcement belongs in existing canonical controls
++  through separately authorized work.
++```
++
++## Governed Git cycle
++
++Use the outer delivery cycle:
++
++`AUTHORITY → BASELINE → ISOLATE → BUILD → VERIFY → PR → COMPOSE → CHALLENGE → AUTHORIZE → SQUASH → RECONCILE → RELEASE → CLEAN → LEARN`
++
++`RELEASE` is optional for a work package that does not produce a release. Protected integration uses the repository-approved method; under the current BADF integration contract that method is squash.
++
++Read `references/git-cycle.md` and `references/git-state-machine.md` for the stage contract and hold/failure states.
++
++## Nested Git loop
++
++Within `BUILD` and reconciliation work, use:
++
++`SYNC → INSPECT → EDIT → STAGE → DIFF → COMMIT → VERIFY → RECONCILE → ↺`
++
++Each retry must change a hypothesis, implementation, input, conflict resolution, diagnostic, or evidence set. Repeating the same failing Git action without new information is not progress.
++
++## Operation classes
++
++Use the Git-local classification in `references/operation-authority-matrix.md` only to describe risk and routing:
++
++- `GIT-O0 OBSERVE`
++- `GIT-O1 LOCAL_REVERSIBLE`
++- `GIT-O2 HISTORY_REWRITE_PRIVATE`
++- `GIT-O3 REMOTE_TOPIC_MUTATION`
++- `GIT-O4 PROTECTED_INTEGRATION`
++- `GIT-O5 DESTRUCTIVE`
++
++These classes **do not replace** the canonical tool classes in `docs/08-mcp-and-tools.md` (`READ`, `WRITE`, `DESTRUCTIVE`, `ADMIN`) and do not assign approval rights. The work package, tool registry, authority matrix, repository policy, and platform controls decide what is permitted.
++
++## Workflow
++
++1. **AUTHORITY** — resolve work-package identity, repository, target, permitted Git operations and reserved decisions. Stop when any mutation authority is ambiguous.
++2. **BASELINE** — capture repository identity, target ref/SHA, source ref/SHA if it exists, merge base, worktree/index state, relevant rules/policy epoch, and remote freshness.
++3. **ISOLATE** — use a short-lived work-package branch and, for parallel work, a dedicated worktree. Preserve unrelated state.
++4. **BUILD** — follow the nested Git loop. Stage intentionally and keep commits coherent enough to review and recover.
++5. **VERIFY** — run targeted checks, then required repository checks. A local/source pass is evidence about that source only.
++6. **PR** — bind the pull request to the canonical work package, issue/demand, target, source head, scope, evidence and explicit non-goals. See `references/branch-pr-contract.md`.
++7. **COMPOSE** — compute and verify the expected integrated result using the canonical BADF composition mechanism. See `references/composition-and-staleness.md`.
++8. **CHALLENGE** — obtain required independent review. The author cannot provide an independent approval for their own change.
++9. **AUTHORIZE** — verify current head, target, rules, checks, approvals and evidence. Stale identity or evidence returns to reconciliation.
++10. **SQUASH** — integrate only through the repository-approved protected method and only with separately granted integration authority. This skill never self-authorizes merge.
++11. **RECONCILE** — verify the actual landed revision/result and reconcile it with the expected composed result and work-package acceptance criteria.
++12. **RELEASE** — when in scope, bind an authorized version/tag/release to verified `main`; see `references/release-versioning.md`.
++13. **CLEAN** — remove only known, merged, disposable local/topic state. Unknown work is preserved and investigated, never silently discarded.
++14. **LEARN** — record validated Git failure/recovery/composition patterns through governed learning work; do not mutate policy from a single anecdote.
++
++## Evidence and staleness
++
++Read `references/evidence-contract.md`. For composed changes, the minimum Git composition binding includes:
++
++```yaml
++git_composition:
++  target_ref: refs/heads/main
++  target_base_sha: "<sha>"
++  merge_base_sha: "<sha>"
++  source_ref: refs/heads/wp/...
++  source_head_sha: "<sha>"
++  merge_method: squash
++  expected_result_tree: "<git-tree-sha>"
++  test_set_epoch: "<epoch>"
++  policy_epoch: "<epoch>"
++```
++
++Target movement, source movement, history rewrite, merge-method change, policy/test epoch change, or a different conflict resolution invalidates affected composition evidence. Recompute; do not relabel stale evidence as current.
++
++## Recovery
++
++Read `references/recovery-contract.md` before any operation intended to undo, discard, restore or force state. Shared rollback and local recovery are different contracts. A clean-looking worktree is never worth destroying unknown work.
++
++## Stop states
++
++Stop mutation and emit the applicable disposition when:
++
++- required authority or tool permission is missing → `BLOCKED` or `HUMAN_REQUIRED`;
++- target/source/work-package identity is ambiguous → `BLOCKED`;
++- target/source/policy/test identity moved after evidence → `STALE_EVIDENCE`;
++- preservation or restoration requires destructive scope not explicitly authorized → `RECOVERY_REQUIRED`;
++- protected-history rewrite or repository-policy bypass would be required → `HUMAN_REQUIRED` or `BLOCKED`;
++- evidence contradicts the intended merge/release claim → `BLOCKED`;
++- an external mutation times out or its result is unknown → observe remote state before retrying.
++
++## References
++
++- `references/git-cycle.md` — outer Git delivery cycle and checkpoints.
++- `references/git-state-machine.md` — states, transitions, stale/hold semantics.
++- `references/branch-pr-contract.md` — work-package branch, worktree and PR binding.
++- `references/operation-authority-matrix.md` — Git-local risk classes mapped to canonical tool governance.
++- `references/composition-and-staleness.md` — composed-result identity and invalidation.
++- `references/recovery-contract.md` — safe recovery, revert/reflog/rerere boundaries.
++- `references/release-versioning.md` — release/tag/version design contract.
++- `references/evidence-contract.md` — Git evidence and provenance fields.
+diff --git a/skills/badf-git/references/branch-pr-contract.md b/skills/badf-git/references/branch-pr-contract.md
+new file mode 100644
+index 0000000..066a00f
+--- /dev/null
++++ b/skills/badf-git/references/branch-pr-contract.md
+@@ -0,0 +1,233 @@
++# Branch, Worktree and Pull Request Contract
++
++This reference defines how a BADF Git change is isolated and bound to its work package. It proposes a future canonical branch form but deliberately does **not** enforce branch names in this contract-freeze WP.
++
++## Identity hierarchy
++
++Use identity in this order:
++
++1. **Canonical work-package record** — machine identity and bounded authority.
++2. **Issue/demand/decision bindings** — why the work exists and what authorized it.
++3. **Repository + target/source refs + SHAs** — exact Git identity.
++4. **Pull request ID** — review/integration vehicle.
++5. **Branch name / PR title / commit message** — human-readable labels only.
++
++A label cannot override a contradictory work-package record. If `WP-2026-NNNN`, `BADF-WP-NNNN`, issue metadata and branch/PR text do not map one-to-one, stop and reconcile the identity rather than guessing.
++
++## Proposed canonical branch form
++
++Future BADF branch naming should converge on:
++
++```text
++wp/<CANONICAL-WORK-PACKAGE-ID>-<short-slug>
++```
++
++Example once a canonical machine ID is frozen:
++
++```text
++wp/WP-2026-0066-git-contract-freeze
++```
++
++Rules:
++
++- `wp/` declares a bounded work-package topic branch, not authority level.
++- `<CANONICAL-WORK-PACKAGE-ID>` must match the work-package artifact exactly.
++- `<short-slug>` is descriptive and disposable; it is never an identity key.
++- branch-name enforcement is deferred to a later work package because BADF currently has historical identity/naming variation.
++- no permanent `develop`, `integration`, `staging`, `alpha`, or `beta` branch is introduced to represent lifecycle state.
++
++Until repository-wide identity is frozen, tooling must read the canonical work-package artifact/body binding and **must not infer authority from branch regex alone**.
++
++## Branch creation contract
++
++Before creating a branch:
++
++- observe the intended target/base SHA;
++- confirm the work package permits a local/repository write;
++- confirm the branch name does not collide with another active work package;
++- preserve existing worktree/index state;
++- create from the intended authorized baseline, not from an arbitrary local tip.
++
++Record:
++
++```yaml
++branch_binding:
++  work_package_id: WP-2026-0066
++  repository: bstBizEra/badf
++  target_ref: refs/heads/main
++  target_base_sha: <sha>
++  source_ref: refs/heads/wp/WP-2026-0066-git-contract-freeze
++  created_from_sha: <sha>
++```
++
++Branch creation is not approval to push or merge.
++
++## Worktree contract
++
++For parallel work, prefer a dedicated `git worktree` per independent branch/work package.
++
++### Why
++
++A worktree gives each agent/change:
++
++- a distinct filesystem root;
++- an explicit checked-out branch;
++- less accidental overlap than sharing one checkout and repeatedly switching branches;
++- easier preservation of uncommitted state;
++- a clearer evidence target.
++
++### Rules
++
++- one agent/work package owns one active worktree unless an explicit integrator plan says otherwise;
++- do not point two worktrees at overlapping mutable output directories without coordination;
++- do not use worktree removal as cleanup while uncommitted/unknown work remains;
++- worktree path is operational metadata, not a durable identity; branch/SHA/work-package bindings are durable;
++- if a worktree appears stale, inspect before pruning; pruning is cleanup, not diagnosis.
++
++## Overlap and composition
++
++Parallel agents must not edit overlapping files unless the work package or integrator plan explicitly names:
++
++- file/path overlap;
++- integration owner;
++- composition order;
++- conflict-resolution owner;
++- checks that must be rerun after reconciliation.
++
++If overlap appears unexpectedly, stop independent mutation and enter reconciliation. Do not race to land first.
++
++## Commit contract
++
++Branch commits are **working engineering history**. Protected `main` is the authoritative integration ledger.
++
++Commit requirements:
++
++- commit only intended staged content;
++- inspect staged diff first;
++- preserve traceability to the work package in the PR/evidence even when individual local commit messages are concise;
++- do not encode secrets, tokens, personal data, or transient credentials in messages/content;
++- do not use a Conventional Commit prefix or any message style as authority evidence;
++- do not require noisy mechanical commit history on `main`; current protected integration remains squash-only.
++
++### Conventional Commits
++
++Conventional Commit prefixes may be used on internal/topic commits when useful to humans or tooling, but BADF does not infer SemVer, authority, risk class, or gate status solely from `feat:`, `fix:`, `chore:` or similar prefixes.
++
++### Rewriting private branch commits
++
++Rebase/amend/squash/fixup may be allowed only when:
++
++- the branch is unmerged and not protected;
++- the work package permits the operation;
++- collaborators are not silently losing shared history;
++- the rewritten source is republished only through an authorized remote-topic update;
++- affected evidence/reviews/composition are treated as stale and recomputed.
++
++Use `git range-diff` or equivalent as a **diagnostic** after a rebase to help reviewers understand how a patch series changed. Its textual output is not a stable identity and must not replace SHA/tree/evidence bindings.
++
++If a rewritten remote topic branch must be updated, `--force-with-lease` is the maximum normal force boundary because it checks an expected remote state. Bare `--force` is not a normal BADF workflow. Neither form grants permission; remote mutation still requires work-package/tool authority.
++
++## Publication contract
++
++Before pushing a topic branch:
++
++1. verify repository/remote identity;
++2. verify source ref and exact head;
++3. fetch/observe relevant remote state;
++4. confirm the work package permits remote-topic mutation;
++5. verify no prohibited data/secrets are included;
++6. record the push operation/outcome.
++
++If push returns an ambiguous failure/timeout, observe the remote ref before retrying. A retry without observation can duplicate or overwrite state.
++
++## Pull request contract
++
++A BADF pull request should carry, in a machine- or reviewer-readable form:
++
++```text
++Work-Package: <canonical work-package ID>
++Closes #<issue-number>
++```
++
++and must make clear:
++
++- objective/outcome;
++- source branch and exact reviewed head;
++- target branch;
++- scope and non-goals;
++- affected controls/contracts;
++- acceptance criteria;
++- verification performed and unrun checks;
++- composed-tree status/evidence;
++- risk/change class;
++- required independent review;
++- rollback/recovery path;
++- residual risks/unknowns;
++- authority boundary (what the PR does not authorize).
++
++Current BADF human-facing PR titles commonly use a display label such as:
++
++```text
++BADF-WP-0066: <concise outcome>
++```
++
++That title is permitted only as a display label when it maps unambiguously to the canonical machine work-package ID. The PR body/work-package artifact remains authoritative.
++
++## PR update contract
++
++Any source push after PR review can invalidate:
++
++- source-level verification;
++- review findings/approvals according to repository policy;
++- composition evidence;
++- expected result tree;
++- merge authorization.
++
++After source movement:
++
++1. capture the new source head;
++2. classify what prior evidence is stale;
++3. recompute composition against current target;
++4. rerun required checks;
++5. repeat required review/authorization.
++
++A tiny commit is still source movement.
++
++## Target movement contract
++
++When `main` advances while a PR is open:
++
++- do not assume the source branch remains integration-safe;
++- recompute merge base and expected result tree against current `main`;
++- rerun composed checks required by policy;
++- record the new target base and invalidate superseded composition evidence.
++
++Whether the source branch itself must be rebased is a separate decision. BADF cares about the **current composed result**, not cosmetic branch freshness by itself.
++
++## Merge contract
++
++The PR author and the skill do not self-authorize protected integration.
++
++At merge time require:
++
++- exact expected head;
++- current target/base observation;
++- current required checks;
++- current independent approvals;
++- no unresolved review threads/conditions as required by policy;
++- repository-approved merge method;
++- composition evidence for the current identities;
++- authorized integration actor.
++
++Under the current BADF repository contract, protected integration is squash-only. A future ratified policy can change the repository setting; this skill must follow the higher authority rather than silently retaining stale assumptions.
++
++## Branch cleanup
++
++Delete topic branches/worktrees only after:
++
++- merge/abandon outcome is authoritative and known;
++- no recovery/evidence need remains;
++- no unknown/uncommitted work exists;
++- required reconciliation is complete.
++
++Cleanup is not evidence erasure. PRs, commits, evidence and work-package records remain the audit trail.
+diff --git a/skills/badf-git/references/composition-and-staleness.md b/skills/badf-git/references/composition-and-staleness.md
+new file mode 100644
+index 0000000..0e36cb9
+--- /dev/null
++++ b/skills/badf-git/references/composition-and-staleness.md
+@@ -0,0 +1,220 @@
++# Composition and Staleness Contract
++
++BADF treats integration as a property of the **expected composed result**, not the source branch in isolation.
++
++## Core invariant
++
++```text
++SOURCE_HEAD_GREEN != INTEGRATION_SAFE
++```
++
++A source branch can pass every source-local check and still fail after integration because the target moved, dependency/order assumptions changed, conflict resolution changed semantics, or the protected merge method produces a different tree than the one tested.
++
++## Canonical composition identity
++
++For every integration claim, bind at minimum:
++
++```yaml
++git_composition:
++  repository: bstBizEra/badf
++  target_ref: refs/heads/main
++  target_base_sha: "<sha>"
++  source_ref: refs/heads/wp/...
++  source_head_sha: "<sha>"
++  merge_base_sha: "<sha>"
++  merge_method: squash
++  expected_result_tree: "<git-tree-sha>"
++  ordered_prefix_position: 1
++  test_set_epoch: "<epoch>"
++  policy_epoch: "<epoch>"
++```
++
++When a single change has no ordered multi-change prefix, `ordered_prefix_position` may be omitted only where the governing evidence schema permits. BADF's general evidence doctrine still expects the position for composed multi-change work.
++
++## Source, target and result are separate identities
++
++- **Source head** identifies the candidate branch state.
++- **Target base** identifies the exact protected branch state the candidate is composed onto.
++- **Merge base** identifies the common ancestry used to reason about divergence.
++- **Expected result tree** identifies the content BADF expects protected integration to produce.
++- **Landed protected commit** identifies what GitHub actually recorded after integration.
++
++Do not substitute one for another.
++
++## Canonical composition mechanism
++
++For BADF repository changes, use the repository's existing canonical composition mechanism rather than inventing a second validator. At the contract-freeze baseline, CI uses `scripts/badf_compose.py` to compose the exact squash result and verify that result before merge.
++
++This skill describes when composition is required and what must be bound; it does not replace or fork the canonical composition implementation.
++
++## Current protected merge method
++
++The current BADF repository integration contract is squash-only. Therefore the normal composition evidence uses:
++
++```text
++merge_method = squash
++```
++
++If a future ratified repository policy changes the protected merge method, higher authority supersedes this assumption and all affected composition logic/evidence must be revalidated. A skill file cannot freeze a platform setting forever.
++
++## Staleness model
++
++Evidence is current only for the identities it actually tested/reviewed.
++
++### Source movement
++
++Any source-head change after evidence was produced makes affected evidence stale, including:
++
++- new commit;
++- amend;
++- rebase;
++- interactive rebase;
++- cherry-pick that reconstructs the patch series;
++- reset followed by recommit;
++- conflict-resolution edit;
++- generated-file change;
++- force-with-lease update to a rewritten topic branch.
++
++Required response:
++
++1. capture new source head;
++2. identify affected evidence/reviews;
++3. recompute composition;
++4. rerun required checks;
++5. repeat review/authorization as required.
++
++### Target movement
++
++When `main` moves after composition:
++
++- old target-base-bound evidence becomes stale for protected integration;
++- recompute merge base and expected result tree;
++- rerun required composed checks;
++- re-evaluate conflict/order assumptions;
++- do not claim the old result remains safe merely because the source did not change.
++
++### Merge-method movement
++
++Changing merge method changes integration semantics. Evidence for squash does not automatically prove merge-commit or rebase integration safety.
++
++### Policy/rules movement
++
++If required checks, authority rules, branch protection, rulesets or gate policy materially change after evidence, re-evaluate whether prior evidence/approval is still sufficient.
++
++### Test/toolchain movement
++
++When the governing test set/toolchain epoch changes materially, old evidence may remain historically true but may be insufficient for the current claim. Record the new epoch and rerun what policy requires.
++
++### Ordered-prefix movement
++
++For multiple dependent branches/change sets, a change can be safe at prefix position `N` and unsafe after earlier changes are added, removed, reordered or rewritten.
++
++Recompute each affected expected result in order.
++
++## Rebase semantics
++
++A rebase is not merely cosmetic from an evidence perspective:
++
++```text
++old source SHA != new source SHA
++```
++
++Even if patch intent appears equivalent, the current evidence must bind the new source and current target. Use `git range-diff` as a human diagnostic to compare old/new patch series, not as the machine identity.
++
++If the rebase changes conflict resolution, tests must treat that resolution as new code.
++
++## Patch equivalence
++
++Tools such as `git patch-id` can help investigate whether patch content is similar across rewritten commits, but patch equivalence is not sufficient to preserve BADF evidence identity because:
++
++- context/target may differ;
++- ordering may differ;
++- merge-base may differ;
++- composed result may differ;
++- policy/test epochs may differ.
++
++The authoritative binding remains the exact source/target/result identities.
++
++## Conflict resolution
++
++Conflict resolution is an implementation act.
++
++Rules:
++
++- identify which side/requirement each resolution satisfies;
++- inspect the resolved diff;
++- if `rerere` recalls a prior resolution, treat it as a candidate only;
++- recompute the expected result tree after resolution;
++- rerun checks affected by the conflict;
++- preserve non-obvious conflict rationale in the PR/evidence when it affects review.
++
++`NO CONFLICT` does not imply semantic compatibility, and `CONFLICT RESOLVED` does not imply correctness.
++
++## Expected-head integration guard
++
++Where the platform API supports an expected head SHA, protected merge should bind the exact reviewed head. If the PR head has moved, the merge must be rejected and the work returned to composition/review.
++
++Expected-head checking protects source identity. It does not remove the need to verify current target/composition.
++
++## Before-merge reconciliation checklist
++
++Immediately before protected integration, observe and compare:
++
++- PR source head == evidence source head;
++- target base is current for the composition claim;
++- merge base corresponds to current source/target;
++- merge method matches policy;
++- expected result tree is current;
++- required status checks refer to the intended current change;
++- review approvals are not stale;
++- no required thread/condition remains unresolved;
++- policy/test epochs are current;
++- integration actor is separately authorized.
++
++Any mismatch produces `STALE_EVIDENCE`, `BLOCKED` or `HUMAN_REQUIRED` rather than merge.
++
++## Post-merge reconciliation
++
++After GitHub reports a successful integration:
++
++1. observe the protected commit SHA;
++2. inspect/derive its result tree identity as applicable;
++3. compare actual landed content to the expected result;
++4. reconcile PR/issue/work-package state;
++5. record checks attached to the landed commit where required;
++6. open recovery if the result differs unexpectedly.
++
++A successful API response is evidence of platform action, not proof that the integrated content satisfies the work package.
++
++## Multiple-change composition
++
++When multiple WPs must land in order:
++
++```text
++base₀
++ + change₁ → result₁
++ + change₂ → result₂
++ + change₃ → result₃
++```
++
++Each change records its ordered-prefix position and composes against the result of the authorized preceding prefix, not an obsolete base.
++
++After any upstream movement:
++
++- invalidate downstream composed evidence;
++- recompute from the changed prefix onward;
++- rerun affected tests/reviews;
++- do not preserve queue claims from a source-head-only pass.
++
++## Stale evidence is retained, not erased
++
++Stale evidence remains useful provenance. Mark/supersede it; do not delete or mutate it to look current.
++
++A correct record can say:
++
++```text
++EVD-OLD: PASS on source A / target B — SUPERSEDED by target movement
++EVD-NEW: PASS on source A / target C — current composition evidence
++```
++
++Historical truth and current sufficiency are different properties.
+diff --git a/skills/badf-git/references/evidence-contract.md b/skills/badf-git/references/evidence-contract.md
+new file mode 100644
+index 0000000..9628029
+--- /dev/null
++++ b/skills/badf-git/references/evidence-contract.md
+@@ -0,0 +1,303 @@
++# Git Evidence Contract
++
++BADF Git evidence must prove exact repository state and operation outcomes without inventing a second evidence schema. Canonical evidence remains `schemas/evidence.schema.json` plus the applicable gate/release schemas. This reference defines the Git-specific bindings that must be carried in those records or their artifacts when relevant.
++
++## Evidence principle
++
++A Git claim must answer:
++
++- which work package?
++- which repository?
++- which target/source refs?
++- which exact before/source/target revisions?
++- which operation and tool?
++- under which policy/test/toolchain epoch?
++- what outcome actually occurred?
++- which composed result was tested?
++- which evidence became stale because of the operation?
++- which actor/authority supplied approval versus implementation?
++
++A URL or branch name without exact revision/result identity is a pointer, not sufficient proof.
++
++## Minimum Git operation record
++
++For a material Git mutation, capture at minimum:
++
++```yaml
++git_operation:
++  work_package_id: WP-2026-0066
++  repository: bstBizEra/badf
++  actor: <principal>
++  tool: <tool-id/version>
++  canonical_operation_class: WRITE
++  git_operation_class: GIT-O3
++  target: refs/heads/wp/WP-2026-0066-git-contract-freeze
++  before_revision: <sha-or-null>
++  after_revision: <sha-or-null-if-unknown>
++  command_or_operation: <sanitized-command-or-api-operation>
++  started_at: <ISO-8601>
++  completed_at: <ISO-8601-or-null>
++  outcome: <PASS|FAIL|BLOCKED|OUTCOME_UNKNOWN>
++  returned_identifier: <remote-id-or-null>
++  invalidated_evidence: []
++```
++
++The actual evidence object must use the canonical schema's allowed fields; Git-specific detail can be placed in the referenced artifact when the core schema does not have dedicated properties.
++
++## Baseline evidence
++
++A Git baseline artifact should record:
++
++```yaml
++baseline:
++  repository: bstBizEra/badf
++  observed_at: <ISO-8601>
++  worktree_path: <local-operational-path-if-safe>
++  branch: <branch-or-detached>
++  head_sha: <sha>
++  target_ref: refs/heads/main
++  target_sha: <sha>
++  source_ref: <ref-or-null>
++  source_sha: <sha-or-null>
++  merge_base_sha: <sha-or-null>
++  index_state: <clean|changed|unknown>
++  worktree_state: <clean|changed|unknown>
++  untracked_state: <none|present|unknown>
++  remote_freshness: <observation>
++  policy_epoch: <epoch>
++  test_set_epoch: <epoch>
++```
++
++Do not place secrets, credentials or raw sensitive content in baseline artifacts.
++
++## Composition evidence
++
++For protected integration, bind:
++
++```yaml
++git_composition:
++  repository: bstBizEra/badf
++  target_ref: refs/heads/main
++  target_base_sha: <sha>
++  source_ref: refs/heads/wp/...
++  source_head_sha: <sha>
++  merge_base_sha: <sha>
++  merge_method: squash
++  expected_result_tree: <tree-sha>
++  ordered_prefix_position: <integer>
++  test_set_epoch: <epoch>
++  policy_epoch: <epoch>
++  composition_tool: <canonical-tool/version>
++  verification_outcome: <PASS|FAIL|BLOCKED>
++```
++
++For BADF repository changes, use the existing canonical composition mechanism (currently `scripts/badf_compose.py` in CI) rather than creating a skill-specific validator.
++
++## Pull request evidence
++
++A PR-bound evidence artifact should record:
++
++```yaml
++pull_request_binding:
++  repository: bstBizEra/badf
++  pr_number: <number>
++  work_package_id: <canonical-id>
++  issue_or_demand: <id/ref>
++  target_ref: refs/heads/main
++  source_ref: <topic-ref>
++  source_head_sha: <sha>
++  review_revision: <sha>
++  required_checks: [<check>]
++  approvals: [<receipt/ref>]
++  unresolved_conditions: []
++```
++
++PR text is useful context but exact review/head identity is required when approval/evidence depends on the reviewed revision.
++
++## History-rewrite evidence
++
++When a permitted private rewrite occurs, record:
++
++- old source head;
++- new source head;
++- rewrite type (`amend`, `rebase`, `rebase-i`, `reset-rebuild`, `cherry-pick-rebuild`, etc.);
++- whether remote topic history was also updated;
++- expected remote head/lease if a remote overwrite occurred;
++- preserved recovery ref when applicable;
++- evidence/reviews/composition invalidated;
++- diagnostic comparison reference such as `range-diff` if useful.
++
++Example:
++
++```yaml
++rewrite:
++  old_source_head: <sha-a>
++  new_source_head: <sha-b>
++  kind: rebase
++  recovery_ref: refs/heads/recovery/WP-...
++  range_diff_artifact: <path-or-null>
++  invalidated_evidence:
++    - EVD-...
++    - review:<id>
++    - composition:<id>
++```
++
++`range-diff` output is explanatory evidence, not the stable identity of the rewritten change.
++
++## Recovery evidence
++
++A recovery artifact should distinguish:
++
++```yaml
++recovery:
++  trigger: <what-went-wrong>
++  scope: local|topic|protected|release
++  before_state: <ref/artifact>
++  authoritative_state: <ref/artifact>
++  preserved_state: <recovery-ref/artifact>
++  operation_class: <GIT-O*>
++  recovery_action: <sanitized-operation>
++  after_state: <ref/artifact>
++  verification: <ref/outcome>
++  residual_uncertainty: []
++```
++
++If recovery remains uncertain, keep `RECOVERY_REQUIRED`/`BLOCKED`. Do not manufacture a PASS to close the record.
++
++## Merge evidence
++
++Immediately before merge, evidence should be sufficient to prove:
++
++- exact PR source head;
++- current target/composition identity;
++- current required checks;
++- current approvals/review state;
++- expected result tree;
++- repository-approved merge method;
++- merge authority receipt/actor;
++- no unresolved blocking condition.
++
++After merge, record:
++
++```yaml
++merge_result:
++  pr_number: <number>
++  expected_head_sha: <sha>
++  target_ref: refs/heads/main
++  merge_method: squash
++  platform_outcome: <success|failure|unknown>
++  landed_commit_sha: <sha-or-null>
++  landed_result_tree: <tree-or-null>
++  expected_result_tree: <tree>
++  reconciliation: <MATCH|MISMATCH|UNKNOWN>
++```
++
++A successful platform merge response with `MISMATCH` or unknown result reconciliation cannot support a completed integration claim.
++
++## Release evidence
++
++When release is in scope, record the binding described in `release-versioning.md`, including version/tag, verified `main` source revision/result tree, immutable artifact digest, SBOM/provenance, change/release authority and release record.
++
++Do not create a second release schema here. Use canonical BADF release/evidence records when they exist.
++
++## Staleness metadata
++
++Evidence that becomes stale is preserved and explicitly superseded.
++
++Record:
++
++```yaml
++staleness:
++  status: STALE
++  reason: target_moved|source_rewritten|source_changed|policy_changed|test_epoch_changed|merge_method_changed|composition_order_changed|review_stale
++  detected_at: <ISO-8601>
++  superseded_by: <new-evidence-ref-or-null>
++```
++
++Never edit old evidence in place to replace its original source/target identity.
++
++## Outcome vocabulary
++
++For command/check reporting, use BADF's exact completion vocabulary where applicable:
++
++- `PASS`
++- `FAIL`
++- `BLOCKED`
++- `NOT_RUN`
++
++For state-machine routing, additional hold conditions such as `STALE_EVIDENCE`, `RECOVERY_REQUIRED`, `HUMAN_REQUIRED`, and `OUTCOME_UNKNOWN` describe why progression stopped; they do not overwrite the underlying command result.
++
++Example:
++
++```text
++command: python3 scripts/badf_gate.py repo
++result: PASS
++composition status: STALE_EVIDENCE (target moved after this run)
++```
++
++Both facts can be true.
++
++## Provenance requirements
++
++Prefer immutable/content-addressed evidence. Record:
++
++- producer principal/type;
++- tool and version;
++- source revision;
++- target;
++- command/API operation;
++- timestamps;
++- exit code/platform result;
++- stdout/stderr or sanitized artifact where appropriate;
++- SHA-256 digest of the retained artifact;
++- policy/schema/test epoch.
++
++Do not rely on memory or chat summaries as proof when an immutable repository/CI/platform artifact is available.
++
++## Secret and privacy handling
++
++Git evidence must not capture:
++
++- access tokens;
++- OAuth credentials;
++- SSH private keys;
++- secret environment values;
++- private personal data not approved for the evidence store;
++- sensitive command output beyond the minimum needed to prove the claim.
++
++Sanitize commands/logs before retention. A secret discovered in output triggers security handling; do not preserve it in ordinary evidence merely for reproducibility.
++
++## Failed and unknown outcomes
++
++Failures are evidence. Preserve:
++
++- the exact attempted operation;
++- before identity;
++- failure/timeout message (sanitized);
++- whether the remote result is known;
++- observation performed before retry;
++- next safe action.
++
++For ambiguous remote writes:
++
++```text
++TIMEOUT != FAILURE
++TIMEOUT != SUCCESS
++```
++
++Set `OUTCOME_UNKNOWN`, observe the authoritative remote state, then decide whether a retry is safe.
++
++## Evidence ownership and approval separation
++
++The implementer can produce Git/build/test evidence. The implementer cannot transform that evidence into an independent approval for the same gate/change when independence is required.
++
++Keep distinct:
++
++```text
++IMPLEMENTATION EVIDENCE
++REVIEW EVIDENCE
++AUTHORITY RECEIPT
++PLATFORM INTEGRATION RESULT
++```
++
++Their coexistence supports a decision; none silently substitutes for the others.
+diff --git a/skills/badf-git/references/git-cycle.md b/skills/badf-git/references/git-cycle.md
+new file mode 100644
+index 0000000..c048879
+--- /dev/null
++++ b/skills/badf-git/references/git-cycle.md
+@@ -0,0 +1,270 @@
++# Governed Git Cycle
++
++This reference freezes the **BADF Governed Trunk Git Model (GTGM)**. It describes the Git delivery cycle inside BADF's broader engineering loop; it does not create new repository authority.
++
++## Model
++
++BADF uses one permanent integration branch (`main`) and short-lived, work-package-bound change branches. Lifecycle state lives in BADF records and evidence, **not** in permanent Git branches such as `develop`, `integration`, `staging`, `alpha`, or `beta`.
++
++The governed outer cycle is:
++
++```text
++AUTHORITY
++  ↓
++BASELINE
++  ↓
++ISOLATE
++  ↓
++BUILD
++  ↓
++VERIFY
++  ↓
++PR
++  ↓
++COMPOSE
++  ↓
++CHALLENGE
++  ↓
++AUTHORIZE
++  ↓
++SQUASH
++  ↓
++RECONCILE
++  ↓
++RELEASE? ── optional
++  ↓
++CLEAN
++  ↓
++LEARN
++```
++
++The cycle is not a promise that every stage may mutate. Each stage is still constrained by the work package, tool registration, authority matrix, repository rules and platform controls.
++
++## Stage contracts
++
++### 1. AUTHORITY
++
++Resolve before mutation:
++
++- canonical work-package ID and accountable owner;
++- issue/demand and target BADF gate;
++- repository identity and target ref;
++- change class and data classification;
++- permitted tools, environments and mutations;
++- acceptance criteria and NFRs;
++- required tests, evidence and reviewers;
++- rollback owner/procedure and escalation conditions.
++
++**Exit condition:** the planned next operation is authorized and target identity is unambiguous.
++
++**Hold:** `BLOCKED` or `HUMAN_REQUIRED` when authority is absent, stale, contradictory, or reserved.
++
++### 2. BASELINE
++
++Observe before editing. Capture at minimum:
++
++- repository full identity;
++- current worktree/branch/index status;
++- target ref and current target SHA;
++- source ref and source SHA when already created;
++- merge base when source exists;
++- remote freshness/fetch observation;
++- applicable rules/policy epoch;
++- test-set/toolchain epoch when evidence will depend on it;
++- existing unrelated or unknown local state.
++
++Do not make the checkout clean by deleting, resetting, stashing-away-and-forgetting, or overwriting unknown work.
++
++**Exit condition:** a reproducible baseline exists.
++
++### 3. ISOLATE
++
++Create or select one short-lived branch for the work package. For parallel agents/work packages, prefer a dedicated `git worktree` per independent change.
++
++Isolation rules:
++
++- one worktree cannot silently become shared scratch space for multiple agents;
++- parallel branches must not edit overlapping files unless an integrator has an explicit composition plan;
++- branch names are labels; the canonical work-package record remains the authority source;
++- branch creation does not authorize push, merge or release.
++
++**Exit condition:** work has an isolated source ref/worktree and unrelated state is preserved.
++
++### 4. BUILD
++
++Use the nested Git loop:
++
++```text
++SYNC → INSPECT → EDIT → STAGE → DIFF → COMMIT → VERIFY → RECONCILE → ↺
++```
++
++Commit discipline:
++
++- stage intentionally; `git add -p` or equivalent review is preferred for mixed changes;
++- inspect the staged diff before commit;
++- commits should be coherent enough to review, bisect locally and recover;
++- temporary branch history may be cleaned within the private-history rules, but any rewrite invalidates source-bound evidence;
++- do not use commit-message style as a substitute for work-package identity or authority.
++
++**Exit condition:** a coherent source revision exists for verification.
++
++### 5. VERIFY
++
++Run targeted checks and the repository-required verification. Evidence binds to the source revision that was actually tested.
++
++A source branch can be locally correct and still be unsafe to integrate. Therefore:
++
++```text
++SOURCE_HEAD_GREEN != INTEGRATION_SAFE
++```
++
++**Exit condition:** required source-level checks have explicit outcomes and evidence.
++
++### 6. PR
++
++Publish/bind the proposed change through a pull request when remote review is required. The PR must identify:
++
++- canonical work package;
++- demand/issue;
++- target and source refs;
++- exact source head;
++- scope/non-goals;
++- acceptance criteria;
++- verification evidence;
++- composition status;
++- independent-review requirements;
++- residual risks and explicit holds.
++
++A PR is a review/integration vehicle, not authority by itself.
++
++**Exit condition:** the current proposed source is reviewable and traceable.
++
++### 7. COMPOSE
++
++Compute the exact expected protected integration result using BADF's canonical composition mechanism. Under the current repository contract the protected merge method is squash.
++
++Bind:
++
++- target base SHA;
++- source head SHA;
++- merge base SHA;
++- merge method;
++- expected result tree;
++- ordered-prefix position when multiple changes compose;
++- policy/test epochs.
++
++Run required tests against the composed result, not just the branch head.
++
++**Exit condition:** current composition evidence supports the intended target and exact source.
++
++### 8. CHALLENGE
++
++Obtain required independent review. Review scope should cover the affected risk lenses and explicitly state non-coverage.
++
++Rules:
++
++- author evidence is not independent approval;
++- council output is advisory unless policy makes it a gate;
++- findings bind to the reviewed revision/composed result;
++- source movement after review can make findings/approval stale.
++
++**Exit condition:** required review exists for the current evidence identity, or the work is held.
++
++### 9. AUTHORIZE
++
++Immediately before protected integration, re-check:
++
++- current target SHA;
++- exact source head;
++- merge method;
++- required checks;
++- review/approval freshness;
++- expected result tree;
++- policy/ruleset state;
++- unresolved conditions/exceptions.
++
++A previous authorization does not survive material identity drift without explicit recomputation/review.
++
++**Exit condition:** an authorized actor may integrate the exact reviewed/composed change.
++
++### 10. SQUASH
++
++Use only the repository-approved protected integration method. In the current BADF repository that method is squash.
++
++Requirements:
++
++- merge the exact reviewed head;
++- do not bypass required checks or rules;
++- do not treat tool capability as authorization;
++- do not rewrite `main` to repair a failed integration claim.
++
++The protected integration result becomes part of BADF's authoritative Git ledger.
++
++**Exit condition:** the platform reports the landed protected revision or a controlled failure/unknown outcome.
++
++### 11. RECONCILE
++
++After integration, verify the actual landed revision/result against the expected composition and work-package claim.
++
++Reconcile:
++
++- actual protected revision;
++- actual result tree;
++- issue/PR closure state;
++- checks attached to the landed commit as applicable;
++- acceptance criteria;
++- evidence/dossier references;
++- any post-merge drift or unexpected platform behavior.
++
++`MERGED` is not synonymous with `VERIFIED` or `RELEASED`.
++
++**Exit condition:** integration outcome is known and consistent, or a recovery/incident path is opened.
++
++### 12. RELEASE (optional)
++
++When the work package includes a BADF release, bind the release to a verified `main` revision and release packet. See `release-versioning.md`.
++
++Do not rebuild a different artifact and call it the same release. Do not infer release authority from merge authority.
++
++**Exit condition:** immutable release identity/evidence exists, or release remains out of scope.
++
++### 13. CLEAN
++
++Delete only known disposable local/topic state after its retention and recovery requirements are satisfied.
++
++Safe cleanup requires proof that the state is:
++
++- already landed or intentionally abandoned under authority;
++- not the only copy of evidence or recovery data;
++- not holding unknown/uncommitted user work;
++- not needed for an open review, incident or audit.
++
++**Exit condition:** local/topic state is intentionally reconciled without evidence loss.
++
++### 14. LEARN
++
++Record repeated Git failure modes, conflict patterns, composition defects and recovery lessons only after evidence supports a reusable conclusion.
++
++Learning can propose a new test, skill revision, policy change or automation, but each is a separate governed change. A single successful workaround does not automatically become policy.
++
++## Relationship to the BADF engineering loop
++
++GTGM nests inside:
++
++`FRAME → DISCOVER → PLAN → AUTHORIZE → BUILD → VERIFY → CHALLENGE → RECONCILE → DELIVER → OBSERVE → LEARN`
++
++Typical mapping:
++
++| BADF loop | Git cycle contribution |
++| --- | --- |
++| FRAME / DISCOVER | AUTHORITY, BASELINE |
++| PLAN / AUTHORIZE | ISOLATE and permitted operation plan |
++| BUILD | BUILD nested Git loop |
++| VERIFY | VERIFY + COMPOSE |
++| CHALLENGE | CHALLENGE |
++| RECONCILE | AUTHORIZE + pre-merge reconciliation |
++| DELIVER | SQUASH + post-merge RECONCILE + optional RELEASE |
++| OBSERVE | CI/release/runtime observations as applicable |
++| LEARN | CLEAN + LEARN |
++
++The mapping is descriptive. It does not alter lifecycle gate authority.
+diff --git a/skills/badf-git/references/git-state-machine.md b/skills/badf-git/references/git-state-machine.md
+new file mode 100644
+index 0000000..2a6589e
+--- /dev/null
++++ b/skills/badf-git/references/git-state-machine.md
+@@ -0,0 +1,215 @@
++# Git State Machine
++
++This state machine makes Git progression explicit without creating a new BADF lifecycle gate. A state is an observed/controlled Git delivery condition, not a permission grant.
++
++## Primary states
++
++| State | Meaning | Minimum evidence to enter |
++| --- | --- | --- |
++| `GIT_AUTHORITY_BOUND` | Git activity is bound to one active work package and target | work-package ID, repository, target, permitted operation scope |
++| `GIT_BASELINED` | current repository/source/target state has been observed and recorded | target SHA, source SHA/ref if present, worktree/index status, remote freshness |
++| `GIT_ISOLATED` | the change has a bounded source branch/worktree | source ref, branch/worktree identity, no unresolved ownership collision |
++| `GIT_CHANGE_ACTIVE` | edits/commits are in progress | current source revision plus nested-loop state |
++| `GIT_LOCALLY_VERIFIED` | required source-level checks passed on a named revision | source-head-bound test evidence |
++| `GIT_PUBLISHED` | the topic ref exists on the approved remote when publication is authorized | remote source ref + source head observation |
++| `GIT_PR_BOUND` | a PR/review unit is traceably bound to the work package and source | PR ID/URL, work-package binding, target, source head |
++| `GIT_COMPOSED` | an expected protected result has been computed for the current identities | target base, source head, merge base, method, expected result tree |
++| `GIT_VERIFIED` | required checks support the current composed result | composition-bound test evidence and current epochs |
++| `GIT_MERGE_AUTHORIZED` | the required authority has authorized integration of the exact current change | current approvals + exact head/base/method/evidence identity |
++| `GIT_MERGED` | the platform reports the change landed on the protected target | merged PR/integration result and landed commit identity |
++| `GIT_RECONCILED` | actual landed state has been checked against the expected result and acceptance claim | actual protected revision/result + reconciliation evidence |
++| `GIT_RELEASED` | optional release/tag record binds an authorized verified main revision | release authority + release evidence |
++| `GIT_CLEANED` | disposable local/topic state has been intentionally reconciled | proof state is no longer needed and no unknown work is destroyed |
++| `GIT_LEARNED` | validated reusable lessons have been captured through governed learning | learning record/proposal with provenance |
++
++`GIT_RELEASED` is optional. A non-release work package can progress from `GIT_RECONCILED` to `GIT_CLEANED`.
++
++## Hold and failure states
++
++| State | Trigger | Allowed next behavior |
++| --- | --- | --- |
++| `STALE_EVIDENCE` | source, target, merge method, policy epoch, test epoch, conflict resolution, or expected result changed after evidence | observe/recompute/retest/re-review; never reuse stale authorization silently |
++| `BLOCKED` | required identity, dependency, check, evidence, tool permission, or authority cannot be established | diagnose, preserve state, escalate or amend work package |
++| `HUMAN_REQUIRED` | the next decision/action is reserved or exceeds delegated authority | prepare evidence and request the authorized human decision; no self-approval |
++| `RECOVERY_REQUIRED` | state is inconsistent, unknown, lost, conflicted, or restoration would require risky/destructive action | enter the recovery contract; preserve evidence before mutation |
++| `OUTCOME_UNKNOWN` | a remote mutation returned timeout/ambiguous result and final remote state is not established | observe authoritative remote state before any retry |
++| `REWORK_REQUIRED` | verification/challenge proves the current change does not meet the contract | return to `GIT_CHANGE_ACTIVE` with a changed hypothesis/implementation |
++
++## Normal transitions
++
++```text
++GIT_AUTHORITY_BOUND
++  → GIT_BASELINED
++  → GIT_ISOLATED
++  → GIT_CHANGE_ACTIVE
++  → GIT_LOCALLY_VERIFIED
++  → GIT_PUBLISHED
++  → GIT_PR_BOUND
++  → GIT_COMPOSED
++  → GIT_VERIFIED
++  → GIT_MERGE_AUTHORIZED
++  → GIT_MERGED
++  → GIT_RECONCILED
++  → [GIT_RELEASED]
++  → GIT_CLEANED
++  → GIT_LEARNED
++```
++
++The sequence can pause, return, or skip a non-applicable publication/release step, but it must not jump across evidence or authority boundaries.
++
++## Transition guards
++
++### `GIT_AUTHORITY_BOUND → GIT_BASELINED`
++
++Required:
++
++- canonical work-package identity exists;
++- repository and target are unambiguous;
++- read access is permitted;
++- the proposed mutation class is within work-package scope.
++
++Failure → `BLOCKED` / `HUMAN_REQUIRED`.
++
++### `GIT_BASELINED → GIT_ISOLATED`
++
++Required:
++
++- baseline captures unknown/unrelated state rather than destroying it;
++- branch/worktree target is derived from the intended base;
++- no conflicting ownership of the same worktree/files without an integration plan.
++
++Failure → `BLOCKED` or `RECOVERY_REQUIRED`.
++
++### `GIT_CHANGE_ACTIVE → GIT_LOCALLY_VERIFIED`
++
++Required:
++
++- current source revision is fixed for the evidence run;
++- required source-level checks are run and recorded;
++- failures are not suppressed or relabelled.
++
++Any source rewrite/edit after the checks returns to `GIT_CHANGE_ACTIVE` and invalidates affected evidence.
++
++### `GIT_LOCALLY_VERIFIED → GIT_PUBLISHED`
++
++Required only when remote publication is in scope:
++
++- remote topic mutation is authorized;
++- target remote/repository/ref is exact;
++- no secrets or prohibited data are included;
++- push outcome is observed.
++
++A timeout does not imply failure or success; it produces `OUTCOME_UNKNOWN` until the remote ref is observed.
++
++### `GIT_PUBLISHED → GIT_PR_BOUND`
++
++Required:
++
++- PR target and source refs are correct;
++- PR carries the canonical work-package binding and issue/demand traceability;
++- exact current source head is known;
++- scope and non-goals are reviewable.
++
++### `GIT_PR_BOUND → GIT_COMPOSED`
++
++Required:
++
++- current target base is observed;
++- merge base is recomputed;
++- expected result tree is computed with the intended merge method;
++- ordered-prefix position is known when multiple changes are composed.
++
++Any upstream movement before/during composition restarts this transition from the new target base.
++
++### `GIT_COMPOSED → GIT_VERIFIED`
++
++Required:
++
++- checks run on the expected composed result or an equivalent canonical composition representation;
++- evidence binds to current target/source/result/test/policy identity;
++- no required check is missing or unknown.
++
++### `GIT_VERIFIED → GIT_MERGE_AUTHORIZED`
++
++Required:
++
++- required independent reviews/approvals are present and current;
++- no open blocker/expired exception exists;
++- exact source head/target/method/result identity is unchanged;
++- the actor who will merge has separate integration authority.
++
++This skill cannot create this state by itself.
++
++### `GIT_MERGE_AUTHORIZED → GIT_MERGED`
++
++Required:
++
++- protected integration occurs through the platform-approved method;
++- expected head protection is used when available;
++- platform/ruleset checks are not bypassed;
++- final outcome is observed from the authoritative platform.
++
++If the target or source changed first → `STALE_EVIDENCE`, not merge.
++
++### `GIT_MERGED → GIT_RECONCILED`
++
++Required:
++
++- actual landed commit/ref is observed;
++- actual result tree is reconciled to expected composition;
++- issue/PR/work-package evidence is reconciled;
++- post-merge checks/holds are recorded.
++
++Unexpected mismatch → `RECOVERY_REQUIRED` or `BLOCKED`.
++
++### `GIT_RECONCILED → GIT_RELEASED`
++
++Only when release is in scope and separately authorized. Release authority, immutable artifact identity and release evidence are required.
++
++### `GIT_RECONCILED/GIT_RELEASED → GIT_CLEANED`
++
++Required:
++
++- branch/worktree/local state is known disposable;
++- no sole copy of evidence or recovery information will be lost;
++- no open review/incident depends on the state.
++
++### `GIT_CLEANED → GIT_LEARNED`
++
++Learning is not automatic policy mutation. Reusable conclusions require provenance and separate governed adoption.
++
++## Staleness transitions
++
++The following events send affected downstream states to `STALE_EVIDENCE`:
++
++- source head changes after verification/review/composition;
++- target base changes after composition;
++- rebase, amend, reset, cherry-pick or conflict-resolution rewrite changes source history/content;
++- merge method changes;
++- expected result tree changes;
++- policy/ruleset/authority epoch materially changes;
++- test-set/toolchain epoch changes where the prior evidence depended on it;
++- ordered composition prefix changes;
++- required reviewer approval becomes stale under repository policy.
++
++Recovery from `STALE_EVIDENCE` is **recomputation**, not waiver-by-label.
++
++## Recovery transitions
++
++`RECOVERY_REQUIRED` does not authorize destructive commands. The recovery contract first establishes:
++
++1. what state exists;
++2. what state is authoritative;
++3. what must be preserved;
++4. whether the error is local, remote-topic, protected-target, or evidence-only;
++5. the least-destructive authorized recovery path.
++
++Shared/protected history normally repairs forward. Local lost state is recovered into a separate branch/ref before cleanup.
++
++## State ownership
++
++- Git observations can establish Git facts.
++- CI can establish check outcomes.
++- repository/platform controls can establish protected integration facts.
++- authorized reviewers/authorities establish approvals.
++- this skill can route evidence among these facts but cannot collapse them into a self-approved decision.
+diff --git a/skills/badf-git/references/operation-authority-matrix.md b/skills/badf-git/references/operation-authority-matrix.md
+new file mode 100644
+index 0000000..c50c640
+--- /dev/null
++++ b/skills/badf-git/references/operation-authority-matrix.md
+@@ -0,0 +1,242 @@
++# Git Operation and Authority Matrix
++
++This reference classifies Git operations for routing and risk discussion. It does **not** assign authority. Canonical capability governance remains `docs/08-mcp-and-tools.md` (`READ`, `WRITE`, `DESTRUCTIVE`, `ADMIN`), the active work package, `badf/tool-registry.json`, `badf/authority-matrix.json`, repository policy and platform controls.
++
++## Two-layer classification
++
++BADF uses:
++
++1. **Canonical tool operation class** — `READ`, `WRITE`, `DESTRUCTIVE`, `ADMIN`.
++2. **Git-local operation class** — `GIT-O0` through `GIT-O5`, which describes Git-specific risk and evidence expectations.
++
++The Git-local class may only **narrow** behavior. It cannot downgrade a canonical tool/platform classification.
++
++## Classes
++
++### `GIT-O0 — OBSERVE`
++
++Purpose: establish repository facts without changing Git state.
++
++Examples:
++
++- `git status`
++- `git log`
++- `git diff`
++- `git show`
++- `git rev-parse`
++- `git merge-base`
++- `git cat-file`
++- `git branch --show-current`
++- read-only remote/ref/PR/status observation
++
++Canonical mapping: normally `READ`.
++
++Controls:
++
++- record repository/ref identity when evidence depends on it;
++- avoid commands whose apparent inspection also mutates state/config;
++- sanitize output before storing evidence;
++- a read result can be stale immediately after upstream movement.
++
++### `GIT-O1 — LOCAL_REVERSIBLE`
++
++Purpose: create bounded local source state whose effect is normally recoverable without protected history mutation.
++
++Examples, when separately authorized:
++
++- fetch remote objects/refs;
++- create/switch a work-package branch;
++- add a dedicated worktree;
++- intentionally stage/unstage content;
++- create local commits;
++- restore a known path from a verified source when this does not destroy unknown work;
++- create a recovery branch/ref before repair.
++
++Canonical mapping: usually `WRITE` to local repository state; a fetch can also update remote-tracking refs and is therefore state-changing even though it does not change the remote repository.
++
++Controls:
++
++- baseline before mutation;
++- preserve unrelated work;
++- exact target/source binding;
++- do not infer remote/push/merge permission from local write permission.
++
++### `GIT-O2 — HISTORY_REWRITE_PRIVATE`
++
++Purpose: rewrite the history of an **unmerged, unprotected private/work-package topic** when explicitly permitted and coordinated.
++
++Examples:
++
++- `git commit --amend`
++- `git rebase`
++- interactive rebase (`pick/reword/edit/squash/fixup/drop`)
++- `git reset --soft` / `--mixed` on a private branch
++- cherry-pick used to reconstruct/reorder topic history
++
++Canonical mapping: at least `WRITE`; can become `DESTRUCTIVE` when it would discard unique/unpreserved state or overwrite shared remote history.
++
++Hard boundaries:
++
++- never treat this class as permission to rewrite `main` or another protected/shared ref;
++- do not rewrite a branch another actor relies on without explicit coordination;
++- source SHA changes invalidate affected evidence, reviews and composition;
++- preserve dropped/lost commits through reflog/recovery refs when risk exists;
++- remote publication of rewritten history is a separate `GIT-O3` action.
++
++Evidence consequence:
++
++```text
++HISTORY_REWRITE_PRIVATE → SOURCE_IDENTITY_CHANGED → AFFECTED_EVIDENCE_STALE
++```
++
++`git range-diff` may help explain how the old/new patch series differ, but the stable binding remains SHA/tree/evidence identity.
++
++### `GIT-O3 — REMOTE_TOPIC_MUTATION`
++
++Purpose: create/update/delete **non-protected topic refs** on an approved remote.
++
++Examples, when permitted:
++
++- push a new WP branch;
++- fast-forward/update a WP branch;
++- update a rewritten WP branch with a guarded lease;
++- delete a merged/abandoned topic branch after reconciliation.
++
++Canonical mapping: `WRITE`; deletion or overwrite can be `DESTRUCTIVE` under canonical tool/platform semantics.
++
++Controls:
++
++- exact repository/remote/ref verification;
++- current remote observation before overwrite/delete;
++- push only work-package-authorized content;
++- no secrets/prohibited data;
++- observe final remote state after timeout/ambiguous response;
++- `--force-with-lease` is the maximum normal force boundary for a permitted rewritten topic branch; bare `--force` is not a normal BADF workflow;
++- lease safety is not authority and does not make overwriting another actor's work acceptable.
++
++### `GIT-O4 — PROTECTED_INTEGRATION`
++
++Purpose: change protected integration/release refs through an approved platform workflow.
++
++Examples:
++
++- squash merge a PR to protected `main`;
++- create an authorized protected release tag/ref;
++- publish a release record that binds verified `main`.
++
++Canonical mapping: `WRITE` and possibly `ADMIN`/reserved-action semantics depending on repository/platform policy. The higher classification always wins.
++
++Controls:
++
++- separately granted integration/release authority;
++- exact expected source head;
++- current target/base and composition evidence;
++- required checks/reviews/conditions current;
++- repository-approved merge method;
++- no bypass of rulesets/branch protection;
++- post-operation reconciliation.
++
++The ability of a connected GitHub tool or token to perform the operation is **capability**, not authorization.
++
++### `GIT-O5 — DESTRUCTIVE`
++
++Purpose: actions that can irreversibly or materially discard/overwrite state, or alter protected history/policy.
++
++Examples:
++
++- `git reset --hard` where unique state may be lost;
++- `git clean -f/-d/-x` over unknown/unverified scope;
++- forced movement of `main` or another protected/shared ref;
++- rewriting/deleting release tags or immutable baseline refs;
++- deleting branches/worktrees that contain unique uncommitted evidence/work;
++- bypassing protected integration controls;
++- changing GitHub rulesets/branch protection to make a merge possible.
++
++Canonical mapping: `DESTRUCTIVE` and/or `ADMIN`.
++
++Default: **deny**.
++
++Requirements before any exception:
++
++- explicit work-package scope for the exact target;
++- separately granted destructive/admin authority;
++- authoritative target identity;
++- inventory/preservation of unique state;
++- recovery/rollback procedure;
++- evidence of the before state;
++- no safer authorized alternative.
++
++`badf-git` cannot authorize an exception.
++
++## Common command posture
++
++| Operation | Git class | Notes |
++| --- | --- | --- |
++| `status`, `log`, `diff`, `show`, `rev-parse`, `merge-base` | O0 | read-only observation |
++| `fetch` | O1 | local ref/object mutation; remote read |
++| create/switch WP branch | O1 | local reversible write |
++| `worktree add` | O1 | isolate parallel work |
++| stage/unstage | O1 | inspect staged diff before commit |
++| commit | O1 | source identity changes; evidence binds after commit |
++| amend/rebase/rebase-i | O2 | private only; evidence becomes stale |
++| `reset --soft/--mixed` private | O2 | preserve/check state; evidence stale |
++| push new topic | O3 | remote write |
++| guarded rewrite of topic (`--force-with-lease`) | O3 + O2 consequence | only when explicitly permitted and remote expected state is verified |
++| squash merge protected PR | O4 | exact head/current composition + separate authority |
++| create protected release tag | O4 | release authority + verified main |
++| `revert` landed change | O1 locally then O3/O4 to deliver | repairs forward; still a new governed change |
++| reflog inspection | O0 | local recovery discovery |
++| create recovery branch from reflog | O1 | preserve before cleanup |
++| `rerere` recall | O1 candidate | recalled resolution must be reviewed/tested |
++| `reset --hard`, destructive clean | O5 | deny by default |
++| forced protected ref/tag rewrite | O5 | deny by default / reserved admin action |
++| ruleset/branch-protection change | O5 / ADMIN | outside this skill's authority |
++
++## `rerere` posture
++
++Recommended design posture:
++
++```text
++rerere.enabled = true
++rerere.autoUpdate = false
++```
++
++Reason:
++
++- remembered resolutions can reduce repeated manual conflict work;
++- automatic staging can blur the boundary between **recalled** and **reviewed** resolution;
++- with auto-update disabled, the recalled resolution remains a candidate requiring inspection, staging and verification.
++
++Repository/user configuration is a separate authorized operation; this contract does not change config automatically.
++
++## Stash posture
++
++`git stash` may be a temporary local convenience, but it is not:
++
++- a durable handoff;
++- an evidence store;
++- a work-package record;
++- an authority record;
++- a safe substitute for committing/recovery-branch preservation when state matters.
++
++If state must survive session/agent handoff, preserve it through a named branch/commit/artifact/session record as appropriate.
++
++## Operation evidence
++
++For every material `WRITE`, `DESTRUCTIVE` or `ADMIN` Git action, record at least:
++
++- work-package ID;
++- actor/tool;
++- repository;
++- Git-local and canonical operation class;
++- target ref/path/worktree;
++- before revision/state;
++- after revision/state when known;
++- command/API operation with secrets removed;
++- started/completed time;
++- outcome;
++- returned remote identifier when applicable;
++- evidence invalidated by the operation;
++- next required reconciliation.
++
++See `evidence-contract.md` for the full binding.
+diff --git a/skills/badf-git/references/recovery-contract.md b/skills/badf-git/references/recovery-contract.md
+new file mode 100644
+index 0000000..0a9fbe7
+--- /dev/null
++++ b/skills/badf-git/references/recovery-contract.md
+@@ -0,0 +1,252 @@
++# Git Recovery Contract
++
++Recovery begins with preservation and diagnosis. A command that makes the checkout look clean is not automatically a safe recovery.
++
++## Fundamental rule
++
++```text
++PRESERVE → IDENTIFY → CLASSIFY → RECOVER → VERIFY → RECONCILE
++```
++
++Never start with `reset --hard`, destructive `clean`, forced protected-ref movement, or deletion of unknown branches/worktrees merely because the repository is inconvenient.
++
++## Recovery classes
++
++### Local working-state recovery
++
++Examples:
++
++- uncommitted edits appear lost;
++- wrong branch/worktree was used;
++- an amend/rebase/reset obscured a prior commit;
++- staged/unstaged state is confusing;
++- a branch was moved locally.
++
++Preferred discovery/recovery tools:
++
++- `git status`
++- `git diff` / `git diff --cached`
++- `git reflog`
++- `git show`
++- `git fsck` only when appropriate to investigate unreachable objects
++- create a **recovery branch/ref** pointing at the known good commit before cleanup.
++
++`git reflog` is local recovery evidence, not a shared audit log. Reflog retention is not permanent, so valuable recovered state should be promoted to a named ref/commit/evidence artifact promptly.
++
++### Topic-branch recovery
++
++Examples:
++
++- private rebase went wrong;
++- an authorized force-with-lease update needs correction;
++- branch diverged from intended source;
++- conflict resolution was incorrect.
++
++Rules:
++
++- observe local and remote branch heads;
++- preserve the pre-recovery head in a recovery ref when useful;
++- decide whether the corrected branch will be a new commit or a private-history rewrite;
++- if history is rewritten, invalidate affected evidence/reviews/composition;
++- if remote topic state must be overwritten, require explicit remote-topic mutation authority and verify the expected remote head.
++
++Do not repair a shared topic branch by silently replacing collaborators' commits.
++
++### Protected/shared-history recovery
++
++Once a change lands on `main`, normal recovery is a **new forward change**, usually `git revert` (or an equivalent platform-governed revert workflow).
++
++Why:
++
++- protected history remains auditable;
++- the correction has its own work package/evidence/review;
++- downstream clones and references do not lose history;
++- the faulty state and remediation remain attributable.
++
++Do not rewrite `main` to erase a bad merge under normal BADF operation.
++
++A revert itself is not automatically safe: it can conflict with later changes, break migrations/contracts, or fail current tests. Treat it as a new change and compose/verify it against current `main`.
++
++### Release-ref recovery
++
++Published release/baseline tags are governance artifacts. Do not move/delete/reuse an immutable release tag to make history look correct.
++
++If a release is bad:
++
++- preserve the original release record/tag;
++- issue rollback/revert/new release through release authority;
++- create a new version/tag where required;
++- record supersession/revocation status rather than rewriting historical identity.
++
++Historical unsigned tags are not retroactively rewritten merely to satisfy a newer signing policy.
++
++## Unknown state
++
++If state is unknown, recovery stops mutation until it is classified.
++
++Questions to answer:
++
++1. Which repository/worktree are we in?
++2. Which branch/ref is checked out?
++3. What is HEAD?
++4. What is staged, unstaged and untracked?
++5. Which commits/refs exist locally and remotely?
++6. Which state is authoritative?
++7. Is any content the only copy of work/evidence?
++8. Is another agent/user relying on the branch/worktree?
++9. What work-package authority covers the proposed recovery?
++10. Which evidence becomes stale if state changes?
++
++## Reset posture
++
++### `reset --soft` / `reset --mixed`
++
++These can be legitimate private-history tools under `GIT-O2` when the branch is unmerged/unprotected and state is preserved/understood. They still change source identity and invalidate affected evidence.
++
++### `reset --hard`
++
++Classify as `GIT-O5 DESTRUCTIVE` whenever it could discard unique tracked/index/worktree state.
++
++Default: deny.
++
++Only consider when:
++
++- exact target is verified;
++- the discarded state is known and preserved or intentionally disposable;
++- destructive authority is explicit;
++- no safer route exists;
++- before-state evidence exists;
++- rollback/recovery is understood.
++
++A convenience cleanup is not sufficient justification.
++
++## Clean posture
++
++Commands equivalent to `git clean -f`, `-d`, or `-x` can destroy untracked/generated/ignored state.
++
++Before any destructive clean:
++
++- preview scope;
++- distinguish reproducible generated files from unique local artifacts;
++- preserve anything potentially valuable;
++- verify the work package permits destructive cleanup.
++
++Do not delete ignored files blindly: credentials, local databases, build caches, evidence exports or user artifacts may be ignored by Git but still important or sensitive.
++
++## Restore/checkout posture
++
++Restoring a path from another revision can overwrite local work. Before doing so:
++
++- inspect the path diff;
++- preserve unknown content;
++- verify source revision/path;
++- confirm the overwrite is within work-package scope.
++
++A path-level restore can be `GIT-O1` when reversible/preserved, but becomes destructive if unique state is discarded.
++
++## Reflog recovery pattern
++
++Conceptual sequence:
++
++```text
++OBSERVE reflog
++  → identify candidate prior commit
++  → inspect candidate
++  → create recovery branch/ref
++  → verify recovered content
++  → decide how to reconcile with current branch
++```
++
++Do not immediately move the primary branch pointer before the candidate is inspected and preserved.
++
++## Revert pattern for landed work
++
++Conceptual sequence:
++
++```text
++new recovery WP
++  → baseline current main
++  → identify landed change to reverse
++  → create revert as a new change
++  → resolve conflicts explicitly
++  → verify source
++  → compose against current main
++  → independent challenge / authorize
++  → protected integration
++  → post-merge reconciliation
++```
++
++The revert's source is the current target, not necessarily the historical parent of the bad commit.
++
++## `rerere` contract
++
++`rerere` can remember conflict resolutions. Recommended design posture:
++
++```text
++rerere.enabled = true
++rerere.autoUpdate = false
++```
++
++Rules:
++
++- recalled content is a **candidate**, not a decision;
++- inspect the resolved diff;
++- confirm requirements/semantics still match the new conflict context;
++- stage intentionally;
++- rerun affected tests;
++- record non-obvious reused-resolution provenance when material.
++
++Do not interpret `rerere` reuse as proof that a previous resolution remains correct.
++
++## Stash contract
++
++`git stash` may temporarily park local changes, but:
++
++- it is local and easy to forget;
++- it is not a durable work-package handoff;
++- it is not immutable evidence;
++- it is not an authorization record;
++- it is not a substitute for a recovery branch/commit when state matters.
++
++If stashed state becomes material to a decision or handoff, promote it to a named, reviewable form.
++
++## Cherry-pick posture
++
++Cherry-pick can be useful to reconstruct a private topic branch or deliver a bounded correction, but it creates new commit identity and can change context.
++
++Consequences:
++
++- source SHA/evidence binding changes;
++- conflict resolutions are new edits;
++- composition must be recomputed;
++- do not use cherry-pick to bypass the authorized branch/PR path.
++
++## Recovery evidence
++
++Record:
++
++- recovery trigger;
++- repository/worktree/ref identities;
++- before-state SHAs and local state summary;
++- authoritative state/source used for recovery;
++- preservation step (recovery branch/artifact/etc.);
++- operation class and commands/API calls;
++- after-state SHAs;
++- evidence/reviews invalidated;
++- verification outcome;
++- residual uncertainty.
++
++Failed recovery attempts are evidence. Do not erase them when they affect the next decision.
++
++## Recovery stop conditions
++
++Stop and emit `RECOVERY_REQUIRED`, `BLOCKED` or `HUMAN_REQUIRED` when:
++
++- unique state cannot be classified;
++- the only known remedy rewrites protected history;
++- destructive scope is broader than the work package;
++- another actor's branch/worktree may be overwritten;
++- remote mutation outcome is unknown;
++- release/tag identity would need rewriting;
++- required recovery authority is absent;
++- preservation cannot be established.
+diff --git a/skills/badf-git/references/release-versioning.md b/skills/badf-git/references/release-versioning.md
+new file mode 100644
+index 0000000..3880f29
+--- /dev/null
++++ b/skills/badf-git/references/release-versioning.md
+@@ -0,0 +1,199 @@
++# Release and Versioning Contract
++
++This reference defines design guidance for BADF Git release refs. It does not grant release authority and does not create a release automation mechanism.
++
++## Release identity
++
++A BADF release must bind:
++
++- an authorized, verified `main` revision;
++- the immutable artifact/result identity produced from that revision;
++- version/tag identity;
++- SBOM/provenance/change/release evidence required by `docs/11-release-production.md`;
++- release authority and disposition;
++- promotion/deployment records where applicable.
++
++```text
++MERGED != RELEASED
++TAG_EXISTS != RELEASE_AUTHORIZED
++RELEASED != PRODUCTION_VERIFIED
++```
++
++## Tag families
++
++BADF already has historical baseline tags in the form:
++
++```text
++BADF-BASELINE-X.Y.Z
++```
++
++Preserve those historical identities. Do not rewrite them merely to fit a newer convention.
++
++For future product/framework releases, the recommended release-tag convention is:
++
++```text
++vX.Y.Z
++```
++
++Example:
++
++```text
++v1.2.3
++```
++
++A later governance decision may refine this convention. This skill does not rename or mutate existing tags.
++
++## SemVer decision contract
++
++Semantic versioning is a governed release decision based on the public/operational contract of BADF, not a mechanical reading of commit prefixes.
++
++### MAJOR
++
++Use a major version when an authorized release intentionally introduces a breaking change to a supported BADF contract, for example:
++
++- incompatible lifecycle/gate semantics;
++- incompatible schema or artifact contract without a compatible migration path;
++- breaking authority/CLI/interface behavior;
++- incompatible skill/runtime contract promised to consumers;
++- required migration that makes prior integration/automation assumptions invalid.
++
++### MINOR
++
++Use a minor version for backward-compatible capability growth, for example:
++
++- new optional gate/capability/skill behavior that preserves existing supported contracts;
++- additive schema/interface fields with compatible handling;
++- new supported workflow/command whose addition does not break existing consumers.
++
++### PATCH
++
++Use a patch version for backward-compatible correction/hardening, for example:
++
++- defect fixes;
++- stricter implementation that enforces an already-ratified contract without changing the supported interface;
++- documentation/evidence corrections required to make existing behavior accurate;
++- security hardening that preserves the supported contract.
++
++The release authority decides the actual version after evidence. A `feat:` or `fix:` commit prefix is advisory metadata at most.
++
++## Version source of truth
++
++A release version must be defined by an explicit release record/decision or approved version source. Do not derive the authoritative version from:
++
++- branch name alone;
++- PR title alone;
++- Conventional Commit prefix alone;
++- a tag that an unauthorized actor can create;
++- an agent's confidence or interpretation.
++
++## Release-from-main rule
++
++Normal BADF release refs are created only from an authorized, verified `main` revision.
++
++Why:
++
++- `main` is the protected integration ledger;
++- composed-result checks/reconciliation already establish the integrated content identity;
++- releasing from arbitrary topic heads bypasses the integration contract;
++- a release should be reproducible from the same versioned source state.
++
++Exception requires explicit release/governance authority and is outside this skill's default contract.
++
++## Immutable release refs
++
++Once published as an immutable release/baseline identity:
++
++- do not move the tag to another commit;
++- do not delete/recreate the same version to hide a faulty release;
++- do not reuse a version number for different content;
++- corrections produce a new release/version or an explicit revocation/supersession record.
++
++If an immutable release is bad, rollback/revert through governed release/change control; preserve the historical identity.
++
++## Tag authenticity and provenance
++
++Release policy should make tag/release provenance independently verifiable through platform identity, signatures/attestations or equivalent controls appropriate to the environment.
++
++Historical baseline tags that lack newer provenance controls remain historical facts. Do not rewrite them retroactively; record the provenance limitation and apply stronger controls to future release refs.
++
++## Same-artifact promotion
++
++A release artifact is built/identified once and promoted through environments by immutable digest. Do not rebuild separately per environment and call the outputs the same release merely because the version string matches.
++
++The Git release binding must make it possible to answer:
++
++- which source result produced this artifact?
++- which artifact digest is being promoted?
++- which release/version names that digest?
++- which authority approved the promotion?
++
++## Release candidate posture
++
++A release candidate can be represented by evidence/records without creating a permanent lifecycle branch.
++
++Avoid permanent `release`, `staging`, `alpha`, or `beta` branches as state machines. If temporary release-candidate refs are ever needed, they remain short-lived controlled refs with explicit purpose and must not replace BADF gate/release records.
++
++## Hotfix posture
++
++BADF does not require the classic Git Flow `hotfix/*` model.
++
++Urgent production correction still follows:
++
++```text
++incident/demand
++  → bounded work package
++  → short-lived change branch/worktree
++  → verify/compose/challenge
++  → protected integration to current main
++  → authorized release/promotion
++  → runtime verification
++```
++
++Urgency may change approval timing through ratified emergency policy, but does not justify silent protected-history rewrite or release-tag reuse.
++
++## Release evidence
++
++In addition to general evidence, record where applicable:
++
++```yaml
++release_binding:
++  version: vX.Y.Z
++  tag_ref: refs/tags/vX.Y.Z
++  source_ref: refs/heads/main
++  source_revision: <main-commit-sha>
++  source_result_tree: <tree-sha>
++  artifact_digest: sha256:<digest>
++  sbom_ref: <immutable-ref>
++  provenance_ref: <immutable-ref>
++  change_ticket: <id>
++  release_authority: <principal/receipt>
++  release_record: <id>
++```
++
++Fields defer to the canonical BADF release/evidence schemas when they exist; this design contract does not create a competing schema.
++
++## Release stop conditions
++
++Do not create or mutate a release ref when:
++
++- source is not a verified authorized `main` revision;
++- release authority is missing;
++- artifact identity/digest is missing or rebuilt inconsistently;
++- required release packet evidence is incomplete;
++- version identity collides with different content;
++- the requested action would move/delete/reuse an immutable tag;
++- required rollback/operational readiness is absent;
++- protected/main composition has not been reconciled.
++
++Return `BLOCKED` or `HUMAN_REQUIRED` as appropriate.
++
++## Relationship to baseline tags
++
++`BADF-BASELINE-X.Y.Z` and `vX.Y.Z` can coexist:
++
++- baseline tags preserve historical governance baseline identities;
++- `vX.Y.Z` is the recommended forward release convention;
++- neither should be rewritten to collapse the distinction;
++- documentation/release records should state what each tag means.
++
++A future cleanup/migration may add aliases or documentation, but must preserve immutable historical references.
+diff --git a/tests/test_badf_git_contract.py b/tests/test_badf_git_contract.py
+new file mode 100644
+index 0000000..8800fd8
+--- /dev/null
++++ b/tests/test_badf_git_contract.py
+@@ -0,0 +1,111 @@
++"""badf-git contract freeze (BADF-WP-0066; salvage of the superseded PR #122).
++
++badf-git is the declarative Git contract for BADF delivery work -- a router and
++constraint layer, not a Git authority, merge bot, release authority, or second gate.
++This WP freezes the contract only: SKILL.md + eight reference contracts, registered
++DESIGNED, with no mutation script (scripts/badf_git.py) and no Git authority. These
++tests guard that declarative surface (the salvage kept #122's contract checks and
++dropped its temporary lockfile-probe scaffolding).
++"""
++import hashlib
++import json
++import unittest
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[1]
++SKILL = ROOT / "skills" / "badf-git" / "SKILL.md"
++REFERENCES = ROOT / "skills" / "badf-git" / "references"
++REGISTRY = ROOT / "badf" / "skill-registry.json"
++
++
++class BadfGitContractTests(unittest.TestCase):
++    def test_contract_surface_is_declarative_only(self):
++        expected = {
++            "git-cycle.md",
++            "git-state-machine.md",
++            "branch-pr-contract.md",
++            "operation-authority-matrix.md",
++            "composition-and-staleness.md",
++            "recovery-contract.md",
++            "release-versioning.md",
++            "evidence-contract.md",
++        }
++        self.assertTrue(SKILL.is_file())
++        self.assertEqual(expected, {p.name for p in REFERENCES.glob("*.md")})
++        # no mutation engine and no second gate -- badf_gate.py stays the sole authority.
++        self.assertFalse((ROOT / "scripts" / "badf_git.py").exists())
++        self.assertFalse((ROOT / "schemas" / "git.schema.json").exists())
++
++    def test_root_contract_freezes_all_invariants_and_cycles(self):
++        text = SKILL.read_text(encoding="utf-8")
++        for n in range(1, 13):
++            self.assertIn(f"GIT-I{n:02d}", text)
++        self.assertIn(
++            "AUTHORITY → BASELINE → ISOLATE → BUILD → VERIFY → PR → COMPOSE → CHALLENGE → AUTHORIZE → SQUASH → RECONCILE → RELEASE → CLEAN → LEARN",
++            text,
++        )
++        self.assertIn(
++            "SYNC → INSPECT → EDIT → STAGE → DIFF → COMMIT → VERIFY → RECONCILE → ↺",
++            text,
++        )
++        self.assertIn("SOURCE_HEAD_GREEN != INTEGRATION_SAFE", text)
++        self.assertIn("GIT_CAPABILITY != GIT_AUTHORITY", text)
++
++    def test_state_machine_contains_progression_and_hold_states(self):
++        text = (REFERENCES / "git-state-machine.md").read_text(encoding="utf-8")
++        required = {
++            "GIT_AUTHORITY_BOUND", "GIT_BASELINED", "GIT_ISOLATED", "GIT_CHANGE_ACTIVE",
++            "GIT_LOCALLY_VERIFIED", "GIT_PUBLISHED", "GIT_PR_BOUND", "GIT_COMPOSED",
++            "GIT_VERIFIED", "GIT_MERGE_AUTHORIZED", "GIT_MERGED", "GIT_RECONCILED",
++            "GIT_RELEASED", "GIT_CLEANED", "GIT_LEARNED",
++            "STALE_EVIDENCE", "BLOCKED", "HUMAN_REQUIRED", "RECOVERY_REQUIRED",
++        }
++        for token in required:
++            self.assertIn(token, text)
++
++    def test_branch_contract_is_proposed_not_enforced(self):
++        text = (REFERENCES / "branch-pr-contract.md").read_text(encoding="utf-8")
++        self.assertIn("wp/<CANONICAL-WORK-PACKAGE-ID>-<short-slug>", text)
++        self.assertIn("branch-name enforcement is deferred", text)
++        self.assertIn("--force-with-lease", text)
++        self.assertIn("Bare `--force` is not a normal BADF workflow", text)
++        self.assertIn("`git range-diff`", text)
++
++    def test_composition_contract_binds_exact_identity(self):
++        text = (REFERENCES / "composition-and-staleness.md").read_text(encoding="utf-8")
++        for token in (
++            "target_ref", "target_base_sha", "source_ref", "source_head_sha",
++            "merge_base_sha", "merge_method", "expected_result_tree",
++            "test_set_epoch", "policy_epoch", "scripts/badf_compose.py",
++        ):
++            self.assertIn(token, text)
++
++    def test_recovery_and_release_do_not_rewrite_shared_identity(self):
++        recovery = (REFERENCES / "recovery-contract.md").read_text(encoding="utf-8")
++        release = (REFERENCES / "release-versioning.md").read_text(encoding="utf-8")
++        self.assertIn("git revert", recovery)
++        self.assertIn("git reflog", recovery)
++        self.assertIn("rerere.autoUpdate = false", recovery)
++        self.assertIn("BADF-BASELINE-X.Y.Z", release)
++        self.assertIn("vX.Y.Z", release)
++        self.assertIn("commit prefixes", release)
++
++    def test_registry_pin_is_designed_and_tool_empty(self):
++        registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
++        entries = [e for e in registry["skills"] if e.get("name") == "badf-git"]
++        self.assertEqual(1, len(entries))
++        entry = entries[0]
++        self.assertEqual("DESIGNED", entry["status"])
++        self.assertEqual([], entry["allowed_tools"])
++        digest = "sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest()
++        self.assertEqual(digest, entry["digest"])
++
++    def test_skill_points_to_registry_not_a_hardcoded_status(self):
++        # the drift discipline: the SKILL.md must not hardcode a live lifecycle status.
++        text = SKILL.read_text(encoding="utf-8")
++        self.assertIn("badf/skill-registry.json", text)
++        self.assertNotIn("Status: `DESIGNED`", text)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0065/work-package.json b/work/WP-2026-0065/work-package.json
+index 67494eb..dc73f5a 100644
+--- a/work/WP-2026-0065/work-package.json
++++ b/work/WP-2026-0065/work-package.json
+@@ -42,11 +42,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR (status returns to SHADOWED)"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "c09d370"
++    "base_revision": "c09d370",
++    "landed_as": "5fac18d795efefac7e86ca2df7af6ffa2227ac3c"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Adds no gate code -- no new control, no mutation; an admission advance. Operator admission decision ('proceed one by one'), mirrors research WP-0058. Resolves #120 / GOV-0035. Reconciles WP-2026-0064."
+ }

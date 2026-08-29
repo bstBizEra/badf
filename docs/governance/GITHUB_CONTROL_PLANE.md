@@ -645,6 +645,29 @@ gate code, so no new control and nothing to mutate. Both capability families are
 live status line — they point to `badf/skill-registry.json` — closing the same drift class fixed for the
 research `acceptance.md` and `badf-requirements`.
 
+## badf-git — Governed Trunk Git Model, contract freeze (`BADF-WP-0066`, Issue #123 / GOV-0045, supersedes PR #122)
+
+The operator's *GTGM v0.1* design standardizes BADF Git on **one protected `main` ledger + short-lived
+WP branches + one governed integration PR + deterministic composed-tree verification + squash
+integration + immutable release evidence + explicit recovery** — an evolution of the live repo, which
+already enforces squash-only, linear history, and composed-tree CI (`badf_compose.py`). An external
+actor's **PR #122** attempted this exact freeze but was draft, CONFLICTING, and re-used three consumed
+identities (`BADF-DEM-0052`, `WP-2026-0064`, `WP-2026-0065`). **Salvage over repair** again: `badf-git`
+is built fresh from current `main` (this WP), re-homing #122's genuine authoring content onto a clean
+WP with fresh ids — the collided-id examples fixed, and #122's temporary lockfile-probe scaffolding test
+dropped (kept the real contract checks).
+
+`badf-git` is a top-level **declarative** capability, registered `DESIGNED`: a router and constraint
+layer, **not** a Git authority, merge bot, release authority, or second gate. Its invariants run
+`GIT-I01` (no Git authority) … `GIT-I12` (no second gate/mutation engine); `SKILL.md` + eight reference
+contracts freeze the GTGM cycle, the state machine, the `GIT-O0…O5` operation classes, the composition
+invariant (`SOURCE_HEAD_GREEN != INTEGRATION_SAFE`), and the recovery/release contracts (repair forward
+via revert/reflog; immutable tags). **No `scripts/badf_git.py`, no new schema, no Git authority** —
+`badf_gate.py` and the platform rules remain the sole authorities, `badf_compose.py` the canonical
+composition. No gate code, so no new control and nothing to mutate; the test guards the declarative
+surface. Contract Freeze is deliberately first (WP-GIT-B…J deferred): an incorrect mutation model would
+spread into every future BADF autonomous engineering loop.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
