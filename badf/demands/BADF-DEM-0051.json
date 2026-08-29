@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0051",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 117,
+    "url": "https://github.com/bstBizEra/badf/issues/117",
+    "exported_at": "2026-08-29T15:15:24Z",
+    "body_digest": "sha256:5b77dd7bffafb2f9a87c29e376d0cfd87b553d4f3470fe4b1e4f30d35bc511ed"
+  },
+  "title": "GOV-0034: validate badf-requirements (IMPLEMENTED -> VALIDATED) with the three cases",
+  "problem": "## Observed\n\n`badf-requirements` (`BADF-WP-0063`) is registered `IMPLEMENTED`: the authoring skill exists and its architecture is guarded, but it has not been **validated** by running it on representative cases. The admission ladder (`DESIGNED \u2192 IMPLEMENTED \u2192 VALIDATED \u2192 \u2026`) requires demonstrating the skill produces gate-correct outcomes before it advances.\n\n## Expected\n\nAdvance `badf-requirements` `IMPLEMENTED \u2192 VALIDATED` with the three cases, honestly mapped to what the **canonical G02 gate** actually backs:\n\n- **Case A \u2014 valid PRD \u2192 clean artifacts.** The skill's model produces a G02 dossier that renders `APPROVED` (`examples/gate-dossier.G02.json`, already CI-validated).\n- **Case B \u2014 orphan requirement / qualitative NFR \u2192 rework.** The gate refuses exactly what the skill's discipline warns against: a requirement tracing to no objective \u2192 `decomposes no objective` (REQ-I02); an NFR whose target is not a number \u2192 `is not quantified` (REQ-I04); an orphan in the RTM (REQ-I05). Gate-backed by the existing G02 suite.\n- **Case C \u2014 a security requirement introduced from a G05 concern \u2192 provenance preserved.** A security requirement that names its originating threat and traces to a security objective passes the gate. **Honest boundary:** the canonical G02 gate has no security-source (`SRC\u2192REQ`) field, so REQ-I06 provenance is a **skill-authoring discipline verified by inspection**, not a deterministic gate control \u2014 a candidate future failing-first WP, not asserted here.\n\nDeliverables: `tests/test_badf_requirements_validation.py` (the three cases against the real gate); `skills/badf-requirements/references/validation-evidence.md`; registry status \u2192 `VALIDATED`. No gate code \u2014 so no new control and nothing to mutate.\n\n## Evidence\n\n- Canonical G02 (measured): `check_requirements` refuses `objective_refs=[]`; `check_nfr` refuses a non-numeric target; `check_traceability` refuses orphan/uncovered; `check_definition_of_ready` requires a human sign-off. No security-source enforcement.\n\n## Unknowns\n\nWhether security-source provenance (`SRC\u2192REQ`) should become a gate control \u2014 deferred to a future failing-first WP if real project use proves the need.\n\ndiscovered-by: BADF-WP-0063 (badf-requirements landed IMPLEMENTED) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-29T15:15:24Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Advance badf-requirements IMPLEMENTED -> VALIDATED via three cases against the canonical G02 gate (A clean, B orphan/qualitative refused, C security provenance by inspection). REQ-I06 is a skill discipline, not a gate control (honest boundary). Operator directed 2026-08-29 ('proceed one by one'). Worked as BADF-WP-0064."
+}
