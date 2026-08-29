@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0052",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 120,
+    "url": "https://github.com/bstBizEra/badf/issues/120",
+    "exported_at": "2026-08-29T15:38:37Z",
+    "body_digest": "sha256:2c3398ad4c4d4079b4399e49067ec4f0adb7568337b3391c9af56a595f58f48f"
+  },
+  "title": "GOV-0035: admit badf-architecture SHADOWED -> ACTIVE (operator admission decision)",
+  "problem": "## Observed\n\n`badf-architecture` sits at `SHADOWED` (`BADF-WP-0059` / WP-ARCH-D). Its acceptance contract says: *\"`APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. These remain the operator's admission decision; `badf-architecture` sits at `SHADOWED` until then.\"* The shadow-calibration evidence exists (`references/assurance-shadow-evidence.md`): ASSURE run on real cases spanning COMPLIANT / NONCOMPLIANT / INDETERMINATE \u2014 true violation detected, zero false positives, INDETERMINATE handled without a false pass, no drift self-approved \u2014 **no contract gap surfaced**.\n\n## Expected\n\nRecord the **operator's admission decision** and advance `badf-architecture` `SHADOWED \u2192 ACTIVE` (through `APPROVED`), mirroring the research family's `BADF-WP-0058`: owner + security approval given (single-collaborator repo \u2014 the owner is also the security reviewer); the registry digest is pinned. It grants no authority even when `ACTIVE` (ARCH-I invariants hold at every status; `badf_gate.py` remains the sole G04/ASSURE authority \u2014 ARCH-I11).\n\nAlso stop the SKILL.md and acceptance.md hardcoding a live status line \u2014 point to `badf/skill-registry.json` as the source of truth \u2014 the same drift class already fixed for the research `acceptance.md` and `badf-requirements`.\n\nDeliverables: registry status \u2192 `ACTIVE` (digest re-pinned); acceptance.md admission section updated (APPROVED/ACTIVE reached); the contract-test status assertion updated `SHADOWED \u2192 ACTIVE`; a doctrine note. No gate code \u2014 no new control, nothing to mutate.\n\n## Evidence\n\n- Registry: `badf-architecture` `SHADOWED`, real digest. Shadow evidence present (`assurance-shadow-evidence.md`).\n- Template: research `acceptance.md` \u2014 *\"`APPROVED` / `ACTIVE`: reached (`BADF-WP-0058`). Owner + security approval given (single-collaborator repo \u2026) and the registry digest is pinned.\"*\n\n## Unknowns\n\nNone \u2014 this is the operator's admission decision, now given.\n\ndiscovered-by: BADF-WP-0064 (operator directed the badf-architecture admission, 'proceed one by one') \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-29T15:38:37Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Operator admission decision (2026-08-29, 'proceed one by one'): advance badf-architecture SHADOWED -> ACTIVE through APPROVED, mirroring research WP-0058 (owner+security approval, single-collaborator; digest pinned). Grants no authority (ARCH-I11, badf_gate.py sole G04/ASSURE authority). Worked as BADF-WP-0065."
+}

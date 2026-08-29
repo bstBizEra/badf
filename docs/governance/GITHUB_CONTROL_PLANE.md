@@ -628,6 +628,23 @@ control, nothing to mutate. It also stopped the SKILL.md hardcoding a status lin
 registry instead) — the same drift class fixed for the research `acceptance.md`. `SHADOWED`/`APPROVED`/
 `ACTIVE` remain later admission decisions.
 
+## Admitting badf-architecture ACTIVE (`BADF-WP-0065`, Issue #120 / GOV-0035)
+
+`badf-architecture` advances `SHADOWED → ACTIVE`. This is an **admission decision** — the operator's, not
+the loop's — recorded here and mirroring the research family's `BADF-WP-0058`: owner + security approval
+given (single-collaborator repo, the owner is also the security reviewer), and the registry digest is
+pinned. The shadow-calibration evidence (`references/assurance-shadow-evidence.md`, WP-ARCH-D) backs it:
+ASSURE on real COMPLIANT / NONCOMPLIANT / INDETERMINATE cases — true violation detected, zero false
+positives, INDETERMINATE handled without a false pass, no drift self-approved, no contract gap.
+
+An admission advance changes **status, not the contract**: `badf_gate.py` and the G04/ASSURE schemas are
+unchanged, the ARCH-I invariants hold at every status, and the capability grants **no** authority even
+when `ACTIVE` (ARCH-I11 — the gate is the sole G04/ASSURE authority; there is no second validator). No
+gate code, so no new control and nothing to mutate. Both capability families are now `ACTIVE`
+(`badf-research`, `badf-architecture`). The WP also stopped the SKILL.md and acceptance.md hardcoding a
+live status line — they point to `badf/skill-registry.json` — closing the same drift class fixed for the
+research `acceptance.md` and `badf-requirements`.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

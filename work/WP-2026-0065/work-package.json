@@ -1,0 +1,52 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0065",
+  "title": "Admit badf-architecture SHADOWED -> ACTIVE (operator admission decision)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0052",
+  "repository": "bstBizEra/badf",
+  "objective": "Record the operator's admission decision and advance badf-architecture SHADOWED -> ACTIVE (through APPROVED), mirroring the research family's BADF-WP-0058: owner + security approval given (single-collaborator repo -- the owner is also the security reviewer); the registry digest is pinned. The capability grants no authority even when ACTIVE (the ARCH-I invariants hold at every status; badf_gate.py remains the sole G04/ASSURE authority, ARCH-I11). Also stop the SKILL.md and acceptance.md hardcoding a live status line -- point to badf/skill-registry.json as the source of truth.",
+  "business_value": "badf-architecture is shadow-calibrated (WP-0059: true violation detected, zero false positives, INDETERMINATE handled, no drift self-approved, no contract gap surfaced). Admitting it ACTIVE makes the architecture DESIGN + ASSURE capability available for autonomous use, completing the two capability families (research ACTIVE, architecture ACTIVE). The status-line hardcode fix prevents the recurring drift defect (a document asserting a status that has moved on).",
+  "in_scope": [
+    "badf/skill-registry.json: badf-architecture SHADOWED -> ACTIVE, digest re-pinned to the (edited) SKILL.md",
+    "skills/badf-architecture/SKILL.md: replace the hardcoded 'Status: SHADOWED' line with a registry pointer (keep the WP provenance); the digest is re-pinned to match",
+    "skills/badf-architecture/references/acceptance.md: line 3 status -> registry pointer; the APPROVED/ACTIVE admission item -> reached (operator-authorized, owner+security single-collaborator, digest pinned)",
+    "tests/test_badf_architecture_contract.py: the registry-status assertion SHADOWED -> ACTIVE (and the no-stale-status guard covers ACTIVE)",
+    "GITHUB_CONTROL_PLANE.md doctrine section; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "any change to badf_gate.py, the G04/ASSURE schemas, the assure command, or the ARCH-I invariants (an admission advance changes status, not the contract)",
+    "granting any authority to badf-architecture (ARCH-I11 holds: the gate is the sole authority); adding a control",
+    "the research family, badf-requirements, gates G06+"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "badf-architecture is registered ACTIVE with a real (re-pinned) digest",
+    "SKILL.md and acceptance.md no longer hardcode a live status line (they point to the registry); no stale SHADOWED-as-status remains",
+    "the contract test asserts ACTIVE; the ARCH-I invariants and the no-second-validator guard still hold (badf_gate.py unchanged)",
+    "repo integrity clean; the G04 DESIGN + ASSURE examples still validate unchanged; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_architecture_contract.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR (status returns to SHADOWED)"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "c09d370"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Adds no gate code -- no new control, no mutation; an admission advance. Operator admission decision ('proceed one by one'), mirrors research WP-0058. Resolves #120 / GOV-0035. Reconciles WP-2026-0064."
+}

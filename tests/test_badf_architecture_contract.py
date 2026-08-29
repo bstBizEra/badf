@@ -72,18 +72,21 @@ class InvariantTests(unittest.TestCase):
 
 class RegistryAndAuthorityTests(unittest.TestCase):
 
-    def test_registry_entry_is_shadowed_with_a_real_digest(self):
-        # WP-ARCH-D advanced the capability VALIDATED -> SHADOWED (ASSURE calibrated on real cases).
+    def test_registry_entry_is_active_with_a_real_digest(self):
+        # WP-0065 recorded the operator admission decision SHADOWED -> ACTIVE (owner+security
+        # approval, single-collaborator; digest pinned), mirroring research WP-0058.
         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
         entry = next(e for e in reg["skills"] if e["name"] == "badf-architecture")
-        self.assertEqual(entry["status"], "SHADOWED")
+        self.assertEqual(entry["status"], "ACTIVE")
         self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
 
-    def test_acceptance_doc_has_no_stale_designed_status(self):
-        # WP-ARCH-D fixed the doc drift: acceptance.md must not still call the capability DESIGNED.
+    def test_acceptance_doc_has_no_stale_live_status(self):
+        # The doc-drift guard (WP-ARCH-D, extended by WP-0065): acceptance.md must not hardcode a
+        # live status line that can drift from the registry -- not DESIGNED, not SHADOWED.
         acc = (REF / "acceptance.md").read_text(encoding="utf-8")
         self.assertNotIn("The capability is `DESIGNED`", acc)
         self.assertNotIn("stays `DESIGNED`", acc)
+        self.assertNotIn("The capability is `SHADOWED`", acc)
 
     def test_g04_is_mapped_but_unchanged(self):
         g04text = (REF / "g04-contract.md").read_text(encoding="utf-8")
