@@ -1,0 +1,29 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index fdef88b..e5406fb 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -568,6 +568,24 @@ and closes GOV-0031. (Same doc-drift family as `#407` and the G-67 test-that-did
+ to make the document match the enforced reality. Here `acceptance.md` also stopped hard-coding a
+ `DESIGNED` status line that had drifted from the registry's `ACTIVE`.)
+ 
++## experimental-research (`BADF-WP-0062`, Issue #113 / GOV-0032)
++
++`R08` (`EMPIRICAL_EXPERIMENT`) was the one research type without a dedicated subskill or an integrity
++control — it routed to the raw experiment mechanism and the gate never checked that an empirical run
++ran an experiment. Two gaps, measured on `467406f`: an `R08` record with `experiments: []` was admitted
++(measured nothing), and an experiment citing `hypothesis_ref: H-999` the record did not hold was
++admitted (dangling reference). **experimental-research** is built as the 10th subskill (registered
++`IMPLEMENTED`; the family `badf-research` stays `ACTIVE`), earning **control 28**: an `R08` record
++carries at least one experiment, and every experiment — in any record — tests a hypothesis the record
++holds. Mirror of controls 23/24 (type-specific structure, grounded in the record). The experiment
++mechanism (method, result, reproduction under the composed-tree gate + mutation) is the evidence; the
++gate checks the experiment is *real and bound*, not that the result is true — `D5` challenge is already
++required. No new authority (RSR-I01); control 28 only refuses more, never approves more.
++
++This is the **P1 gate lifted by operator request**, not by precedent: the deferred subskill was built
++only once the operator selected the research track, and its control was earned by two failing-first
++probes, not added because the P0 subskills each landed with one.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

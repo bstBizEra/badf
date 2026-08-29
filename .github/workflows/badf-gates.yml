@@ -53,6 +53,7 @@ jobs:
           python3 scripts/badf_gate.py research examples/research-record-shadow-composed-red.json
           python3 scripts/badf_gate.py research examples/research-record-shadow-ci-parity.json
           python3 scripts/badf_gate.py research examples/research-record-shadow-support-assessment.json
+          python3 scripts/badf_gate.py research examples/research-record-experimental.json
           python3 scripts/badf_gate.py assure examples/architecture-assurance.json
           python3 scripts/badf_gate.py assure examples/architecture-assurance-shadow-stdlib-compliant.json
           python3 scripts/badf_gate.py assure examples/architecture-assurance-shadow-pyyaml-drift.json
