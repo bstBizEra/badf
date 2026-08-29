@@ -48,7 +48,7 @@
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "0b2fd52"
+    "base_revision": "f1a0a5c"
   },
-  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Shadow evidence + status advance; no new gate control (the controls are WP-SOL-B/C), so no mutation. Built in an isolated worktree (badf-wt-sold, GIT-I04) parallel to BARCHI-2's badf-git GIT-D (#140). Ids WP-0074/DEM-0061/GOV-0053 (0073 poisoned by third actor, avoided). Reconciles WP-2026-0069 (GIT-C). Shipped via operator /loop 'badf-solution-design to active'. Resolves #141 / GOV-0053."
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Shadow evidence + status advance; no new gate control (the controls are WP-SOL-B/C), so no mutation. Built in an isolated worktree (badf-wt-sold, GIT-I04) parallel to BARCHI-2's badf-git GIT-D (#140). Ids WP-0074/DEM-0061/GOV-0053 (0073 poisoned by third actor, avoided). Reconciles WP-2026-0075 (GIT-D, landed f1a0a5c; WP-0069 already reconciled on main by GIT-D). Shipped via operator /loop 'badf-solution-design to active'. Resolves #141 / GOV-0053."
 }
