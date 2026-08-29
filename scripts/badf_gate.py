@@ -602,8 +602,18 @@ def write_lockfile() -> None:
 
 
 # ---- work ledger: landing is derived from git, claims are corroborated (BADF-WP-0019, #26) ----
-WP_LINE = re.compile(r"^Work-Package:\s*(?:BADF-WP-|WP-2026-)([0-9]{4})\s*$", re.M)
-WP_ID_FORMS = re.compile(r"^(?:BADF-WP-|WP-2026-)([0-9]{4})$")
+# One identity, three faces, one binding (BADF-WP-0070 / badf-git GIT-B): the
+# machine id is WP_NAMESPACE + NNNN. WP-2026- is the ledger's genesis namespace,
+# a fixed constant -- NOT a calendar field; NNNN continues monotonically and never
+# rolls over. Defined ONCE here; badf_compose.py and check_pr_traceability.py
+# import it, so the three regexes that used to repeat the literal cannot drift.
+# WP_DISPLAY is the human label permitted in PR titles / squash subjects only.
+# The ledger keeps reading historical display-form trailers (history is never
+# rewritten, GIT-I06); only new PRs must bind the canonical form.
+WP_NAMESPACE = "WP-2026-"
+WP_DISPLAY = "BADF-WP-"
+WP_LINE = re.compile(rf"^Work-Package:\s*(?:{re.escape(WP_DISPLAY)}|{re.escape(WP_NAMESPACE)})([0-9]{{4}})\s*$", re.M)
+WP_ID_FORMS = re.compile(rf"^(?:{re.escape(WP_DISPLAY)}|{re.escape(WP_NAMESPACE)})([0-9]{{4}})$")
 
 
 def self_repository() -> str:
@@ -631,14 +641,14 @@ def ledger_landings() -> dict[str, list[str]]:
             continue
         sha, body = rec.split("\x00", 1)
         for m in WP_LINE.finditer(body):
-            out.setdefault(f"WP-2026-{m.group(1)}", []).append(sha.strip())
+            out.setdefault(f"{WP_NAMESPACE}{m.group(1)}", []).append(sha.strip())
     return out
 
 
 def self_work_packages() -> list[tuple[Path, dict[str, Any]]]:
     me = self_repository()
     found = []
-    for path in sorted((ROOT / "work").glob("WP-2026-*/work-package.json")):
+    for path in sorted((ROOT / "work").glob(f"{WP_NAMESPACE}*/work-package.json")):
         rec = load_json(path)
         if isinstance(rec, dict) and rec.get("repository") == me:
             found.append((path, rec))
@@ -697,8 +707,8 @@ def verify_work_ledger() -> list[str]:
 def reconcile_work_package(wp_arg: str) -> str:
     m = WP_ID_FORMS.match(wp_arg.strip())
     if not m:
-        raise ValidationError(f"{wp_arg!r} is not a work package id (WP-2026-NNNN or BADF-WP-NNNN)")
-    wp = f"WP-2026-{m.group(1)}"
+        raise ValidationError(f"{wp_arg!r} is not a work package id ({WP_NAMESPACE}NNNN or {WP_DISPLAY}NNNN)")
+    wp = f"{WP_NAMESPACE}{m.group(1)}"
     path = ROOT / "work" / wp / "work-package.json"
     if not path.is_file():
         raise ValidationError(f"{wp} has no record at work/{wp}/work-package.json")
@@ -2438,7 +2448,7 @@ def advance_instance(path: Path, dossier_rel: str) -> str:
     validate_instance(inst)   # deny unless established
     state = load_json(inst / "badf/state.json")
     wp_id = state["active_work_package"]
-    m = re.fullmatch(r"work/(WP-2026-[0-9]{4})/gate-dossier\.(G(?:0[0-9]|1[0-4]))\.json", dossier_rel.replace("\\", "/"))
+    m = re.fullmatch(rf"work/({re.escape(WP_NAMESPACE)}[0-9]{{4}})/gate-dossier\.(G(?:0[0-9]|1[0-4]))\.json", dossier_rel.replace("\\", "/"))
     if not m:
         raise ValidationError(f"dossier must be the framework's work/<WP>/gate-dossier.<gate>.json, got {dossier_rel!r}")
     if m.group(1) != wp_id:
@@ -2606,12 +2616,12 @@ def discover_project(root: Path) -> list[dict[str, str]]:
 
 def next_wp_id() -> str:
     nums = []
-    for d in (ROOT / "work").glob("WP-2026-*"):
+    for d in (ROOT / "work").glob(f"{WP_NAMESPACE}*"):
         try:
             nums.append(int(d.name.split("-")[-1]))
         except ValueError:
             pass
-    return f"WP-2026-{(max(nums) + 1 if nums else 1):04d}"
+    return f"{WP_NAMESPACE}{(max(nums) + 1 if nums else 1):04d}"
 
 
 def init_project(intent_path: Path) -> str:
@@ -2655,7 +2665,7 @@ def init_project(intent_path: Path) -> str:
     repos = registry.setdefault("repositories", {})
     if proj["repository"] in repos:
         raise ValidationError(f"{proj['repository']} is already registered; init refuses to overwrite a registry entry")
-    existing = [d for d in (ROOT / "work").glob("WP-2026-*/work-package.json")
+    existing = [d for d in (ROOT / "work").glob(f"{WP_NAMESPACE}*/work-package.json")
                 if load_json(d).get("repository") == proj["repository"]]
     if existing:
         raise ValidationError(f"{proj['repository']} already has work package {existing[0].parent.name}; init refuses to duplicate")
@@ -2852,7 +2862,7 @@ def self_dossier(wp_id: str) -> str:
     m = WP_ID_FORMS.match(wp_id.strip())
     if not m:
         raise ValidationError(f"{wp_id!r} is not a work package id")
-    wp_id = f"WP-2026-{m.group(1)}"
+    wp_id = f"{WP_NAMESPACE}{m.group(1)}"
     wp_dir = ROOT / "work" / wp_id
     wp_path = wp_dir / "work-package.json"
     if not wp_path.is_file():

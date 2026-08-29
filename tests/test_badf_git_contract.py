@@ -63,10 +63,13 @@ class BadfGitContractTests(unittest.TestCase):
         for token in required:
             self.assertIn(token, text)
 
-    def test_branch_contract_is_proposed_not_enforced(self):
+    def test_branch_contract_is_frozen_and_enforced_from_git_b(self):
         text = (REFERENCES / "branch-pr-contract.md").read_text(encoding="utf-8")
         self.assertIn("wp/<CANONICAL-WORK-PACKAGE-ID>-<short-slug>", text)
-        self.assertIn("branch-name enforcement is deferred", text)
+        # BADF-WP-0070 (GIT-B) froze the machine id and made the branch form live;
+        # the deferral wording GIT-A carried is retired with it.
+        self.assertNotIn("branch-name enforcement is deferred", text)
+        self.assertIn("WP-2026-0070", text)
         self.assertIn("--force-with-lease", text)
         self.assertIn("Bare `--force` is not a normal BADF workflow", text)
         self.assertIn("`git range-diff`", text)

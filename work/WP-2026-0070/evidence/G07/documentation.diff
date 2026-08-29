@@ -1,0 +1,54 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 459119e..a48b79f 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -55,9 +55,13 @@ raise this to 1 and delete this paragraph.
+ 
+ ## Branch classes
+ 
+-`wp/BADF-WP-NNNN-<slug>` for authorized work · `research/BADF-RSR-NNNN-<slug>` for investigation
+-requiring mutation · `fix/BADF-BUG-NNNN-<slug>` · `gov/BADF-WP-NNNN-<slug>` for Tier-B/C changes.
+-The authority object is in the name so the chain Issue → WP → branch → PR → `main` is greppable.
++`wp/WP-2026-NNNN-<slug>` for every pull request to `main` — the canonical machine work-package id
++in the name, lowercase kebab slug, **enforced by CI since `BADF-WP-0070`** (badf-git GIT-B; the
++tier of a change lives in the work package's `change_class`, not in a branch prefix). The
++`research/BADF-RSR-NNNN-<slug>` class remains declared for investigation requiring mutation but
++has never carried a PR (0 of 61); the former `fix/…` and `gov/…` prefixes are retired display
++conventions — a PR from them is refused. The authority object is in the name so the chain
++Issue → WP → branch → PR → `main` is greppable and, now, checkable.
+ 
+ ## Demand records (`BADF-WP-0018`, Issue #22)
+ 
+@@ -704,6 +708,32 @@ gate code, so no new control and nothing to mutate; the test guards the declarat
+ adapters, composition schemas and seam controls are deferred to WP-SOL-B…D. Built in an isolated
+ `git worktree` alongside BARCHI-2's parallel badf-git work (GIT-B/GIT-C), per GIT-I04.
+ 
++## badf-git GIT-B — the identity contract (`BADF-WP-0070`, Issue #129 / GOV-0049)
++
++GIT-A froze the contract and deferred branch-name enforcement "until BADF freezes one machine
++WP-ID form". Measured on `8673d9a`, the identity surface was split three ways: the machine id was
++*de facto* `WP-2026-NNNN` (53/53 `work/` dirs, the ledger glob, the normalizer, id allocation) but
++the year was a hardcoded literal in three separate regex copies; the display label `BADF-WP-NNNN`
++carried 40/40 squash subjects and 12/12 PR titles while trailers were mixed (33 display / 7 machine)
++and the PR template asked for the display form in the machine trailer; merged PR heads came from
++`wp/` (48), `feat/` (8), `fix/` (2), `chore/` (2), `gov/` (1), and this document prescribed
++the display-label branch form (`wp/` + `BADF-WP-NNNN`) against the frozen contract's `wp/WP-2026-NNNN-<slug>`. The existing
++control accepted either trailer and checked neither title nor branch — three names, one green run.
++
++**One identity, three faces, one binding.** Machine id `WP-2026-NNNN`, where `WP-2026-` is a fixed
++ledger namespace constant (the ledger's genesis namespace, *not* a calendar field — no rollover;
++NNNN continues monotonically), defined **once** in `badf_gate.py` (`WP_NAMESPACE`) and imported by
++`badf_compose.py` and `check_pr_traceability.py`. Display label `BADF-WP-NNNN` in the PR title /
++squash subject only. Branch `wp/WP-2026-NNNN-<slug>`. The binding is the body trailer
++`Work-Package: WP-2026-NNNN`; the display form there is refused with the exact line to paste.
++`check_pr_traceability.py` now takes `--title` and `--head-ref` as **required** arguments (CI passes
++them from the `pull_request` event) and refuses any PR whose title, branch or trailer disagree on
++NNNN — absence of an argument is a usage error, never a silent skip. History is not rewritten
++(GIT-I06): `ledger_landings` still resolves every historical display-form trailer; only new PRs bind
++canonically. Calendar-year rollover was considered and rejected — a namespace constant is the
++smallest change that removes the drift. The PR that shipped this was its own first subject on the
++runner. GIT-C (the read-only baseline inspector, #127) follows in design order.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

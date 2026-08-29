@@ -1,0 +1,651 @@
+diff --git a/.github/pull_request_template.md b/.github/pull_request_template.md
+index fccefc1..770ea27 100644
+--- a/.github/pull_request_template.md
++++ b/.github/pull_request_template.md
+@@ -1,7 +1,13 @@
+ <!-- BADF PR body = the squash commit message on main (BADF-WP-0034, #27).
+      gh pr create --body-file overrides this; CI enforces the shape via
+      scripts/check_pr_traceability.py. Keep the two headings and the two
+-     trailer lines. -->
++     trailer lines.
++
++     One identity, three faces, one NNNN (BADF-WP-0070 / badf-git GIT-B):
++       trailer  Work-Package: WP-2026-NNNN        the binding (machine id)
++       title    BADF-WP-NNNN: <concise outcome>   the display label
++       branch   wp/WP-2026-NNNN-<slug>            lowercase kebab slug
++     CI refuses a PR whose title, branch or trailer disagree. -->
+ 
+ ## What
+ 
+@@ -13,5 +19,5 @@
+      `python3 scripts/badf_compose.py --message-file <this body>` in both
+      shapes. Cite the SHA you measured. -->
+ 
+-Work-Package: BADF-WP-NNNN
++Work-Package: WP-2026-NNNN
+ Closes #N
+diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
+index cd6f600..7c5c351 100644
+--- a/.github/workflows/badf-gates.yml
++++ b/.github/workflows/badf-gates.yml
+@@ -59,13 +59,17 @@ jobs:
+           python3 scripts/badf_gate.py assure examples/architecture-assurance-shadow-stdlib-compliant.json
+           python3 scripts/badf_gate.py assure examples/architecture-assurance-shadow-pyyaml-drift.json
+           python3 scripts/badf_gate.py assure examples/architecture-assurance-shadow-indeterminate.json
+-      - name: PR traceability (Work-Package + Closes #N)
++      - name: PR traceability + identity (Work-Package + Closes #N; title + branch carry the same NNNN)
+         # BADF-MAIN-001. Only a PR has a body; a push to main has already been
+         # traced by the PR that produced it. Reports on the PR event only.
++        # BADF-WP-0070 (GIT-B): the title and head ref are REQUIRED arguments --
++        # the check refuses to run without them, so identity is never silently skipped.
+         if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+         env:
+           PR_BODY: ${{ github.event.pull_request.body }}
+-        run: printf '%s' "$PR_BODY" | python3 scripts/check_pr_traceability.py
++          PR_TITLE: ${{ github.event.pull_request.title }}
++          HEAD_REF: ${{ github.event.pull_request.head.ref }}
++        run: printf '%s' "$PR_BODY" | python3 scripts/check_pr_traceability.py --title "$PR_TITLE" --head-ref "$HEAD_REF"
+       - name: Composed-tree verification (the tree that would land)
+         # BADF-WP-0024 / #21. PR #30 was green here and its squash turned main
+         # red: this runner's origin/main is the PRE-merge ledger. Compose base +
+diff --git a/badf/demands/BADF-DEM-0057.json b/badf/demands/BADF-DEM-0057.json
+new file mode 100644
+index 0000000..75bcf91
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0057.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0057",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 129,
++    "url": "https://github.com/bstBizEra/badf/issues/129",
++    "exported_at": "2026-08-29T17:47:28Z",
++    "body_digest": "sha256:1aab4e983355f05f5686b0ba83ba3ae648fbce90a33bc6f8410b1e8896200792"
++  },
++  "title": "GOV-0049: BADF-WP-GIT-B — identity contract: freeze WP-2026-NNNN as the machine id, BADF-WP-NNNN as display label, wp/WP-2026-NNNN-<slug> branches; enforce in check_pr_traceability",
++  "problem": "## Observed\n\n`badf-git` (WP-2026-0066, `DESIGNED`) proposes `wp/<CANONICAL-WORK-PACKAGE-ID>-<short-slug>` and defers branch-name enforcement \"until BADF freezes one machine WP-ID form repository-wide\" (`references/branch-pr-contract.md:36`). Measured on `main` `8673d9a` (2026-08-29), that freeze is overdue and the identity surface is split three ways:\n\n- **Machine id is already `WP-2026-NNNN` in practice** — 53/53 `work/` directories, the ledger glob (`badf_gate.py:641`), the normalizer (`WP_ID_FORMS`, `:606`), path validation (`:2441`) and id allocation (`next_wp_id`, `:2609-2614`) all assume it. But the year is a **hardcoded literal in three separate regex copies** (`badf_gate.py:605-606`, `badf_compose.py:39`, `check_pr_traceability.py:13`) plus 12 literals in the gate; nothing declares it canonical.\n- **Display label is `BADF-WP-NNNN`** — 40/40 recent squash subjects and 12/12 recent PR titles use `BADF-WP-NNNN: <outcome>`; `Work-Package:` trailers are mixed (33 `BADF-WP-`, 7 `WP-2026-`); the PR template (`.github/pull_request_template.md:16`) *asks* for the display form in the machine trailer.\n- **Branch namespace drifts** — merged PR heads: 48 `wp/`, 8 `feat/`, 2 `fix/`, 2 `chore/`, 1 `gov/` (the seven most recent are `feat/`); of the `wp/` ones, 47 carry the display id (`wp/BADF-WP-NNNN-…`) and 1 the machine id. `docs/governance/GITHUB_CONTROL_PLANE.md:58` prescribes `wp/BADF-WP-NNNN-<slug>` — **contradicting the frozen contract's** `wp/WP-2026-NNNN-<slug>` (`branch-pr-contract.md:22,28`). The declared `research/BADF-RSR-NNNN-<slug>` namespace has never been used (0 PRs).\n- **The existing control checks the wrong things** — `check_pr_traceability.py` (BADF-MAIN-001) accepts *either* trailer form and checks neither the PR title nor the branch, so title, branch and trailer can each name a different work package and CI is green.\n\nGTGM v0.1 §6 (\"Work-Package ID … the branch's primary identity\"; \"freeze one WP-ID format before enforcing a regex\"), §8 (squash subject `BADF-WP-0061: <outcome> (#112)`), §17 **GIT-B — Identity Contract: canonical WP ID, branch/PR/commit consistency**.\n\n## Expected\n\n**Freeze one identity, three faces, one binding — and make the existing control enforce it.**\n\n1. **Canonical machine id: `WP-2026-NNNN`.** `WP-2026-` is declared a fixed **ledger namespace constant** (the ledger's genesis namespace, *not* a calendar field — no year rollover, `NNNN` continues monotonically); the literal is centralized in one place in `badf_gate.py` and imported/mirrored by `badf_compose.py` and `check_pr_traceability.py` so the three copies cannot drift. This is the id that binds: `work/<id>/`, `Work-Package:` trailer, evidence/dossier `work_package_id`, branch.\n2. **Display label: `BADF-WP-NNNN`** — permitted **only** in the PR title / squash subject (`BADF-WP-NNNN: <concise outcome>`), where `NNNN` must equal the trailer's. It is never a binding key.\n3. **Branch form: `wp/WP-2026-NNNN-<slug>`** — `<slug>` = `[a-z0-9][a-z0-9-]*`, disposable, never an identity key; `NNNN` must equal the trailer's.\n4. **Binding: the body trailer `Work-Package: WP-2026-NNNN`** — the display form in the trailer is **refused** (it is currently accepted), with the exact canonical line printed as the fix.\n\nEnforcement lands in the **existing** control — `scripts/check_pr_traceability.py`, run by the existing CI step — per GIT-I12 (no second validator). The CI step passes the PR title and head ref as **required** arguments (`--title`, `--head-ref`; absence is a usage error, never a silent skip). Refusals are fail-closed (exit 1) and each names the exact fix.\n\n**History is not rewritten:** the ledger keeps resolving the 33 historical `Work-Package: BADF-WP-NNNN` squash commits (`ledger_landings` normalization stays); only *new PRs* must bind canonically. Doctrine is reconciled: `GITHUB_CONTROL_PLANE.md:58` → the canonical form; the PR template → `Work-Package: WP-2026-NNNN`; `branch-pr-contract.md` states enforcement is **live from WP-2026-0070** and names this WP; the unused `research/` namespace is left declared (removing it is not this WP).\n\n**This PR is its own first subject:** branch `wp/WP-2026-0070-identity-contract`, title `BADF-WP-0070: …`, trailer `Work-Package: WP-2026-0070` — the positive control on real infrastructure.\n\n## Acceptance criteria\n\n1. A body with `Work-Package: WP-2026-NNNN` + `Closes #N` + sections, title `BADF-WP-NNNN: …`, head `wp/WP-2026-NNNN-<slug>` (same `NNNN`) → PASS, printing `<id> closes #N on <branch>`.\n2. Trailer in display form (`Work-Package: BADF-WP-NNNN`) → refused; the message contains the exact canonical line to paste.\n3. Title without the `BADF-WP-NNNN:` display label, or with a label whose `NNNN` ≠ trailer → refused, naming both ids.\n4. Head ref outside `wp/` (`feat/…`, `feature/…`, `fix/…`, `chore/…`, `gov/…`), or `wp/` with the display id, or with `NNNN` ≠ trailer, or with a non-conforming slug → refused, naming the expected form.\n5. `--title` / `--head-ref` missing → usage error (exit 2), never a pass.\n6. Each refusal branch is **load-bearing** (mutation: removing any one admits an inconsistent identity).\n7. One namespace constant: `grep -c 'WP-2026-'` across the three scripts' *regex sources* shows a single definition; the other two reference it; all three still resolve `WP-2026-0001…9999`.\n8. `ledger_landings()` on real `main` history still resolves every historical `BADF-WP-NNNN` trailer to its `WP-2026-NNNN` id (count unchanged before/after).\n9. Doc-drift guards: `GITHUB_CONTROL_PLANE.md` names `wp/WP-2026-NNNN-<slug>` and no longer contains `wp/BADF-WP-NNNN`; the PR template's trailer line is canonical; `branch-pr-contract.md` no longer says enforcement is deferred and names WP-2026-0070.\n10. `badf-gates.yml` traceability step passes `github.event.pull_request.title` and `.head.ref`; the GIT-B PR itself passes it on the runner.\n11. No Git authority, no mutation path, no ruleset change; `badf/authority-matrix.json`, `badf/tool-registry.json`, `schemas/` unchanged; `badf-git` root stays `DESIGNED` (lockfile re-signed for the amended reference).\n12. `repo` integrity clean; G07 self-dossier bound; full `unittest discover` + composed-tree compose green in CI (stdlib only).\n\n## Tests (`tests/test_badf_traceability.py` extended; faithful-runner via the CLI)\n\n- `test_canonical_trailer_title_and_branch_pass`\n- `test_display_form_trailer_is_refused_with_canonical_fix` (inverts today's `test_legacy_wp_form_accepted`, which is retired with a comment naming this WP)\n- `test_title_without_display_label_is_refused`\n- `test_title_label_must_match_trailer_id`\n- `test_branch_outside_wp_namespace_is_refused`\n- `test_branch_with_display_id_is_refused`\n- `test_branch_id_must_match_trailer_id`\n- `test_branch_slug_must_be_lowercase_kebab`\n- `test_missing_title_or_head_ref_is_a_usage_error_not_a_pass`\n- `test_namespace_constant_is_defined_once_and_shared`\n- `test_ledger_still_resolves_historical_display_form_trailers`\n- `test_control_plane_and_template_name_the_canonical_forms`\n- `test_branch_pr_contract_declares_enforcement_live_from_this_wp`\n\n## Out of scope\n\n- Renaming or rewriting any historical branch, commit subject, `work/` id or tag (GIT-I06).\n- Rebasing or force-pushing existing open branches (#122 already conforms; BARCHI-1's `WP-2026-0068` branch is notified, not touched).\n- A `scripts/badf_git.py`, a schema change to the `^WP-[A-Za-z0-9._-]+$` patterns, or any GitHub ruleset/branch-name rule (platform enforcement is GIT-F).\n- Calendar-year rollover semantics — explicitly rejected in favour of a namespace constant; revisit only if a real need appears.\n- Removing the unused `research/` namespace from the control plane.\n- The read-only inspector — **GIT-C, #127**, queued behind this WP.\n\n## Risk / authority / stop conditions\n\n- Change class **C2** — a governance contract with integration implications (it changes what CI refuses for every future PR), no authority change. Independent lenses per `docs/03` (architecture, composition/integration): under a single collaborator this is the standing open condition C-1 on the G07 self-dossier — recorded, not hidden.\n- Target gate **G07**; `HUMAN_REQUIRED`.\n- Practice change for the operator's own loop: branches become `wp/WP-2026-NNNN-<slug>` and trailers `Work-Package: WP-2026-NNNN`; titles are already conformant (12/12). Every refusal prints the exact fix.\n- Stop if enforcement would require touching history, a ruleset, or any file outside: the three scripts, the workflow step, the traceability test, the PR template, `GITHUB_CONTROL_PLANE.md`, `branch-pr-contract.md`, the lockfile, and this WP's own ledger/evidence files.\n- Lean mode: **enforced** — minimality ladder stop at ⑥ (minimum change to the existing control and the existing test module; one constant, no new module).\n\n## Identity\n\n- Ledger **WP-2026-0070** · demand **BADF-DEM-0057** · this issue **GOV-0049** · phase label BADF-WP-GIT-B.\n- Branch `wp/WP-2026-0070-identity-contract` in a **linked worktree** (GIT-I04; the shared clone is used by a parallel seat).\n- Reconciles whichever work package is `LANDED_UNRECONCILED` at branch time (WP-2026-0067 now; WP-2026-0068 = BARCHI-1's `badf-solution-design` WP-SOL-A if it lands first — content-agnostic).\n- Sequence per GTGM §17: **GIT-B (this) → GIT-C (#127) → D → E → F → G → H → I → J.** The B→C inversion flagged on #127 is resolved by the operator's instruction to follow the design order.\n\nsource: GTGM v0.1 §6, §8, §17 (GIT-B) · discovered-by: BARCHI-2 assessment of badf-git on `8673d9a` · status: PROPOSED\n\n🧠 **BARCHI-2** — plan posted; engineering starts on human approval.\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T17:47:28Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "BADF-WP-GIT-B identity contract: WP-2026-NNNN machine id (namespace constant), BADF-WP-NNNN display label, wp/WP-2026-NNNN-<slug> branches; enforced in check_pr_traceability.py. Authority: operator `/loop your goal on badf-git` (2026-08-29), design order GTGM v0.1 §17. Worked as BADF-WP-0070."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 459119e..a48b79f 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -55,9 +55,13 @@ raise this to 1 and delete this paragraph.
+ 
+ ## Branch classes
+ 
+-`wp/BADF-WP-NNNN-<slug>` for authorized work · `research/BADF-RSR-NNNN-<slug>` for investigation
+-requiring mutation · `fix/BADF-BUG-NNNN-<slug>` · `gov/BADF-WP-NNNN-<slug>` for Tier-B/C changes.
+-The authority object is in the name so the chain Issue → WP → branch → PR → `main` is greppable.
++`wp/WP-2026-NNNN-<slug>` for every pull request to `main` — the canonical machine work-package id
++in the name, lowercase kebab slug, **enforced by CI since `BADF-WP-0070`** (badf-git GIT-B; the
++tier of a change lives in the work package's `change_class`, not in a branch prefix). The
++`research/BADF-RSR-NNNN-<slug>` class remains declared for investigation requiring mutation but
++has never carried a PR (0 of 61); the former `fix/…` and `gov/…` prefixes are retired display
++conventions — a PR from them is refused. The authority object is in the name so the chain
++Issue → WP → branch → PR → `main` is greppable and, now, checkable.
+ 
+ ## Demand records (`BADF-WP-0018`, Issue #22)
+ 
+@@ -704,6 +708,32 @@ gate code, so no new control and nothing to mutate; the test guards the declarat
+ adapters, composition schemas and seam controls are deferred to WP-SOL-B…D. Built in an isolated
+ `git worktree` alongside BARCHI-2's parallel badf-git work (GIT-B/GIT-C), per GIT-I04.
+ 
++## badf-git GIT-B — the identity contract (`BADF-WP-0070`, Issue #129 / GOV-0049)
++
++GIT-A froze the contract and deferred branch-name enforcement "until BADF freezes one machine
++WP-ID form". Measured on `8673d9a`, the identity surface was split three ways: the machine id was
++*de facto* `WP-2026-NNNN` (53/53 `work/` dirs, the ledger glob, the normalizer, id allocation) but
++the year was a hardcoded literal in three separate regex copies; the display label `BADF-WP-NNNN`
++carried 40/40 squash subjects and 12/12 PR titles while trailers were mixed (33 display / 7 machine)
++and the PR template asked for the display form in the machine trailer; merged PR heads came from
++`wp/` (48), `feat/` (8), `fix/` (2), `chore/` (2), `gov/` (1), and this document prescribed
++the display-label branch form (`wp/` + `BADF-WP-NNNN`) against the frozen contract's `wp/WP-2026-NNNN-<slug>`. The existing
++control accepted either trailer and checked neither title nor branch — three names, one green run.
++
++**One identity, three faces, one binding.** Machine id `WP-2026-NNNN`, where `WP-2026-` is a fixed
++ledger namespace constant (the ledger's genesis namespace, *not* a calendar field — no rollover;
++NNNN continues monotonically), defined **once** in `badf_gate.py` (`WP_NAMESPACE`) and imported by
++`badf_compose.py` and `check_pr_traceability.py`. Display label `BADF-WP-NNNN` in the PR title /
++squash subject only. Branch `wp/WP-2026-NNNN-<slug>`. The binding is the body trailer
++`Work-Package: WP-2026-NNNN`; the display form there is refused with the exact line to paste.
++`check_pr_traceability.py` now takes `--title` and `--head-ref` as **required** arguments (CI passes
++them from the `pull_request` event) and refuses any PR whose title, branch or trailer disagree on
++NNNN — absence of an argument is a usage error, never a silent skip. History is not rewritten
++(GIT-I06): `ledger_landings` still resolves every historical display-form trailer; only new PRs bind
++canonically. Calendar-year rollover was considered and rejected — a namespace constant is the
++smallest change that removes the drift. The PR that shipped this was its own first subject on the
++runner. GIT-C (the read-only baseline inspector, #127) follows in design order.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/scripts/badf_compose.py b/scripts/badf_compose.py
+index a23ff2a..d52d669 100644
+--- a/scripts/badf_compose.py
++++ b/scripts/badf_compose.py
+@@ -36,7 +36,10 @@ from pathlib import Path
+ ROOT = Path(__file__).resolve().parents[1]
+ DEFAULT_BRANCH = "main"
+ FULL_PATTERN = "test_*.py"
+-WP_LINE = re.compile(r"^Work-Package:\s*(?:BADF-WP-|WP-2026-)([0-9]{4})\s*$", re.M)
++# The Work-Package line and the machine-id namespace are defined once, in
++# badf_gate.py (BADF-WP-0070 / GIT-B); this script must not repeat the literal.
++sys.path.insert(0, str(Path(__file__).resolve().parent))
++from badf_gate import WP_LINE, WP_NAMESPACE  # noqa: E402
+ 
+ 
+ def sh(cmd: list[str], cwd: Path, env: dict | None = None, input: str | None = None) -> subprocess.CompletedProcess:
+@@ -56,7 +59,7 @@ def compose(args: argparse.Namespace) -> int:
+     m = WP_LINE.search(message)
+     if not m:
+         return fail("candidate message carries no Work-Package line; the composed ledger would not see this landing")
+-    wp = f"WP-2026-{m.group(1)}"
++    wp = f"{WP_NAMESPACE}{m.group(1)}"
+     repo = Path(args.repo).resolve()
+ 
+     def rev(ref: str) -> str | None:
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index fecf688..5c93416 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -602,8 +602,18 @@ def write_lockfile() -> None:
+ 
+ 
+ # ---- work ledger: landing is derived from git, claims are corroborated (BADF-WP-0019, #26) ----
+-WP_LINE = re.compile(r"^Work-Package:\s*(?:BADF-WP-|WP-2026-)([0-9]{4})\s*$", re.M)
+-WP_ID_FORMS = re.compile(r"^(?:BADF-WP-|WP-2026-)([0-9]{4})$")
++# One identity, three faces, one binding (BADF-WP-0070 / badf-git GIT-B): the
++# machine id is WP_NAMESPACE + NNNN. WP-2026- is the ledger's genesis namespace,
++# a fixed constant -- NOT a calendar field; NNNN continues monotonically and never
++# rolls over. Defined ONCE here; badf_compose.py and check_pr_traceability.py
++# import it, so the three regexes that used to repeat the literal cannot drift.
++# WP_DISPLAY is the human label permitted in PR titles / squash subjects only.
++# The ledger keeps reading historical display-form trailers (history is never
++# rewritten, GIT-I06); only new PRs must bind the canonical form.
++WP_NAMESPACE = "WP-2026-"
++WP_DISPLAY = "BADF-WP-"
++WP_LINE = re.compile(rf"^Work-Package:\s*(?:{re.escape(WP_DISPLAY)}|{re.escape(WP_NAMESPACE)})([0-9]{{4}})\s*$", re.M)
++WP_ID_FORMS = re.compile(rf"^(?:{re.escape(WP_DISPLAY)}|{re.escape(WP_NAMESPACE)})([0-9]{{4}})$")
+ 
+ 
+ def self_repository() -> str:
+@@ -631,14 +641,14 @@ def ledger_landings() -> dict[str, list[str]]:
+             continue
+         sha, body = rec.split("\x00", 1)
+         for m in WP_LINE.finditer(body):
+-            out.setdefault(f"WP-2026-{m.group(1)}", []).append(sha.strip())
++            out.setdefault(f"{WP_NAMESPACE}{m.group(1)}", []).append(sha.strip())
+     return out
+ 
+ 
+ def self_work_packages() -> list[tuple[Path, dict[str, Any]]]:
+     me = self_repository()
+     found = []
+-    for path in sorted((ROOT / "work").glob("WP-2026-*/work-package.json")):
++    for path in sorted((ROOT / "work").glob(f"{WP_NAMESPACE}*/work-package.json")):
+         rec = load_json(path)
+         if isinstance(rec, dict) and rec.get("repository") == me:
+             found.append((path, rec))
+@@ -697,8 +707,8 @@ def verify_work_ledger() -> list[str]:
+ def reconcile_work_package(wp_arg: str) -> str:
+     m = WP_ID_FORMS.match(wp_arg.strip())
+     if not m:
+-        raise ValidationError(f"{wp_arg!r} is not a work package id (WP-2026-NNNN or BADF-WP-NNNN)")
+-    wp = f"WP-2026-{m.group(1)}"
++        raise ValidationError(f"{wp_arg!r} is not a work package id ({WP_NAMESPACE}NNNN or {WP_DISPLAY}NNNN)")
++    wp = f"{WP_NAMESPACE}{m.group(1)}"
+     path = ROOT / "work" / wp / "work-package.json"
+     if not path.is_file():
+         raise ValidationError(f"{wp} has no record at work/{wp}/work-package.json")
+@@ -2438,7 +2448,7 @@ def advance_instance(path: Path, dossier_rel: str) -> str:
+     validate_instance(inst)   # deny unless established
+     state = load_json(inst / "badf/state.json")
+     wp_id = state["active_work_package"]
+-    m = re.fullmatch(r"work/(WP-2026-[0-9]{4})/gate-dossier\.(G(?:0[0-9]|1[0-4]))\.json", dossier_rel.replace("\\", "/"))
++    m = re.fullmatch(rf"work/({re.escape(WP_NAMESPACE)}[0-9]{{4}})/gate-dossier\.(G(?:0[0-9]|1[0-4]))\.json", dossier_rel.replace("\\", "/"))
+     if not m:
+         raise ValidationError(f"dossier must be the framework's work/<WP>/gate-dossier.<gate>.json, got {dossier_rel!r}")
+     if m.group(1) != wp_id:
+@@ -2606,12 +2616,12 @@ def discover_project(root: Path) -> list[dict[str, str]]:
+ 
+ def next_wp_id() -> str:
+     nums = []
+-    for d in (ROOT / "work").glob("WP-2026-*"):
++    for d in (ROOT / "work").glob(f"{WP_NAMESPACE}*"):
+         try:
+             nums.append(int(d.name.split("-")[-1]))
+         except ValueError:
+             pass
+-    return f"WP-2026-{(max(nums) + 1 if nums else 1):04d}"
++    return f"{WP_NAMESPACE}{(max(nums) + 1 if nums else 1):04d}"
+ 
+ 
+ def init_project(intent_path: Path) -> str:
+@@ -2655,7 +2665,7 @@ def init_project(intent_path: Path) -> str:
+     repos = registry.setdefault("repositories", {})
+     if proj["repository"] in repos:
+         raise ValidationError(f"{proj['repository']} is already registered; init refuses to overwrite a registry entry")
+-    existing = [d for d in (ROOT / "work").glob("WP-2026-*/work-package.json")
++    existing = [d for d in (ROOT / "work").glob(f"{WP_NAMESPACE}*/work-package.json")
+                 if load_json(d).get("repository") == proj["repository"]]
+     if existing:
+         raise ValidationError(f"{proj['repository']} already has work package {existing[0].parent.name}; init refuses to duplicate")
+@@ -2852,7 +2862,7 @@ def self_dossier(wp_id: str) -> str:
+     m = WP_ID_FORMS.match(wp_id.strip())
+     if not m:
+         raise ValidationError(f"{wp_id!r} is not a work package id")
+-    wp_id = f"WP-2026-{m.group(1)}"
++    wp_id = f"{WP_NAMESPACE}{m.group(1)}"
+     wp_dir = ROOT / "work" / wp_id
+     wp_path = wp_dir / "work-package.json"
+     if not wp_path.is_file():
+diff --git a/scripts/check_pr_traceability.py b/scripts/check_pr_traceability.py
+index 1ff8976..c4ff8e1 100644
+--- a/scripts/check_pr_traceability.py
++++ b/scripts/check_pr_traceability.py
+@@ -2,19 +2,41 @@
+ """BADF-MAIN-001 traceability: a PR body must name its Work Package and the
+ Issue it closes. Deterministic; reads the body from argv or stdin.
+ 
+-Exit 0  both present and well-formed
+-Exit 1  missing or malformed -- prints exactly which
++BADF-WP-0070 (badf-git GIT-B) froze ONE work-package identity with three
++faces and one binding, and this check enforces it on every pull request:
++
++  binding   the body trailer  `Work-Package: <machine id>`   (canonical only)
++  label     the PR title      `<display label>: <concise outcome>`
++  branch    the head ref      `wp/<machine id>-<slug>`
++
++all three carrying the same NNNN. The machine id namespace is defined once in
++badf_gate.py and imported here -- this file carries no literal of its own.
++History is never rewritten: badf_gate.py keeps resolving historical
++display-form trailers; only new PRs must bind the canonical form.
++
++Exit 0  everything present, well-formed and consistent
++Exit 1  refused -- prints exactly which, with the line to paste
++Exit 2  usage -- --title and --head-ref are REQUIRED (CI passes them from the
++        pull_request event); absence is an error, never a silent skip
+ 
+ This is the first link of the chain Issue -> WP -> branch -> PR -> main,
+ made checkable. Until BADF-WP-0016, zero commits on main referenced an
+ Issue; this check is what makes that number stop being zero.
+ """
++import argparse
+ import re
+ import sys
++from pathlib import Path
+ 
+-WP = re.compile(r"^Work-Package:\s*(BADF-WP-[0-9]{4}|WP-2026-[0-9]{4})\s*$", re.M)
+-CLOSES = re.compile(r"^(Closes|Fixes|Resolves):?\s+#([0-9]+)\s*$", re.M | re.I)
++sys.path.insert(0, str(Path(__file__).resolve().parent))
++from badf_gate import WP_DISPLAY, WP_NAMESPACE  # noqa: E402
+ 
++_NS, _DL = re.escape(WP_NAMESPACE), re.escape(WP_DISPLAY)
++WP = re.compile(rf"^Work-Package:\s*({_NS}[0-9]{{4}})\s*$", re.M)
++WP_DISPLAY_TRAILER = re.compile(rf"^Work-Package:\s*{_DL}([0-9]{{4}})\s*$", re.M)
++CLOSES = re.compile(r"^(Closes|Fixes|Resolves):?\s+#([0-9]+)\s*$", re.M | re.I)
++TITLE = re.compile(rf"^{_DL}([0-9]{{4}}):\s+\S")
++HEAD_REF = re.compile(rf"^wp/{_NS}([0-9]{{4}})-([a-z0-9]+(?:-[a-z0-9]+)*)$")
+ # The PR body is the squash commit message on main -- the surface the next agent
+ # greps. `.github/pull_request_template.md` REQUESTS this shape; this check
+ # ENFORCES it, because `gh pr create --body-file` bypasses the web template
+@@ -27,9 +49,16 @@ def _section(name: str) -> "re.Pattern[str]":
+ 
+ 
+ def check(body: str) -> list[str]:
++    """Body-only problems: the binding trailer, the Closes line, the sections."""
+     problems = []
+     if not WP.search(body):
+-        problems.append("missing `Work-Package: BADF-WP-NNNN` line")
++        d = WP_DISPLAY_TRAILER.search(body)
++        if d:
++            problems.append(f"the Work-Package trailer must be the canonical machine id -- paste "
++                            f"`Work-Package: {WP_NAMESPACE}{d.group(1)}` (found `{WP_DISPLAY}{d.group(1)}`; "
++                            f"{WP_DISPLAY}NNNN is the display label for the PR title only -- BADF-WP-0070)")
++        else:
++            problems.append(f"missing `Work-Package: {WP_NAMESPACE}NNNN` line")
+     if not CLOSES.search(body):
+         problems.append("missing `Closes #N` line (every PR closes the Issue that demanded it)")
+     for name in REQUIRED_SECTIONS:
+@@ -38,14 +67,41 @@ def check(body: str) -> list[str]:
+     return problems
+ 
+ 
+-def main() -> int:
+-    body = sys.argv[1] if len(sys.argv) > 1 else sys.stdin.read()
+-    problems = check(body)
++def check_identity(body: str, title: str, head_ref: str) -> list[str]:
++    """Title and branch must carry the trailer's NNNN (BADF-WP-0070 / GIT-B)."""
++    problems = []
++    bound = WP.search(body)
++    nnnn = bound.group(1)[len(WP_NAMESPACE):] if bound else None
++    t = TITLE.match(title or "")
++    if not t:
++        want = f"{WP_DISPLAY}{nnnn or 'NNNN'}: <concise outcome>"
++        problems.append(f"the PR title must start with the display label `{want}` (BADF-WP-0070), got {title!r}")
++    elif nnnn and t.group(1) != nnnn:
++        problems.append(f"the PR title label {WP_DISPLAY}{t.group(1)} does not match the trailer "
++                        f"`Work-Package: {WP_NAMESPACE}{nnnn}` -- one NNNN across trailer, title and branch")
++    h = HEAD_REF.match(head_ref or "")
++    if not h:
++        want = f"wp/{WP_NAMESPACE}{nnnn or 'NNNN'}-<slug>"
++        problems.append(f"the head branch must be `{want}` (lowercase kebab slug; BADF-WP-0070), got {head_ref!r}")
++    elif nnnn and h.group(1) != nnnn:
++        problems.append(f"the head branch id {WP_NAMESPACE}{h.group(1)} does not match the trailer "
++                        f"`Work-Package: {WP_NAMESPACE}{nnnn}` -- one NNNN across trailer, title and branch")
++    return problems
++
++
++def main(argv: list[str] | None = None) -> int:
++    ap = argparse.ArgumentParser(description="BADF-MAIN-001 PR traceability + BADF-WP-0070 identity contract")
++    ap.add_argument("body", nargs="?", help="the PR body; read from stdin when omitted")
++    ap.add_argument("--title", required=True, help="the PR title (github.event.pull_request.title)")
++    ap.add_argument("--head-ref", required=True, help="the PR head branch (github.event.pull_request.head.ref)")
++    args = ap.parse_args(argv)
++    body = args.body if args.body is not None else sys.stdin.read()
++    problems = check(body) + check_identity(body, args.title, args.head_ref)
+     if problems:
+         print("BADF TRACEABILITY FAIL: " + "; ".join(problems), file=sys.stderr)
+         return 1
+     wp = WP.search(body).group(1); issue = CLOSES.search(body).group(2)
+-    print(f"BADF TRACEABILITY PASS: {wp} closes #{issue}")
++    print(f"BADF TRACEABILITY PASS: {wp} closes #{issue} on {args.head_ref}")
+     return 0
+ 
+ 
+diff --git a/skills/badf-git/references/branch-pr-contract.md b/skills/badf-git/references/branch-pr-contract.md
+index 066a00f..23ebba1 100644
+--- a/skills/badf-git/references/branch-pr-contract.md
++++ b/skills/badf-git/references/branch-pr-contract.md
+@@ -1,6 +1,6 @@
+ # Branch, Worktree and Pull Request Contract
+ 
+-This reference defines how a BADF Git change is isolated and bound to its work package. It proposes a future canonical branch form but deliberately does **not** enforce branch names in this contract-freeze WP.
++This reference defines how a BADF Git change is isolated and bound to its work package. GIT-A (WP-2026-0066) proposed the canonical branch form and deferred enforcement; GIT-B (**WP-2026-0070**) froze the machine work-package id and made the form live on every pull request.
+ 
+ ## Identity hierarchy
+ 
+@@ -16,13 +16,13 @@ A label cannot override a contradictory work-package record. If `WP-2026-NNNN`,
+ 
+ ## Proposed canonical branch form
+ 
+-Future BADF branch naming should converge on:
++BADF branch naming is frozen as:
+ 
+ ```text
+ wp/<CANONICAL-WORK-PACKAGE-ID>-<short-slug>
+ ```
+ 
+-Example once a canonical machine ID is frozen:
++The canonical machine ID is `WP-2026-NNNN` (`WP-2026-` is a fixed ledger namespace constant, not a calendar field), so the enforced form is `wp/WP-2026-NNNN-<slug>` — for example:
+ 
+ ```text
+ wp/WP-2026-0066-git-contract-freeze
+@@ -32,11 +32,11 @@ Rules:
+ 
+ - `wp/` declares a bounded work-package topic branch, not authority level.
+ - `<CANONICAL-WORK-PACKAGE-ID>` must match the work-package artifact exactly.
+-- `<short-slug>` is descriptive and disposable; it is never an identity key.
+-- branch-name enforcement is deferred to a later work package because BADF currently has historical identity/naming variation.
++- `<short-slug>` is descriptive and disposable; it is never an identity key. It is lowercase kebab (`[a-z0-9]+(-[a-z0-9]+)*`).
++- enforcement is live from WP-2026-0070: `scripts/check_pr_traceability.py` refuses a pull request whose head ref is not `wp/WP-2026-NNNN-<slug>`, or whose NNNN differs from the body trailer's. Historical branches are never renamed (GIT-I06).
+ - no permanent `develop`, `integration`, `staging`, `alpha`, or `beta` branch is introduced to represent lifecycle state.
+ 
+-Until repository-wide identity is frozen, tooling must read the canonical work-package artifact/body binding and **must not infer authority from branch regex alone**.
++Identity is frozen, but a branch name is still a label: tooling reads the canonical work-package artifact/body binding and **must not infer authority from branch regex alone** — the regex proves consistency, never permission.
+ 
+ ## Branch creation contract
+ 
+@@ -165,13 +165,13 @@ and must make clear:
+ - residual risks/unknowns;
+ - authority boundary (what the PR does not authorize).
+ 
+-Current BADF human-facing PR titles commonly use a display label such as:
++The PR title must carry the display label, with the same NNNN as the trailer and the branch (enforced from WP-2026-0070):
+ 
+ ```text
+ BADF-WP-0066: <concise outcome>
+ ```
+ 
+-That title is permitted only as a display label when it maps unambiguously to the canonical machine work-package ID. The PR body/work-package artifact remains authoritative.
++The label is human-facing only; it maps to the canonical machine work-package ID by NNNN. The PR body trailer `Work-Package: WP-2026-NNNN` (the display form there is refused) and the work-package artifact remain authoritative.
+ 
+ ## PR update contract
+ 
+diff --git a/tests/test_badf_git_contract.py b/tests/test_badf_git_contract.py
+index 8800fd8..5112a6b 100644
+--- a/tests/test_badf_git_contract.py
++++ b/tests/test_badf_git_contract.py
+@@ -63,10 +63,13 @@ class BadfGitContractTests(unittest.TestCase):
+         for token in required:
+             self.assertIn(token, text)
+ 
+-    def test_branch_contract_is_proposed_not_enforced(self):
++    def test_branch_contract_is_frozen_and_enforced_from_git_b(self):
+         text = (REFERENCES / "branch-pr-contract.md").read_text(encoding="utf-8")
+         self.assertIn("wp/<CANONICAL-WORK-PACKAGE-ID>-<short-slug>", text)
+-        self.assertIn("branch-name enforcement is deferred", text)
++        # BADF-WP-0070 (GIT-B) froze the machine id and made the branch form live;
++        # the deferral wording GIT-A carried is retired with it.
++        self.assertNotIn("branch-name enforcement is deferred", text)
++        self.assertIn("WP-2026-0070", text)
+         self.assertIn("--force-with-lease", text)
+         self.assertIn("Bare `--force` is not a normal BADF workflow", text)
+         self.assertIn("`git range-diff`", text)
+diff --git a/tests/test_badf_traceability.py b/tests/test_badf_traceability.py
+index 66c1958..58baaf5 100644
+--- a/tests/test_badf_traceability.py
++++ b/tests/test_badf_traceability.py
+@@ -2,7 +2,17 @@
+ closes. Before BADF-WP-0016, 23 of 23 non-merge commits on main referenced
+ no Issue and the repository had never had one. This check is the first
+ link of Issue -> WP -> branch -> PR -> main, made deterministic.
++
++BADF-WP-0070 (GIT-B, the badf-git identity contract) froze ONE identity with
++three faces and one binding: the machine id `WP-2026-NNNN` (WP-2026- is a
++fixed ledger namespace constant, defined once in badf_gate.py), the display
++label `BADF-WP-NNNN` permitted only in the PR title / squash subject, and the
++branch `wp/WP-2026-NNNN-<slug>` -- all three carrying one NNNN, bound by the
++body trailer `Work-Package: WP-2026-NNNN`. Before it, title, branch and
++trailer could each name a different work package and CI stayed green; the
++check accepted either trailer form and looked at neither title nor branch.
+ """
++import re
+ import subprocess
+ import sys
+ import unittest
+@@ -16,18 +26,22 @@ import check_pr_traceability as tr  # noqa: E402
+ # isolates one failure (BADF-WP-0034 added the section requirement, so the
+ # trailer-isolation tests must carry the sections).
+ SECTIONS = "## What\nx\n\n## Verification\nx\n"
+-FULL = SECTIONS + "Work-Package: BADF-WP-0016\nCloses #19\n"
++FULL = SECTIONS + "Work-Package: WP-2026-0016\nCloses #19\n"
++TITLE = "BADF-WP-0016: main is PR-only"
++HEAD = "wp/WP-2026-0016-pr-only"
++
++
++def cli(body: str, *args: str) -> subprocess.CompletedProcess:
++    return subprocess.run([sys.executable, "scripts/check_pr_traceability.py", *args], input=body,
++                          cwd=str(gate.ROOT), capture_output=True, text=True)
+ 
+ 
+ class TraceabilityTests(unittest.TestCase):
+     def test_full_body_passes(self):
+         self.assertEqual(tr.check(FULL), [])
+ 
+-    def test_legacy_wp_form_accepted(self):
+-        self.assertEqual(tr.check(SECTIONS + "Work-Package: WP-2026-0010\nFixes #3\n"), [])
+-
+     def test_missing_closes_is_named(self):
+-        p = tr.check(SECTIONS + "Work-Package: BADF-WP-0016\n")
++        p = tr.check(SECTIONS + "Work-Package: WP-2026-0016\n")
+         self.assertEqual(len(p), 1); self.assertIn("Closes #N", p[0])
+ 
+     def test_missing_wp_is_named(self):
+@@ -39,18 +53,18 @@ class TraceabilityTests(unittest.TestCase):
+ 
+     def test_closes_must_be_its_own_line(self):
+         """A 'Closes #N' buried mid-sentence is prose, not a declaration."""
+-        self.assertTrue(any("Closes" in x for x in tr.check(SECTIONS + "Work-Package: BADF-WP-0016\nsee Closes #19 later\n")))
++        self.assertTrue(any("Closes" in x for x in tr.check(SECTIONS + "Work-Package: WP-2026-0016\nsee Closes #19 later\n")))
+ 
+     def test_empty_body_names_everything(self):
+         p = tr.check("")
+         self.assertEqual(len(p), 4)   # WP, Closes, What, Verification
+ 
+     def test_missing_a_required_section_is_named(self):
+-        p = tr.check("## What\nx\n\nWork-Package: BADF-WP-0016\nCloses #19\n")
++        p = tr.check("## What\nx\n\nWork-Package: WP-2026-0016\nCloses #19\n")
+         self.assertEqual(len(p), 1); self.assertIn("Verification", p[0])
+ 
+     def test_a_section_must_be_a_heading_not_prose(self):
+-        body = "we did the Verification and What of it\nWork-Package: BADF-WP-0016\nCloses #19\n"
++        body = "we did the Verification and What of it\nWork-Package: WP-2026-0016\nCloses #19\n"
+         self.assertEqual({x.split("`")[1] for x in tr.check(body)}, {"## What", "## Verification"})
+ 
+     def test_pr_template_carries_the_required_sections_and_trailers(self):
+@@ -62,20 +76,110 @@ class TraceabilityTests(unittest.TestCase):
+     def test_issue_form_requests_the_problem_contract_sections(self):
+         # Parse the labels deterministically -- PyYAML is not a project dependency
+         # and is absent on the CI runner (this test errored there before the fix).
+-        import re as _re
+         form = (gate.ROOT / ".github/ISSUE_TEMPLATE/demand.yml").read_text(encoding="utf-8")
+-        labels = set(_re.findall(r"(?m)^\s+label:\s*(.+?)\s*$", form))
++        labels = set(re.findall(r"(?m)^\s+label:\s*(.+?)\s*$", form))
+         self.assertLessEqual({"Observed", "Expected", "Proposed work package"}, labels)
+         cfg = (gate.ROOT / ".github/ISSUE_TEMPLATE/config.yml").read_text(encoding="utf-8")
+         self.assertRegex(cfg, r"(?m)^blank_issues_enabled:\s*false\b", "a demand must use the form, not a blank issue")
+ 
+     def test_cli_exit_codes(self):
+         for body, want in ((FULL, 0), ("", 1)):
+-            r = subprocess.run([sys.executable, "scripts/check_pr_traceability.py"], input=body,
+-                               cwd=str(gate.ROOT), capture_output=True, text=True)
++            r = cli(body, "--title", TITLE, "--head-ref", HEAD)
+             self.assertEqual(r.returncode, want, r.stdout + r.stderr)
+             self.assertNotIn("Traceback", r.stderr)
+ 
+ 
++class IdentityContractTests(unittest.TestCase):
++    """BADF-WP-0070 / GIT-B: one NNNN across trailer, title and branch."""
++
++    # -- the binding: the trailer is the canonical machine id --------------------
++    def test_canonical_trailer_title_and_branch_pass(self):
++        r = cli(FULL, "--title", TITLE, "--head-ref", HEAD)
++        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        self.assertIn("BADF TRACEABILITY PASS: WP-2026-0016 closes #19 on wp/WP-2026-0016-pr-only", r.stdout)
++
++    def test_display_form_trailer_is_refused_with_canonical_fix(self):
++        """Retires test_legacy_wp_form_accepted (BADF-WP-0016..0069 accepted either
++        form). The display label is for titles; the trailer is the binding."""
++        p = tr.check(SECTIONS + "Work-Package: BADF-WP-0016\nCloses #19\n")
++        self.assertEqual(len(p), 1, p)
++        self.assertIn("Work-Package: WP-2026-0016", p[0])   # the exact line to paste
++
++    # -- the display label: title ----------------------------------------------
++    def test_title_without_display_label_is_refused(self):
++        p = tr.check_identity(FULL, "enforce the identity contract", HEAD)
++        self.assertEqual(len(p), 1, p); self.assertIn("BADF-WP-0016:", p[0])
++
++    def test_title_label_must_match_trailer_id(self):
++        p = tr.check_identity(FULL, "BADF-WP-0017: something else", HEAD)
++        self.assertEqual(len(p), 1, p)
++        self.assertIn("BADF-WP-0017", p[0]); self.assertIn("WP-2026-0016", p[0])
++
++    # -- the branch ---------------------------------------------------------------
++    def test_branch_outside_wp_namespace_is_refused(self):
++        for head in ("feat/identity", "feature/BADF-WP-0016-x", "fix/BADF-BUG-0001-x", "chore/x", "gov/BADF-WP-0016-x", "main"):
++            with self.subTest(head=head):
++                p = tr.check_identity(FULL, TITLE, head)
++                self.assertEqual(len(p), 1, p); self.assertIn("wp/WP-2026-0016-", p[0])
++
++    def test_branch_with_display_id_is_refused(self):
++        p = tr.check_identity(FULL, TITLE, "wp/BADF-WP-0016-pr-only")
++        self.assertEqual(len(p), 1, p); self.assertIn("wp/WP-2026-0016-", p[0])
++
++    def test_branch_id_must_match_trailer_id(self):
++        p = tr.check_identity(FULL, TITLE, "wp/WP-2026-0017-pr-only")
++        self.assertEqual(len(p), 1, p)
++        self.assertIn("WP-2026-0017", p[0]); self.assertIn("WP-2026-0016", p[0])
++
++    def test_branch_slug_must_be_lowercase_kebab(self):
++        for bad in ("wp/WP-2026-0016-PR_Only", "wp/WP-2026-0016-", "wp/WP-2026-0016", "wp/WP-2026-0016--x", "wp/WP-2026-0016-x/y"):
++            with self.subTest(head=bad):
++                self.assertEqual(len(tr.check_identity(FULL, TITLE, bad)), 1, bad)
++        self.assertEqual(tr.check_identity(FULL, TITLE, "wp/WP-2026-0016-identity-contract-2"), [])
++
++    def test_missing_title_or_head_ref_is_a_usage_error_not_a_pass(self):
++        for args in ((), ("--title", TITLE), ("--head-ref", HEAD)):
++            with self.subTest(args=args):
++                r = cli(FULL, *args)
++                self.assertEqual(r.returncode, 2, r.stdout + r.stderr)
++                self.assertNotIn("PASS", r.stdout)
++                self.assertNotIn("Traceback", r.stderr)
++
++    # -- one namespace constant, defined once --------------------------------------
++    def test_namespace_constant_is_defined_once_and_shared(self):
++        gate_src = (gate.ROOT / "scripts/badf_gate.py").read_text(encoding="utf-8")
++        self.assertEqual(gate_src.count('WP_NAMESPACE = "WP-2026-"'), 1)
++        self.assertEqual(gate_src.count('"WP-2026-'), 1, "badf_gate.py must build every id from WP_NAMESPACE, not repeat the literal")
++        for name in ("badf_compose.py", "check_pr_traceability.py"):
++            src = (gate.ROOT / "scripts" / name).read_text(encoding="utf-8")
++            self.assertNotIn("WP-2026-", src, f"{name} carries its own namespace literal")
++            self.assertIn("WP_NAMESPACE", src, f"{name} does not share the constant")
++        self.assertEqual(tr.WP_NAMESPACE, gate.WP_NAMESPACE)
++        import badf_compose as compose  # noqa: E402  (import-safe: docstring, imports, constants, defs)
++        self.assertEqual(compose.WP_NAMESPACE, gate.WP_NAMESPACE)
++
++    # -- history is not rewritten ---------------------------------------------------
++    def test_ledger_still_resolves_historical_display_form_trailers(self):
++        landings = gate.ledger_landings()
++        self.assertIn("WP-2026-0016", landings)   # 12f5056 carries `Work-Package: BADF-WP-0016`
++        self.assertGreaterEqual(len(landings), 50)
++        self.assertTrue(all(re.fullmatch(rf"{re.escape(gate.WP_NAMESPACE)}[0-9]{{4}}", k) for k in landings))
++
++    # -- doctrine moves with the contract ------------------------------------------
++    def test_control_plane_and_template_name_the_canonical_forms(self):
++        plane = (gate.ROOT / "docs/governance/GITHUB_CONTROL_PLANE.md").read_text(encoding="utf-8")
++        self.assertIn("wp/WP-2026-NNNN-<slug>", plane)
++        self.assertNotIn("wp/BADF-WP-NNNN", plane)
++        tmpl = (gate.ROOT / ".github/pull_request_template.md").read_text(encoding="utf-8")
++        self.assertIn("Work-Package: WP-2026-NNNN", tmpl)
++        self.assertNotIn("Work-Package: BADF-WP-NNNN", tmpl)
++
++    def test_branch_pr_contract_declares_enforcement_live_from_this_wp(self):
++        text = (gate.ROOT / "skills/badf-git/references/branch-pr-contract.md").read_text(encoding="utf-8")
++        self.assertNotIn("branch-name enforcement is deferred", text)
++        self.assertIn("WP-2026-0070", text)
++        self.assertIn("wp/WP-2026-NNNN-<slug>", text)
++
++
+ if __name__ == "__main__":
+     unittest.main()
+diff --git a/work/WP-2026-0068/work-package.json b/work/WP-2026-0068/work-package.json
+index 8d60367..606de4c 100644
+--- a/work/WP-2026-0068/work-package.json
++++ b/work/WP-2026-0068/work-package.json
+@@ -43,11 +43,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "8673d9a"
++    "base_revision": "8673d9a",
++    "landed_as": "c04981dffca5a9b65269350029cf49618929962b"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Adds no gate code -- no new control, no mutation; a declarative contract freeze like badf-git WP-0066. Built in an isolated worktree (badf-wt-sol) per GIT-I04 alongside BARCHI-2's GIT-C. Resolves #128 / GOV-0047. Reconciles WP-2026-0067."
+ }

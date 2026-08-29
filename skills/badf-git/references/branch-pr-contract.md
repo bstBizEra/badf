@@ -1,6 +1,6 @@
 # Branch, Worktree and Pull Request Contract
 
-This reference defines how a BADF Git change is isolated and bound to its work package. It proposes a future canonical branch form but deliberately does **not** enforce branch names in this contract-freeze WP.
+This reference defines how a BADF Git change is isolated and bound to its work package. GIT-A (WP-2026-0066) proposed the canonical branch form and deferred enforcement; GIT-B (**WP-2026-0070**) froze the machine work-package id and made the form live on every pull request.
 
 ## Identity hierarchy
 
@@ -16,13 +16,13 @@ A label cannot override a contradictory work-package record. If `WP-2026-NNNN`, 
 
 ## Proposed canonical branch form
 
-Future BADF branch naming should converge on:
+BADF branch naming is frozen as:
 
 ```text
 wp/<CANONICAL-WORK-PACKAGE-ID>-<short-slug>
 ```
 
-Example once a canonical machine ID is frozen:
+The canonical machine ID is `WP-2026-NNNN` (`WP-2026-` is a fixed ledger namespace constant, not a calendar field), so the enforced form is `wp/WP-2026-NNNN-<slug>` — for example:
 
 ```text
 wp/WP-2026-0066-git-contract-freeze
@@ -32,11 +32,11 @@ Rules:
 
 - `wp/` declares a bounded work-package topic branch, not authority level.
 - `<CANONICAL-WORK-PACKAGE-ID>` must match the work-package artifact exactly.
-- `<short-slug>` is descriptive and disposable; it is never an identity key.
-- branch-name enforcement is deferred to a later work package because BADF currently has historical identity/naming variation.
+- `<short-slug>` is descriptive and disposable; it is never an identity key. It is lowercase kebab (`[a-z0-9]+(-[a-z0-9]+)*`).
+- enforcement is live from WP-2026-0070: `scripts/check_pr_traceability.py` refuses a pull request whose head ref is not `wp/WP-2026-NNNN-<slug>`, or whose NNNN differs from the body trailer's. Historical branches are never renamed (GIT-I06).
 - no permanent `develop`, `integration`, `staging`, `alpha`, or `beta` branch is introduced to represent lifecycle state.
 
-Until repository-wide identity is frozen, tooling must read the canonical work-package artifact/body binding and **must not infer authority from branch regex alone**.
+Identity is frozen, but a branch name is still a label: tooling reads the canonical work-package artifact/body binding and **must not infer authority from branch regex alone** — the regex proves consistency, never permission.
 
 ## Branch creation contract
 
@@ -165,13 +165,13 @@ and must make clear:
 - residual risks/unknowns;
 - authority boundary (what the PR does not authorize).
 
-Current BADF human-facing PR titles commonly use a display label such as:
+The PR title must carry the display label, with the same NNNN as the trailer and the branch (enforced from WP-2026-0070):
 
 ```text
 BADF-WP-0066: <concise outcome>
 ```
 
-That title is permitted only as a display label when it maps unambiguously to the canonical machine work-package ID. The PR body/work-package artifact remains authoritative.
+The label is human-facing only; it maps to the canonical machine work-package ID by NNNN. The PR body trailer `Work-Package: WP-2026-NNNN` (the display form there is refused) and the work-package artifact remain authoritative.
 
 ## PR update contract
 
