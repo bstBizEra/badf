@@ -1,0 +1,28 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 695a263..2610b45 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -842,6 +842,23 @@ coverage; the gaps are named, not implied to pass. Two committed shadow matrices
+ `lifecycle.json` change, no new control (the controls are WP-SOL-B/C), no second validator. Registry
+ `VALIDATED → SHADOWED`; `APPROVED`/`ACTIVE` remains the operator's admission decision.
+ 
++## badf-solution-design → ACTIVE — operator admission on a representative shadow (`BADF-WP-0077` / WP-SOL-E, Issue #146 / GOV-0056)
++
++`SHADOWED → ACTIVE` is a **human admission gate** — self-approval is prohibited, so no agent crosses
++it. The operator made the admission decision (2026-08-30): **activate now, accepting the
++representative shadow**, rather than hold `ACTIVE` indefinitely for a real-project composition that
++BADF — a governance framework with no product surface — may not produce soon. This WP records that
++decision as a governed registry advance, mirroring `badf-research` (WP-0058) and `badf-architecture`
++(WP-0065): `ACTIVE` **grants the skill no new authority** (SOL-I12 — the one canonical
++`badf_gate.py solution` stays the sole composition authority; `badf_gate.py` and the platform rules
++remain the authorities), and there is no `lifecycle.json` change, no new control, no second validator.
++
++The admission does **not erase the caveat**: `references/shadow-evidence.md` still labels the shadow
++representative, and the owed real-project re-shadow is filed as a tracked follow-up
++(**#145**, `DISCOVERED`, trigger = the first real project composition). So the ladder stays truthful —
++the capability is admitted for use, its trust is honestly bounded to a representative shadow, and the
++debt to re-shadow on real data is tracked rather than lost. Registry `SHADOWED → ACTIVE`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
