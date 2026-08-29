@@ -1,0 +1,53 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0068",
+  "title": "WP-SOL-A: freeze badf-solution-design composition contract (DESIGNED, thin router, no second gate)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0055",
+  "repository": "bstBizEra/badf",
+  "objective": "Build badf-solution-design as a top-level DECLARATIVE composition capability -- a thin router + constraint contract that composes the detailed specialist design contracts (UX/service, authorization, data, API, accessibility) into one coherent solution and emits G03/G04 evidence. It is NOT a sixth architecture skill, not a new gate, not a document-generation mega-skill: badf-architecture remains the structural spine and G04 coherence authority; badf-solution-design composes/routes/reconciles behavioral contracts against that spine. Freeze the contract only (WP-SOL-A): SKILL.md + eleven reference contracts, the SOL-I01..I12 cross-artifact invariants, the solution-composition matrix concept, the authorization-design framing, the API DESIGN/ASSURE split, and the FRAME->..->PACKAGE workflow. Register DESIGNED.",
+  "business_value": "A collection of individually-valid specialist designs can compose into a broken solution (UX asserts an action authorization denies, an API with no data state behind it, a failure conveyed only by color). BADF has G03/G04 evidence contracts but nothing that reconciles the seams between them. badf-solution-design makes cross-artifact coherence a first-class, deterministic-where-fragile discipline -- the detailed-design equivalent of the G02 RTM -- without a second gate or new authority. Contract-freeze first keeps the admission ladder honest and defers specialist/validator work to separate WPs.",
+  "in_scope": [
+    "skills/badf-solution-design/SKILL.md -- thin router (what/who-owns/inputs/output-contract/reconcile/uncertainty/which-gate); SOL-I01..I12; FRAME->INGEST->ROUTE->SPECIALIZE->COMPOSE->RECONCILE->CHALLENGE->TRACE->PACKAGE; status points to the registry, never hardcoded",
+    "skills/badf-solution-design/references/: composition-contract, routing, traceability, ux-contract, authorization-contract, data-contract, api-contract, accessibility-contract, cross-artifact-consistency, acceptance, external-methodology",
+    "badf/skill-registry.json: register badf-solution-design DESIGNED, C1, allowed_tools=[], real digest",
+    "tests/test_badf_solution_design_contract.py: the declarative surface (11 refs, SOL-I01..I12 stated, no scripts/badf_solution_design.py, no new schema, composes into G03/G04 with no lifecycle change, DESIGNED pin, no hardcoded status, architecture-spine boundary stated)",
+    "GITHUB_CONTROL_PLANE.md doctrine section; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "scripts/badf_solution_design.py or any second validator/gate/mutation engine (SOL-I12; badf_gate.py is the sole gate authority)",
+    "any change to lifecycle.json / the G03/G04 required_evidence or their gate rules (compose into existing evidence)",
+    "activating any specialist skill (ux/rbac/data/api/accessibility adapters) or inventing a global SDM-NNNN id family -- separate later WPs (WP-SOL-B..)",
+    "advancing badf-solution-design past DESIGNED; the measured-gate ADR (deferred); badf-git GIT-B (unowned) and GIT-C (BARCHI-2, #127)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "skills/badf-solution-design/SKILL.md + the eleven named references exist; SKILL.md states SOL-I01..I12, the composition workflow, the architecture-spine boundary (badf-architecture owns boundaries; solution-design MUST NOT invent an architectural boundary absent from the baseline -> raise ARCHITECTURE_CHANGE_REQUIRED), and never hardcodes a lifecycle status",
+    "badf-solution-design registered DESIGNED (C1, allowed_tools=[]) with a real digest; no scripts/badf_solution_design.py and no new schema exist; lifecycle.json unchanged",
+    "the cross-artifact-consistency reference enumerates SOL-I01..I12 with default-deny (SOL-I05: NO MATCH = DENY) and the composition matrix; routing maps signals to specialist adapters (reference/adapt, not authority)",
+    "badf_gate.py + the G03/G04 schemas are unchanged (no new control, nothing to mutate); repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_solution_design_contract.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "8673d9a"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Adds no gate code -- no new control, no mutation; a declarative contract freeze like badf-git WP-0066. Built in an isolated worktree (badf-wt-sol) per GIT-I04 alongside BARCHI-2's GIT-C. Resolves #128 / GOV-0047. Reconciles WP-2026-0067."
+}

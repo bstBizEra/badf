@@ -200,6 +200,16 @@
       "allowed_tools": [],
       "status": "DESIGNED",
       "digest": "sha256:17ea1e412a1c5b35cf87b66797a82872cb2e414cb26be573a8f5ee66fba61778"
+    },
+    {
+      "name": "badf-solution-design",
+      "source": "skills/badf-solution-design/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [],
+      "status": "DESIGNED",
+      "digest": "sha256:5d8848ef97cdd21c62cccfa4ff37b30f71823516566638fbee3cf1d60530ea46"
     }
   ]
 }
