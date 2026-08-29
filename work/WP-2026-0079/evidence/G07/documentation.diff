@@ -1,0 +1,39 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 06ebc66..e342d72 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -885,6 +885,34 @@ content change recomputes the record, never edits it. This work package's own PR
+ and CI verified it. Approval staleness and the expected-head merge guard are GIT-F; the landed-tree
+ comparison after merge is GIT-F/G.
+ 
++## badf-git GIT-F — `MERGED != VERIFIED` (`BADF-WP-0079`, Issue #151 / GOV-0059)
++
++The cycle ends AUTHORIZE → SQUASH → RECONCILE, and the contract says to verify the actual landed
++result against the expected composition — "`MERGED` is not synonymous with `VERIFIED`". Measured
++after GIT-E: the expected-head guard was practised by hand (every merge in this program bound the
++reviewed head SHA through the REST endpoint), and `reconcile` recorded only `landed_as` — it compared
++nothing about the landed content. That left exactly one window the head guard cannot close: `main`
++moving between the last CI run and the merge — hit twice in one day — in which GitHub squashes onto a
++newer base and the landed tree is not the tree that was verified.
++
++**`badf_gate.py reconcile <WP>` now verifies the landing.** It reads the composition record from the
++**landed commit's tree** (never the checkout), computes the landed content tree from the object store
++alone, and refuses — `BLOCKED: … main moved between verification and merge; open recovery` — when it
++differs from the record's `expected_content_tree`; on a match it writes `landed_content_tree` and
++`composition_verified: true` beside `landed_as`. No record → `composition_verified: false`, honest and
++visible; a malformed record is refused, never downgraded. Running this check by hand on the first real
++landing (GIT-E, `5aaeb62`) found a **defect in GIT-E's `content_tree`**: `git rm --cached` refuses a
++path whose worktree file differs from the index and the helper silently returned the *full* tree — it
++had only ever run inside compose's fresh scratch, where the worktree always matches. `content_tree`
++now lives once, in `badf_gate.py`, object-store-only (`read-tree` + `update-index --force-remove` +
++`write-tree` on a temporary index), guarded by a test that computes it on a checkout whose worktree
++sits at a different commit; `badf_compose.py` imports it. Recomputed that way, the landed content of
++`5aaeb62` equals the record: the first landing verified end to end. The `pull-request-integration`
++subskill carries the AUTHORIZE checklist as a `gh`-driven procedure, the head-bound squash call, and
++the rule that the next branch's reconcile is the verification. Approval-freshness enforcement and
++merge queues stay outside (single collaborator; C-1 open and recorded); recovery automation is GIT-G;
++releases are GIT-H.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

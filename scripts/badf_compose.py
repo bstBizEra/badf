@@ -39,7 +39,9 @@ FULL_PATTERN = "test_*.py"
 # The Work-Package line and the machine-id namespace are defined once, in
 # badf_gate.py (BADF-WP-0070 / GIT-B); this script must not repeat the literal.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from badf_gate import WP_LINE, WP_NAMESPACE  # noqa: E402
+from badf_gate import WP_LINE, WP_NAMESPACE, ValidationError, content_tree, load_composition_record  # noqa: E402
+# content_tree and load_composition_record live in badf_gate.py (GIT-F moved them there:
+# reconcile needs the same, object-store-only computation); this script only imports them.
 
 # ---- badf-git GIT-E: the composition claim (BADF-WP-0076) ----------------------------
 # A committed record of what integration is expected to produce. Its binding is the
@@ -49,28 +51,6 @@ from badf_gate import WP_LINE, WP_NAMESPACE  # noqa: E402
 # composed tree and refuses a stale base or a changed content tree. No record is
 # backward compatible: requiring one is a later policy decision.
 RECORD_REL = "evidence/G07/composition-record.json"
-COMPOSITION_REQUIRED = ("schema_version", "observed_at", "repository", "work_package_id", "target_ref", "target_base_sha",
-                        "source_ref", "merge_base_sha", "merge_method", "expected_result_tree", "expected_content_tree",
-                        "policy_epoch", "test_set_epoch", "suite_pattern", "non_coverage")
-
-
-def content_tree(checkout: Path, wp: str, rev: str = "HEAD") -> str:
-    """The tree of <rev> with work/<wp>/ and badf/lockfile.json removed, computed on a
-    temporary index so the checkout's own index is never touched."""
-    with tempfile.TemporaryDirectory(prefix="badf-ctree-") as d:
-        env = {**os.environ, "GIT_INDEX_FILE": str(Path(d) / "index")}
-
-        def run(*a: str) -> subprocess.CompletedProcess:
-            return subprocess.run(["git", "-C", str(checkout), *a], capture_output=True, text=True, env=env)
-
-        r = run("read-tree", rev)
-        if r.returncode:
-            raise RuntimeError(f"cannot read the tree of {rev} in {checkout}: {r.stderr.strip()}")
-        run("rm", "-r", "-q", "--cached", "--ignore-unmatch", "--", f"work/{wp}", "badf/lockfile.json")
-        r = run("write-tree")
-        if r.returncode:
-            raise RuntimeError(f"cannot write the content tree of {rev} in {checkout}: {r.stderr.strip()}")
-        return r.stdout.strip()
 
 
 def _self_name(repo: Path) -> str | None:
@@ -118,19 +98,6 @@ def composition_record(*, repo: Path, candidate: str, wp: str, base: str, cand: 
                          "source_head_sha and expected_result_tree are informational: committing this record moves both; "
                          "the binding is expected_content_tree (work/<WP>/ and the lockfile excluded)"],
     }
-
-
-def load_composition_record(path: Path) -> dict:
-    try:
-        rec = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError) as exc:
-        raise ValueError(f"{path} is not a git-composition record ({exc.__class__.__name__})")
-    if not isinstance(rec, dict) or rec.get("record") != "git-composition":
-        raise ValueError(f"{path} is not a git-composition record (no `record: git-composition`)")
-    missing = [k for k in COMPOSITION_REQUIRED if k not in rec]
-    if missing:
-        raise ValueError(f"{path} is not a complete git-composition record; missing {missing}")
-    return rec
 
 
 def verify_composition_record(rec: dict, *, wp: str, base: str, ctree: str) -> list[str]:
@@ -250,7 +217,7 @@ def compose(args: argparse.Namespace) -> int:
         if rec_path.is_file():
             try:
                 committed = load_composition_record(rec_path)
-            except ValueError as exc:
+            except ValidationError as exc:
                 return fail(f"composition record: {exc}")
             problems = verify_composition_record(committed, wp=wp, base=base, ctree=ctree)
             if problems:

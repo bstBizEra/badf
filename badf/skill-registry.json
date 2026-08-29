@@ -250,6 +250,16 @@
       "allowed_tools": [],
       "status": "DESIGNED",
       "digest": "sha256:60d0a80d0ec829627555698c353b962975e519a2a71b081109b5d75320cdef6e"
+    },
+    {
+      "name": "pull-request-integration",
+      "source": "skills/badf-git/subskills/pull-request-integration/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:fe791d3c83645bea915c6bc65325cadda46034f91047363c40585c728981095c"
     }
   ]
 }

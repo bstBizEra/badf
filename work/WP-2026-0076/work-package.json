@@ -50,6 +50,8 @@
     "repository": "bstBizEra/badf",
     "branch": "main",
     "base_revision": "1b80d7c",
+    "landed_content_tree": "2a258edbfe84ed513f9becc1be87f4c7f12d0d14",
+    "composition_verified": true,
     "landed_as": "5aaeb62bb7029a00b487ff9746acd791d5235373"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-E per GTGM v0.1 section 17, after GIT-D (WP-2026-0075 / f1a0a5c). Resolves #144 / GOV-0055. Reconciles WP-2026-0077 (badf-solution-design ACTIVE, 1b80d7c, landed while this branch was open; 0074/0075 were reconciled upstream) -- branch rebased onto dc6b608 then 1b80d7c. Engineered by BARCHI-2 in a linked worktree under the operator's /loop ('proceed on your call'); parallel seat BARCHI-1 on WP-2026-0074 (#143)."

@@ -1,0 +1,54 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0079",
+  "title": "GIT-F integration: `reconcile` verifies the landed content tree against the committed composition record (MERGED != VERIFIED, no network); content_tree canonical and object-store-only; pull-request-integration subskill",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0066",
+  "repository": "bstBizEra/badf",
+  "objective": "Make MERGED become VERIFIED deterministically and offline. `badf_gate.py reconcile <WP>` reads the composition record from the LANDED commit's tree (git show <sha>:work/<WP>/evidence/G07/composition-record.json), computes the landed content tree object-store-only (read-tree <sha> + update-index --force-remove work/<WP>/ and badf/lockfile.json + write-tree on a temporary index, never consulting the worktree), and refuses BLOCKED when it differs from the record's expected_content_tree (main moved between verification and merge; open recovery, never rewrite main); on a match it writes external_target.landed_content_tree and composition_verified: true beside landed_as; no record -> composition_verified: false (honest, visible); a malformed record is refused, never downgraded to no-record. content_tree moves to badf_gate.py as its single home (badf_compose.py imports it) and is fixed: GIT-E's version used git rm --cached, which refuses paths whose worktree differs from the index and silently returned the full tree outside a fresh scratch. The pull-request-integration subskill carries the AUTHORIZE checklist as procedure (the REST merge bound to the reviewed head sha, mergeable_state clean, checks on the current head, base unchanged since the CI run) and the post-merge rule: the next branch's reconcile is the verification; BLOCKED opens recovery.",
+  "business_value": "The expected-head guard protects the source identity but cannot close the window in which main moves between the last CI run and the merge -- this program hit that window twice today. With GIT-E's record stating the expected content tree, the landed squash can be verified against it from the object store alone, so every landing carries proof that what landed is what was verified -- GTGM v0.1 sections 13, 15 and 17 (GIT-F); git-cycle.md sections 9-11.",
+  "in_scope": [
+    "badf_gate.py: content_tree (canonical, object-store-only) + load_composition_record moved in; reconcile_work_package verifies the landed content tree against the landed record; landed_content_tree + composition_verified written into external_target",
+    "badf_compose.py: imports content_tree / load_composition_record from badf_gate (no duplicate)",
+    "skills/badf-git/subskills/pull-request-integration/SKILL.md registered IMPLEMENTED, C1, allowed_tools []; badf-git root stays DESIGNED",
+    "tests/test_badf_git_integration.py (8 tests, failing-first, the reconcile fixture pattern with a simulated squash on origin/<default>)",
+    "GITHUB_CONTROL_PLANE.md doctrine section; own composition record + G07 self-dossier; lockfile re-signed"
+  ],
+  "out_of_scope": [
+    "any gate code that talks to GitHub (rulesets, checks, approvals via API) -- platform observations stay the procedure's, made with gh",
+    "approval-freshness enforcement (single collaborator; C-1 stays open and recorded); merge queues; release tags -- GIT-H; recovery automation for a BLOCKED reconcile -- GIT-G; the remote-workspace mode (#133)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "a landing whose content tree equals the record's expected_content_tree reconciles with landed_as, landed_content_tree and composition_verified true; a landing whose content differs is refused BLOCKED naming both trees and 'main moved between verification and merge', leaving the record untouched; no record reconciles with composition_verified false; a malformed record is refused",
+    "content_tree lives once in badf_gate.py, badf_compose.py imports it, and it is independent of the worktree (computed on a checkout whose worktree sits at a different commit than rev)",
+    "reconcile stays deterministic and network-free; each refusal branch load-bearing (mutation); this WP's reconcile of WP-2026-0076 is the first landed-content verification on real history",
+    "pull-request-integration registered IMPLEMENTED C1 allowed_tools [] with a real digest; root stays DESIGNED; no new script/schema/authority change; repo clean; compose green; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_git_integration.py"
+  ],
+  "evidence": [
+    "failing-first run",
+    "mutation",
+    "compose output incl. composition: CURRENT",
+    "reconcile output for WP-2026-0076 (composition_verified)"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "5aaeb62"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-F per GTGM v0.1 section 17, after GIT-E (WP-2026-0076 / 5aaeb62). Resolves #151 / GOV-0059. Reconciles WP-2026-0076. Engineered by BARCHI-2 in a linked worktree under the operator's /loop ('proceed on your call'); parallel seat BARCHI-1 on WP-2026-0078 (WP-SEC-A)."
+}

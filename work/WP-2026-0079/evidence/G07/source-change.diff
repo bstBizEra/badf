@@ -1,0 +1,542 @@
+diff --git a/badf/demands/BADF-DEM-0066.json b/badf/demands/BADF-DEM-0066.json
+new file mode 100644
+index 0000000..3f293c2
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0066.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0066",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 151,
++    "url": "https://github.com/bstBizEra/badf/issues/151",
++    "exported_at": "2026-08-29T21:00:18Z",
++    "body_digest": "sha256:41342827ef147e8d3aad0974103341c20ba613780e20f1104c3a6e96a9a9cfc2"
++  },
++  "title": "GOV-0059: BADF-WP-GIT-F — integration: `reconcile` verifies the landed content tree against the committed composition record (MERGED != VERIFIED, no network); pull-request-integration subskill",
++  "problem": "## Observed\n\n`badf-git`'s cycle ends `AUTHORIZE → SQUASH → RECONCILE`: before integration re-check the current target SHA, the exact source head, the merge method, required checks, approval freshness and the expected result tree; integrate only the exact reviewed head; and afterwards *verify the actual landed revision/result against the expected composition* — \"`MERGED` is not synonymous with `VERIFIED`\" (`references/git-cycle.md` §9–11; `composition-and-staleness.md` \"Expected-head integration guard\", \"Post-merge reconciliation\"). Measured after GIT-E: the expected-head guard is practised by hand (this program merges through the REST endpoint with `sha` bound to the reviewed head), and `badf_gate.py reconcile` records only `landed_as` from the ledger — it compares **nothing** about the landed content. GIT-E's committed composition record now states the expected content tree, and CI verifies it against the PR's base at run time — but nothing verifies it against what **actually landed**. That leaves exactly one gap the head guard cannot close: `main` moving between the last CI run and the merge (this program hit that window twice today, #147 landing under #148 mid-CI), in which case GitHub squashes onto a newer base and the landed tree is not the tree that was verified. GTGM v0.1 §13 (expected head SHA + post-merge reconciliation), §15 (`pull-request-integration`), §17 **GIT-F — Integration**.\n\n## Expected\n\n**`MERGED` becomes `VERIFIED` deterministically, with no network in the gate.**\n\n1. **`reconcile` compares the landed content tree with the claim.** When `work/WP-2026-0079/evidence/G07/composition-record.json` exists, `badf_gate.py reconcile WP-2026-0079` computes the content tree of the landed squash commit (`landed_as`'s tree with `work/WP-2026-0079/` and `badf/lockfile.json` removed, on a temporary index — the same `content_tree` GIT-E introduced, moved into `badf_gate.py` as the canonical home and imported by `badf_compose.py`) and **refuses** when it differs from the record's `expected_content_tree`: `BLOCKED: the landed content of WP-2026-0079 (<sha>, content tree A) is not the composition that was verified (recorded B) — main moved between verification and merge; open recovery`. On a match it writes `external_target.landed_content_tree` and `composition_verified: true` alongside `landed_as`. No record → reconcile behaves as today and writes `composition_verified: false` (the pre-GIT-E case, honest and visible).\n2. **The `pull-request-integration` subskill** (GTGM §15): the AUTHORIZE checklist as an operator/agent procedure with the exact, already-practised REST call that binds the reviewed head (`PUT /pulls/N/merge` with `sha`, `merge_method: squash`, title + body as the squash message), the pre-merge observations (`mergeable_state == clean`, required check on the *current* head, base unchanged since the CI run — read from the platform, outside the gate), and the post-merge step: `reconcile` on the next branch is the verification, and a `BLOCKED` reconcile opens recovery (a forward fix, never a rewrite of `main`). Registered `IMPLEMENTED`, C1, `allowed_tools: []`; the `badf-git` root stays `DESIGNED`.\n3. **Ledger evidence:** the compose ledger line reports `composition_verified` for the just-landed WP; the `repo` contract accepts both values (nothing retroactive).\n\n## Acceptance criteria\n\n1. A landing whose content tree equals the record's `expected_content_tree` reconciles, writing `landed_as`, `landed_content_tree` and `composition_verified: true`.\n2. A landing whose content differs from the record (simulated: the base moved between the claim and the squash) is **refused** with `BLOCKED`, naming both trees and \"main moved between verification and merge\"; the record is left untouched (`status` stays `IN_PROGRESS`).\n3. A WP with no record reconciles as today, writing `composition_verified: false`.\n4. A malformed record makes reconcile refuse (it must not silently downgrade to \"no record\").\n5. `content_tree` lives once, in `badf_gate.py`; `badf_compose.py` imports it (no duplicate); both behave identically on the same tree (guarded).\n6. `reconcile` remains deterministic and network-free; it reads only the object store and the tree.\n7. Each refusal branch **load-bearing** (mutation: mismatch tolerated, malformed downgraded to no-record, `composition_verified` written true without a record).\n8. `pull-request-integration` registered `IMPLEMENTED` C1 `allowed_tools: []` with a real digest; root stays `DESIGNED`; no new script, no schema change (the two new keys ride in the existing free-form `external_target`), no authority change; `repo` clean; full suite + compose green in CI.\n9. **This PR is its own subject twice:** it carries a composition record (GIT-E), and the *next* WP's reconcile of it must write `composition_verified: true` — the first landed-content verification on real history.\n\n## Tests (`tests/test_badf_git_integration.py`, the reconcile fixture pattern: scratch clone, a squash simulated on `origin/<default>`)\n\n- `test_reconcile_verifies_landed_content_against_the_record`\n- `test_reconcile_refuses_a_landing_whose_content_moved`\n- `test_reconcile_without_a_record_writes_composition_verified_false`\n- `test_reconcile_refuses_a_malformed_record_rather_than_downgrading`\n- `test_content_tree_has_one_home_and_compose_imports_it`\n- `test_reconcile_is_deterministic_and_reads_only`\n- `test_pull_request_integration_subskill_registered_and_root_stays_designed`\n\n## Out of scope\n\n- Any gate code that talks to GitHub (rulesets, checks, approvals via API) — the gate stays deterministic and offline; platform observations are the procedure's, made with `gh`.\n- Approval-freshness *enforcement* (the repo runs under a single collaborator; C-1 stays open and recorded); merge queues; release tags — **GIT-H**.\n- Recovery automation for a `BLOCKED` reconcile — **GIT-G** (the procedure opens recovery; nothing rewrites `main`).\n- The remote-workspace mode (#133).\n\n## Risk / authority / stop conditions\n\n- Change class **C1**; target gate **G07**, `HUMAN_REQUIRED`. No authority change: the merge stays a human/operator action; the gate only verifies what landed.\n- Stop if the comparison would need network, a checkout of `main`, or a schema change; or if scope grows past `reconcile` + the `content_tree` move + one subskill + tests + doctrine.\n- Lean mode: **enforced** — reuse `content_tree`, `ledger_landings`, the reconcile fixture, GIT-E's record.\n\n## Identity\n\n- Ledger **WP-2026-0079** · demand **BADF-DEM-0065** · this issue **GOV-0059** · phase label BADF-WP-GIT-F.\n- Branch `wp/WP-2026-0079-git-integration` in a linked worktree from current `main`; reconciles whatever is `LANDED_UNRECONCILED` at branch time (WP-2026-0076 if GIT-E lands first — and that reconcile is this WP's own first landed-content verification).\n- Sequence: A ✓ B ✓ C ✓ D ✓ E ✓ → **F (this)** → G → H → I → J.\n\nsource: GTGM v0.1 §13, §15, §17 (GIT-F); `git-cycle.md` §9–11; `composition-and-staleness.md` · discovered-by: BARCHI-2, two mid-CI target movements under #148 · status: PROPOSED\n\n🧠 **BARCHI-2** — plan posted; engineered under the operator's `/loop your goal on badf-git`.\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T21:00:18Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "BADF-WP-GIT-F integration: `reconcile` verifies the landed content tree against the committed composition record (MERGED != VERIFIED, no network); content_tree canonical in badf_gate.py; pull-request-integration subskill. Authority: operator `/loop your goal on badf-git` + 'proceed on your call' (2026-08-29), design order GTGM v0.1 section 17 after GIT-E (WP-2026-0076, 5aaeb62). Worked as BADF-WP-0079. Demand id retargeted from BADF-DEM-0065 (claimed on BARCHI-1's unlanded PR #150) to BADF-DEM-0066 on 2026-08-29."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index e7d0522..241fb2a 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -240,6 +240,16 @@
+       "allowed_tools": [],
+       "status": "IMPLEMENTED",
+       "digest": "sha256:257649dd0b700fdf9c9f51a2b9edc651793b65154dec7eb8219ba79d77505e74"
++    },
++    {
++      "name": "pull-request-integration",
++      "source": "skills/badf-git/subskills/pull-request-integration/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [],
++      "status": "IMPLEMENTED",
++      "digest": "sha256:fe791d3c83645bea915c6bc65325cadda46034f91047363c40585c728981095c"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 06ebc66..e342d72 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -885,6 +885,34 @@ content change recomputes the record, never edits it. This work package's own PR
+ and CI verified it. Approval staleness and the expected-head merge guard are GIT-F; the landed-tree
+ comparison after merge is GIT-F/G.
+ 
++## badf-git GIT-F — `MERGED != VERIFIED` (`BADF-WP-0079`, Issue #151 / GOV-0059)
++
++The cycle ends AUTHORIZE → SQUASH → RECONCILE, and the contract says to verify the actual landed
++result against the expected composition — "`MERGED` is not synonymous with `VERIFIED`". Measured
++after GIT-E: the expected-head guard was practised by hand (every merge in this program bound the
++reviewed head SHA through the REST endpoint), and `reconcile` recorded only `landed_as` — it compared
++nothing about the landed content. That left exactly one window the head guard cannot close: `main`
++moving between the last CI run and the merge — hit twice in one day — in which GitHub squashes onto a
++newer base and the landed tree is not the tree that was verified.
++
++**`badf_gate.py reconcile <WP>` now verifies the landing.** It reads the composition record from the
++**landed commit's tree** (never the checkout), computes the landed content tree from the object store
++alone, and refuses — `BLOCKED: … main moved between verification and merge; open recovery` — when it
++differs from the record's `expected_content_tree`; on a match it writes `landed_content_tree` and
++`composition_verified: true` beside `landed_as`. No record → `composition_verified: false`, honest and
++visible; a malformed record is refused, never downgraded. Running this check by hand on the first real
++landing (GIT-E, `5aaeb62`) found a **defect in GIT-E's `content_tree`**: `git rm --cached` refuses a
++path whose worktree file differs from the index and the helper silently returned the *full* tree — it
++had only ever run inside compose's fresh scratch, where the worktree always matches. `content_tree`
++now lives once, in `badf_gate.py`, object-store-only (`read-tree` + `update-index --force-remove` +
++`write-tree` on a temporary index), guarded by a test that computes it on a checkout whose worktree
++sits at a different commit; `badf_compose.py` imports it. Recomputed that way, the landed content of
++`5aaeb62` equals the record: the first landing verified end to end. The `pull-request-integration`
++subskill carries the AUTHORIZE checklist as a `gh`-driven procedure, the head-bound squash call, and
++the rule that the next branch's reconcile is the verification. Approval-freshness enforcement and
++merge queues stay outside (single collaborator; C-1 open and recorded); recovery automation is GIT-G;
++releases are GIT-H.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/scripts/badf_compose.py b/scripts/badf_compose.py
+index 4937b34..09a7fdd 100644
+--- a/scripts/badf_compose.py
++++ b/scripts/badf_compose.py
+@@ -39,7 +39,9 @@ FULL_PATTERN = "test_*.py"
+ # The Work-Package line and the machine-id namespace are defined once, in
+ # badf_gate.py (BADF-WP-0070 / GIT-B); this script must not repeat the literal.
+ sys.path.insert(0, str(Path(__file__).resolve().parent))
+-from badf_gate import WP_LINE, WP_NAMESPACE  # noqa: E402
++from badf_gate import WP_LINE, WP_NAMESPACE, ValidationError, content_tree, load_composition_record  # noqa: E402
++# content_tree and load_composition_record live in badf_gate.py (GIT-F moved them there:
++# reconcile needs the same, object-store-only computation); this script only imports them.
+ 
+ # ---- badf-git GIT-E: the composition claim (BADF-WP-0076) ----------------------------
+ # A committed record of what integration is expected to produce. Its binding is the
+@@ -49,28 +51,6 @@ from badf_gate import WP_LINE, WP_NAMESPACE  # noqa: E402
+ # composed tree and refuses a stale base or a changed content tree. No record is
+ # backward compatible: requiring one is a later policy decision.
+ RECORD_REL = "evidence/G07/composition-record.json"
+-COMPOSITION_REQUIRED = ("schema_version", "observed_at", "repository", "work_package_id", "target_ref", "target_base_sha",
+-                        "source_ref", "merge_base_sha", "merge_method", "expected_result_tree", "expected_content_tree",
+-                        "policy_epoch", "test_set_epoch", "suite_pattern", "non_coverage")
+-
+-
+-def content_tree(checkout: Path, wp: str, rev: str = "HEAD") -> str:
+-    """The tree of <rev> with work/<wp>/ and badf/lockfile.json removed, computed on a
+-    temporary index so the checkout's own index is never touched."""
+-    with tempfile.TemporaryDirectory(prefix="badf-ctree-") as d:
+-        env = {**os.environ, "GIT_INDEX_FILE": str(Path(d) / "index")}
+-
+-        def run(*a: str) -> subprocess.CompletedProcess:
+-            return subprocess.run(["git", "-C", str(checkout), *a], capture_output=True, text=True, env=env)
+-
+-        r = run("read-tree", rev)
+-        if r.returncode:
+-            raise RuntimeError(f"cannot read the tree of {rev} in {checkout}: {r.stderr.strip()}")
+-        run("rm", "-r", "-q", "--cached", "--ignore-unmatch", "--", f"work/{wp}", "badf/lockfile.json")
+-        r = run("write-tree")
+-        if r.returncode:
+-            raise RuntimeError(f"cannot write the content tree of {rev} in {checkout}: {r.stderr.strip()}")
+-        return r.stdout.strip()
+ 
+ 
+ def _self_name(repo: Path) -> str | None:
+@@ -120,19 +100,6 @@ def composition_record(*, repo: Path, candidate: str, wp: str, base: str, cand:
+     }
+ 
+ 
+-def load_composition_record(path: Path) -> dict:
+-    try:
+-        rec = json.loads(path.read_text(encoding="utf-8"))
+-    except (OSError, ValueError) as exc:
+-        raise ValueError(f"{path} is not a git-composition record ({exc.__class__.__name__})")
+-    if not isinstance(rec, dict) or rec.get("record") != "git-composition":
+-        raise ValueError(f"{path} is not a git-composition record (no `record: git-composition`)")
+-    missing = [k for k in COMPOSITION_REQUIRED if k not in rec]
+-    if missing:
+-        raise ValueError(f"{path} is not a complete git-composition record; missing {missing}")
+-    return rec
+-
+-
+ def verify_composition_record(rec: dict, *, wp: str, base: str, ctree: str) -> list[str]:
+     problems = []
+     if rec.get("work_package_id") != wp:
+@@ -250,7 +217,7 @@ def compose(args: argparse.Namespace) -> int:
+         if rec_path.is_file():
+             try:
+                 committed = load_composition_record(rec_path)
+-            except ValueError as exc:
++            except ValidationError as exc:
+                 return fail(f"composition record: {exc}")
+             problems = verify_composition_record(committed, wp=wp, base=base, ctree=ctree)
+             if problems:
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 0e21b62..77ab7c9 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -11,6 +11,7 @@ import hashlib
+ import json
+ import re
+ import sys
++import tempfile
+ from datetime import datetime, timezone
+ from pathlib import Path
+ from typing import Any
+@@ -601,6 +602,64 @@ def write_lockfile() -> None:
+ 
+ 
+ 
++# ---- badf-git GIT-E/GIT-F: the content tree and the composition record (BADF-WP-0076/0079) ----
++COMPOSITION_REQUIRED = ("schema_version", "observed_at", "repository", "work_package_id", "target_ref", "target_base_sha",
++                        "source_ref", "merge_base_sha", "merge_method", "expected_result_tree", "expected_content_tree",
++                        "policy_epoch", "test_set_epoch", "suite_pattern", "non_coverage")
++
++
++def content_tree(checkout: Path, wp: str, rev: str = "HEAD") -> str:
++    """The tree of <rev> with work/<wp>/ and badf/lockfile.json removed -- the binding of a
++    composition record (BADF-WP-0076). Computed from the OBJECT STORE ALONE on a temporary
++    index: `read-tree <rev>`, `update-index --force-remove` of the excluded paths,
++    `write-tree`. GIT-E's first version used `git rm --cached`, which refuses a path whose
++    worktree file differs from the index -- never inside compose's fresh scratch, always
++    possible elsewhere -- and the helper silently returned the FULL tree (BADF-WP-0079).
++    The checkout's own index and worktree are never touched."""
++    with tempfile.TemporaryDirectory(prefix="badf-ctree-") as d:
++        env = {**os.environ, "GIT_INDEX_FILE": str(Path(d) / "index")}
++
++        def run(*a: str) -> subprocess.CompletedProcess:
++            return subprocess.run(["git", "-C", str(checkout), *a], capture_output=True, text=True, env=env)
++
++        r = run("read-tree", rev)
++        if r.returncode:
++            raise ValidationError(f"cannot read the tree of {rev} in {checkout}: {r.stderr.strip()}")
++        listed = run("ls-files", "--", f"work/{wp}", "badf/lockfile.json").stdout.split()
++        if listed:
++            r = run("update-index", "--force-remove", "--", *listed)
++            if r.returncode:
++                raise ValidationError(f"cannot exclude work/{wp}/ and the lockfile from {rev}: {r.stderr.strip()}")
++        r = run("write-tree")
++        if r.returncode:
++            raise ValidationError(f"cannot write the content tree of {rev} in {checkout}: {r.stderr.strip()}")
++        return r.stdout.strip()
++
++
++def parse_composition_record(text: str, label: str) -> dict[str, Any]:
++    """A git-composition record as `badf_compose.py --record` wrote it. Refuses anything
++    that is not a complete record: a verdict must never be computed against a file that
++    merely looks like one, and reconcile must never downgrade a broken record to 'none'."""
++    try:
++        rec = json.loads(text)
++    except ValueError:
++        raise ValidationError(f"{label} is not a git-composition record (not JSON)")
++    if not isinstance(rec, dict) or rec.get("record") != "git-composition":
++        raise ValidationError(f"{label} is not a git-composition record (no `record: git-composition`)")
++    missing = [k for k in COMPOSITION_REQUIRED if k not in rec]
++    if missing:
++        raise ValidationError(f"{label} is not a complete git-composition record; missing {missing}")
++    return rec
++
++
++def load_composition_record(path: Path) -> dict[str, Any]:
++    try:
++        text = Path(path).read_text(encoding="utf-8")
++    except OSError as exc:
++        raise ValidationError(f"cannot read the composition record {path}: {exc}")
++    return parse_composition_record(text, str(path))
++
++
+ # ---- work ledger: landing is derived from git, claims are corroborated (BADF-WP-0019, #26) ----
+ # One identity, three faces, one binding (BADF-WP-0070 / badf-git GIT-B): the
+ # machine id is WP_NAMESPACE + NNNN. WP-2026- is the ledger's genesis namespace,
+@@ -723,6 +782,25 @@ def reconcile_work_package(wp_arg: str) -> str:
+     if not landed:
+         raise ValidationError(f"{wp} has not landed on origin/{DEFAULT_BRANCH}: no first-parent commit carries its Work-Package line")
+     sha = landed[-1]   # the first landing; later ones are named, not chosen
++    # GIT-F (BADF-WP-0079): MERGED != VERIFIED. The composition record is read from the
++    # LANDED commit's tree, never from the checkout, and the landed content tree is
++    # computed from the object store alone; a mismatch is the one window the
++    # expected-head merge guard cannot close -- main moved between the last CI run and
++    # the merge -- and it is a refusal, not a note. No record stays honest and visible.
++    record_text = _git("show", f"{sha}:work/{wp}/evidence/G07/composition-record.json")
++    if record_text is not None:
++        record = parse_composition_record(record_text, f"{sha[:12]}:work/{wp}/evidence/G07/composition-record.json")
++        landed_tree = content_tree(ROOT, wp, sha)
++        expected = record.get("expected_content_tree")
++        if landed_tree != expected:
++            raise ValidationError(
++                f"BLOCKED: the landed content of {wp} ({sha[:12]}, content tree {landed_tree[:12]}) is not the composition "
++                f"that was verified (recorded {str(expected)[:12]}) -- main moved between verification and merge; "
++                f"open recovery as a forward change, never rewrite {DEFAULT_BRANCH}")
++        target["landed_content_tree"] = landed_tree
++        target["composition_verified"] = True
++    else:
++        target["composition_verified"] = False
+     target["landed_as"] = sha
+     rec["external_target"] = target
+     rec["status"] = "CLOSED"
+@@ -730,7 +808,10 @@ def reconcile_work_package(wp_arg: str) -> str:
+     path.write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
+     write_lockfile()
+     also = f" (also carried by {', '.join(s[:7] for s in landed[:-1])})" if len(landed) > 1 else ""
+-    return f"BADF RECONCILE: {wp} CLOSED, landed_as {sha[:7]}{also}; lockfile re-signed -- ship it in the next work package's PR"
++    verified = ("composition_verified: true (landed content tree matches the record)" if target["composition_verified"]
++                else "composition_verified: false (no composition record on the landed tree)")
++    return (f"BADF RECONCILE: {wp} CLOSED, landed_as {sha[:7]}{also}; {verified}; lockfile re-signed -- "
++            f"ship it in the next work package's PR")
+ 
+ 
+ DIGEST_FORM = re.compile(r"^sha256:[0-9a-f]{64}$")
+diff --git a/skills/badf-git/subskills/pull-request-integration/SKILL.md b/skills/badf-git/subskills/pull-request-integration/SKILL.md
+new file mode 100644
+index 0000000..3d31ddf
+--- /dev/null
++++ b/skills/badf-git/subskills/pull-request-integration/SKILL.md
+@@ -0,0 +1,63 @@
++---
++name: pull-request-integration
++description: Integrate a BADF work package through its pull request the way the contract requires -- re-check the current target, the exact reviewed head, the merge method, the required checks on that head and the composition claim immediately before merging; merge only through the protected squash bound to the reviewed head SHA; and treat MERGED as unverified until the next branch's `badf_gate.py reconcile` compares what landed with what was verified. Use at badf-git's AUTHORIZE, SQUASH and RECONCILE stages. Do not use to grant merge authority, to bypass a refused reconcile, or to rewrite the protected branch.
++---
++
++# pull-request-integration
++
++A subskill of `badf-git` (`../../SKILL.md`) for stages 9–11 of the cycle (`../../references/git-cycle.md`:
++AUTHORIZE, SQUASH, RECONCILE) and the integration guard of the composition contract
++(`../../references/composition-and-staleness.md`). Its admission status is recorded in
++`badf/skill-registry.json`; this file defines behaviour and hardcodes no lifecycle status.
++
++**The invariant: `MERGED != VERIFIED`.** The expected-head guard protects the *source* identity.
++It cannot close the window in which the target moves between the last CI run and the merge — in
++that window GitHub squashes onto a newer base and the landed tree is not the tree that was
++verified. The landing is verified afterwards, from the object store, against the composition
++claim GIT-E committed; a mismatch is a refusal that opens recovery, never a note.
++
++## AUTHORIZE — observe, then decide (platform observations, made with `gh`; nothing here is gate code)
++
++| Check | How | Refuse when |
++| --- | --- | --- |
++| target current | `gh api repos/<o>/<r>/pulls/N --jq .base.sha` vs `git rev-parse origin/<default>` | the base moved since the CI run — re-record (`badf_compose.py --record`), re-dossier, re-push |
++| exact reviewed head | `.head.sha` equals the SHA the evidence was measured on | the head moved — the evidence is stale (GIT-I05) |
++| merge method | repository policy: squash | anything else |
++| required checks on **this** head | `gh api repos/<o>/<r>/commits/<head>/check-runs` all `completed/success` | pending or red |
++| composition claim verified on the runner | the compose step printed `composition: CURRENT` | `no record` on a WP that should carry one, or any refusal |
++| platform mergeability | `.mergeable_state == "clean"` | `dirty`, `blocked`, `unknown` — re-observe, never force |
++| integration actor | a human, or an agent under an explicit human instruction for this merge | tool capability is not authorization (GIT-I01) |
++
++## SQUASH — merge the exact reviewed head, bound
++
++```text
++gh api -X PUT repos/<o>/<r>/pulls/N/merge --input - <<< '{"merge_method": "squash", "sha": "<reviewed head sha>",
++  "commit_title": "<PR title> (#N)", "commit_message": "<PR body>"}'
++```
++
++The `"sha"` binds the reviewed head: if the head moved, the platform refuses and the work returns to
++composition/review. The PR body becomes the squash message — the `Work-Package:` trailer the ledger
++reads. Never `--force`, never a rewrite of the protected branch to repair a failed claim.
++
++## RECONCILE — the next branch proves the landing
++
++```text
++python3 scripts/badf_gate.py reconcile <WP>
++```
++
++reads the composition record from the **landed commit's tree**, computes the landed content tree from
++the object store alone (`work/<WP>/` and the lockfile excluded), and:
++
++- match → `CLOSED`, `landed_as`, **`landed_content_tree`**, **`composition_verified: true`**;
++- mismatch → `BLOCKED: … main moved between verification and merge; open recovery as a forward change` —
++  the record stays `IN_PROGRESS`; recovery is a new work package (GIT-G), never a rewrite of `main`;
++- no record → `CLOSED`, `landed_as`, `composition_verified: false` — honest and visible, not silent;
++- a malformed record → refused, never downgraded to "no record".
++
++Deterministic, network-free, reads only.
++
++## Boundaries
++
++- Approval-freshness *enforcement* and merge queues are outside this subskill (a single collaborator
++  runs this repository; condition C-1 stays open and recorded). Release tags are GIT-H; recovery
++  automation is GIT-G.
+diff --git a/tests/test_badf_git_integration.py b/tests/test_badf_git_integration.py
+new file mode 100644
+index 0000000..5dfbdf6
+--- /dev/null
++++ b/tests/test_badf_git_integration.py
+@@ -0,0 +1,170 @@
++"""GIT-F (BADF-WP-0079): MERGED != VERIFIED -- reconcile verifies what actually landed.
++
++The expected-head merge guard protects the source identity but cannot close the window
++in which main moves between the last CI run and the merge. GIT-E's committed
++composition record states the expected content tree; `badf_gate.py reconcile <WP>`
++now reads that record from the LANDED commit's tree, computes the landed content tree
++from the object store alone, and refuses a landing whose content is not the one that
++was verified. No record stays backward compatible (composition_verified: false).
++
++Also fixes GIT-E's content_tree, which used `git rm --cached` -- refused (silently, to
++the helper) whenever the worktree differs from the index, which it never does inside
++compose's fresh scratch and always may elsewhere.
++
++Every fixture is a scratch clone removed in cleanup; a landing is simulated as a real
++squash onto the scratch's origin/<default>.
++"""
++import hashlib
++import json
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++import badf_compose as compose  # noqa: E402
++from tests._scratch import seed_clone  # noqa: E402
++
++X = "WP-2026-9001"
++TARGET = f"refs/remotes/origin/{gate.DEFAULT_BRANCH}"
++RECORD_REL = f"work/{X}/evidence/G07/composition-record.json"
++
++
++def g(repo: Path, *args: str) -> str:
++    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, check=True).stdout.strip()
++
++
++class _Landing(unittest.TestCase):
++    def setUp(self):
++        self.tmp = Path(tempfile.mkdtemp(prefix="badf-git-integration-"))
++        self.addCleanup(shutil.rmtree, self.tmp, True)
++        self.repo = self.tmp / "badf"
++        self.base = seed_clone(self.repo, carry_working_state=True)
++        # Carried, unlanded records would be reported by the ledger; keep the fixture to what it lands.
++        on_ledger = set(g(self.repo, "ls-tree", "-r", "--name-only", TARGET, "--", "work/").splitlines())
++        for rec in (self.repo / "work").glob("WP-*/work-package.json"):
++            if rec.relative_to(self.repo).as_posix() not in on_ledger:
++                shutil.rmtree(rec.parent)
++        g(self.repo, "checkout", "-q", "-b", f"wp/{X}-landing")
++        template = json.loads((gate.ROOT / "work/WP-2026-0079/work-package.json").read_text(encoding="utf-8"))
++        template.update(id=X, title="scratch landing", demand="BADF-DEM-0001", status="IN_PROGRESS",
++                        external_target={"repository": "bstBizEra/badf", "branch": gate.DEFAULT_BRANCH, "base_revision": self.base[:7]})
++        (self.repo / "work" / X).mkdir(parents=True)
++        (self.repo / "work" / X / "work-package.json").write_text(json.dumps(template, indent=2) + "\n", encoding="utf-8")
++        (self.repo / "docs/x.md").write_text("content of X\n", encoding="utf-8")
++        g(self.repo, "add", "-A"); g(self.repo, "commit", "-q", "-m", f"{X}: content")
++
++    def write_record(self, expected_content_tree: str | None = None, raw: str | None = None) -> None:
++        p = self.repo / RECORD_REL; p.parent.mkdir(parents=True, exist_ok=True)
++        if raw is None:
++            rec = {"record": "git-composition", "schema_version": "1.0.0", "observed_at": "2026-08-29T00:00:00Z",
++                   "repository": "bstBizEra/badf", "work_package_id": X, "target_ref": f"refs/heads/{gate.DEFAULT_BRANCH}",
++                   "target_base_sha": self.base, "source_ref": f"refs/heads/wp/{X}-landing", "merge_base_sha": self.base,
++                   "merge_method": "squash", "expected_result_tree": "0" * 40,
++                   "expected_content_tree": expected_content_tree or gate.content_tree(self.repo, X, "HEAD"),
++                   "policy_epoch": None, "test_set_epoch": None, "suite_pattern": "test_*.py", "non_coverage": []}
++            raw = json.dumps(rec, indent=2)
++        p.write_text(raw + "\n", encoding="utf-8")
++        g(self.repo, "add", "-A"); g(self.repo, "commit", "-q", "-m", f"{X}: record")
++
++    def land(self) -> str:
++        """Squash the branch onto the scratch's origin/<default>, as GitHub would."""
++        g(self.repo, "checkout", "-q", "-B", gate.DEFAULT_BRANCH, TARGET)
++        g(self.repo, "merge", "--squash", "-q", f"wp/{X}-landing")
++        g(self.repo, "commit", "-q", "-m", f"BADF-WP-9001: landing (#0)\n\nWork-Package: {X}\nCloses #0\n")
++        sha = g(self.repo, "rev-parse", "HEAD"); g(self.repo, "update-ref", TARGET, sha)
++        return sha
++
++    def reconcile(self) -> subprocess.CompletedProcess:
++        return subprocess.run([sys.executable, "scripts/badf_gate.py", "reconcile", X], cwd=str(self.repo), capture_output=True, text=True)
++
++    def record_of(self) -> dict:
++        return json.loads((self.repo / "work" / X / "work-package.json").read_text(encoding="utf-8"))
++
++
++class LandedContentTests(_Landing):
++    def test_reconcile_verifies_landed_content_against_the_record(self):
++        self.write_record(); expected = json.loads((self.repo / RECORD_REL).read_text(encoding="utf-8"))["expected_content_tree"]
++        sha = self.land(); r = self.reconcile()
++        self.assertEqual(r.returncode, 0, r.stdout + r.stderr); self.assertIn("composition_verified", r.stdout)
++        rec = self.record_of(); t = rec["external_target"]
++        self.assertEqual((rec["status"], t["landed_as"], t["landed_content_tree"], t["composition_verified"]), ("CLOSED", sha, expected, True))
++
++    def test_reconcile_refuses_a_landing_whose_content_moved(self):
++        self.write_record()
++        (self.repo / "docs/y.md").write_text("landed after the claim\n", encoding="utf-8")
++        g(self.repo, "add", "-A"); g(self.repo, "commit", "-q", "-m", f"{X}: more content after the claim")
++        self.land(); r = self.reconcile()
++        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
++        self.assertIn("BLOCKED", r.stderr); self.assertIn("moved between verification and merge", r.stderr); self.assertNotIn("Traceback", r.stderr)
++        rec = self.record_of(); self.assertEqual(rec["status"], "IN_PROGRESS"); self.assertNotIn("landed_as", rec["external_target"])
++
++    def test_reconcile_without_a_record_writes_composition_verified_false(self):
++        sha = self.land(); r = self.reconcile()
++        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        t = self.record_of()["external_target"]
++        self.assertEqual((t["landed_as"], t["composition_verified"]), (sha, False)); self.assertNotIn("landed_content_tree", t)
++
++    def test_reconcile_refuses_a_malformed_record_rather_than_downgrading(self):
++        self.write_record(raw='{"hello": 1}'); self.land(); r = self.reconcile()
++        self.assertEqual(r.returncode, 1, r.stdout + r.stderr); self.assertIn("git-composition", r.stderr)
++        rec = self.record_of(); self.assertEqual(rec["status"], "IN_PROGRESS")
++
++    def test_reconcile_reads_the_record_from_the_landed_tree_not_the_checkout(self):
++        """The checkout after a landing may carry anything; the claim is what LANDED (mutation
++        survivor, WP-0079: reading the checkout gave the same answer in every other fixture)."""
++        self.write_record(); expected = json.loads((self.repo / RECORD_REL).read_text(encoding="utf-8"))["expected_content_tree"]
++        sha = self.land()
++        (self.repo / RECORD_REL).write_text('{"hello": "corrupted in the checkout only"}\n', encoding="utf-8")
++        r = self.reconcile(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        t = self.record_of()["external_target"]
++        self.assertEqual((t["landed_as"], t["landed_content_tree"], t["composition_verified"]), (sha, expected, True))
++
++    def test_reconcile_is_deterministic_and_reads_only(self):
++        self.write_record(); self.land()
++        before = (g(self.repo, "rev-parse", "HEAD"), g(self.repo, "rev-parse", TARGET), len(g(self.repo, "reflog").splitlines()),
++                  hashlib.sha256(g(self.repo, "ls-files", "-s").encode()).hexdigest())
++        r1 = self.reconcile(); self.assertEqual(r1.returncode, 0, r1.stdout + r1.stderr); first = self.record_of()
++        self.assertEqual((g(self.repo, "rev-parse", "HEAD"), g(self.repo, "rev-parse", TARGET), len(g(self.repo, "reflog").splitlines()),
++                          hashlib.sha256(g(self.repo, "ls-files", "-s").encode()).hexdigest()), before, "reconcile must not move git state")
++        r2 = self.reconcile(); self.assertEqual(r2.returncode, 1); self.assertIn("already claims", r2.stderr)
++        self.assertEqual(self.record_of(), first)
++
++
++class ContentTreeTests(_Landing):
++    def test_content_tree_has_one_home_and_compose_imports_it(self):
++        self.assertTrue(hasattr(gate, "content_tree")); self.assertIs(compose.content_tree, gate.content_tree)
++        src = (gate.ROOT / "scripts/badf_compose.py").read_text(encoding="utf-8")
++        self.assertNotIn("def content_tree", src); self.assertIn("content_tree", src)
++        self.assertNotIn("def load_composition_record", src); self.assertTrue(hasattr(gate, "load_composition_record"))
++
++    def test_content_tree_is_independent_of_the_worktree(self):
++        rev = g(self.repo, "rev-parse", "HEAD")
++        at_rev = gate.content_tree(self.repo, X, rev)
++        # Check out the BASE: the worktree's badf/lockfile.json and docs/ now differ from rev's index --
++        # exactly the state in which `git rm --cached` refused and GIT-E's helper returned the full tree.
++        g(self.repo, "checkout", "-q", "--detach", self.base)
++        self.assertEqual(gate.content_tree(self.repo, X, rev), at_rev)
++        self.assertNotEqual(at_rev, g(self.repo, "rev-parse", f"{rev}^{{tree}}"), "the content tree must exclude the WP dir and the lockfile")
++        self.assertEqual(g(self.repo, "rev-parse", "HEAD"), self.base, "content_tree must not move HEAD")
++
++
++class PullRequestIntegrationSubskillTests(unittest.TestCase):
++    def test_pull_request_integration_subskill_registered_and_root_stays_designed(self):
++        reg = gate.load_json(gate.ROOT / "badf/skill-registry.json"); by = {s["name"]: s for s in reg["skills"]}
++        self.assertIn("pull-request-integration", by); entry = by["pull-request-integration"]
++        self.assertEqual(entry["source"], "skills/badf-git/subskills/pull-request-integration/SKILL.md")
++        self.assertEqual((entry["status"], entry["risk_class"], entry["allowed_tools"]), ("IMPLEMENTED", "C1", []))
++        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
++        self.assertEqual(by["badf-git"]["status"], "DESIGNED")
++        text = (gate.ROOT / entry["source"]).read_text(encoding="utf-8")
++        self.assertIn("badf/skill-registry.json", text); self.assertNotIn("Status: `", text)
++        for token in ("MERGED", "VERIFIED", "composition_verified", "mergeable_state", "\"sha\"", "reconcile", "landed_content_tree"):
++            self.assertIn(token, text)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0076/work-package.json b/work/WP-2026-0076/work-package.json
+index 1842a94..c836557 100644
+--- a/work/WP-2026-0076/work-package.json
++++ b/work/WP-2026-0076/work-package.json
+@@ -45,11 +45,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "1b80d7c"
++    "base_revision": "1b80d7c",
++    "landed_content_tree": "2a258edbfe84ed513f9becc1be87f4c7f12d0d14",
++    "composition_verified": true,
++    "landed_as": "5aaeb62bb7029a00b487ff9746acd791d5235373"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-E per GTGM v0.1 section 17, after GIT-D (WP-2026-0075 / f1a0a5c). Resolves #144 / GOV-0055. Reconciles WP-2026-0077 (badf-solution-design ACTIVE, 1b80d7c, landed while this branch was open; 0074/0075 were reconciled upstream) -- branch rebased onto dc6b608 then 1b80d7c. Engineered by BARCHI-2 in a linked worktree under the operator's /loop ('proceed on your call'); parallel seat BARCHI-1 on WP-2026-0074 (#143)."
+ }
