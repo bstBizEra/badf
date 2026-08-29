@@ -189,7 +189,12 @@ def compose(args: argparse.Namespace) -> int:
         def g(*a: str, input: str | None = None) -> subprocess.CompletedProcess:
             return sh(["git", "-C", str(work), *a], work, input=input)
 
-        for cmd in (("init", "-q"), ("remote", "add", "origin", str(repo))):
+        # The scratch needs an identity for EVERY git operation, not only the squash commit:
+        # a non-fast-forward `merge --squash` (base moved AND candidate ahead -- the divergent
+        # case GIT-E's tests compose, which a PR head never is) prepares a merge commit and
+        # dies with `fatal: empty ident name` on a runner that has no git identity (WP-0076).
+        for cmd in (("init", "-q"), ("remote", "add", "origin", str(repo)),
+                    ("config", "user.email", "badf-compose@local"), ("config", "user.name", "badf-compose")):
             r = g(*cmd)
             if r.returncode:
                 return fail(f"git {' '.join(cmd)} failed: {r.stderr.strip()}")

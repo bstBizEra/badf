@@ -217,7 +217,7 @@
     "schemas/user-validation.schema.json": "sha256:300807bae8b12cf943f2247c5802737ffd04b889ced580f1ec2863e63c35252b",
     "schemas/work-breakdown.schema.json": "sha256:6dd286db486187ed2bf6f6f9d6f1ac9342e80271ab862e56b26df8f2db6bcbbf",
     "schemas/work-package.schema.json": "sha256:e082c3f31626a9aa723dfeb635cf1afae482c1a36dd762f608bd8fab895d6c37",
-    "scripts/badf_compose.py": "sha256:f5f2bc93666436bfab42c8dd18659b21b9bbb0360a57dbe625bc2b6286f47dfa",
+    "scripts/badf_compose.py": "sha256:ae38d9aa98ffee324c9eeb9e8bfa8bb6ffccdca1f3a8265e86b5b02ad4a5ba41",
     "scripts/badf_gate.py": "sha256:f49bf07faf1c7a5a40837002a0b0f14311d92c80aafd2c4d9f93c0f98812d211",
     "scripts/check_pr_traceability.py": "sha256:24eba13975b79167a5e5a2928e547fdb06b3ad82fdda1874fa30eb9e363ee028",
     "skills/badf-architecture/SKILL.md": "sha256:431b963d62ccca32c861652981606321952374daf09e1a96d23d614eb46300dc",
