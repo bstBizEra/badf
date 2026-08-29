@@ -88,4 +88,4 @@ The `badf-git` root skill remains declarative and tool-empty while `DESIGNED`; r
 
 ## Explicit exclusions
 
-The BADF Git execution substrate does not classify `git worktree add`, `git worktree remove`, local worktree-path management, local index/stash inspection or local reflog recovery as required workflow operations. Native local Git commands may exist outside BADF, but they do not define GitHub Remote Workspace state.
+The BADF Git execution substrate does not classify native local worktree creation/removal, local worktree-path management, local index/stash inspection or local reflog recovery as required workflow operations. Native local Git commands may exist outside BADF, but they do not define GitHub Remote Workspace state.
