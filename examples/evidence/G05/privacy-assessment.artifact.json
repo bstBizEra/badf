@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "data_categories": [
+    {
+      "id": "PD-001",
+      "data": "governance records (demands, WPs, dossiers)",
+      "classification": "internal",
+      "lawful_basis": "legitimate interest in auditable delivery",
+      "handling": "git-tracked in the BADF tree; no personal data",
+      "retention": "repository lifetime"
+    }
+  ]
+}

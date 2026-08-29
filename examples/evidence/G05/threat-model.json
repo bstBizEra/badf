@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G05",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G05-THREAT-MODEL-v1",
+  "claim": "Example threat-model bound to PRD-BADF-0001",
+  "evidence_type": "threat-model",
+  "producer": {
+    "id": "example-security-authority",
+    "type": "human"
+  },
+  "operation": "model threats and abuse cases",
+  "artifact": "examples/evidence/G05/threat-model.artifact.json",
+  "digest": "sha256:c90b6862ff344f718d512111907d9e30c62a8ae58c7a23fb86045e1c60a4bbc3"
+}

@@ -44,11 +44,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "73a2b17"
+    "base_revision": "73a2b17",
+    "landed_as": "27c9f1cf9369d5f495667de30c2b4a359ff56a51"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Docs + shadow records + status advance -- no gate control (empty gate diff). Fixes a real doc-drift defect the operator caught, and produces the SHADOWED calibration evidence. Advances badf-architecture VALIDATED -> SHADOWED; APPROVED/ACTIVE remain the operator's call. Reconciles WP-2026-0058."
 }

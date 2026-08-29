@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "dependencies": [],
+  "secret_controls": [
+    "the gate stores no secrets and makes no network call",
+    "GitHub Actions secrets are scoped to CI and never read by the gate"
+  ]
+}

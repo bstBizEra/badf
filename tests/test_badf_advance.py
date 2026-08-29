@@ -197,8 +197,54 @@ class AdvanceScratch(ValidatedInstance):
         assert r.returncode == 0 and "APPROVED" in r.stdout, r.stdout + r.stderr
         return f"work/{self.wp()}/gate-dossier.G04.json"
 
+    def make_g05(self):
+        """A G05 dossier for the same WP at the G05/C2 floor: threat-model, privacy,
+        supply-chain and a human security-approval digest-bound to the threat model,
+        modelled on the shipped example. C2 needs the four security roles."""
+        d = self.wp_dir(); ev_dir = d / "evidence/G05"; ev_dir.mkdir(parents=True, exist_ok=True)
+        g04 = json.loads((d / "gate-dossier.G04.json").read_text())
+        ex = gate.ROOT / "examples/evidence/G05"
+        for t in ("threat-model", "privacy-assessment", "supply-chain-plan", "security-approval"):
+            art = json.loads((ex / f"{t}.artifact.json").read_text()); art["prd_id"] = "PRD-SCRATCH-0001"
+            (ev_dir / f"{t}.artifact.json").write_text(json.dumps(art, indent=2) + "\n")
+        # rebind the approval to this scratch threat model and its scratch approver
+        sa = json.loads((ev_dir / "security-approval.artifact.json").read_text())
+        sa["threat_model_digest"] = gate.sha256(ev_dir / "threat-model.artifact.json")
+        sa["approved_by"]["principal"] = "scratch-security-authority"
+        (ev_dir / "security-approval.artifact.json").write_text(json.dumps(sa, indent=2) + "\n")
+        index = []
+        for t in ("threat-model", "privacy-assessment", "supply-chain-plan", "security-approval"):
+            e = {"schema_version": "1.0.0", "id": f"EVD-{self.wp()}-G05-{t}", "work_package_id": self.wp(), "gate": "G05",
+                 "claim": f"{t} present", "evidence_type": t, "producer": {"id": "scratch-security-authority", "type": "human"},
+                 "source_revision": g04["source_revision"], "target": g04["target"],
+                 "toolchain": {"name": "human-review", "version": "1"}, "operation": "review",
+                 "started_at": g04["created_at"], "completed_at": g04["created_at"], "outcome": "PASS",
+                 "artifact": f"work/{self.wp()}/evidence/G05/{t}.artifact.json", "digest": gate.sha256(ev_dir / f"{t}.artifact.json")}
+            (ev_dir / f"{t}.json").write_text(json.dumps(e, indent=2) + "\n")
+            index.append({"type": t, "path": f"work/{self.wp()}/evidence/G05/{t}.json"})
+        approvals = []
+        for role in ("product_owner", "engineering_owner", "quality_authority", "service_owner"):
+            a = bound(EXAMPLE["approvals"][0], g04); a["role"] = role; a["by"] = f"{role}-signature"; approvals.append(a)
+        doc = dict(g04, id=f"DOS-{self.wp()}-G05-v1", gate="G05", change_class="C2", evidence=index, approvals=approvals)
+        (d / "gate-dossier.G05.json").write_text(json.dumps(doc, indent=2) + "\n")
+        self.framework_lock()
+        r = self.dossier_cli(f"work/{self.wp()}/gate-dossier.G05.json")
+        assert r.returncode == 0 and "APPROVED" in r.stdout, r.stdout + r.stderr
+        return f"work/{self.wp()}/gate-dossier.G05.json"
+
 
 class AdvanceTests(AdvanceScratch):
+
+    def test_g04_approved_instance_advances_to_g05(self):
+        self.approve_g00(); self.assertEqual(self.advance(f"work/{self.wp()}/gate-dossier.G00.json").returncode, 0)
+        self.assertEqual(self.advance(self.make_g01()).returncode, 0)
+        self.assertEqual(self.advance(self.make_g02()).returncode, 0)
+        self.assertEqual(self.advance(self.make_g03()).returncode, 0)
+        self.assertEqual(self.advance(self.make_g04()).returncode, 0)
+        g05 = self.make_g05()
+        r = self.advance(g05); self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+        self.assertEqual(self.state()["lifecycle"], {"current_gate": "G05", "state": "APPROVED", "target": "PRODUCTION"})
+        r = self.instance(); self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("G05 / APPROVED", r.stdout)
 
     def test_g03_approved_instance_advances_to_g04(self):
         self.approve_g00(); self.assertEqual(self.advance(f"work/{self.wp()}/gate-dossier.G00.json").returncode, 0)

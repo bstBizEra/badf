@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "threat_model_digest": "sha256:c90b6862ff344f718d512111907d9e30c62a8ae58c7a23fb86045e1c60a4bbc3",
+  "approved_by": {
+    "principal": "example-security-authority",
+    "principal_type": "human",
+    "role": "security_authority"
+  },
+  "residual_risk_owner": "the operator (human_sponsor)",
+  "decision": "APPROVED",
+  "approved_at": "2026-08-25T00:00:05Z",
+  "note": "residual risks T-001/T-002 accepted and owned"
+}

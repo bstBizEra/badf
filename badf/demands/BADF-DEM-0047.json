@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0047",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 110,
+    "url": "https://github.com/bstBizEra/badf/issues/110",
+    "exported_at": "2026-08-29T11:44:41Z",
+    "body_digest": "sha256:283b39f4759dbd997c43c88247f0b54344200e98800d1ed9828dad683fb9e6e2"
+  },
+  "title": "GOV-0043: Gate 05 declared but unenforced \u2014 no per-type rules, schemas, or example for threat-model/privacy-assessment/supply-chain-plan/security-approval",
+  "problem": "## Observed\nG05 (Security, privacy and AI safety; owner `security_authority`, min C2) is the next declared-but-unenforced gate after G04. `lifecycle.json` lists G05's four `required_evidence` types \u2014 **threat-model, privacy-assessment, supply-chain-plan, security-approval** \u2014 yet `validate_evidence` has no per-type rule for any of them, no G05 example, and none of the four schemas. A G05 dossier today would pass on names alone.\n\n## Expected\nThe four G05 types get per-type rules in `validate_evidence`, each mapping to a G05 exit criterion (the gate OPENS each artifact):\n- `threat-model` \u2014 every threat/abuse case carries a **mitigation** (\"threats and abuse cases controlled\"); an uncontrolled threat is refused.\n- `privacy-assessment` \u2014 every data category carries a **lawful basis** and **handling** (\"privacy obligations addressed\").\n- `supply-chain-plan` \u2014 **secret controls** are declared and every dependency carries a **control** (\"dependency and secret controls planned\").\n- `security-approval` \u2014 a **human `security_authority`** approval, **digest-bound to the threat-model**, with a named **residual-risk owner** (\"residual risk owned\").\nPlus `examples/gate-dossier.G05.json` (C2, validated in CI beside G00-G04) and a **G04->G05** pair-acceptance (the full G00->G05 chain).\n\n## Evidence\n- G05 required_evidence = [threat-model, privacy-assessment, supply-chain-plan, security-approval]; enforced of 4 -> 0; no G05 example; no schemas\n- G05 minimum_change_class is C2, so the example dossier carries the four C2 authority roles\n\n## Unknowns\nNone for the gate contract. This WP is the deterministic G05 evidence contract; a `badf-security` authoring skill is a later WP if a real task needs it.\n\n## Proposed work package\n`BADF-WP-0060` (G05). Four `check_*` + registration; four schemas; `examples/gate-dossier.G05.json` + its four evidence/artifact pairs; `tests/test_badf_g05.py` failing-first + a G04->G05 pair-acceptance; mutation; own G07 self-dossier. C2.\n\ndiscovered-by: BADF-WP-0059 (the gate march reached G05) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-29T11:44:41Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "G05 security gate contract (threat-model/privacy-assessment/supply-chain-plan/security-approval); next gate after G04. Authority: operator 'proceed' (2026-08-29). Worked as BADF-WP-0060."
+}

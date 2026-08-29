@@ -525,6 +525,21 @@ detected, 0 false positives, INDETERMINATE handled without a false pass, no drif
 run declares non-coverage — **no contract gap surfaced**. `badf-architecture` advances
 `VALIDATED → SHADOWED`; `APPROVED`/`ACTIVE` remain the operator's admission decision.
 
+## Gate 05 — security, privacy and AI safety (`BADF-WP-0060`, Issue #110)
+
+The gate march reaches security: G05's four types (`threat-model`, `privacy-assessment`,
+`supply-chain-plan`, `security-approval`) were declared but unenforced. Each now has a per-type rule
+mapping to a G05 exit criterion. `threat-model` — every threat/abuse case carries a **mitigation** (an
+uncontrolled threat is refused: *threats and abuse cases controlled*). `privacy-assessment` — every
+data category carries a **lawful basis** and **handling** (*privacy obligations addressed*).
+`supply-chain-plan` — **secret controls** are declared and every dependency carries a **control**
+(*dependency and secret controls planned*). `security-approval` — a **human `security_authority`**
+whose approval is **digest-bound to the threat-model** (a threat model edited after approval breaks
+the binding) and names a **residual-risk owner** (*residual risk owned*). G05's minimum change class is
+**C2**, so `examples/gate-dossier.G05.json` carries the four C2 authority roles — the first example
+dossier above the C1 floor. Ships a **G04→G05** pair-acceptance (the full G00→G05 advance chain). Same
+lean substrate as G01–G04.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
