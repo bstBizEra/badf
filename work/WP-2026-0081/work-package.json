@@ -44,11 +44,14 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "74282a4"
+    "base_revision": "74282a4",
+    "landed_content_tree": "7a27cff59d490b29625b6c772ca8f5e4b9751605",
+    "composition_verified": true,
+    "landed_as": "605f97fe12b419072f7bc9e254d5945e11ffb4db"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-H per GTGM v0.1 section 17, after GIT-G (WP-2026-0080 / 74282a4). Resolves #155 / GOV-0061. Reconciles WP-2026-0080 (composition_verified true). Engineered by BARCHI-2 in a linked worktree under the operator's /loop ('proceed on your call')."
 }

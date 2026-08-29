@@ -1,0 +1,30 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 6c02139..961453d 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -992,6 +992,25 @@ its first `vX.Y.Z` is a release-authority decision this WP enables and does not
+ checks the baseline every run. Signing, tag rulesets, SBOM/attestation are the platform's and
+ G10–G13's.
+ 
++## badf-security-design → IMPLEMENTED — the security-composition matrix (`BADF-WP-0083` / WP-SEC-B, Issue #158 / GOV-0063)
++
++WP-SEC-A froze the contract as prose; WP-SEC-B gives its central artifact — the **security-composition
++matrix**, the security-design equivalent of the RTM — a schema and structural validation in the one
++canonical gate (`badf_gate.py security`), mirroring `solution`. Each `threats[]` row binds a
++`security_id`, a `source` provenance object, a `disposition`
++(`controlled|deferred|blocked|pending-authority`), and optional control / security-requirement /
++verification refs. Four controls, each mutation-killed: a non-empty matrix; **SEC-C01** unique
++`security_id`; **SEC-C02** every threat resolves to ≥1 provenance source (SEC-I02 — a threat that
++resolves to nothing is not a threat); **SEC-C03** a `controlled` threat carries ≥1 `control_refs`
++(SEC-I03 — controlled by nothing is not controlled). One structural check is bought by the schema
++alone: `residual_risk`'s enum offers `ACCEPTED-PENDING-AUTHORITY` but **no bare `ACCEPTED`**, so
++**SEC-I12 is enforced by construction** — the skill has no value with which to self-accept residual
++risk. This is one record in the canonical gate, **not** a second validator (SEC-I15) and not a
++lifecycle result; `lifecycle.json` is unchanged. The cross-artifact **seams** — SEC-I04 bidirectional
++traceability, SEC-I01 exact-baseline binding, and the semantic resolution of every ref against the
++architecture/solution artifacts — are **deferred to WP-SEC-C** (failing-first), exactly as the solution
++seams were deferred from WP-SOL-B to WP-SOL-C. Registry `DESIGNED → IMPLEMENTED`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

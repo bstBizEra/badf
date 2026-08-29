@@ -11,9 +11,9 @@ contract first, prove it later, in separate WPs. **Do not build every specialist
 
 | WP | Outcome | Status |
 | :--- | :--- | :--- |
-| **WP-SEC-A** (this) | root `SKILL.md` + references: G05 mapping, routing, specialist boundaries, architecture/solution-design interfaces, threat/control/risk model, normalization contract, OWASP dispositions, SEC-I01…I15, admission criteria | `DESIGNED` |
-| WP-SEC-B | G05 security-design schemas + normalized evidence semantics | `IMPLEMENTED` |
-| WP-SEC-C | deterministic G05 security-design controls inside the canonical `badf_gate.py` (failing-first) | `VALIDATED` |
+| WP-SEC-A | root `SKILL.md` + references: G05 mapping, routing, specialist boundaries, architecture/solution-design interfaces, threat/control/risk model, normalization contract, OWASP dispositions, SEC-I01…I15, admission criteria | `DESIGNED` |
+| **WP-SEC-B** | the `security-composition` matrix schema + the `security` gate command with structural controls (no-empty · SEC-C01 unique · SEC-C02 provenance · SEC-C03 controlled-has-control · SEC-I12 residual-risk-not-accepted by schema); see `traceability.md` | `IMPLEMENTED` |
+| WP-SEC-C | cross-artifact **seam** controls in the canonical `badf_gate.py` (SEC-I04 bidirectional trace, SEC-I01 baseline binding, semantic ref resolution; failing-first) | `VALIDATED` |
 | WP-SEC-D | historical / representative security-design shadow calibration | `SHADOWED` |
 | WP-SEC-E | independent admission | `ACTIVE` |
 

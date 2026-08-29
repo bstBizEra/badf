@@ -34,12 +34,14 @@ class BadfSecurityDesignContractTests(unittest.TestCase):
         self.assertEqual(REFS, {p.name for p in REFERENCES.glob("*.md")})
         # no second gate / runtime (SEC-I15): no standalone validator script...
         self.assertFalse((ROOT / "scripts" / "badf_security_design.py").exists())
-        # ...and this skill authors no schema at contract-freeze. (The four G05 evidence schemas
-        # -- threat-model / privacy-assessment / supply-chain-plan / security-approval -- pre-date
-        # this skill and belong to the gate; security-design normalizes INTO them. A skill-specific
-        # security-design/security-composition schema is a WP-SEC-B concern and absent here.)
-        for schema in ("security-design.schema.json", "security-composition.schema.json"):
-            self.assertFalse((ROOT / "schemas" / schema).exists(), schema)
+        # ...and no competing second-gate schema. (The four G05 evidence schemas -- threat-model /
+        # privacy-assessment / supply-chain-plan / security-approval -- pre-date this skill and
+        # belong to the gate; security-design normalizes INTO them. WP-SEC-B legitimately adds
+        # schemas/security-composition.schema.json -- validated BY the one canonical gate
+        # (`badf_gate.py security`), not a competing validator -- so that file exists from
+        # IMPLEMENTED on. A `security-design.schema.json` -- a skill-owned design/lifecycle schema --
+        # would be a second gate and must never exist.)
+        self.assertFalse((ROOT / "schemas" / "security-design.schema.json").exists())
 
     def test_root_states_all_invariants_and_the_workflow(self):
         text = SKILL.read_text(encoding="utf-8")
