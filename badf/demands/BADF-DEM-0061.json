@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0061",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 141,
+    "url": "https://github.com/bstBizEra/badf/issues/141",
+    "exported_at": "2026-08-29T19:32:18Z",
+    "body_digest": "sha256:f3a01b5a466f31124924e3fe2d6cecbd9bf78525dde97445f2e621b0c93b819b"
+  },
+  "title": "GOV-0053: WP-SOL-D \u2014 representative shadow calibration (badf-solution-design -> SHADOWED)",
+  "problem": "## Observed\n\n`badf-solution-design` is `VALIDATED` (WP-SOL-C): the composition matrix's structural and matrix-internal seam controls (SOL-C01/C03 + SOL-C04/05/06) are enforced by the `solution` command with mutation-tested tests. The next admission rung is `SHADOWED` \u2014 running the capability retrospectively and measuring true detections, false positives, and declared non-coverage.\n\n**Honest constraint:** the research and architecture families shadowed on **real historical BADF cases**. `badf-solution-design` has **no real project compositions yet** \u2014 BADF itself has no UX/API/authorization surface. So its shadow is necessarily **representative**, and this WP must say so; a real re-shadow is owed the first time a project actually uses the skill.\n\n## Expected\n\n**WP-SOL-D \u2014 representative shadow calibration \u2192 `SHADOWED`.**\n\n- `skills/badf-solution-design/references/shadow-evidence.md` \u2014 the calibration: run `solution` over representative composition matrices spanning the outcome space, measured for **true positives** (each structural + seam defect refused: empty matrix, duplicate id, binds-nothing, api-no-authz, authz-no-audit, ux-no-a11y), **zero false positives** (clean multi-requirement compositions pass), and **declared non-coverage** (the external-artifact seams SOL-I02/05/07/10/11 are *not* exercised \u2014 they need the specialist adapters). Explicitly labelled **REPRESENTATIVE, not real-project**.\n- 1\u20132 committed representative shadow matrices (e.g. a refund-approval solution, a reporting solution \u2014 all seams satisfied) validated in CI beside the example.\n- Advance the registry `VALIDATED \u2192 SHADOWED`. `APPROVED`/`ACTIVE` remain a later step (operator-authorized).\n- `tests/\u2026`: the shadow matrices pass; the shadow-evidence doc states the representative caveat + the non-coverage; registry `SHADOWED`.\n\n## Evidence\n\n- The WP-SOL-B/C suites already demonstrate the true-positive detections and the clean-pass; this WP assembles them as measured calibration evidence plus fresh representative matrices, mirroring `badf-research` WP-0055 / `badf-architecture` WP-0059.\n- No `lifecycle.json` change; no second validator (SOL-I12); no specialist activation.\n\n## Unknowns\n\nWhether `SHADOWED` should wait for a real project composition instead of a representative one \u2014 recorded honestly so the operator can hold `APPROVED`/`ACTIVE` until a real re-shadow if preferred.\n\ndiscovered-by: BADF-WP-0072 (badf-solution-design landed VALIDATED) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-29T19:32:18Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "WP-SOL-D advances badf-solution-design VALIDATED->SHADOWED via REPRESENTATIVE shadow calibration (no real project compositions exist yet -- honestly labelled; real re-shadow owed on first real use). Measures TP/FP/non-coverage; external-artifact seams declared non-covered. Operator /loop 'to active' 2026-08-30, DEM-0061/GOV-0053/WP-0074 (0073 poisoned by third actor). Worked as BADF-WP-0074. Reconciles WP-2026-0069 (GIT-C)."
+}
