@@ -1,0 +1,56 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0062",
+  "title": "experimental-research (P1, R08) + control 28 — an empirical run carries a real experiment bound to a held hypothesis",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0049",
+  "repository": "bstBizEra/badf",
+  "objective": "Build experimental-research as the 10th badf-research subskill (a concise SKILL.md, registered IMPLEMENTED; the family stays ACTIVE -- two-tier model), earning control 28 in validate_research_record: an R08 (EMPIRICAL_EXPERIMENT) record carries at least one experiment, and every experiment's hypothesis_ref resolves to a hypothesis the record holds. An empirical run that measured nothing, or tested a hypothesis it never stated, is not an experiment. Mirrors controls 23/24 (type-specific structure grounded in the record). Both gaps measured on 467406f: an R08/D5 record with experiments=[] is admitted, and an experiment citing hypothesis_ref H-999 the record does not hold is admitted.",
+  "business_value": "R08 was the one research type without a dedicated subskill or integrity control -- it routed to the raw experiment mechanism and the gate never checked an empirical run actually ran an experiment. Control 28 closes that: a controlled measurement that produced no experiment, or cited a hypothesis the record never stated, is a deterministic refusal. Completes the research family's type coverage (R01-R10) without weakening any invariant -- control 28 only refuses more, never approves more, and grants no implementation authority (RSR-I01).",
+  "in_scope": [
+    "control 28 in badf_gate.py validate_research_record: R08 requires >=1 experiment; every experiment hypothesis_ref resolves to a held hypothesis (referential integrity, all records)",
+    "skills/badf-research/subskills/experimental-research/SKILL.md (concise: frame -> state hypothesis -> design controlled method -> run under the BADF experiment mechanism -> record result -> adjudicate hypothesis status -> synthesis; D5 challenge required; no authority)",
+    "badf/skill-registry.json: register experimental-research IMPLEMENTED with a real digest",
+    "an example R08 record examples/research-record-experimental.json (D5, challenge council, >=1 experiment bound to a held hypothesis) validated in CI beside the others",
+    "tests/test_badf_experimental_research.py (failing-first) + registry/router assertions in the research contract test",
+    "acceptance.md control 28 row + subskill count 9->10; research-types.md R08 note (dedicated subskill now exists); mutation; own G07 self-dossier; GITHUB_CONTROL_PLANE.md doctrine section"
+  ],
+  "out_of_scope": [
+    "binding a reproducible/OBSERVED claim to a specific experiment (control 28b) -- deferred until a failing-first probe warrants it, earned not added by precedent",
+    "changing the family status (stays ACTIVE), any authority change, or the challenge/depth machinery (D5 challenge already enforced)",
+    "the other P1/business research families; the badf-architecture status advance; gates G06+"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "an R08 record with experiments=[] is refused (control 28; passes today)",
+    "an experiment whose hypothesis_ref does not resolve to a held hypothesis is refused (control 28; passes today)",
+    "the shipped examples/research-record-experimental.json renders admissible via `research` and exercises >=1 experiment bound to a held hypothesis",
+    "experimental-research is registered IMPLEMENTED with a real digest; the family badf-research stays ACTIVE; RSR-I01 holds (no implementation authority)",
+    "mutation kills every control-28 branch; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_experimental_research.py",
+    "tests/test_badf_research_contract.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "467406f"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Extends the frozen research contract (extend-only): control 27 -> 28, 10th subskill at IMPLEMENTED, family stays ACTIVE. P1 gate lifted by operator selection 2026-08-29. Resolves #113 / GOV-0032. Reconciles WP-2026-0061."
+}

@@ -3032,6 +3032,20 @@ def validate_research_record(path: Path) -> str:
     # A COMPARATIVE (R07) run of one alternative is not a comparison.
     if rec["type"] == "R07" and len(rec["alternatives"]) < 2:
         raise ValidationError("comparative research (R07) carries fewer than two alternatives; a comparison needs at least two options to weigh (control 24)")
+    # 28: an empirical run measures something (experimental-research). An R08
+    # (EMPIRICAL_EXPERIMENT) record carries at least one experiment, and every
+    # experiment -- in any record -- tests a hypothesis the record actually holds.
+    # A run that measured nothing, or an experiment on a hypothesis the record
+    # never stated, is not an experiment. Mirror of controls 23/24: type-specific
+    # structure, grounded in the record. The experiment mechanism itself (method,
+    # result, and reproduction under the composed-tree gate) is the evidence; the
+    # gate checks the experiment is real and bound, not that the result is true.
+    if rec["type"] == "R08" and not rec["experiments"]:
+        raise ValidationError("empirical-experiment research (R08) carries no experiment; a controlled measurement that ran nothing measures nothing (control 28)")
+    hypothesis_ids = {h["id"] for h in rec["hypotheses"]}
+    for e in rec["experiments"]:
+        if e["hypothesis_ref"] not in hypothesis_ids:
+            raise ValidationError(f"experiment {e['id']} tests hypothesis {e['hypothesis_ref']} the record does not hold; an experiment is bound to a stated hypothesis, not a dangling reference (control 28)")
 
     # ---- challenge / independence controls (RSR-003, BADF-WP-0037) ----
     # 10: source count is not source independence -- the basis cannot claim more

@@ -51,11 +51,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "f9a345f"
+    "base_revision": "f9a345f",
+    "landed_as": "467406f841edfe3e92a00706a989ad92cfc4c7f9"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Extends the frozen research contract (extend-only): control 26 -> 27, no new module. Authority impact NONE (RSR-I06 grants no implementation authority). badf-research stays ACTIVE. Resolves #84 / GOV-0031. Reconciles WP-2026-0060."
 }

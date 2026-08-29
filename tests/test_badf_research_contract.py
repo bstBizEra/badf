@@ -152,11 +152,13 @@ class RouterDeterminismTests(unittest.TestCase):
         for tok in ("framing", "deep", "fact-check", "synthesis"):
             self.assertIn(tok, row, f"R09 route does not name {tok}")
 
-    def test_r08_route_names_the_mechanism_and_the_deferral(self):
+    def test_r08_route_names_the_experimental_research_subskill(self):
+        # WP-0062 built experimental-research (P1 gate lifted); R08 is no longer
+        # deferred -- the row names the dedicated subskill and the mechanism it runs.
         row = next(l for l in self.TYPES_MD.splitlines() if "`R08`" in l)
         self.assertIn("BADF experiment mechanism", row)
         self.assertIn("experimental-research", row)
-        self.assertIn("P1", row)
+        self.assertNotIn("deferred to P1", row)
 
     def test_every_route_token_resolves_to_a_registered_subskill(self):
         existing = {p.name for p in (gate.ROOT / "skills/badf-research/subskills").iterdir() if p.is_dir()}

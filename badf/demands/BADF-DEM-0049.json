@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0049",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 113,
+    "url": "https://github.com/bstBizEra/badf/issues/113",
+    "exported_at": "2026-08-29T14:01:59Z",
+    "body_digest": "sha256:99516c2dd98a5e2ba4f8560f51177b946193955780e3efb9e6a0ed7885ec1da3"
+  },
+  "title": "GOV-0032: R08 (EMPIRICAL_EXPERIMENT) is unenforced \u2014 build experimental-research (P1) + control 28",
+  "problem": "## Observed\n\n`R08` (`EMPIRICAL_EXPERIMENT`) is the one research type with **no dedicated subskill** and **no integrity control**. It routes to the raw BADF experiment mechanism (composed-tree gate + mutation + `experiments[]`), and the gate never checks that an empirical run actually ran an experiment. Measured on `main` (`467406f`), basing probes on `research-record-challenged.json` (D-challenge present):\n\n- **A** \u2014 an `R08`/`D5` record with `experiments: []` \u2192 **ADMITTED**. An empirical run that measured nothing passes \u2014 unlike `R04`\u2192control 23 and `R07`\u2192control 24, which require their structure.\n- **B** \u2014 an `R08` experiment citing `hypothesis_ref: H-999` the record does not hold \u2192 **ADMITTED**. `hypothesis_ref` is pattern-checked (`^H-[0-9]{3,}$`) but never resolved: `grep hypothesis_ref scripts/badf_gate.py` \u2192 (nothing).\n\n## Expected\n\nBuild **experimental-research** (P1) as the 10th research subskill \u2014 a concise `SKILL.md` under `skills/badf-research/subskills/` (registered `IMPLEMENTED`; the family `badf-research` stays `ACTIVE`, two-tier model) \u2014 earning **control 28**:\n\n> An `R08` (`EMPIRICAL_EXPERIMENT`) record carries at least one experiment, and every experiment's `hypothesis_ref` resolves to a hypothesis the record holds. An empirical run that measured nothing, or tested a hypothesis it never stated, is not an experiment.\n\nMirrors controls 23/24 (type-specific structure, grounded in the record). D5 challenge is already required (`badf_gate.py` line ~3045). No new authority (RSR-I01); control 28 only refuses more, never approves more \u2014 it hardens the `ACTIVE` contract like control 27 did.\n\n## Evidence\n\n- `experiments[]` items require `id`/`hypothesis_ref`/`method`/`result`; no `R08`-requires-experiments and no `hypothesis_ref` resolution exist today (measured above).\n- Controls 23 (`if rec[\"type\"] == \"R04\" and not rec[\"alternatives\"]`) and 24 are the mirror pattern to follow.\n\n## Unknowns\n\nWhether to also bind a `reproducible: true` / `OBSERVED`-from-experiment claim to a specific experiment (control 28b). Deferred unless a failing-first probe warrants it \u2014 earned, not added by precedent.\n\ndiscovered-by: BADF-WP-0061 (RSR-I06 close; research P1 gate lifted by operator selection) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-29T14:01:59Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "P1 research gate lifted by operator selection 2026-08-29. Build experimental-research as the 10th research subskill (IMPLEMENTED; family stays ACTIVE) earning control 28 (R08 carries >=1 experiment; every experiment hypothesis_ref resolves). Mirrors controls 23/24; no new authority (RSR-I01). Worked as BADF-WP-0062."
+}
