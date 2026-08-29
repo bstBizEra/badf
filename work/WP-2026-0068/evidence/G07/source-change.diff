@@ -1,0 +1,796 @@
+diff --git a/badf/demands/BADF-DEM-0055.json b/badf/demands/BADF-DEM-0055.json
+new file mode 100644
+index 0000000..8af61e2
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0055.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0055",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 128,
++    "url": "https://github.com/bstBizEra/badf/issues/128",
++    "exported_at": "2026-08-29T17:30:52Z",
++    "body_digest": "sha256:16edfa071c4e5f8f045c679d4a4294466b3afd94723480d6561df8e726ee47f5"
++  },
++  "title": "GOV-0047: freeze badf-solution-design composition contract (DESIGNED, thin router, no second gate)",
++  "problem": "## Observed\n\nBADF has no **`badf-solution-design`** capability. The lifecycle already defines the specialist *design* surfaces \u2014 G03 (UX and service design: journeys, service-blueprint, accessibility, user-validation) and G04 (architecture, adr, data-model, api-contract, operability-design) \u2014 but nothing **composes** the detailed specialist contracts into one coherent solution. A collection of individually-reasonable designs can still be collectively broken: UX says \"manager approves refund\", authorization has no `refund:approve` action, the API exposes `POST /refunds/{id}/approve`, the data model has no approval state, audit records nothing, and accessibility conveys the failure by color alone. Every artifact looks fine; the **solution is inconsistent**.\n\n## Expected\n\nFreeze **`badf-solution-design`** as a **thin composition/orchestration layer** \u2014 a router + constraint contract over the specialist designers, **not** a sixth architecture skill, not a new gate, not a document-generation mega-skill. `badf-architecture` remains the structural spine and G04 coherence authority; `badf-solution-design` composes/routes/reconciles the detailed behavioral contracts and emits G03/G04 evidence.\n\n**WP-SOL-A \u2014 contract freeze, `DESIGNED` only.** Deliver `skills/badf-solution-design/SKILL.md` (thin router: what must be designed, which specialist owns it, authoritative inputs, output contract, reconciliation, uncertainty, which gate the evidence goes to) plus references: `composition-contract.md`, `routing.md`, `traceability.md`, `ux-contract.md`, `authorization-contract.md`, `data-contract.md`, `api-contract.md`, `accessibility-contract.md`, `cross-artifact-consistency.md`, `acceptance.md`, `external-methodology.md`. Register `DESIGNED`.\n\nFreeze the cross-artifact invariants **SOL-I01\u2026SOL-I12** (requirement provenance; architecture consistency; UX\u2194API; API\u2194authorization; default-deny; authorization\u2194audit; API\u2194data; UX\u2194error; accessibility-binds-behavior; migration safety; API compatibility; **SOL-I12 no second gate** \u2014 no `scripts/badf_solution_design.py`), the solution-composition matrix concept (a detailed-design RTM: requirement \u2192 ux/api/authz/data/audit/a11y/test refs), the `authorization-design` framing (principal\u00b7resource\u00b7action\u00b7scope\u00b7context\u00b7policy\u00b7decision\u00b7audit; RBAC as one model), the API DESIGN/ASSURE split (mirroring `badf-architecture`), and the FRAME\u2192INGEST\u2192ROUTE\u2192SPECIALIZE\u2192COMPOSE\u2192RECONCILE\u2192CHALLENGE\u2192TRACE\u2192PACKAGE workflow.\n\n**Boundaries (no scope creep):** no runtime, no second validator, no specialist activation, **no `lifecycle.json` change** (compose into existing G03/G04 evidence). Specialist skills and seam-validation controls in the canonical gate are **separate later WPs** (WP-SOL-B..).\n\n## Evidence\n\n- Current `main` `8673d9a`: `badf-architecture` is **ACTIVE** (the structural spine / G04 authority), `badf-research` ACTIVE, `badf-git` DESIGNED. G03/G04 evidence contracts are enforced. No `skills/badf-solution-design/` exists.\n- Same controlled admission pattern used by `badf-research` and `badf-architecture` and `badf-git`: contract freeze first (`DESIGNED`), then implementation/validation/shadow in separate WPs.\n\n## Unknowns\n\nWhether the composition matrix earns a dedicated ID family (`SDM-NNNN`) or a plain `solution-composition` artifact \u2014 deferred to WP-SOL-B (no global ID family invented without proven need). Whether any G03/G04 seam becomes a deterministic gate control \u2014 a later failing-first WP, never a fabricated control here.\n\ndiscovered-by: operator design directive (badf-solution-design composition model) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T17:30:52Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Operator design directive (badf-solution-design composition model, 2026-08-30). Thin composition/orchestration layer over UX/authz/data/API/accessibility specialists; SOL-I01..I12 cross-artifact invariants; composition matrix; DESIGN/ASSURE for API; composes into existing G03/G04 (no lifecycle change); no runtime, no second validator, no specialist activation. DESIGNED only. Worked as BADF-WP-0068 (WP-SOL-A). Coordinated with BARCHI-2 (GIT-C at WP-0069); GIT-B unowned."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 026fd75..4a8eb9d 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -200,6 +200,16 @@
+       "allowed_tools": [],
+       "status": "DESIGNED",
+       "digest": "sha256:17ea1e412a1c5b35cf87b66797a82872cb2e414cb26be573a8f5ee66fba61778"
++    },
++    {
++      "name": "badf-solution-design",
++      "source": "skills/badf-solution-design/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [],
++      "status": "DESIGNED",
++      "digest": "sha256:5d8848ef97cdd21c62cccfa4ff37b30f71823516566638fbee3cf1d60530ea46"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 20d51ff..459119e 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -682,6 +682,28 @@ non-empty `stop_conditions` (*rollback and stop conditions executable*). G06's m
+ independent_reviewer). Ships a **G05→G06** pair-acceptance (the full G00→G06 advance chain). Same lean
+ substrate as G01–G05 — no new module. Shipped through the operator's `/loop` self-paced gate march.
+ 
++## badf-solution-design — composition contract freeze (`BADF-WP-0068` / WP-SOL-A, Issue #128 / GOV-0047)
++
++BADF had specialist *design* surfaces (G03 UX, G04 architecture/data/API) but nothing that **composed**
++their detailed contracts into one coherent solution — five individually-valid designs can compose a broken
++one (UX asserts an action authorization denies; an API with no data state behind it; a failure conveyed
++only by color). `badf-solution-design` is that composition/orchestration layer, registered `DESIGNED`: a
++**thin router + constraint contract**, not a sixth architecture skill, a new gate, a second validator, or
++a document mega-skill. `badf-architecture` (ACTIVE) stays the structural spine and G04 authority;
++solution-design **details** interfaces and raises `ARCHITECTURE_CHANGE_REQUIRED` rather than inventing a
++boundary (SOL-I02).
++
++`SKILL.md` + eleven references freeze the `FRAME→…→PACKAGE` workflow, the `SOL-I01…I12` cross-artifact
++invariants (requirement provenance; UX↔API; API↔authorization; **default-deny SOL-I05 `NO MATCH = DENY`**;
++authorization↔audit; API↔data; UX↔error; accessibility-binds-behavior; migration safety; API compatibility;
++**SOL-I12 no second gate**), the solution-composition matrix (the detailed-design RTM), the
++`authorization-design` framing (principal·resource·action·scope·… with RBAC as one model), and the API
++DESIGN/ASSURE split. **No `scripts/badf_solution_design.py`, no new schema, no `lifecycle.json` change** —
++it composes into the **existing** G03/G04 evidence; `badf_gate.py` stays the sole gate authority. Adds no
++gate code, so no new control and nothing to mutate; the test guards the declarative surface. Specialist
++adapters, composition schemas and seam controls are deferred to WP-SOL-B…D. Built in an isolated
++`git worktree` alongside BARCHI-2's parallel badf-git work (GIT-B/GIT-C), per GIT-I04.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/skills/badf-solution-design/SKILL.md b/skills/badf-solution-design/SKILL.md
+new file mode 100644
+index 0000000..ca47e8b
+--- /dev/null
++++ b/skills/badf-solution-design/SKILL.md
+@@ -0,0 +1,91 @@
++---
++name: badf-solution-design
++description: Compose the detailed specialist design contracts — UX/service behavior, authorization, data, API, accessibility — into one coherent, implementable solution for a BADF work package, and reconcile the seams between them. Use when a requirement (G02) must become detailed G03/G04 design and the specialist artifacts must agree. Do not use to invent architectural boundaries, decide a gate, replace a specialist, or generate a monolithic design document.
++---
++
++# BADF Solution Design
++
++`badf-solution-design` is the **composition and orchestration layer** for detailed solution contracts. It
++routes each concern to its specialist, assembles their outputs into one solution, and **reconciles the
++seams** — it is a router and constraint contract, **not** a sixth architecture skill, a new gate, a
++second validator, or a document-generation mega-skill.
++
++Its live status is `badf/skill-registry.json`; this file defines the contract, not the status, and never
++hardcodes a lifecycle status that can drift from the registry.
++
++## Canonical principle
++
++```text
++Requirements define WHAT must be satisfied.
++Architecture defines WHERE responsibilities, boundaries and major mechanisms live.
++Specialist design defines HOW each concern behaves.
++badf-solution-design composes those specialist contracts into one coherent implementable solution.
++The canonical gate validates evidence.
++Authority decides whether delivery advances.
++```
++
++**Its primary job is consistency, not generation.** Five individually-reasonable designs can compose a
++broken solution — UX asserts an action authorization denies, an API operation with no data state behind
++it, a failure conveyed only by color. The value is `SPECIALIST DESIGN → CROSS-CONTRACT RECONCILIATION →
++CONSISTENT SOLUTION`.
++
++## Boundary with badf-architecture
++
++`badf-architecture` is the **structural spine and G04 coherence authority** (boundaries, topology, trust,
++ownership, architectural interfaces, ADRs, NFR allocation, fitness). `badf-solution-design` **MAY detail**
++an architectural interface; it **MUST NOT invent** an architectural boundary, interface or owner that is
++absent from — or inconsistent with — the architecture baseline. When detailed design finds the
++architecture insufficient, it does **not** silently fix it:
++
++```text
++ARCHITECTURE_CHANGE_REQUIRED → ADR / architecture revision → re-baseline → resume detailed design
++```
++
++## Invariants (SOL-I01 … SOL-I12)
++
++```text
++SOL-I01  Requirement provenance   every material element resolves to a REQ / NFR / G03 need / arch constraint; no orphan design
++SOL-I02  Architecture consistency every API boundary, data owner, external integration, trust transition resolves against the baseline
++SOL-I03  UX ↔ API                 a system action a flow requires has an implementable contract or an explicit non-API mechanism
++SOL-I04  API ↔ authorization      every protected operation has resource, action, scope, decision point, default behavior
++SOL-I05  Default deny             an unmatched authorization tuple resolves to DENY (NO MATCH = DENY)
++SOL-I06  Authorization ↔ audit    a security-sensitive authorization decision defines an audit obligation
++SOL-I07  API ↔ data               request/response and persistence agree on identity, nullability, cardinality, state, lifecycle, ownership
++SOL-I08  UX ↔ error               every material API/domain failure exposed to a user has a recovery state
++SOL-I09  Accessibility binds behavior  accessibility binds interaction states (keyboard, focus, semantics, error, state-change), not a checklist
++SOL-I10  Migration safety         a breaking persistence change carries a reversible/evolvable migration plan
++SOL-I11  API compatibility        a breaking API change is explicitly identified and dispositioned
++SOL-I12  No second gate           no scripts/badf_solution_design.py or competing validator; deterministic evidence semantics live in the canonical gate
++```
++
++See `references/cross-artifact-consistency.md` for each invariant's seam and the **solution-composition
++matrix** (the detailed-design equivalent of the G02 RTM).
++
++## Lifecycle placement
++
++`badf-solution-design` composes into the **existing** gates — it does **not** add a "Detailed Solution
++Design" gate. It emits G03 evidence (UX + accessibility) and G04 detailed evidence (API / data /
++authorization detail), coherent with the architecture spine:
++
++```text
++G02 requirement → badf-solution-design → { UX+a11y → G03 ;  api+data+authz detail → G04 (against the architecture spine) }
++```
++
++## Workflow
++
++`FRAME → INGEST → ROUTE → SPECIALIZE → COMPOSE → RECONCILE → CHALLENGE → TRACE → PACKAGE`
++
++1. **FRAME** — scope the detailed solution and its authority boundary.
++2. **INGEST** — G01/G02/G03 evidence + the architecture baseline + ADRs + NFRs.
++3. **ROUTE** — select only the specialists the work needs (`references/routing.md`); external specialist skills are **reference/adapt**, never BADF authority.
++4. **SPECIALIZE** — each specialist produces its domain contract (`references/ux-contract.md`, `authorization-contract.md`, `data-contract.md`, `api-contract.md`, `accessibility-contract.md`).
++5. **COMPOSE** — assemble one solution and the composition matrix (`references/composition-contract.md`).
++6. **RECONCILE** — detect the cross-contract inconsistencies SOL-I01…I12 name (`references/cross-artifact-consistency.md`); an inconsistency is rework, not a footnote.
++7. **CHALLENGE** — failure / error / security / accessibility / evolution review; unresolved decisions stay explicit.
++8. **TRACE** — bind each element back to its requirement and forward to test obligations (`references/traceability.md`).
++9. **PACKAGE** — emit the canonical G03/G04 evidence; the gate validates it, an authority dispositions it. Never emit a gate outcome as this skill's own decision.
++
++Read `references/acceptance.md` for the admission controls and the WP-SOL-A…D ladder, and
++`references/external-methodology.md` for adapted external methodology (reference-only). This skill has
++**no authority of its own**: it composes and constrains; the canonical gate validates and an authority
++decides.
+diff --git a/skills/badf-solution-design/references/acceptance.md b/skills/badf-solution-design/references/acceptance.md
+new file mode 100644
+index 0000000..8d80a15
+--- /dev/null
++++ b/skills/badf-solution-design/references/acceptance.md
+@@ -0,0 +1,37 @@
++# Acceptance and admission
++
++The capability's **live status is `badf/skill-registry.json`** (`DESIGNED` at `BADF-WP-0068` / WP-SOL-A)
++— this document defines the contract, not the status, so it never hardcodes a status line that can drift
++from the registry. Progression follows `docs/07-skills-governance.md`.
++
++## Controlled admission ladder
++
++The same pattern that worked for `badf-research`, `badf-architecture` and `badf-git` — freeze the
++contract first, prove it later, in separate WPs. **Do not build every specialist in the first PR.**
++
++| WP | Outcome | Status |
++| :--- | :--- | :--- |
++| **WP-SOL-A** (this) | root `SKILL.md` + references: composition model, routing, specialist ownership boundaries, cross-artifact traceability, SOL-I01…I12, G03/G04 mapping, architecture interaction, authority boundaries, external-methodology dispositions | `DESIGNED` |
++| WP-SOL-B | composition schemas + the solution-composition matrix artifact + deterministic controls | `IMPLEMENTED` |
++| WP-SOL-C | cross-artifact seam controls in the canonical `badf_gate.py` (failing-first) | `VALIDATED` |
++| WP-SOL-D | historical shadow calibration on real BADF solutions | `SHADOWED` |
++| — | owner / assurance admission, then registry activation | `APPROVED` → `ACTIVE` |
++
++## WP-SOL-A boundaries (no scope creep)
++
++- **No runtime, no second validator** — no `scripts/badf_solution_design.py` (SOL-I12); `badf_gate.py`
++  is the sole gate authority.
++- **No lifecycle change** — `lifecycle.json`, G03 and G04 required_evidence and their gate rules are
++  unchanged; solution-design composes into the **existing** G03/G04 evidence.
++- **No specialist activation** — routing names who would own each concern; the UX / authorization / data
++  / API / accessibility adapters are not admitted here.
++- **No new global ID family** — the solution-composition matrix uses a plain `solution-composition`
++  object at freeze; a dedicated `SDM-NNNN` family waits for proven need (WP-SOL-B).
++- **Architecture spine respected** — `badf-architecture` (ACTIVE) owns boundaries; solution-design details
++  interfaces and raises `ARCHITECTURE_CHANGE_REQUIRED` rather than inventing one.
++
++## Admission
++
++- `DESIGNED`: the contract exists as this `SKILL.md` + references and is registered. **Met (WP-SOL-A).**
++- `IMPLEMENTED` … `ACTIVE`: earned by the later WPs above, each through the full loop; a seam becomes a
++  deterministic control only when a failing-first probe warrants it, never by precedent.
+diff --git a/skills/badf-solution-design/references/accessibility-contract.md b/skills/badf-solution-design/references/accessibility-contract.md
+new file mode 100644
+index 0000000..5ed26d7
+--- /dev/null
++++ b/skills/badf-solution-design/references/accessibility-contract.md
+@@ -0,0 +1,30 @@
++# Accessibility-design contract
++
++Accessibility is a **behavior contract bound to interaction states**, not a checklist appended to a
++finished screen (SOL-I09). Composes into **G03** evidence (accessibility). Target: **WCAG 2.2 AA**.
++
++## Binds to behavior
++
++For each interaction state a UX flow defines:
++
++```text
++interaction → keyboard behavior → focus behavior → semantic announcement → error behavior → state-change notification
++```
++
++## Output contract
++
++- **keyboard** — every operable element reachable and operable by keyboard; no keyboard trap;
++- **focus** — visible, ordered, and managed across state changes and route changes;
++- **semantics** — correct roles/names/values; state exposed to assistive technology, not by color alone;
++- **errors** — a failure is announced programmatically and has a recovery path (ties SOL-I08 ↔ SOL-I09);
++- **state changes** — dynamic changes are announced to assistive technology;
++- **assistive-technology behavior** — the expected screen-reader / AT experience per state.
++
++## Seams it must satisfy
++
++- **SOL-I09** — accessibility binds each interaction state (not a per-screen afterthought).
++- **SOL-I08** — an error surfaced accessibly still needs a UX recovery state; a state conveyed only by
++  color (the refund example) fails both.
++
++WCAG 2.2 AA is the floor; the contract names the *behavior*, which the specialist adapter designs and the
++canonical gate's G03 `accessibility` evidence validates.
+diff --git a/skills/badf-solution-design/references/api-contract.md b/skills/badf-solution-design/references/api-contract.md
+new file mode 100644
+index 0000000..8a729bf
+--- /dev/null
++++ b/skills/badf-solution-design/references/api-contract.md
+@@ -0,0 +1,30 @@
++# API-design contract — DESIGN + ASSURE
++
++The API specialist runs in **two modes**, mirroring the successful `badf-architecture` DESIGN/ASSURE
++pattern — without turning solution design into another architectural assurance system. Composes into
++**G04** detailed evidence (coherent with `api-contract`).
++
++## API DESIGN — produce the contract
++
++- **operations / resources / events** — each traced to a `REQ`/G03 need (SOL-I01) and to a UX action (SOL-I03);
++- **schemas** — request/response, agreeing with the data model (SOL-I07);
++- **error model** — every material failure has a code and a UX recovery state (SOL-I08);
++- **pagination, idempotency, authentication, authorization** — each operation's protection resolves the authorization tuple (SOL-I04);
++- **versioning / compatibility** posture.
++
++## API ASSURE — compare candidate against baseline
++
++Compare a candidate contract to the baseline and produce **assurance evidence, not authority**. Checks:
++
++```text
++breaking changes · removed operations · required-field additions · enum narrowing · type changes
++response-code changes · pagination contract · idempotency changes · authentication changes
++authorization changes · versioning · deprecation window
++```
++
++A breaking change is **explicitly identified and dispositioned** (SOL-I11) — never silent. ASSURE emits
++evidence; the canonical gate validates it and an authority decides. There is no second validator (SOL-I12).
++
++## Seams it must satisfy
++
++- **SOL-I03** UX↔API · **SOL-I04** API↔authorization · **SOL-I07** API↔data · **SOL-I08** UX↔error · **SOL-I11** compatibility.
+diff --git a/skills/badf-solution-design/references/authorization-contract.md b/skills/badf-solution-design/references/authorization-contract.md
+new file mode 100644
+index 0000000..c4bb862
+--- /dev/null
++++ b/skills/badf-solution-design/references/authorization-contract.md
+@@ -0,0 +1,28 @@
++# Authorization-design contract
++
++The canonical BADF authorization concept is **`authorization-design`**, not strictly RBAC — because BADF
++projects may need RBAC, ABAC, ReBAC, tenant-scoped RBAC, policy-based, ownership-based, or hybrids. RBAC
++is **one** supported model; an `rbac-designer` skill is a specialist methodology for the RBAC case. This
++keeps the architecture future-proof.
++
++## Canonical contract
++
++Every protected operation resolves the tuple:
++
++```text
++principal · resource · action · scope · context · policy · decision · audit
++```
++
++- **decision point** — where the decision is made, and its **default behavior**;
++- **SOL-I05 default deny** — a tuple matching no rule resolves to **DENY** (`NO MATCH = DENY`);
++- **SOL-I06 audit** — a security-sensitive decision defines an audit obligation.
++
++## Seams it must satisfy
++
++- **SOL-I04** — every protected API operation has resource, action, scope, decision point, default behavior; no "authenticated user can call the endpoint" pseudo-authorization.
++- **SOL-I05** — unmatched tuples deny.
++- **SOL-I06** — privileged decisions emit audit events.
++- **SOL-I02** — a trust transition the model relies on must exist in the architecture baseline; solution-design does not invent a trust boundary.
++
++Authorization detail (roles, scopes, policies) composes into **G04** detailed evidence, reconciled
++against the architecture spine's trust boundaries.
+diff --git a/skills/badf-solution-design/references/composition-contract.md b/skills/badf-solution-design/references/composition-contract.md
+new file mode 100644
+index 0000000..e6f28d4
+--- /dev/null
++++ b/skills/badf-solution-design/references/composition-contract.md
+@@ -0,0 +1,45 @@
++# Composition contract
++
++How specialist contracts become one solution. `badf-solution-design` COMPOSES / ROUTES / RECONCILES; it
++does not generate a monolith and does not own any specialist's internal method.
++
++## The composition
++
++```text
++SPECIALIST DESIGN → CROSS-CONTRACT RECONCILIATION → CONSISTENT SOLUTION DESIGN
++```
++
++Each specialist emits a bounded output **contract** (see the per-domain references). Composition:
++
++1. collects the specialist contracts required for the routed concerns;
++2. assembles the **solution-composition matrix** (`cross-artifact-consistency.md`) — one row per
++   requirement, binding UX / API / authorization / data / audit / accessibility / test refs;
++3. runs the SOL-I01…I12 seam checks over the assembled set;
++4. records every unresolved inconsistency and blocker explicitly (silence is not coherence);
++5. packages the coherent result as G03/G04 evidence for the canonical gate.
++
++## What composition owns vs delegates
++
++| Concern | Owner |
++| :--- | :--- |
++| the coherent whole; seam reconciliation; the composition matrix | `badf-solution-design` |
++| structural boundaries, topology, trust, ownership, ADRs | `badf-architecture` (the spine) |
++| each domain's internal design (how UX/authz/data/API/a11y behaves) | the specialist adapter |
++| deterministic evidence validation | the canonical `badf_gate.py` |
++| lifecycle disposition | authority |
++
++Composition may **detail** an architectural interface; it may **not** create one absent from the
++baseline (SOL-I02) — that is an `ARCHITECTURE_CHANGE_REQUIRED` hand-off, not a silent edit.
++
++## Reconciliation output
++
++A composition run yields, at minimum:
++
++- the solution-composition matrix (requirement → specialist refs);
++- the list of seam findings (which SOL-I invariant, which artifacts, resolved / open);
++- the unresolved decisions and blockers;
++- the G03 and G04 evidence the package will carry;
++- explicit non-coverage (a routed concern deliberately not designed, and why).
++
++A composition with open blocking seam findings is **not** ready to package; it returns to SPECIALIZE or
++raises the architecture hand-off. It never self-authorizes a gate outcome.
+diff --git a/skills/badf-solution-design/references/cross-artifact-consistency.md b/skills/badf-solution-design/references/cross-artifact-consistency.md
+new file mode 100644
+index 0000000..ce95dea
+--- /dev/null
++++ b/skills/badf-solution-design/references/cross-artifact-consistency.md
+@@ -0,0 +1,108 @@
++# Cross-artifact consistency (the heart)
++
++This is the reconciliation contract — the reason `badf-solution-design` exists. A solution is coherent
++only when the specialist artifacts agree at their seams. Each invariant below names one seam, the
++question to ask, and the failure it prevents. These are **design controls**; deterministic enforcement,
++where a seam earns it, lands in the canonical gate through a separate failing-first WP — never a second
++validator here (SOL-I12).
++
++## The seams
++
++### SOL-I01 — Requirement provenance
++Every material detailed-design element resolves to a `REQ` / `NFR` / a declared G03 design need / an
++architecture constraint. **No orphan design.** A screen, endpoint, table or permission that traces to
++nothing is either undeclared scope or dead work.
++
++### SOL-I02 — Architecture consistency
++Every API boundary, data owner, external integration and trust transition resolves against the
++**architecture baseline** (owned by `badf-architecture`). A boundary the baseline does not contain is not
++solution-design's to invent — raise `ARCHITECTURE_CHANGE_REQUIRED`.
++
++### SOL-I03 — UX ↔ API
++A system action a user/service flow requires has an implementable API contract **or** an explicit
++non-API mechanism. "The button approves the refund" with no operation behind it is an inconsistency.
++
++### SOL-I04 — API ↔ authorization
++Every protected operation carries `resource`, `action`, `scope`, a `decision point`, and a `default
++behavior`. "Any authenticated user can call the endpoint" is pseudo-authorization, not authorization.
++
++### SOL-I05 — Default deny
++An authorization tuple that matches no rule resolves to **DENY**.
++
++```text
++NO MATCH = DENY
++```
++
++### SOL-I06 — Authorization ↔ audit
++A security-sensitive authorization decision defines an **audit obligation**. A privileged action that
++records nothing cannot be investigated.
++
++### SOL-I07 — API ↔ data
++The request/response models and the persistence model cannot silently disagree on **identity,
++nullability, cardinality, state, lifecycle, or ownership**. An API that returns a field the data model
++cannot produce is a seam defect.
++
++### SOL-I08 — UX ↔ error
++Every material API/domain failure exposed to a user has a **recovery state** in the flow. A failure with
++no path forward is a dead end.
++
++### SOL-I09 — Accessibility binds behavior
++Accessibility binds **interaction states**, not a checklist appended to a screen:
++
++```text
++interaction → keyboard behavior → focus behavior → semantic announcement → error behavior → state-change notification
++```
++
++### SOL-I10 — Migration safety
++A breaking persistence change carries a **reversible or evolvable** migration plan. An irreversible
++destructive migration with no plan is a data-loss risk.
++
++### SOL-I11 — API compatibility
++A breaking API change is explicitly **identified and dispositioned** (removed operation, required-field
++addition, enum narrowing, type/response-code change, auth change, pagination/idempotency change). Silent
++breakage is refused.
++
++### SOL-I12 — No second gate
++`badf-solution-design` introduces **no** `scripts/badf_solution_design.py`, no competing validator, gate,
++schema-authority or lifecycle result. Deterministic evidence semantics belong to the canonical
++`badf_gate.py` through separately-authorized work.
++
++## The example the invariants catch
++
++```text
++UX:            "Manager approves refund"
++Authorization: manager has no refund:approve action        ← SOL-I04 / SOL-I05
++API:           POST /refunds/{id}/approve                   ← SOL-I03 ok, but…
++Data:          refund has no approval state                 ← SOL-I07
++Audit:         nothing                                      ← SOL-I06
++Accessibility: approval failure is conveyed only by color   ← SOL-I09 / SOL-I08
++```
++
++Every artifact looks reasonable alone; RECONCILE surfaces five seam defects.
++
++## Solution-composition matrix
++
++The detailed-design equivalent of the G02 RTM: one row per requirement, binding the specialist artifacts
++that satisfy it, so coverage and coherence are reconstructable in both directions.
++
++| Requirement | UX | API | AuthZ | Data | Audit | A11y | Test |
++| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
++| REQ-021 | FLOW-04 | API-17 | ACT-09 | ENT-Refund | AUD-12 | A11Y-08 | TEST-31 |
++| REQ-022 | FLOW-05 | API-18 | ACT-10 | ENT-Refund | AUD-13 | A11Y-09 | TEST-32 |
++
++Machine shape (no new global ID family is invented at freeze — a `solution-composition` object is
++sufficient; a dedicated `SDM-NNNN` family waits for proven need in WP-SOL-B):
++
++```json
++{
++  "solution_id": "...",
++  "requirement_ref": "REQ-021",
++  "ux_refs": ["FLOW-04"],
++  "api_refs": ["API-17"],
++  "authorization_refs": ["ACT-09"],
++  "data_refs": ["ENT-Refund"],
++  "audit_refs": ["AUD-12"],
++  "accessibility_refs": ["A11Y-08"],
++  "test_refs": ["TEST-31"]
++}
++```
+diff --git a/skills/badf-solution-design/references/data-contract.md b/skills/badf-solution-design/references/data-contract.md
+new file mode 100644
+index 0000000..ddeb49f
+--- /dev/null
++++ b/skills/badf-solution-design/references/data-contract.md
+@@ -0,0 +1,27 @@
++# Data-design contract
++
++The output contract for the database/persistence specialist (routed on entity / constraint / index /
++migration signals). Composes into **G04** detailed evidence (coherent with `data-model`). The specialist
++owns persistence detail; it does **not** own data ownership — that is architecture.
++
++## Output contract
++
++- **entities** — with identity, fields, nullability, cardinality, and lifecycle/state;
++- **constraints** — keys, uniqueness, referential integrity, invariants;
++- **normalization** and deliberate denormalization, with the reason;
++- **indexing** — for the access patterns the API/UX imply;
++- **migrations** — a reversible or evolvable plan for any breaking change (SOL-I10).
++
++## Architecture ownership boundary
++
++The data specialist may decide table structure, normalization, constraints, indexes and migration
++mechanics. It **must not** decide, for example, "Service B directly accesses Service A's database" — that
++is an architecture ownership decision (SOL-I02). Given an architecture ruling ("Customer Service owns
++Customer data"), the specialist designs `customers`, `customer_addresses`, `customer_preferences`,
++indexes, constraints and migration strategy **within** that ownership.
++
++## Seams it must satisfy
++
++- **SOL-I07** — the persistence model agrees with the API request/response models on identity, nullability, cardinality, state, lifecycle, ownership.
++- **SOL-I10** — a breaking persistence change carries a reversible/evolvable migration plan.
++- **SOL-I02** — every data owner and cross-service access resolves against the architecture baseline.
+diff --git a/skills/badf-solution-design/references/external-methodology.md b/skills/badf-solution-design/references/external-methodology.md
+new file mode 100644
+index 0000000..dd102fd
+--- /dev/null
++++ b/skills/badf-solution-design/references/external-methodology.md
+@@ -0,0 +1,24 @@
++# External methodology provenance
++
++Status: **REFERENCE / ADAPT ONLY — no external executable vendored, no external skill granted authority.**
++
++`badf-solution-design` routes concerns to specialist *methodologies* and adapts their ideas into BADF
++domain contracts. The external skills are references, not BADF authority; any future vendoring or direct
++execution requires a separate external-skill admission WP under `docs/07-skills-governance.md`.
++
++## Specialist methodology dispositions
++
++| Domain | External methodology | BADF adapts | BADF does NOT adopt |
++| :--- | :--- | :--- | :--- |
++| UX / service | product-design-and-ux methods | task flows, interaction states, service blueprint, recovery paths | its tooling as BADF authority |
++| Authorization | RBAC / ABAC / ReBAC / policy models | the `principal·resource·action·scope·context·policy·decision·audit` contract; RBAC as one model | any single model as the only model |
++| Data | schema-design methods | entities, constraints, normalization, indexing, migration mechanics | data *ownership* decisions (that is architecture) |
++| API | API-design + design-review methods | the DESIGN/ASSURE split and the breaking-change checklist | its verdicts as BADF authority (ASSURE emits evidence, not authority) |
++| Accessibility | WCAG 2.2 AA methods | behavior bound to interaction states | a per-screen checklist as sufficient |
++
++## Admission posture
++
++External specialist skills are **REFERENCE / ADAPT**. They grant no tool access, no execution permission,
++no gate authority and no runtime dependency. `badf-solution-design` composes their *contracts*; the
++canonical gate validates the resulting evidence, and an authority dispositions delivery. This mirrors how
++`badf-prd` and `badf-requirements` salvaged external methodology as reference-only.
+diff --git a/skills/badf-solution-design/references/routing.md b/skills/badf-solution-design/references/routing.md
+new file mode 100644
+index 0000000..e28fb70
+--- /dev/null
++++ b/skills/badf-solution-design/references/routing.md
+@@ -0,0 +1,34 @@
++# Routing
++
++The root skill routes each concern to the specialist that owns it, and selects **only** the specialists
++the work needs. External specialist skills are **REFERENCE / ADAPT**, never BADF authority:
++
++```text
++external skill = REFERENCE / ADAPT     (not:  external skill = BADF authority)
++```
++
++## Signal → specialist
++
++| Signal | Specialist (adapter) |
++| :--- | :--- |
++| journey, screen/state, task flow, recovery behavior | `product-design-and-ux` adapter |
++| role, permission, resource/action, tenant scope | `authorization-design` (RBAC/ABAC/ReBAC one model) adapter |
++| entities, constraints, index, migration | `database-schema-designer` adapter |
++| endpoint/resource/event, error model, pagination, version | `api-design` adapter |
++| keyboard, focus, semantics, contrast, assistive technology | accessibility adapter |
++| architecture boundary / topology / trust decision | **`badf-architecture`** (the spine, not an adapter) |
++| uncertainty requiring evidence | **`badf-research`** |
++| security threat / risk decision | future **`badf-security`** |
++
++## Routing rules
++
++- Route the minimum: an unneeded specialist is scope, not thoroughness.
++- A signal that names an architectural boundary/interface/owner routes to `badf-architecture`, not to a
++  specialist — solution-design details interfaces, it does not invent them (SOL-I02).
++- An adapter's output is a **contract**, adapted to the BADF domain reference; the external skill's own
++  vocabulary, scoring, or lifecycle claims are not adopted as BADF authority.
++- Overlapping signals resolve to the more specific domain; a genuinely cross-cutting concern (e.g. an
++  authorization decision surfaced in a UX flow with a data effect) is composed across its adapters and
++  reconciled at the seam, not forced into one.
++- No adapter is **activated** at contract-freeze — routing names who *would* own each concern; specialist
++  activation is a later WP.
+diff --git a/skills/badf-solution-design/references/traceability.md b/skills/badf-solution-design/references/traceability.md
+new file mode 100644
+index 0000000..5b617a8
+--- /dev/null
++++ b/skills/badf-solution-design/references/traceability.md
+@@ -0,0 +1,50 @@
++# Traceability
++
++The detailed-design spine: a G02 requirement fans out to the specialist elements that satisfy it, and
++each element binds forward to a test obligation. Architecture surrounds the spine as the coherence frame.
++
++## The spine
++
++```text
++G02 requirement
++   ├──→ UX task / system behavior
++   ├──→ API operation
++   ├──→ authorization action
++   ├──→ data operation / entity
++   ├──→ audit event
++   └──→ accessibility obligation
++                 │
++                 ▼
++           test obligation
++```
++
++## Architecture surrounds it
++
++```text
++            G04 architecture baseline
++           /          |           \
++      boundary     interface     ownership
++          |            |             |
++          ▼            ▼             ▼
++UX flow → API operation → authorization → data operation
++   └──────────┴──────────────┴──────────────┘
++                    │
++                    ▼
++              audit / telemetry
++                    │
++                    ▼
++              test obligations
++```
++
++## Rules
++
++- **Backward:** every material element resolves to a `REQ` / `NFR` / declared G03 need / architecture
++  constraint (SOL-I01). No orphan design.
++- **Forward:** every priority element carries a test obligation; coverage is reconstructable from the
++  solution-composition matrix in both directions.
++- **Across:** the spine's rows must satisfy the SOL-I01…I12 seams (`cross-artifact-consistency.md`); a
++  row that traces cleanly but fails a seam is still incoherent.
++- Bidirectional coverage is computed from the link graph — redundant hand-maintained reverse links are
++  prohibited, as in the G02 RTM.
++- Traceability binds to the architecture **baseline revision**; if the baseline moves, the affected rows
++  are re-reconciled, not assumed still coherent.
+diff --git a/skills/badf-solution-design/references/ux-contract.md b/skills/badf-solution-design/references/ux-contract.md
+new file mode 100644
+index 0000000..c46bc36
+--- /dev/null
++++ b/skills/badf-solution-design/references/ux-contract.md
+@@ -0,0 +1,23 @@
++# UX / service-behavior contract
++
++The output contract for the UX / service-design specialist (routed on journey / screen-state / task-flow
++/ recovery signals). Composes into **G03** evidence (journeys, service-blueprint, user-validation). The
++specialist owns *how* the interaction behaves; `badf-solution-design` owns that its behavior is coherent
++with the other artifacts.
++
++## Output contract
++
++- **task flows** — the steps a user/service takes to satisfy a requirement, each traced to a `REQ`/G03 need (SOL-I01);
++- **interaction states** — the states each step can be in (idle, in-progress, success, each failure);
++- **error / recovery paths** — every material failure exposed to the user has a recovery state (SOL-I08);
++- **service blueprint** — the front-stage / back-stage / supporting-system view behind the flow;
++- **engineering handoff** — the system actions each step requires (feeding SOL-I03: each has an API contract or an explicit non-API mechanism).
++
++## Seams it must satisfy
++
++- **SOL-I03** — every system action a flow requires resolves to an API operation or a declared non-API mechanism.
++- **SOL-I08** — every failure surfaced in a flow has a recovery state.
++- **SOL-I09** — each interaction state carries its accessibility behavior (see `accessibility-contract.md`).
++
++The UX specialist must not assert an action the authorization model denies (SOL-I04) or a data effect the
++data model cannot hold (SOL-I07); such assertions are reconciled, not shipped.
+diff --git a/tests/test_badf_solution_design_contract.py b/tests/test_badf_solution_design_contract.py
+new file mode 100644
+index 0000000..b5e0561
+--- /dev/null
++++ b/tests/test_badf_solution_design_contract.py
+@@ -0,0 +1,90 @@
++"""badf-solution-design contract freeze (BADF-WP-0068 / WP-SOL-A).
++
++badf-solution-design is the declarative composition/orchestration layer over the design
++specialists (UX / authorization / data / API / accessibility). It is a router and
++constraint contract -- NOT a sixth architecture skill, a new gate, a second validator,
++or a document-generation mega-skill. This WP freezes the contract only: SKILL.md +
++eleven references, registered DESIGNED, with no runtime, no second validator, and no
++lifecycle change. These tests guard that declarative surface.
++"""
++import hashlib
++import json
++import unittest
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[1]
++SKILL = ROOT / "skills" / "badf-solution-design" / "SKILL.md"
++REFERENCES = ROOT / "skills" / "badf-solution-design" / "references"
++REGISTRY = ROOT / "badf" / "skill-registry.json"
++
++REFS = {
++    "composition-contract.md", "routing.md", "traceability.md", "ux-contract.md",
++    "authorization-contract.md", "data-contract.md", "api-contract.md",
++    "accessibility-contract.md", "cross-artifact-consistency.md", "acceptance.md",
++    "external-methodology.md",
++}
++
++
++class BadfSolutionDesignContractTests(unittest.TestCase):
++    def test_contract_surface_is_declarative_only(self):
++        self.assertTrue(SKILL.is_file())
++        self.assertEqual(REFS, {p.name for p in REFERENCES.glob("*.md")})
++        # no mutation engine / second gate (SOL-I12) and no new schema-authority.
++        self.assertFalse((ROOT / "scripts" / "badf_solution_design.py").exists())
++        self.assertFalse((ROOT / "schemas" / "solution-design.schema.json").exists())
++        self.assertFalse((ROOT / "schemas" / "solution-composition.schema.json").exists())
++
++    def test_root_states_all_invariants_and_the_workflow(self):
++        text = SKILL.read_text(encoding="utf-8")
++        for n in range(1, 13):
++            self.assertIn(f"SOL-I{n:02d}", text)
++        self.assertIn("FRAME → INGEST → ROUTE → SPECIALIZE → COMPOSE → RECONCILE → CHALLENGE → TRACE → PACKAGE", text)
++        self.assertIn("ARCHITECTURE_CHANGE_REQUIRED", text)
++        # the architecture-spine boundary is explicit.
++        self.assertIn("badf-architecture", text)
++        self.assertRegex(text, r"MUST NOT invent")
++
++    def test_cross_artifact_consistency_enumerates_the_seams(self):
++        text = (REFERENCES / "cross-artifact-consistency.md").read_text(encoding="utf-8")
++        for n in range(1, 13):
++            self.assertIn(f"SOL-I{n:02d}", text)
++        self.assertIn("NO MATCH = DENY", text)          # SOL-I05 default deny
++        self.assertIn("composition matrix", text.lower())
++
++    def test_routing_maps_signals_to_reference_adapters(self):
++        text = (REFERENCES / "routing.md").read_text(encoding="utf-8")
++        self.assertIn("REFERENCE / ADAPT", text)
++        for adapter in ("authorization-design", "database-schema-designer", "api-design", "accessibility"):
++            self.assertIn(adapter, text)
++        # architecture and research are the spine / evidence, not adapters.
++        self.assertIn("badf-architecture", text)
++        self.assertIn("badf-research", text)
++
++    def test_no_lifecycle_change_and_composes_into_existing_gates(self):
++        lifecycle = json.loads((ROOT / "badf" / "lifecycle.json").read_text())
++        gate_names = {g["id"]: g.get("name", "") for g in lifecycle["gates"]}
++        # no new "solution design" gate was added.
++        self.assertNotIn("solution", " ".join(gate_names.values()).lower())
++        # G03/G04 required_evidence is unchanged (the known sets).
++        g03 = next(g for g in lifecycle["gates"] if g["id"] == "G03")
++        g04 = next(g for g in lifecycle["gates"] if g["id"] == "G04")
++        self.assertEqual(set(g03["required_evidence"]), {"journeys", "service-blueprint", "accessibility", "user-validation"})
++        self.assertEqual(set(g04["required_evidence"]), {"architecture", "adr", "data-model", "api-contract", "operability-design"})
++
++    def test_registry_pin_is_designed_and_tool_empty(self):
++        reg = json.loads(REGISTRY.read_text(encoding="utf-8"))
++        entries = [e for e in reg["skills"] if e.get("name") == "badf-solution-design"]
++        self.assertEqual(1, len(entries))
++        entry = entries[0]
++        self.assertEqual("DESIGNED", entry["status"])
++        self.assertEqual([], entry["allowed_tools"])
++        self.assertEqual("sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest(), entry["digest"])
++
++    def test_skill_points_to_registry_not_a_hardcoded_status(self):
++        text = SKILL.read_text(encoding="utf-8")
++        self.assertIn("badf/skill-registry.json", text)
++        self.assertNotIn("Status: `DESIGNED`", text)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0067/work-package.json b/work/WP-2026-0067/work-package.json
+index 4552c9a..9ad4cd2 100644
+--- a/work/WP-2026-0067/work-package.json
++++ b/work/WP-2026-0067/work-package.json
+@@ -44,11 +44,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "b1e0f5a"
++    "base_revision": "b1e0f5a",
++    "landed_as": "8673d9a3292d304968c4c8bc15b9a6cd4d64b031"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Reuses the G01-G05 substrate -- no new validator module. G06 min change class is C1, so the example dossier carries the two base roles (engineering_owner + independent_reviewer). Shipped via the operator's /loop self-paced gate march. Resolves #125 / GOV-0046. Reconciles WP-2026-0066."
+ }
