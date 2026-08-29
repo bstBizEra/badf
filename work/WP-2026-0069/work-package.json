@@ -45,11 +45,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "9cf4b13"
+    "base_revision": "9cf4b13",
+    "landed_as": "0b2fd527c4e53b7c5b142de11c71438bea6b17b7"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-C per GTGM v0.1 section 17, after GIT-B (WP-2026-0070 / 0343c8e). Resolves #127 / GOV-0048. Reconciles WP-2026-0072 (WP-SOL-C, 9cf4b13, landed while this branch was open; 0070 was reconciled by it) -- branch rebased onto 9cf4b13. Engineered by BARCHI-2 in a linked worktree under the operator's /loop; parallel seat BARCHI-1 on WP-2026-0072."
 }

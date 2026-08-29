@@ -795,6 +795,31 @@ runs the inspector on the runner's own checkout — detached at `refs/pull/N/mer
 as the positive control on real infrastructure. Composition identity is GIT-E; branch conformance
 is GIT-B's check; platform state is GIT-F.
 
+## badf-git GIT-D — staleness as a measured verdict (`BADF-WP-0075`, Issue #140 / GOV-0054)
+
+The state machine names the events that make evidence stale — source head moved, target moved,
+a rewrite, an epoch change — and says recovery is *recomputation, not waiver-by-label*; the
+evidence contract defines the rewrite record. Nothing detected any of it: in this program's last
+two work packages the self-dossier was twice bound to a stale base after a rebase, caught once
+because compose refused a 154 KB misbinding and once by hand. GIT-C produced the record; nothing
+consumed it.
+
+**`python3 scripts/badf_gate.py git-staleness <baseline-record.json> [<path>]`** loads a git-baseline
+record (tolerating the trailing PASS line a stdout redirect captures), re-observes the tree through
+`git_baseline()`, and renders `CURRENT` (exit 0), `SOURCE_ADVANCED` (the recorded head is an ancestor
+of the new one; HELD 3), `STALE_EVIDENCE` (the recorded head is **not** an ancestor — amend, rebase,
+reset, cherry-pick — or the policy epoch changed; HELD 3, carrying `old_source_head`,
+`new_source_head`, `kind: history_rewrite`, `old_head_still_reachable`, `invalidated`), or
+`TARGET_MOVED` (HELD 3). Combined cases report every flag and the strictest disposition; index and
+worktree count deltas are informational — a dirty tree is not a rewrite. The rewrite *type* is not
+inferable from two revisions and is not guessed. It refuses, `BLOCKED`, a file that is not a complete
+git-baseline record and a record taken in another checkout — a baseline binds a checkout. Read-only,
+deterministic modulo `observed_at`. The `commit-integrity` subskill carries the nested loop's
+discipline (`git add -p`, inspect the staged diff, atomic commits) and the rule that closes it: bind a
+baseline before verification, judge it before publishing or opening a PR, recompute on a rewrite. CI
+stores the runner's own baseline and checks it (`CURRENT`) every run. Composition identity is GIT-E;
+approval staleness is GIT-F.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
