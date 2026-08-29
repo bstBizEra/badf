@@ -58,8 +58,8 @@
       "version": "0.1.0",
       "risk_class": "C1",
       "allowed_tools": [],
-      "status": "IMPLEMENTED",
-      "digest": "sha256:99f9bbe8111d4346b78b34c235b1ce06ba85ffe5ee9bf6db1d2a841e0486b56f"
+      "status": "VALIDATED",
+      "digest": "sha256:45bfb3345945549411448c9c13a588d02a75e7af7d2787fe5dada5d46eb3f9d6"
     },
     {
       "name": "problem-framing",

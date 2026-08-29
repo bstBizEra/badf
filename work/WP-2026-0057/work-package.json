@@ -1,0 +1,55 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0057",
+  "title": "WP-ARCH-C: architecture ASSURE substrate (assure command + controls 13-18); badf-architecture -> VALIDATED",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0044",
+  "objective": "Build the read-only ASSURE substrate of the frozen badf-architecture contract: an architecture-assurance record schema and an `assure` gate command enforcing controls 13-18 (bound baseline + observed revision; no inferred compliance; INDETERMINATE never a pass; drift not self-authorised as approved; non-coverage declared; single baseline per run). Per ARCH-I11 the analysis is the skill's; the gate validates the record. Ship an example validated in CI. This meets the VALIDATED criterion, so advance badf-architecture IMPLEMENTED -> VALIDATED.",
+  "business_value": "DESIGN without ASSURE only documents intent; the ASSURE substrate makes 'does reality conform to the declared architecture?' a governed, deterministic record with hard invariants -- no baseline means observations not compliance, an INDETERMINATE ADR cannot pass, and a read-only run cannot approve its own drift. It brings the architecture capability to VALIDATED.",
+  "in_scope": [
+    "schemas/architecture-assurance.schema.json (baseline binding, adr_compliance, drift, findings, non-coverage; implementation_authority fixed false)",
+    "validate_architecture_assurance + the `assure` CLI subcommand; controls 13-18",
+    "examples/architecture-assurance.json + CI validation",
+    "advance badf-architecture IMPLEMENTED -> VALIDATED (SKILL.md status, registry re-digest, acceptance ladder)",
+    "tests/test_badf_assure.py failing-first + mutation; contract-test updates; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "executing dependency-graph/cycle analysis in the gate (the gate is deterministic and read-only; the analysis is the skill's, ARCH-I11)",
+    "any scripts/badf_architecture.py (ARCH-I11: no second validator)",
+    "SHADOWED/APPROVED/ACTIVE advancement (operator admission decisions); the P1 research skills; #84"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "examples/architecture-assurance.json passes `assure` (COMPLIANT)",
+    "an assurance run with no bound revision, COMPLIANT-without-baseline, INDETERMINATE-as-pass, self-approved drift, no non-coverage, or a finding against another baseline is refused naming the control",
+    "the ASSURE substrate is in the canonical gate (no scripts/*architecture*); implementation_authority is schema-fixed false",
+    "badf-architecture registry status is VALIDATED with a real digest; the contract test asserts it",
+    "mutation kills controls 13-18; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_assure.py",
+    "tests/test_badf_architecture_contract.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "bc9eb30"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-ARCH-C completes the architecture capability's validation: controls 13-18 enforced by the assure command, mutation-tested. Advances badf-architecture to VALIDATED (operator's stated expectation). Reconciles WP-2026-0056. SHADOWED/APPROVED/ACTIVE remain the operator's admission calls."
+}

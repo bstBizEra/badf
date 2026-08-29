@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0044",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 104,
+    "url": "https://github.com/bstBizEra/badf/issues/104",
+    "exported_at": "2026-08-29T06:22:14Z",
+    "body_digest": "sha256:0196342aacb9fd50cbd7b0fb34bce2804d2fd99a9b39d35fd0b78456ca6bdf3d"
+  },
+  "title": "GOV-0040: badf-architecture has no ASSURE substrate \u2014 controls 13-18 unenforced (WP-ARCH-C; IMPLEMENTED -> VALIDATED)",
+  "problem": "## Observed\n`badf-architecture` is `IMPLEMENTED` (G04 DESIGN semantics, WP-ARCH-B) but the **ASSURE** substrate \u2014 the read-only side of the frozen contract that checks whether reality conforms to declared architecture \u2014 does not exist. Controls 13\u201318 of the frozen contract are unenforced: there is no `assure` gate command, no architecture-assurance record schema, so nothing stops an assurance run from claiming COMPLIANT with no baseline, serialising an INDETERMINATE ADR result as a pass, self-authorising drift as approved, or omitting its non-coverage.\n\n## Expected\nBuild WP-ARCH-C: a deterministic `assure` gate command and an `architecture-assurance` record schema enforcing controls 13\u201318 (per ARCH-I11, the analysis is the skill's; the gate validates the record):\n- **13** an ASSURE run binds one baseline revision and one observed revision (ARCH-I09).\n- **14** a `COMPLIANT` conclusion requires a bound baseline digest \u2014 `NO BASELINE \u2260 COMPLIANT` (ARCH-I07).\n- **15** an `INDETERMINATE` ADR-compliance result cannot serialise as a `COMPLIANT` pass.\n- **16** a drift finding cannot classify itself as approved evolution \u2014 only independent authority may (ARCH-I08).\n- **17** an ASSURE run declares its non-coverage.\n- **18** every finding is assessed against the single bound baseline (ARCH-I01).\nRead-only; `implementation_authority` is schema-fixed `false` (ARCH-I12). Ship an example validated in CI. This meets the `VALIDATED` criterion, so advance `badf-architecture` `IMPLEMENTED \u2192 VALIDATED`.\n\n## Evidence\n- `ls scripts/*architecture*` \u2192 none (ARCH-I11 preserved: the ASSURE validator is in the canonical gate, not a second script)\n- no `schemas/architecture-assurance.schema.json`; no `assure` subcommand\n\n## Unknowns\nThe structural analysis itself (dependency graph, cycles) is the skill's read-only work, not the gate's (the gate is deterministic and makes no network/exec call); it enforces the assurance record's integrity. `SHADOWED`/`APPROVED`/`ACTIVE` remain the operator's admission decisions.\n\n## Proposed work package\n`BADF-WP-0057` (WP-ARCH-C). `schemas/architecture-assurance.schema.json`; `validate_architecture_assurance` + the `assure` subcommand; controls 13\u201318; `examples/architecture-assurance.json` + CI; tests + mutation; own G07 self-dossier; advance `badf-architecture` to `VALIDATED`. C2.\n\ndiscovered-by: operator sequencing (2026-08-29) + the frozen badf-architecture contract (WP-0043) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-29T06:22:14Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "WP-ARCH-C: architecture ASSURE substrate (assure command + controls 13-18) on the frozen contract; advances badf-architecture IMPLEMENTED->VALIDATED. Authority: operator sequencing 'WP-ARCH-C next -> VALIDATED' (2026-08-29). Worked as BADF-WP-0057."
+}

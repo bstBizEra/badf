@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "badf/architecture-assurance.schema.json",
+  "title": "Architecture assurance record (ASSURE mode) -- read-only; grants no authority",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "baseline",
+    "observed",
+    "adr_set",
+    "fitness_spec_set",
+    "adr_compliance",
+    "drift",
+    "findings",
+    "conclusion",
+    "non_coverage",
+    "authority",
+    "recorded_at"
+  ],
+  "properties": {
+    "schema_version": {"type": "string", "enum": ["1.0.0"]},
+    "id": {"type": "string", "pattern": "^BADF-ARA-[0-9]{4,}$"},
+    "baseline": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repository", "revision", "digest"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "revision": {"type": "string"},
+        "digest": {"type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    },
+    "observed": {
+      "type": "object", "additionalProperties": false,
+      "required": ["repository", "revision", "observed_at"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "revision": {"type": "string"},
+        "observed_at": {"type": "string", "minLength": 1}
+      }
+    },
+    "adr_set": {"type": "array", "items": {"type": "string", "pattern": "^ADR-[0-9]{4,}$"}},
+    "fitness_spec_set": {"type": "array", "items": {"type": "string", "pattern": "^FIT-[0-9]{3,}$"}},
+    "adr_compliance": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["adr", "result"],
+        "properties": {
+          "adr": {"type": "string", "pattern": "^ADR-[0-9]{4,}$"},
+          "result": {"type": "string", "enum": ["CONFORMANT", "NONCONFORMANT", "INDETERMINATE", "SUPERSEDED", "NOT_OBSERVABLE"]}
+        }
+      }
+    },
+    "drift": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "category", "classification", "statement"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^DR-[0-9]{3,}$"},
+          "category": {"type": "string", "enum": ["ELEMENT_DRIFT", "DEPENDENCY_DRIFT", "BOUNDARY_DRIFT", "TOPOLOGY_DRIFT", "DATA_OWNERSHIP_DRIFT", "INTERFACE_DRIFT", "TRUST_BOUNDARY_DRIFT", "ADR_DRIFT", "NFR_DRIFT", "OPERABILITY_DRIFT"]},
+          "classification": {"type": "string", "enum": ["UNAUTHORIZED_DRIFT", "DOCUMENTATION_LAG", "APPROVED_EVOLUTION_NOT_BASELINED", "EXPECTED_VARIANCE", "UNKNOWN"]},
+          "affected_elements": {"type": "array", "items": {"type": "string", "pattern": "^EL-[0-9]{3,}$"}},
+          "statement": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["finding_id", "kind", "severity", "baseline_ref", "observed_ref", "affected_elements", "evidence_locations", "expected", "observed", "impact", "failure_scenario", "recommendation_direction", "status", "non_coverage"],
+        "properties": {
+          "finding_id": {"type": "string", "pattern": "^AF-[0-9]{3,}$"},
+          "kind": {"type": "string", "enum": ["STRUCTURAL", "DEPENDENCY", "BOUNDARY", "CONTRACT", "SECURITY_BOUNDARY", "DATA", "OPERABILITY", "ADR", "DRIFT"]},
+          "severity": {"type": "string", "enum": ["INFO", "MINOR", "MAJOR", "CRITICAL"]},
+          "baseline_ref": {"type": "string"},
+          "observed_ref": {"type": "string"},
+          "affected_elements": {"type": "array", "items": {"type": "string", "pattern": "^EL-[0-9]{3,}$"}},
+          "evidence_locations": {"type": "array", "items": {"type": "string", "minLength": 1}},
+          "expected": {"type": "string", "minLength": 1},
+          "observed": {"type": "string", "minLength": 1},
+          "impact": {"type": "string", "minLength": 1},
+          "failure_scenario": {"type": "string", "minLength": 1},
+          "recommendation_direction": {"type": "string", "minLength": 1},
+          "status": {"type": "string", "enum": ["OPEN", "ACKNOWLEDGED", "SUPERSEDED"]},
+          "non_coverage": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "conclusion": {"type": "string", "enum": ["COMPLIANT", "NONCOMPLIANT", "INDETERMINATE"]},
+    "non_coverage": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["surface", "reason"],
+        "properties": {
+          "surface": {"type": "string", "minLength": 1},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "authority": {
+      "type": "object", "additionalProperties": false,
+      "required": ["implementation_authority"],
+      "properties": {
+        "implementation_authority": {"type": "boolean", "enum": [false]}
+      }
+    },
+    "recorded_at": {"type": "string", "minLength": 1}
+  }
+}

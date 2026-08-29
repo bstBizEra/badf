@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0.0",
+  "id": "BADF-ARA-0001",
+  "baseline": {
+    "repository": "bstBizEra/badf",
+    "revision": "bc9eb30",
+    "digest": "sha256:82b229e2ca3ed3426ae09ae21621fba75bb0af559d97f99d77f7c574dadb64c4"
+  },
+  "observed": {
+    "repository": "bstBizEra/badf",
+    "revision": "bc9eb30",
+    "observed_at": "2026-08-29T01:00:00Z"
+  },
+  "adr_set": [
+    "ADR-0001"
+  ],
+  "fitness_spec_set": [
+    "FIT-001"
+  ],
+  "adr_compliance": [
+    {
+      "adr": "ADR-0001",
+      "result": "CONFORMANT"
+    }
+  ],
+  "drift": [
+    {
+      "id": "DR-001",
+      "category": "DEPENDENCY_DRIFT",
+      "classification": "EXPECTED_VARIANCE",
+      "affected_elements": [
+        "EL-002"
+      ],
+      "statement": "the composed-tree gate adds a bounded test-pattern dependency, within the declared synchronous chain"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "AF-001",
+      "kind": "STRUCTURAL",
+      "severity": "INFO",
+      "baseline_ref": "bc9eb30",
+      "observed_ref": "bc9eb30",
+      "affected_elements": [
+        "EL-001"
+      ],
+      "evidence_locations": [
+        "scripts/badf_gate.py:validate_repo"
+      ],
+      "expected": "the gate CLI stays within the control-plane boundary BND-001",
+      "observed": "the gate CLI imports only stdlib and the local modules within BND-001",
+      "impact": "none; the boundary holds",
+      "failure_scenario": "a cross-boundary import would let the CLI reach the CI surface directly",
+      "recommendation_direction": "keep the stdlib-only boundary",
+      "status": "ACKNOWLEDGED",
+      "non_coverage": [
+        "runtime imports not statically resolvable"
+      ]
+    }
+  ],
+  "conclusion": "COMPLIANT",
+  "non_coverage": [
+    {
+      "surface": "runtime network policy",
+      "reason": "not observed by static analysis"
+    },
+    {
+      "surface": "dynamic plugin loading",
+      "reason": "not statically resolvable"
+    }
+  ],
+  "authority": {
+    "implementation_authority": false
+  },
+  "recorded_at": "2026-08-29T01:10:00Z"
+}
