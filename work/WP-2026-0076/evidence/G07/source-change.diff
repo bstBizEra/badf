@@ -85,7 +85,7 @@ index 2610b45..06ebc66 100644
  
  Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
 diff --git a/scripts/badf_compose.py b/scripts/badf_compose.py
-index d52d669..8aebe04 100644
+index d52d669..4937b34 100644
 --- a/scripts/badf_compose.py
 +++ b/scripts/badf_compose.py
 @@ -41,6 +41,115 @@ FULL_PATTERN = "test_*.py"
@@ -204,7 +204,21 @@ index d52d669..8aebe04 100644
  
  def sh(cmd: list[str], cwd: Path, env: dict | None = None, input: str | None = None) -> subprocess.CompletedProcess:
      return subprocess.run(cmd, cwd=str(cwd), capture_output=True, text=True, env=env, input=input)
-@@ -122,6 +231,28 @@ def compose(args: argparse.Namespace) -> int:
+@@ -80,7 +189,12 @@ def compose(args: argparse.Namespace) -> int:
+         def g(*a: str, input: str | None = None) -> subprocess.CompletedProcess:
+             return sh(["git", "-C", str(work), *a], work, input=input)
+ 
+-        for cmd in (("init", "-q"), ("remote", "add", "origin", str(repo))):
++        # The scratch needs an identity for EVERY git operation, not only the squash commit:
++        # a non-fast-forward `merge --squash` (base moved AND candidate ahead -- the divergent
++        # case GIT-E's tests compose, which a PR head never is) prepares a merge commit and
++        # dies with `fatal: empty ident name` on a runner that has no git identity (WP-0076).
++        for cmd in (("init", "-q"), ("remote", "add", "origin", str(repo)),
++                    ("config", "user.email", "badf-compose@local"), ("config", "user.name", "badf-compose")):
+             r = g(*cmd)
+             if r.returncode:
+                 return fail(f"git {' '.join(cmd)} failed: {r.stderr.strip()}")
+@@ -122,6 +236,28 @@ def compose(args: argparse.Namespace) -> int:
          # reconciled, a third fixture-vs-ledger dependence in one session.
          if not (work / "work" / wp / "work-package.json").is_file():
              return fail(f"no work package record for {wp} in the composed tree; the message names a work package the candidate does not carry")
@@ -233,7 +247,7 @@ index d52d669..8aebe04 100644
          landed_body = g("log", "-1", "--format=%B", f"origin/{DEFAULT_BRANCH}").stdout
          if not WP_LINE.search(landed_body) or f"{m.group(1)}" not in (WP_LINE.search(landed_body).group(1)):
              return fail("the composed commit on origin/main does not carry the candidate's Work-Package line")
-@@ -193,6 +324,8 @@ def main() -> int:
+@@ -193,6 +329,8 @@ def main() -> int:
      ap.add_argument("--tests", default=FULL_PATTERN, help="unittest discovery pattern (a restriction is printed)")
      ap.add_argument("--ci-shape", action="store_true", help="no PropTech clone, no local mirror -- as on the runner")
      ap.add_argument("--keep", action="store_true", help="keep the scratch directory")
