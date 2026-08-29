@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "tasks": [
+    {
+      "id": "WBS-001",
+      "description": "Add the four G06 check functions to the canonical gate"
+    },
+    {
+      "id": "WBS-002",
+      "description": "Ship the example G06 dossier and its evidence pairs",
+      "depends_on": [
+        "WBS-001"
+      ]
+    },
+    {
+      "id": "WBS-003",
+      "description": "Write failing-first tests and the mutation harness",
+      "depends_on": [
+        "WBS-001"
+      ]
+    }
+  ]
+}

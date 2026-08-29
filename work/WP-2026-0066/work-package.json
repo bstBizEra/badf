@@ -2,7 +2,7 @@
   "$schema": "../../schemas/work-package.schema.json",
   "schema_version": "1.0.0",
   "id": "WP-2026-0066",
-  "title": "Freeze badf-git capability contract (GTGM, DESIGNED) — salvage PR #122 onto a fresh WP",
+  "title": "Freeze badf-git capability contract (GTGM, DESIGNED) \u2014 salvage PR #122 onto a fresh WP",
   "owner": "human_sponsor",
   "demand": "BADF-DEM-0053",
   "repository": "bstBizEra/badf",
@@ -43,11 +43,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "5fac18d"
+    "base_revision": "5fac18d",
+    "landed_as": "b1e0f5aebde56a18f02a3ba7cead25d34ee270d0"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Adds no gate code -- no new control, no mutation; a declarative contract freeze. Salvages PR #122's authoring layer (operator directed), like badf-requirements salvaged #47. Resolves #123 / GOV-0045; supersedes #119/#122. Reconciles WP-2026-0065."
 }

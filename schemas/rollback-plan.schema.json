@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "badf/rollback-plan.schema.json",
+  "title": "G06 rollback-plan -- executable rollback with stop conditions",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "reversible",
+    "method",
+    "steps",
+    "stop_conditions"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "enum": [
+        "1.0.0"
+      ]
+    },
+    "prd_id": {
+      "type": "string",
+      "pattern": "^PRD-[A-Za-z0-9._-]+$"
+    },
+    "reversible": {
+      "type": "boolean"
+    },
+    "method": {
+      "type": "string",
+      "minLength": 1
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "description"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^RB-[0-9]{3,}$"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "stop_conditions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

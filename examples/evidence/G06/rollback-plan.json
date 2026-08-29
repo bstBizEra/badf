@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G06",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G06-ROLLBACK-PLAN-v1",
+  "claim": "Example rollback-plan bound to PRD-BADF-0001",
+  "evidence_type": "rollback-plan",
+  "producer": {
+    "id": "example-engineering-owner",
+    "type": "human"
+  },
+  "operation": "plan rollback plan",
+  "artifact": "examples/evidence/G06/rollback-plan.artifact.json",
+  "digest": "sha256:e5eac2be8401540b57089d9e2f8e40676c94cd58e61f490d859932ede649f24d"
+}

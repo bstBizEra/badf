@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G06",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G06-WORK-BREAKDOWN-v1",
+  "claim": "Example work-breakdown bound to PRD-BADF-0001",
+  "evidence_type": "work-breakdown",
+  "producer": {
+    "id": "example-engineering-owner",
+    "type": "human"
+  },
+  "operation": "plan work breakdown",
+  "artifact": "examples/evidence/G06/work-breakdown.artifact.json",
+  "digest": "sha256:63705663a9b9f84fe231f8c4e98edb004fae9c360cca16a51b77c5d28d9477a5"
+}

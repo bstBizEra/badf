@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G06",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G06-TEST-PLAN-v1",
+  "claim": "Example test-plan bound to PRD-BADF-0001",
+  "evidence_type": "test-plan",
+  "producer": {
+    "id": "example-engineering-owner",
+    "type": "human"
+  },
+  "operation": "plan test plan",
+  "artifact": "examples/evidence/G06/test-plan.artifact.json",
+  "digest": "sha256:83ac3456b2c91020065ad01eed5f4e10f3fa8951c2c371cec905949aea8d5e0a"
+}

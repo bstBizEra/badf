@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "reversible": true,
+  "method": "revert the squash commit via a new PR (forward history; main is never rewritten)",
+  "steps": [
+    {
+      "id": "RB-001",
+      "description": "open a revert PR against current main"
+    },
+    {
+      "id": "RB-002",
+      "description": "verify the reverted tree is green, then squash-merge"
+    }
+  ],
+  "stop_conditions": [
+    "a G00-G05 example dossier stops rendering APPROVED",
+    "the composed-tree verification goes red"
+  ]
+}

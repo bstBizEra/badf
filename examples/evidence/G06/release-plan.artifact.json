@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "environments": [
+    "ci (github actions ubuntu-latest)",
+    "composed-tree verification"
+  ],
+  "steps": [
+    {
+      "id": "RS-001",
+      "description": "open a PR; CI validates the G06 dossier beside G00-G05"
+    },
+    {
+      "id": "RS-002",
+      "description": "squash-merge to main after a human approves; push-run confirms green"
+    }
+  ]
+}

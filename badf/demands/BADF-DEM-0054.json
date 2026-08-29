@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0054",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 125,
+    "url": "https://github.com/bstBizEra/badf/issues/125",
+    "exported_at": "2026-08-29T16:33:58Z",
+    "body_digest": "sha256:d1684254aa270f73e72ab9e6612a573e9fb5cb1b3e15b5185fa3fc5d8d60806a"
+  },
+  "title": "GOV-0046: Gate 06 declared but unenforced \u2014 work-breakdown/test-plan/release-plan/rollback-plan",
+  "problem": "## Observed\n\nG06 (Implementation planning; owner `engineering_owner`, min C1) is the next declared-but-unenforced gate after G05. `lifecycle.json` lists G06's four `required_evidence` types \u2014 **work-breakdown, test-plan, release-plan, rollback-plan** \u2014 yet `validate_evidence` has no per-type rule for any of them, no G06 example, and none of the four schemas. A G06 dossier today would pass on names alone.\n\n## Expected\n\nThe four G06 types get per-type rules in `validate_evidence`, each mapping to a G06 exit criterion (the gate OPENS each artifact):\n- `work-breakdown` \u2014 non-empty tasks, each bounded (a description), with a resolvable, **acyclic** dependency graph (*work packages bounded* + *composition order defined*); an empty, dangling-dep, or cyclic breakdown is refused.\n- `test-plan` \u2014 non-empty planned tests, each naming what it `verifies` (*tests planned first*); an empty plan or a test that targets nothing is refused.\n- `release-plan` \u2014 non-empty `environments` and concrete `steps` (*environments and resources ready*).\n- `rollback-plan` \u2014 an executable `method` + `steps` + non-empty `stop_conditions` (*rollback and stop conditions executable*).\n\nPlus `examples/gate-dossier.G06.json` (C1, validated in CI beside G00-G05) and a **G05\u2192G06** pair-acceptance (the full G00\u2192G06 chain).\n\n## Evidence\n\n- G06 required_evidence = [work-breakdown, test-plan, release-plan, rollback-plan]; enforced of 4 \u2192 0; no G06 example; no schemas.\n- G06 minimum_change_class is C1, so the example dossier carries the two base authority roles (engineering_owner + independent_reviewer).\n\n## Unknowns\n\nNone for the gate contract. This WP is the deterministic G06 evidence contract; a `badf-planning` authoring skill is a later WP if a real task needs it.\n\ndiscovered-by: BADF-WP-0066 (the gate march reached G06) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-29T16:33:58Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "G06 implementation-planning gate contract (work-breakdown/test-plan/release-plan/rollback-plan); next gate after G05. C1 example (engineering_owner + independent_reviewer). Authority: operator /loop self-paced gate march (2026-08-29). Worked as BADF-WP-0067."
+}
