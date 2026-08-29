@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0053",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 123,
+    "url": "https://github.com/bstBizEra/badf/issues/123",
+    "exported_at": "2026-08-29T16:03:15Z",
+    "body_digest": "sha256:3c03f85d7b7b04dea985edb782115e2239e1a0f9a76e0f00484f7e5c8bf1a892"
+  },
+  "title": "GOV-0045: freeze badf-git capability contract (GTGM, DESIGNED, no Git authority) \u2014 salvage PR #122",
+  "problem": "## Observed\n\nBADF has no `badf-git` capability \u2014 no frozen, governed contract for how Git state, branches, worktrees, staging, commits, rebases, PRs, composition, integration, recovery, tags and releases are handled for a work package. The operator's *BADF Git Cycle & Git Loop \u2014 Research + Design v0.1* recommends standardizing on the **Governed Trunk Git Model (GTGM)** \u2014 one protected `main` ledger + short-lived WP branches + one governed integration PR + deterministic composed-tree verification + squash integration + immutable release evidence + explicit recovery \u2014 as an evolution of the live repo (which already enforces squash-only, linear history, composed-tree CI via `badf_compose.py`).\n\nAn external actor opened **PR #122** attempting this exact freeze, but it is draft, **CONFLICTING**, and re-uses already-consumed identities (`BADF-DEM-0052`, `WP-2026-0064`, `WP-2026-0065` \u2014 all landed on `main`). It can never merge cleanly. **This is the #47 situation:** its contract content is valuable; its ledger state is not.\n\n## Expected\n\n**Salvage over repair** (the path `badf-prd`\u2190#44 and `badf-requirements`\u2190#47 took): build **badf-git** fresh from current `main` as a top-level **declarative** capability \u2014 a router and constraint layer, **not** a Git authority, merge bot, release authority, or second gate \u2014 porting #122's authoring content onto a clean WP.\n\n**BADF-WP-GIT-A \u2014 contract freeze, `DESIGNED` only:** `skills/badf-git/SKILL.md` + eight reference contracts (`git-cycle`, `git-state-machine`, `branch-pr-contract`, `operation-authority-matrix`, `composition-and-staleness`, `recovery-contract`, `release-versioning`, `evidence-contract`). Invariants `GIT-I01` (no Git authority) \u2026 `GIT-I12` (no second gate/mutation engine). **No `scripts/badf_git.py`, no new schema, no Git authority** \u2014 `badf_gate.py` and the platform rules remain the sole authorities; the canonical composition mechanism remains `badf_compose.py`. Registered `DESIGNED`.\n\n## Evidence\n\n- Live `main` already enforces the GTGM substrate (squash-only, linear history, composed-tree CI). All docs the contract references exist (`docs/00,01,02,05,07,08,11,13`, `schemas/evidence.schema.json`, `badf/tool-registry.json`, `badf/authority-matrix.json`).\n- #122 content is high quality (GIT-I01\u2013I12, GIT-O0\u2013O5 operation classes, the state machine) but carries a temporary lockfile-probe scaffolding test and three id collisions \u2014 dropped/fixed in the salvage.\n\n## Unknowns\n\nThe later program (WP-GIT-B identity contract \u2026 WP-GIT-J activation) is out of scope here. Branch-name enforcement, a Git inspector, and any mutation tooling are deferred to their own failing-first WPs \u2014 no mutation script or Git authority in a contract freeze.\n\ndiscovered-by: operator design directive (GTGM v0.1) \u00b7 supersedes: #119, PR #122 \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-29T16:03:15Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Salvage #122's authoring layer onto a fresh WP from current main (operator directed 'salvage #122's references first'). Top-level declarative capability, DESIGNED only, no scripts/badf_git.py, no schema, no Git authority (badf_gate.py + platform rules remain sole authorities; badf_compose.py the canonical composition). Supersedes #119/#122 (external, operator's to close). Worked as BADF-WP-0066."
+}

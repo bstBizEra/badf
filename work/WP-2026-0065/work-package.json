@@ -42,11 +42,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR (status returns to SHADOWED)"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "c09d370"
+    "base_revision": "c09d370",
+    "landed_as": "5fac18d795efefac7e86ca2df7af6ffa2227ac3c"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Adds no gate code -- no new control, no mutation; an admission advance. Operator admission decision ('proceed one by one'), mirrors research WP-0058. Resolves #120 / GOV-0035. Reconciles WP-2026-0064."
 }

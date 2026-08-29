@@ -190,6 +190,16 @@
       ],
       "status": "IMPLEMENTED",
       "digest": "sha256:f76127dac7c11db5ed6d4300ba415e1d1b9eeeb28e2adc704c92cff50faace48"
+    },
+    {
+      "name": "badf-git",
+      "source": "skills/badf-git/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [],
+      "status": "DESIGNED",
+      "digest": "sha256:17ea1e412a1c5b35cf87b66797a82872cb2e414cb26be573a8f5ee66fba61778"
     }
   ]
 }

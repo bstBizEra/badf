@@ -1,0 +1,53 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0066",
+  "title": "Freeze badf-git capability contract (GTGM, DESIGNED) — salvage PR #122 onto a fresh WP",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0053",
+  "repository": "bstBizEra/badf",
+  "objective": "Build badf-git as a top-level DECLARATIVE capability -- a router and constraint layer for BADF Git delivery, NOT a Git authority, merge bot, release authority, or second gate. Freeze the contract only: skills/badf-git/SKILL.md + eight reference contracts (git-cycle, git-state-machine, branch-pr-contract, operation-authority-matrix, composition-and-staleness, recovery-contract, release-versioning, evidence-contract), invariants GIT-I01 (no Git authority) .. GIT-I12 (no second gate/mutation engine), registered DESIGNED. Salvage the authoring content from the superseded PR #122 (operator directed 'salvage #122's references first'): re-home the nine doc files onto a clean WP with fresh ids, fixing the three id-collision examples and dropping #122's temporary lockfile-probe scaffolding test. badf_gate.py and the platform rules remain the sole authorities; badf_compose.py remains the canonical composition mechanism.",
+  "business_value": "BADF's Git model is currently enforced by platform settings + CI but is not FROZEN as a governed contract. This gives BADF a single declarative source for how a work package handles Git safely -- the GTGM cycle, the state machine, the operation-authority classes, the composition/staleness invariant (SOURCE_HEAD_GREEN != INTEGRATION_SAFE), the recovery and release contracts -- without inventing a second gate or any new mutation authority. It preserves PR #122's genuine work while discarding its collision-ridden ledger state, exactly as badf-requirements did with #47. Contract Freeze first is deliberate: an incorrect mutation model would spread into every future BADF autonomous engineering loop.",
+  "in_scope": [
+    "skills/badf-git/SKILL.md (declarative router; GIT-I01..I12; GTGM cycle + nested loop; operation classes GIT-O0..O5; evidence binding; stop states; status points to the registry, never hardcoded)",
+    "skills/badf-git/references/ (the eight reference contracts, salvaged from #122 with the three collided-id examples re-homed to WP-2026-0066)",
+    "badf/skill-registry.json: register badf-git DESIGNED, C1, allowed_tools=[], real digest",
+    "tests/test_badf_git_contract.py: the declarative contract surface (8 refs, no scripts/badf_git.py, no schema, GIT-I01..I12, cycle/loop strings, state machine tokens, DESIGNED pin, no hardcoded status) -- #122's real contract tests kept, its temporary lockfile-probe scaffolding dropped",
+    "GITHUB_CONTROL_PLANE.md doctrine section; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "scripts/badf_git.py, schemas/git.schema.json, any Git mutation engine or second gate -- explicitly NOT created (GIT-I12; badf_gate.py + platform rules are the authorities, badf_compose.py the composition)",
+    "any Git authority, credential, merge, or release authority (GIT-I01); changing repository settings, rulesets, or branch protection",
+    "the later program WP-GIT-B..J (identity contract, inspector, local loop, composition tooling, integration, recovery, release, shadow, activation) -- each its own WP; branch-name enforcement deferred",
+    "advancing badf-git past DESIGNED; closing PR #119/#122 (external, operator's action); the other capability families and gates G06+"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "skills/badf-git/SKILL.md + the eight named references exist; the SKILL.md declares GIT-I01..I12, the GTGM cycle and the nested loop, and never hardcodes a lifecycle status (points to the registry)",
+    "badf-git is registered DESIGNED (C1, allowed_tools=[]) with a real digest; no scripts/badf_git.py and no git schema exist",
+    "the composition contract binds the exact identity tuple and names badf_compose.py; recovery/release contracts repair forward (revert/reflog, immutable tags), never rewrite shared history",
+    "badf_gate.py + the G0x schemas are unchanged (no new control, nothing to mutate); repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_git_contract.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "5fac18d"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Adds no gate code -- no new control, no mutation; a declarative contract freeze. Salvages PR #122's authoring layer (operator directed), like badf-requirements salvaged #47. Resolves #123 / GOV-0045; supersedes #119/#122. Reconciles WP-2026-0065."
+}
