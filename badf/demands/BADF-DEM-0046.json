@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0046",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 108,
+    "url": "https://github.com/bstBizEra/badf/issues/108",
+    "exported_at": "2026-08-29T11:17:32Z",
+    "body_digest": "sha256:7eec04678f0b9a79aa973521a0b075a7e759fe456cc659f991e5ecb505bc5b9b"
+  },
+  "title": "GOV-0042: WP-ARCH-D \u2014 fix acceptance.md status drift + shadow-calibrate ASSURE; badf-architecture VALIDATED -> SHADOWED",
+  "problem": "## Observed\nTwo things about `badf-architecture` (currently `VALIDATED`):\n1. **Documentation-state drift (defect).** `references/acceptance.md` line 3 still says \"The capability is `DESIGNED`\" and line 48 still says \"Until then the registry entry stays `DESIGNED`\", while the same doc's middle correctly says \"VALIDATED: met (WP-ARCH-C)\" and the registry + `SKILL.md` say `VALIDATED`. Two conflicting normative statements in one skill \u2014 the \"claim that outlives its correction\" class.\n2. **No shadow calibration.** The ASSURE substrate (controls 13-18, WP-ARCH-C) is validated only against one synthetic example. The admission ladder puts `SHADOWED` before `APPROVED`/`ACTIVE`: run ASSURE retrospectively on real architecture-impacting cases, blind, and measure \u2014 before any advance toward ACTIVE.\n\n## Expected\nWP-ARCH-D:\n- Fix the acceptance.md status drift (line 3 and line 48 -> the `VALIDATED` reality).\n- Produce shadow calibration: **three gate-valid `architecture-assurance` records** over real BADF architecture cases spanning the outcome space (a `COMPLIANT` stdlib-boundary check; a `NONCOMPLIANT` dependency drift \u2014 the #57 PyYAML boundary break \u2014 with an `UNAUTHORIZED_DRIFT` classification and a MAJOR finding; an `INDETERMINATE` case where an ADR is not statically observable), plus a calibration note measuring true violations / false positives / INDETERMINATE handling / non-coverage / drift-not-self-approved.\n- Advance `badf-architecture` `VALIDATED -> SHADOWED` (the operator's stated next step; **not** ACTIVE).\n\n## Evidence\n- `acceptance.md:3` \"capability is DESIGNED\"; `acceptance.md:48` \"stays DESIGNED\" \u2014 contradict registry/SKILL.md `VALIDATED`\n- `schemas/architecture-assurance.schema.json` + the `assure` command exist (WP-ARCH-C)\n\n## Unknowns\nWhether the ASSURE contract faithfully represents each real case is the point of the calibration; a gap becomes its own issue. `APPROVED`/`ACTIVE` remain deferred (operator admission decision).\n\n## Proposed work package\n`BADF-WP-0059` (WP-ARCH-D). acceptance.md status fix; three shadow `architecture-assurance` records + CI; calibration note; advance `VALIDATED -> SHADOWED`; contract test; own G07 self-dossier. C2.\n\ndiscovered-by: operator review of badf-architecture (2026-08-29) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-29T11:17:32Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "WP-ARCH-D: fix acceptance.md status drift + shadow-calibrate ASSURE on real cases + advance badf-architecture VALIDATED->SHADOWED (not ACTIVE). Authority: operator review 'fix the drift and execute WP-ARCH-D before ACTIVE' (2026-08-29). Worked as BADF-WP-0059."
+}

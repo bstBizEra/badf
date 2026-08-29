@@ -1,6 +1,6 @@
 # Acceptance, invariants and admission
 
-Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows `docs/07-skills-governance.md`: `DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED → APPROVED → ACTIVE`.
+Status: frozen contract v0.1. The capability is `SHADOWED` (advanced `DESIGNED -> IMPLEMENTED -> VALIDATED -> SHADOWED` across WP-ARCH-A/B/C/D). Progression follows `docs/07-skills-governance.md`: `DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED → APPROVED → ACTIVE`.
 
 ## Canonical invariants
 
@@ -44,5 +44,5 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows 
 
 - `IMPLEMENTED`: the G04 DESIGN evidence semantics (`architecture`, `adr`, `data-model`, `api-contract`, `operability-design`) exist as deterministic gate rules with schemas (WP-ARCH-B).
 - `VALIDATED`: **met (`BADF-WP-0057` / WP-ARCH-C).** The ASSURE substrate is deterministic -- controls 13-18 enforced by the `assure` gate command with mutation-tested tests; the `architecture-assurance` record binds one baseline + one observed revision, never infers compliance, never self-authorises drift, and grants no authority. The registry status is advanced to `VALIDATED`.
-- `SHADOWED`: ASSURE is run retrospectively on historical architecture-impacting PRs without knowing the answer (WP-ARCH-D); measured for true violations, false positives, non-coverage and stability across composed trees.
-- `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. Until then the registry entry stays `DESIGNED`.
+- `SHADOWED`: **met (`BADF-WP-0059` / WP-ARCH-D).** ASSURE run retrospectively on real BADF architecture cases spanning the outcome space (COMPLIANT stdlib-boundary; NONCOMPLIANT dependency drift; INDETERMINATE unobservable ADR); measured for true violations, false positives, INDETERMINATE handling and declared non-coverage -- no contract gap surfaced. See `references/assurance-shadow-evidence.md`. Registry status advanced to `SHADOWED`.
+- `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. These remain the operator's admission decision; `badf-architecture` sits at `SHADOWED` until then.

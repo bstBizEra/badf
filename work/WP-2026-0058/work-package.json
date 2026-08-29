@@ -43,11 +43,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "2e46fe7"
+    "base_revision": "2e46fe7",
+    "landed_as": "73a2b173ea075a99e72d0b434947c2dc47bfb908"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Governance-only WP (docs + registry status) -- no gate control (empty gate diff). Advances badf-research to ACTIVE on the operator's explicit 'finish badf-research' approval. Reconciles WP-2026-0057. Grants no authority even ACTIVE (RSR-I01)."
 }

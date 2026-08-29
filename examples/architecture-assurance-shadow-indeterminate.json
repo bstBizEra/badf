@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0.0",
+  "id": "BADF-ARA-0004",
+  "baseline": {
+    "repository": "bstBizEra/badf",
+    "revision": "2e46fe7",
+    "digest": "sha256:82b229e2ca3ed3426ae09ae21621fba75bb0af559d97f99d77f7c574dadb64c4"
+  },
+  "observed": {
+    "repository": "bstBizEra/badf",
+    "revision": "2e46fe7",
+    "observed_at": "2026-08-29T02:00:00Z"
+  },
+  "adr_set": [
+    "ADR-0001"
+  ],
+  "fitness_spec_set": [
+    "FIT-001"
+  ],
+  "adr_compliance": [
+    {
+      "adr": "ADR-0001",
+      "result": "INDETERMINATE"
+    }
+  ],
+  "drift": [
+    {
+      "id": "DR-001",
+      "category": "ADR_DRIFT",
+      "classification": "UNKNOWN",
+      "affected_elements": [
+        "EL-001"
+      ],
+      "statement": "whether a dynamically constructed import path stays stdlib-only cannot be determined by static analysis"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "AF-001",
+      "kind": "ADR",
+      "severity": "MINOR",
+      "baseline_ref": "2e46fe7",
+      "observed_ref": "2e46fe7",
+      "affected_elements": [
+        "EL-001"
+      ],
+      "evidence_locations": [
+        "importlib usage (hypothetical)"
+      ],
+      "expected": "ADR-0001 stdlib-only is observable in the import graph",
+      "observed": "a dynamic import path defeats static resolution",
+      "impact": "compliance cannot be asserted or refuted statically",
+      "failure_scenario": "an ASSURE run that guessed COMPLIANT here would validate the implementation against itself",
+      "recommendation_direction": "require a runtime import audit, or forbid dynamic import construction by ADR",
+      "status": "OPEN",
+      "non_coverage": [
+        "runtime import behaviour"
+      ]
+    }
+  ],
+  "conclusion": "INDETERMINATE",
+  "non_coverage": [
+    {
+      "surface": "runtime import behaviour",
+      "reason": "static analysis cannot resolve dynamic import paths -- INDETERMINATE, not COMPLIANT"
+    }
+  ],
+  "authority": {
+    "implementation_authority": false
+  },
+  "recorded_at": "2026-08-29T02:14:00Z"
+}

@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0.0",
+  "id": "BADF-ARA-0002",
+  "baseline": {
+    "repository": "bstBizEra/badf",
+    "revision": "bc9eb30",
+    "digest": "sha256:82b229e2ca3ed3426ae09ae21621fba75bb0af559d97f99d77f7c574dadb64c4"
+  },
+  "observed": {
+    "repository": "bstBizEra/badf",
+    "revision": "bc9eb30",
+    "observed_at": "2026-08-29T02:00:00Z"
+  },
+  "adr_set": [
+    "ADR-0001"
+  ],
+  "fitness_spec_set": [
+    "FIT-001"
+  ],
+  "adr_compliance": [
+    {
+      "adr": "ADR-0001",
+      "result": "CONFORMANT"
+    }
+  ],
+  "drift": [],
+  "findings": [
+    {
+      "finding_id": "AF-001",
+      "kind": "DEPENDENCY",
+      "severity": "INFO",
+      "baseline_ref": "bc9eb30",
+      "observed_ref": "bc9eb30",
+      "affected_elements": [
+        "EL-001"
+      ],
+      "evidence_locations": [
+        "scripts/badf_gate.py imports"
+      ],
+      "expected": "the gate imports only the standard library (ADR-0001)",
+      "observed": "only stdlib imports present",
+      "impact": "none; the stdlib-only boundary holds",
+      "failure_scenario": "a third-party import would break the faithful-runner property",
+      "recommendation_direction": "keep stdlib-only",
+      "status": "ACKNOWLEDGED",
+      "non_coverage": []
+    }
+  ],
+  "conclusion": "COMPLIANT",
+  "non_coverage": [
+    {
+      "surface": "dynamically imported modules",
+      "reason": "not statically resolvable"
+    }
+  ],
+  "authority": {
+    "implementation_authority": false
+  },
+  "recorded_at": "2026-08-29T02:10:00Z"
+}
