@@ -27,13 +27,13 @@ index 0000000..3f293c2
 +  "note": "BADF-WP-GIT-F integration: `reconcile` verifies the landed content tree against the committed composition record (MERGED != VERIFIED, no network); content_tree canonical in badf_gate.py; pull-request-integration subskill. Authority: operator `/loop your goal on badf-git` + 'proceed on your call' (2026-08-29), design order GTGM v0.1 section 17 after GIT-E (WP-2026-0076, 5aaeb62). Worked as BADF-WP-0079. Demand id retargeted from BADF-DEM-0065 (claimed on BARCHI-1's unlanded PR #150) to BADF-DEM-0066 on 2026-08-29."
 +}
 diff --git a/badf/skill-registry.json b/badf/skill-registry.json
-index e7d0522..241fb2a 100644
+index 43e062d..8eab7da 100644
 --- a/badf/skill-registry.json
 +++ b/badf/skill-registry.json
-@@ -240,6 +240,16 @@
+@@ -250,6 +250,16 @@
        "allowed_tools": [],
-       "status": "IMPLEMENTED",
-       "digest": "sha256:257649dd0b700fdf9c9f51a2b9edc651793b65154dec7eb8219ba79d77505e74"
+       "status": "DESIGNED",
+       "digest": "sha256:60d0a80d0ec829627555698c353b962975e519a2a71b081109b5d75320cdef6e"
 +    },
 +    {
 +      "name": "pull-request-integration",
@@ -48,12 +48,12 @@ index e7d0522..241fb2a 100644
    ]
  }
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 06ebc66..e342d72 100644
+index 70e3a80..e700a87 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -885,6 +885,34 @@ content change recomputes the record, never edits it. This work package's own PR
- and CI verified it. Approval staleness and the expected-head merge guard are GIT-F; the landed-tree
- comparison after merge is GIT-F/G.
+@@ -911,6 +911,34 @@ on `CAPABILITY ≠ AUTHORITY`. No `scripts/badf_security_design.py`, no schema,
+ change, no gate-code, no specialist activated. Ladder WP-SEC-A…E mirrors solution-design; the deferred
+ `badf-security-assurance` is named, not built.
  
 +## badf-git GIT-F — `MERGED != VERIFIED` (`BADF-WP-0079`, Issue #151 / GOV-0059)
 +
@@ -520,10 +520,23 @@ index 0000000..5dfbdf6
 +if __name__ == "__main__":
 +    unittest.main()
 diff --git a/work/WP-2026-0076/work-package.json b/work/WP-2026-0076/work-package.json
-index 1842a94..c836557 100644
+index 5f7baf8..c836557 100644
 --- a/work/WP-2026-0076/work-package.json
 +++ b/work/WP-2026-0076/work-package.json
-@@ -45,11 +45,14 @@
+@@ -50,6 +50,8 @@
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+     "base_revision": "1b80d7c",
++    "landed_content_tree": "2a258edbfe84ed513f9becc1be87f4c7f12d0d14",
++    "composition_verified": true,
+     "landed_as": "5aaeb62bb7029a00b487ff9746acd791d5235373"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-E per GTGM v0.1 section 17, after GIT-D (WP-2026-0075 / f1a0a5c). Resolves #144 / GOV-0055. Reconciles WP-2026-0077 (badf-solution-design ACTIVE, 1b80d7c, landed while this branch was open; 0074/0075 were reconciled upstream) -- branch rebased onto dc6b608 then 1b80d7c. Engineered by BARCHI-2 in a linked worktree under the operator's /loop ('proceed on your call'); parallel seat BARCHI-1 on WP-2026-0074 (#143)."
+diff --git a/work/WP-2026-0078/work-package.json b/work/WP-2026-0078/work-package.json
+index a9fd905..31d3dd3 100644
+--- a/work/WP-2026-0078/work-package.json
++++ b/work/WP-2026-0078/work-package.json
+@@ -44,11 +44,13 @@
      "reversible": true,
      "method": "revert the squash commit via PR"
    },
@@ -532,11 +545,10 @@ index 1842a94..c836557 100644
    "external_target": {
      "repository": "bstBizEra/badf",
      "branch": "main",
--    "base_revision": "1b80d7c"
-+    "base_revision": "1b80d7c",
-+    "landed_content_tree": "2a258edbfe84ed513f9becc1be87f4c7f12d0d14",
-+    "composition_verified": true,
-+    "landed_as": "5aaeb62bb7029a00b487ff9746acd791d5235373"
+-    "base_revision": "5aaeb62"
++    "base_revision": "5aaeb62",
++    "composition_verified": false,
++    "landed_as": "2d080e059102afa485696a1a3ff1fa290240db36"
    },
-   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-E per GTGM v0.1 section 17, after GIT-D (WP-2026-0075 / f1a0a5c). Resolves #144 / GOV-0055. Reconciles WP-2026-0077 (badf-solution-design ACTIVE, 1b80d7c, landed while this branch was open; 0074/0075 were reconciled upstream) -- branch rebased onto dc6b608 then 1b80d7c. Engineered by BARCHI-2 in a linked worktree under the operator's /loop ('proceed on your call'); parallel seat BARCHI-1 on WP-2026-0074 (#143)."
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. DESIGNED contract freeze; no gate code (controls are WP-SEC-C) -> no mutation. Built in isolated worktree (badf-wt-sec, GIT-I04) parallel to BARCHI-2's badf-git GIT-E (#148). Ids WP-0078/DEM-0065/GOV-0058. Reconciles WP-2026-0076 (GIT-E, landed 5aaeb62; WP-0077 already reconciled on main by GIT-E). Operator design directive 2026-08-30. Resolves #149 / GOV-0058."
  }

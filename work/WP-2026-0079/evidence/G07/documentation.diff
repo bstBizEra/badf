@@ -1,10 +1,10 @@
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 06ebc66..e342d72 100644
+index 70e3a80..e700a87 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -885,6 +885,34 @@ content change recomputes the record, never edits it. This work package's own PR
- and CI verified it. Approval staleness and the expected-head merge guard are GIT-F; the landed-tree
- comparison after merge is GIT-F/G.
+@@ -911,6 +911,34 @@ on `CAPABILITY ≠ AUTHORITY`. No `scripts/badf_security_design.py`, no schema,
+ change, no gate-code, no specialist activated. Ladder WP-SEC-A…E mirrors solution-design; the deferred
+ `badf-security-assurance` is named, not built.
  
 +## badf-git GIT-F — `MERGED != VERIFIED` (`BADF-WP-0079`, Issue #151 / GOV-0059)
 +
