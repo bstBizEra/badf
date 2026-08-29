@@ -46,11 +46,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "c04981d"
+    "base_revision": "c04981d",
+    "landed_as": "aba7de3bd8028f99ee6c4f78efc6fcda2111fca1"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Adds a canonical-gate command (not a second script) -- SOL-I12 honored; no lifecycle change. Built in an isolated worktree (badf-wt-sol-b, GIT-I04) parallel to BARCHI-2's badf-git GIT-B/C; reconcile done at land time (0068 or 0070). Resolves #131 / GOV-0050. Reconciles the LANDED_UNRECONCILED WP at land time."
 }

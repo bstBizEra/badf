@@ -25,13 +25,13 @@ index fccefc1..770ea27 100644
 +Work-Package: WP-2026-NNNN
  Closes #N
 diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
-index cd6f600..7c5c351 100644
+index 464b2c0..46b6605 100644
 --- a/.github/workflows/badf-gates.yml
 +++ b/.github/workflows/badf-gates.yml
-@@ -59,13 +59,17 @@ jobs:
-           python3 scripts/badf_gate.py assure examples/architecture-assurance-shadow-stdlib-compliant.json
+@@ -60,13 +60,17 @@ jobs:
            python3 scripts/badf_gate.py assure examples/architecture-assurance-shadow-pyyaml-drift.json
            python3 scripts/badf_gate.py assure examples/architecture-assurance-shadow-indeterminate.json
+           python3 scripts/badf_gate.py solution examples/solution-composition.json
 -      - name: PR traceability (Work-Package + Closes #N)
 +      - name: PR traceability + identity (Work-Package + Closes #N; title + branch carry the same NNNN)
          # BADF-MAIN-001. Only a PR has a body; a push to main has already been
@@ -77,7 +77,7 @@ index 0000000..75bcf91
 +  "note": "BADF-WP-GIT-B identity contract: WP-2026-NNNN machine id (namespace constant), BADF-WP-NNNN display label, wp/WP-2026-NNNN-<slug> branches; enforced in check_pr_traceability.py. Authority: operator `/loop your goal on badf-git` (2026-08-29), design order GTGM v0.1 §17. Worked as BADF-WP-0070."
 +}
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 459119e..a48b79f 100644
+index 6ae7267..62126b8 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
 @@ -55,9 +55,13 @@ raise this to 1 and delete this paragraph.
@@ -97,9 +97,9 @@ index 459119e..a48b79f 100644
  
  ## Demand records (`BADF-WP-0018`, Issue #22)
  
-@@ -704,6 +708,32 @@ gate code, so no new control and nothing to mutate; the test guards the declarat
- adapters, composition schemas and seam controls are deferred to WP-SOL-B…D. Built in an isolated
- `git worktree` alongside BARCHI-2's parallel badf-git work (GIT-B/GIT-C), per GIT-I04.
+@@ -723,6 +727,32 @@ deferred to **WP-SOL-C** (`VALIDATED`). No `lifecycle.json` change — the matri
+ like research/assure, not a G03/G04 required_evidence type. Built in an isolated `git worktree` parallel
+ to BARCHI-2's badf-git GIT-B/GIT-C; reconcile done at land time against the current LANDED_UNRECONCILED WP.
  
 +## badf-git GIT-B — the identity contract (`BADF-WP-0070`, Issue #129 / GOV-0049)
 +
@@ -156,7 +156,7 @@ index a23ff2a..d52d669 100644
  
      def rev(ref: str) -> str | None:
 diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
-index fecf688..5c93416 100644
+index 4ea4e2d..b56bdf3 100644
 --- a/scripts/badf_gate.py
 +++ b/scripts/badf_gate.py
 @@ -602,8 +602,18 @@ def write_lockfile() -> None:
@@ -630,22 +630,3 @@ index 66c1958..58baaf5 100644
 +
  if __name__ == "__main__":
      unittest.main()
-diff --git a/work/WP-2026-0068/work-package.json b/work/WP-2026-0068/work-package.json
-index 8d60367..606de4c 100644
---- a/work/WP-2026-0068/work-package.json
-+++ b/work/WP-2026-0068/work-package.json
-@@ -43,11 +43,12 @@
-     "reversible": true,
-     "method": "revert the squash commit via PR"
-   },
--  "status": "IN_PROGRESS",
-+  "status": "CLOSED",
-   "external_target": {
-     "repository": "bstBizEra/badf",
-     "branch": "main",
--    "base_revision": "8673d9a"
-+    "base_revision": "8673d9a",
-+    "landed_as": "c04981dffca5a9b65269350029cf49618929962b"
-   },
-   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Adds no gate code -- no new control, no mutation; a declarative contract freeze like badf-git WP-0066. Built in an isolated worktree (badf-wt-sol) per GIT-I04 alongside BARCHI-2's GIT-C. Resolves #128 / GOV-0047. Reconciles WP-2026-0067."
- }
