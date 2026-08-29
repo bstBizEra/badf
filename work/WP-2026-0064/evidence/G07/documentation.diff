@@ -1,0 +1,29 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 70d7f33..7c23ff2 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -610,6 +610,24 @@ proves existence and the anti-duplication boundary. It lands `IMPLEMENTED` — `
+ WP (cases: valid PRD → clean artifacts; orphan/qualitative → rework; a G05-born security requirement →
+ provenance preserved). **Separation: the skill authors, the gate verifies, an authority decides.**
+ 
++## Validating an authoring skill (`BADF-WP-0064`, Issue #117 / GOV-0034)
++
++`badf-requirements` advances `IMPLEMENTED → VALIDATED`. For a skill with no control of its own,
++VALIDATED means the skill produces gate-correct outcomes on representative cases — the **canonical G02
++gate is the fitness function**, run unchanged. Three cases (`tests/test_badf_requirements_validation.py`,
++faithful-runner shape): **A** — a valid dossier renders `APPROVED`; **B** — the gate refuses exactly what
++the skill's discipline warns against (an orphan requirement → `decomposes no objective`, REQ-I02; a
++qualitative NFR → `is not quantified`, REQ-I04; an RTM orphan, REQ-I05) — "rework" is the gate refusing;
++**C** — a security requirement introduced from a G05 concern passes carrying its provenance.
++
++The honest line is drawn at Case C: the canonical G02 gate has **no** security-source (`SRC → REQ`)
++field, so **REQ-I06 provenance is a skill-authoring discipline verified by inspection, not a gate
++control**. Validation does not invent a control to make the case look enforced — it names the boundary
++and files `SRC → REQ` as a candidate future failing-first WP. This WP adds **no gate code**: no new
++control, nothing to mutate. It also stopped the SKILL.md hardcoding a status line (pointing to the
++registry instead) — the same drift class fixed for the research `acceptance.md`. `SHADOWED`/`APPROVED`/
++`ACTIVE` remain later admission decisions.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

@@ -1,0 +1,288 @@
+diff --git a/badf/demands/BADF-DEM-0051.json b/badf/demands/BADF-DEM-0051.json
+new file mode 100644
+index 0000000..acc782a
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0051.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0051",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 117,
++    "url": "https://github.com/bstBizEra/badf/issues/117",
++    "exported_at": "2026-08-29T15:15:24Z",
++    "body_digest": "sha256:5b77dd7bffafb2f9a87c29e376d0cfd87b553d4f3470fe4b1e4f30d35bc511ed"
++  },
++  "title": "GOV-0034: validate badf-requirements (IMPLEMENTED -> VALIDATED) with the three cases",
++  "problem": "## Observed\n\n`badf-requirements` (`BADF-WP-0063`) is registered `IMPLEMENTED`: the authoring skill exists and its architecture is guarded, but it has not been **validated** by running it on representative cases. The admission ladder (`DESIGNED \u2192 IMPLEMENTED \u2192 VALIDATED \u2192 \u2026`) requires demonstrating the skill produces gate-correct outcomes before it advances.\n\n## Expected\n\nAdvance `badf-requirements` `IMPLEMENTED \u2192 VALIDATED` with the three cases, honestly mapped to what the **canonical G02 gate** actually backs:\n\n- **Case A \u2014 valid PRD \u2192 clean artifacts.** The skill's model produces a G02 dossier that renders `APPROVED` (`examples/gate-dossier.G02.json`, already CI-validated).\n- **Case B \u2014 orphan requirement / qualitative NFR \u2192 rework.** The gate refuses exactly what the skill's discipline warns against: a requirement tracing to no objective \u2192 `decomposes no objective` (REQ-I02); an NFR whose target is not a number \u2192 `is not quantified` (REQ-I04); an orphan in the RTM (REQ-I05). Gate-backed by the existing G02 suite.\n- **Case C \u2014 a security requirement introduced from a G05 concern \u2192 provenance preserved.** A security requirement that names its originating threat and traces to a security objective passes the gate. **Honest boundary:** the canonical G02 gate has no security-source (`SRC\u2192REQ`) field, so REQ-I06 provenance is a **skill-authoring discipline verified by inspection**, not a deterministic gate control \u2014 a candidate future failing-first WP, not asserted here.\n\nDeliverables: `tests/test_badf_requirements_validation.py` (the three cases against the real gate); `skills/badf-requirements/references/validation-evidence.md`; registry status \u2192 `VALIDATED`. No gate code \u2014 so no new control and nothing to mutate.\n\n## Evidence\n\n- Canonical G02 (measured): `check_requirements` refuses `objective_refs=[]`; `check_nfr` refuses a non-numeric target; `check_traceability` refuses orphan/uncovered; `check_definition_of_ready` requires a human sign-off. No security-source enforcement.\n\n## Unknowns\n\nWhether security-source provenance (`SRC\u2192REQ`) should become a gate control \u2014 deferred to a future failing-first WP if real project use proves the need.\n\ndiscovered-by: BADF-WP-0063 (badf-requirements landed IMPLEMENTED) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T15:15:24Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Advance badf-requirements IMPLEMENTED -> VALIDATED via three cases against the canonical G02 gate (A clean, B orphan/qualitative refused, C security provenance by inspection). REQ-I06 is a skill discipline, not a gate control (honest boundary). Operator directed 2026-08-29 ('proceed one by one'). Worked as BADF-WP-0064."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index dffbe74..0ebe894 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -38,8 +38,8 @@
+         "local-filesystem",
+         "local-shell"
+       ],
+-      "status": "IMPLEMENTED",
+-      "digest": "sha256:af7a654f28787acdfa35fee5b4c9cff84df8182cafc480dad5c1dd5955649b52"
++      "status": "VALIDATED",
++      "digest": "sha256:b66e2695b7538d3aca466108fc09dd419d4347ab3d5c017b2b8ca5dd4e3fc267"
+     },
+     {
+       "name": "badf-research",
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 70d7f33..7c23ff2 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -610,6 +610,24 @@ proves existence and the anti-duplication boundary. It lands `IMPLEMENTED` — `
+ WP (cases: valid PRD → clean artifacts; orphan/qualitative → rework; a G05-born security requirement →
+ provenance preserved). **Separation: the skill authors, the gate verifies, an authority decides.**
+ 
++## Validating an authoring skill (`BADF-WP-0064`, Issue #117 / GOV-0034)
++
++`badf-requirements` advances `IMPLEMENTED → VALIDATED`. For a skill with no control of its own,
++VALIDATED means the skill produces gate-correct outcomes on representative cases — the **canonical G02
++gate is the fitness function**, run unchanged. Three cases (`tests/test_badf_requirements_validation.py`,
++faithful-runner shape): **A** — a valid dossier renders `APPROVED`; **B** — the gate refuses exactly what
++the skill's discipline warns against (an orphan requirement → `decomposes no objective`, REQ-I02; a
++qualitative NFR → `is not quantified`, REQ-I04; an RTM orphan, REQ-I05) — "rework" is the gate refusing;
++**C** — a security requirement introduced from a G05 concern passes carrying its provenance.
++
++The honest line is drawn at Case C: the canonical G02 gate has **no** security-source (`SRC → REQ`)
++field, so **REQ-I06 provenance is a skill-authoring discipline verified by inspection, not a gate
++control**. Validation does not invent a control to make the case look enforced — it names the boundary
++and files `SRC → REQ` as a candidate future failing-first WP. This WP adds **no gate code**: no new
++control, nothing to mutate. It also stopped the SKILL.md hardcoding a status line (pointing to the
++registry instead) — the same drift class fixed for the research `acceptance.md`. `SHADOWED`/`APPROVED`/
++`ACTIVE` remain later admission decisions.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/skills/badf-requirements/SKILL.md b/skills/badf-requirements/SKILL.md
+index b5bac28..2de8b10 100644
+--- a/skills/badf-requirements/SKILL.md
++++ b/skills/badf-requirements/SKILL.md
+@@ -64,4 +64,4 @@ REQ-I06 — Security Provenance
+ 9. **EVIDENCE** — the `definition-of-ready` packet is a **human** sign-off whose checklist covers every one of G02's own exit criteria; the requirements author must not produce it (REQ-I01).
+ 10. **DELIVER** — report the gate's verdict and the unresolved items. Never emit a G02 outcome, a "ready" score, or an approval as this skill's own decision.
+ 
+-Read `references/requirements-decomposition.md` for the RTM authoring model (and which of its nodes the gate consumes today) and `references/methodology-provenance.md` for adapted external methodology. This skill is `IMPLEMENTED`; its status lives in `badf/skill-registry.json`.
++Read `references/requirements-decomposition.md` for the RTM authoring model (and which of its nodes the gate consumes today), `references/methodology-provenance.md` for adapted external methodology, and `references/validation-evidence.md` for the three validation cases. The skill's **live status is `badf/skill-registry.json`** — this file defines the contract, not the status, so it never hardcodes a status line that can drift from the registry.
+diff --git a/skills/badf-requirements/references/validation-evidence.md b/skills/badf-requirements/references/validation-evidence.md
+new file mode 100644
+index 0000000..ef928ae
+--- /dev/null
++++ b/skills/badf-requirements/references/validation-evidence.md
+@@ -0,0 +1,50 @@
++# badf-requirements — validation evidence
++
++Status: **VALIDATED** (`BADF-WP-0064`). The skill's live status is `badf/skill-registry.json`.
++
++`badf-requirements` authors the four canonical G02 artifacts and validates them with the canonical
++gate (`badf_gate.py dossier`) — it has no validator of its own. Validation runs that gate on three
++representative cases (`tests/test_badf_requirements_validation.py`, faithful-runner shape: the shipped
++G02 dossier mutated in a scratch clone, artifacts re-digested). The gate is **unchanged** by this WP.
++
++## Case A — valid PRD → clean artifacts
++
++The skill's model produces a complete G02 dossier that renders **`APPROVED`**:
++
++```text
++python3 scripts/badf_gate.py dossier examples/gate-dossier.G02.json   → BADF GATE APPROVED
++```
++
++## Case B — orphan requirement / qualitative NFR → rework
++
++The canonical gate is the fitness function for the skill's discipline — it refuses exactly what
++`badf-requirements` warns against:
++
++| Defect the skill guards | Gate refusal (measured) | Invariant |
++| :--- | :--- | :--- |
++| a requirement tracing to no objective (`objective_refs: []`) | `requirements: REQ-… decomposes no objective` | REQ-I02 |
++| a qualitative NFR (`target.value: "fast"`) | `nfr: NFR-… is not quantified` | REQ-I04 |
++| an orphan requirement in the RTM | `traceability: orphan requirement …` | REQ-I05 |
++
++The first two are asserted directly here; all three are covered by the G02 gate suite
++(`tests/test_badf_g02.py`). "Rework" is the gate refusing — the skill re-authors until it passes.
++
++## Case C — a security requirement from a G05 concern → provenance preserved
++
++A security requirement introduced after G01 (statement naming its originating threat, `T-001` from the
++G05 threat model) traces to the objective this evidence designates as the **security objective**
++(`OBJ-003`) and **passes** the gate. Ids are numeric by schema, so the security designation is
++semantic — carried by the statement and the trace, not the id.
++
++**Honest boundary (REQ-I06).** The canonical G02 gate has **no** security-source (`SRC → REQ`) field:
++it verifies the security requirement traces to a declared objective, but it does **not** deterministically
++enforce that the provenance is present. So REQ-I06 provenance is a **skill-authoring discipline verified
++by inspection** here (the test asserts the requirement names the threat and traces to the security
++objective), not a gate control. Making `SRC → REQ` a deterministic control is a **candidate future
++failing-first WP** — added only if real project use proves the need, never smuggled in as validation.
++
++## Admission
++
++`IMPLEMENTED → VALIDATED` (operator-authorized). `SHADOWED` / `APPROVED` / `ACTIVE` remain later
++admission decisions. This WP adds no gate code — no new control, nothing to mutate; validation runs the
++real canonical gate.
+diff --git a/tests/test_badf_requirements_skill.py b/tests/test_badf_requirements_skill.py
+index 0e8a0f2..8cfb568 100644
+--- a/tests/test_badf_requirements_skill.py
++++ b/tests/test_badf_requirements_skill.py
+@@ -26,10 +26,12 @@ class SkillExistsTests(unittest.TestCase):
+         for ref in ("requirements-decomposition.md", "methodology-provenance.md"):
+             self.assertTrue((SKILL_DIR / "references" / ref).is_file(), f"references/{ref} is missing")
+ 
+-    def test_registered_implemented_with_a_real_digest(self):
++    def test_registered_with_a_real_digest_at_a_valid_lifecycle_status(self):
++        # Do not pin a specific status here (it advances up the ladder); the exact
++        # status is asserted by the validation suite. This guards registration + digest.
+         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
+         entry = next(e for e in reg["skills"] if e["name"] == "badf-requirements")
+-        self.assertEqual(entry["status"], "IMPLEMENTED")
++        self.assertIn(entry["status"], ("DESIGNED", "IMPLEMENTED", "VALIDATED", "SHADOWED", "APPROVED", "ACTIVE"))
+         self.assertEqual(entry["source"], "skills/badf-requirements/SKILL.md")
+         want = "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest()
+         self.assertEqual(entry["digest"], want)
+diff --git a/tests/test_badf_requirements_validation.py b/tests/test_badf_requirements_validation.py
+new file mode 100644
+index 0000000..180076e
+--- /dev/null
++++ b/tests/test_badf_requirements_validation.py
+@@ -0,0 +1,97 @@
++"""Validation of badf-requirements (BADF-WP-0064): the three cases, run against the
++CANONICAL G02 gate — the gate is unchanged; validation runs it.
++
++Case A — a valid dossier renders APPROVED (the skill's model produces clean artifacts).
++Case B — the gate refuses exactly what the skill's discipline warns against: an orphan
++requirement ("decomposes no objective", REQ-I02) and a qualitative NFR ("not quantified",
++REQ-I04). Case C — a security requirement introduced from a G05 concern passes the gate
++carrying its provenance (names the threat, traces to a security objective). The canonical
++G02 gate has no security-source (SRC→REQ) field, so REQ-I06 provenance is a skill-authoring
++discipline verified by inspection, not a deterministic control — the honest boundary.
++"""
++import json
++import sys
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++from tests.test_badf_g02 import G02Scratch  # noqa: E402  (reuse the seed_clone fixture)
++
++
++class CaseA_CleanArtifacts(G02Scratch):
++    def test_a_valid_prd_renders_clean_g02_artifacts(self):
++        r = self.cli()
++        self.assertEqual(r.returncode, 0, r.stderr)
++        self.assertIn("APPROVED", r.stdout)
++
++
++class CaseB_Rework(G02Scratch):
++    """The gate is the fitness function for the skill's REQ-I02 / REQ-I04 discipline."""
++
++    def test_an_orphan_requirement_is_rework(self):
++        reqs = self.artifact("requirements")
++        reqs["requirements"][0]["objective_refs"] = []
++        self.rewrite("requirements", reqs)
++        self.refused("decomposes no objective")
++
++    def test_a_qualitative_nfr_is_rework(self):
++        nfr = self.artifact("nfr")
++        nfr["nfrs"][0]["target"]["value"] = "fast"
++        self.rewrite("nfr", nfr)
++        self.refused("is not quantified")
++
++
++class CaseC_SecurityProvenance(G02Scratch):
++    # ids are numeric by schema (^REQ-/OBJ-/AC-[0-9]{3,}$); the security designation is
++    # semantic -- the statement names the threat and the requirement traces to the
++    # objective the validation-evidence doc designates as the security objective (OBJ-003).
++    SEC_REQ, SEC_OBJ, SEC_AC = "REQ-004", "OBJ-003", "AC-003"
++
++    def _introduce_security_requirement(self):
++        reqs = self.artifact("requirements")
++        reqs["requirements"].append({
++            "id": self.SEC_REQ,
++            "statement": "Session tokens are encrypted at rest, mitigating threat T-001 (spoofing) raised in the G05 threat model.",
++            "priority": "Must Have",
++            "testable": True,
++            "objective_refs": [self.SEC_OBJ],
++        })
++        self.rewrite("requirements", reqs)
++        rtm = self.artifact("traceability")
++        rtm["objectives"].append(self.SEC_OBJ)
++        rtm["acceptance_criteria"].append(self.SEC_AC)
++        rtm["requirement_to_objective"].append({"requirement": self.SEC_REQ, "objectives": [self.SEC_OBJ]})
++        rtm["criterion_to_requirement"].append({"criterion": self.SEC_AC, "requirements": [self.SEC_REQ]})
++        self.rewrite("traceability", rtm)
++
++    def test_a_security_requirement_with_provenance_passes_the_gate(self):
++        self._introduce_security_requirement()
++        r = self.cli()
++        self.assertEqual(r.returncode, 0, r.stderr)
++        self.assertIn("APPROVED", r.stdout)
++
++    def test_the_security_requirement_preserves_its_provenance(self):
++        # provenance = names the originating threat AND traces to the security objective
++        # (REQ-I06). The canonical gate does not enforce SRC->REQ, so this is by inspection.
++        self._introduce_security_requirement()
++        reqs = self.artifact("requirements")
++        sec = next(r for r in reqs["requirements"] if r["id"] == self.SEC_REQ)
++        self.assertIn(self.SEC_OBJ, sec["objective_refs"])
++        self.assertRegex(sec["statement"], r"threat|G05")
++
++
++class ValidatedStatus(unittest.TestCase):
++    def test_badf_requirements_is_registered_validated(self):
++        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
++        entry = next(e for e in reg["skills"] if e["name"] == "badf-requirements")
++        self.assertEqual(entry["status"], "VALIDATED")
++
++    def test_the_validation_evidence_documents_the_three_cases(self):
++        doc = (gate.ROOT / "skills/badf-requirements/references/validation-evidence.md").read_text(encoding="utf-8")
++        for token in ("Case A", "Case B", "Case C", "REQ-I06"):
++            self.assertIn(token, doc)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0063/work-package.json b/work/WP-2026-0063/work-package.json
+index 72e087a..06d08d1 100644
+--- a/work/WP-2026-0063/work-package.json
++++ b/work/WP-2026-0063/work-package.json
+@@ -2,7 +2,7 @@
+   "$schema": "../../schemas/work-package.schema.json",
+   "schema_version": "1.0.0",
+   "id": "WP-2026-0063",
+-  "title": "badf-requirements authoring skill (salvage PR #47 onto the canonical G02 gate) — IMPLEMENTED",
++  "title": "badf-requirements authoring skill (salvage PR #47 onto the canonical G02 gate) \u2014 IMPLEMENTED",
+   "owner": "human_sponsor",
+   "demand": "BADF-DEM-0050",
+   "repository": "bstBizEra/badf",
+@@ -46,11 +46,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "a20df5e"
++    "base_revision": "a20df5e",
++    "landed_as": "18677311c87a1fab4e4e06de340faadba7ce8def"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Adds no gate code -- so no new control and no mutation (mutation is for enforcement branches); the test guards existence + the anti-duplication architecture. Salvages PR #47's authoring layer only, like badf-prd salvaged PR #44. Resolves #115 / GOV-0033; supersedes #47. Reconciles WP-2026-0062."
+ }
