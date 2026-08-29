@@ -1,0 +1,71 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0065",
+  "title": "BADF-WP-GIT-A — Git Capability Contract Freeze",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0052",
+  "repository": "bstBizEra/badf",
+  "objective": "Freeze badf-git as a DESIGNED-only declarative capability contract for BADF's governed trunk Git cycle and nested engineering loop, including exact Git identity, worktree isolation, branch/PR binding, private-history rewrite staleness, composed-result verification, protected integration boundaries, recovery, release/versioning and evidence semantics -- without adding a Git mutation engine, new Git authority, new gate, schema, workflow, ruleset or tool permission.",
+  "business_value": "BADF already has strong individual Git controls, but the operating contract is distributed across policy, CI, evidence doctrine and operator practice. A single declarative Git contract reduces agent ambiguity while preserving the central BADF invariant that capability is not authority and source-branch success is not integration safety. Freezing the contract first prevents later Git automation from inventing permissions or bypassing composed-result evidence.",
+  "in_scope": [
+    "skills/badf-git/SKILL.md: root router/constraint contract with GIT-I01..GIT-I12, governed Git cycle, nested Git loop and stop states",
+    "skills/badf-git/references/git-cycle.md: AUTHORITY -> BASELINE -> ISOLATE -> BUILD -> VERIFY -> PR -> COMPOSE -> CHALLENGE -> AUTHORIZE -> SQUASH -> RECONCILE -> RELEASE -> CLEAN -> LEARN",
+    "skills/badf-git/references/git-state-machine.md: explicit progression plus STALE_EVIDENCE/BLOCKED/HUMAN_REQUIRED/RECOVERY_REQUIRED/OUTCOME_UNKNOWN/REWORK_REQUIRED holds",
+    "skills/badf-git/references/branch-pr-contract.md: one permanent main, short-lived WP branches/worktrees, proposed future wp/<CANONICAL-WORK-PACKAGE-ID>-<slug> form, PR/head binding and private rewrite rules",
+    "skills/badf-git/references/operation-authority-matrix.md: GIT-O0..GIT-O5 risk-routing classes subordinate to canonical READ/WRITE/DESTRUCTIVE/ADMIN tool governance",
+    "skills/badf-git/references/composition-and-staleness.md: source/target/merge-base/result-tree identity, canonical badf_compose reuse, evidence invalidation and ordered composition",
+    "skills/badf-git/references/recovery-contract.md: preserve-first recovery, reflog/recovery branches, forward revert for shared history, rerere candidate semantics and destructive deny-by-default",
+    "skills/badf-git/references/release-versioning.md: immutable release refs, preserve BADF-BASELINE-X.Y.Z, recommend future vX.Y.Z, governed SemVer and release-from-main semantics",
+    "skills/badf-git/references/evidence-contract.md: Git-specific bindings carried through canonical BADF evidence rather than a competing schema",
+    "governance/integrity bookkeeping required to bind and verify the nine capability files, including prior-ledger reconciliation, demand/work-package records, registry pin, structural contract verification and lockfile re-signing"
+  ],
+  "out_of_scope": [
+    "any scripts/badf_git.py or other Git mutation/automation executable",
+    "any new GitHub ruleset, branch protection, Actions workflow or merge-queue behavior",
+    "any change to badf/authority-matrix.json, badf/tool-registry.json or badf/mcp-registry.json that grants Git capability/authority",
+    "any schema or lifecycle/gate enforcement change",
+    "branch-name enforcement before BADF freezes one canonical machine WP-ID form repository-wide",
+    "automatic rebase, push, force update, merge, revert, tag, release or cleanup",
+    "advancing badf-git past DESIGNED; IMPLEMENTED, VALIDATED, SHADOWED, APPROVED and ACTIVE are separate future work packages"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "exactly nine badf-git capability-content files exist: SKILL.md plus the eight named references; no badf-git executable/schema/workflow is introduced",
+    "GIT-I01..GIT-I12 explicitly preserve no-authority, exact-identity, isolation, rewrite-staleness, forward-repair, intentional-staging, rerere-candidate, exact-integration, immutable-release, destructive-deny and no-second-gate constraints",
+    "the governed Git cycle and nested Git loop are present and the state machine contains all required progression and hold states",
+    "the proposed branch form is documented but explicitly not enforced until one canonical machine WP-ID form is frozen repository-wide",
+    "composition evidence binds target_ref, target_base_sha, merge_base_sha, source_ref, source_head_sha, merge_method, expected_result_tree, test_set_epoch and policy_epoch and reuses the canonical BADF composition mechanism",
+    "private history rewrite invalidates affected evidence; range-diff/patch-id are diagnostic only; force-with-lease is the maximum normal rewritten-topic update boundary and bare force is not normal BADF workflow",
+    "shared/protected rollback repairs forward via a new governed change; local lost state uses reflog/recovery refs; unknown state is never destroyed merely to clean the checkout",
+    "release design preserves historical BADF-BASELINE-X.Y.Z and recommends vX.Y.Z for future releases; SemVer remains a governed decision rather than commit-prefix inference",
+    "badf-git is registry-pinned DESIGNED with allowed_tools empty and a real sha256 digest",
+    "repository integrity/structural contract checks pass without changing Git authority, canonical gate code, schemas, tool permissions or protected integration settings"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via work-package topic branch and pull request only",
+    "no protected integration authority is granted by this work package"
+  ],
+  "tests": [
+    "tests/test_badf_git_contract.py",
+    "python3 scripts/badf_gate.py repo"
+  ],
+  "evidence": [
+    "structural Git capability contract test",
+    "repository integrity/registry digest verification",
+    "canonical composed-result CI output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the eventual squash commit through a new governed PR; do not rewrite protected main"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "c09d3701a2d2dd9623b98a13809aa2a63df61e76"
+  },
+  "note": "Issue #119 / GOV-0044. Operator authorized the contract freeze as the next repository action. Capability content is exactly SKILL.md + eight references; all additional touched files are governance/integrity bookkeeping only. The prior WP-2026-0064 ledger record is reconciled in this WP because BADF refuses opening a new self-WP while landed work is unreconciled. Independent review remains required and the author cannot self-approve."
+}
