@@ -11,6 +11,7 @@ import hashlib
 import json
 import re
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -601,6 +602,64 @@ def write_lockfile() -> None:
 
 
 
+# ---- badf-git GIT-E/GIT-F: the content tree and the composition record (BADF-WP-0076/0079) ----
+COMPOSITION_REQUIRED = ("schema_version", "observed_at", "repository", "work_package_id", "target_ref", "target_base_sha",
+                        "source_ref", "merge_base_sha", "merge_method", "expected_result_tree", "expected_content_tree",
+                        "policy_epoch", "test_set_epoch", "suite_pattern", "non_coverage")
+
+
+def content_tree(checkout: Path, wp: str, rev: str = "HEAD") -> str:
+    """The tree of <rev> with work/<wp>/ and badf/lockfile.json removed -- the binding of a
+    composition record (BADF-WP-0076). Computed from the OBJECT STORE ALONE on a temporary
+    index: `read-tree <rev>`, `update-index --force-remove` of the excluded paths,
+    `write-tree`. GIT-E's first version used `git rm --cached`, which refuses a path whose
+    worktree file differs from the index -- never inside compose's fresh scratch, always
+    possible elsewhere -- and the helper silently returned the FULL tree (BADF-WP-0079).
+    The checkout's own index and worktree are never touched."""
+    with tempfile.TemporaryDirectory(prefix="badf-ctree-") as d:
+        env = {**os.environ, "GIT_INDEX_FILE": str(Path(d) / "index")}
+
+        def run(*a: str) -> subprocess.CompletedProcess:
+            return subprocess.run(["git", "-C", str(checkout), *a], capture_output=True, text=True, env=env)
+
+        r = run("read-tree", rev)
+        if r.returncode:
+            raise ValidationError(f"cannot read the tree of {rev} in {checkout}: {r.stderr.strip()}")
+        listed = run("ls-files", "--", f"work/{wp}", "badf/lockfile.json").stdout.split()
+        if listed:
+            r = run("update-index", "--force-remove", "--", *listed)
+            if r.returncode:
+                raise ValidationError(f"cannot exclude work/{wp}/ and the lockfile from {rev}: {r.stderr.strip()}")
+        r = run("write-tree")
+        if r.returncode:
+            raise ValidationError(f"cannot write the content tree of {rev} in {checkout}: {r.stderr.strip()}")
+        return r.stdout.strip()
+
+
+def parse_composition_record(text: str, label: str) -> dict[str, Any]:
+    """A git-composition record as `badf_compose.py --record` wrote it. Refuses anything
+    that is not a complete record: a verdict must never be computed against a file that
+    merely looks like one, and reconcile must never downgrade a broken record to 'none'."""
+    try:
+        rec = json.loads(text)
+    except ValueError:
+        raise ValidationError(f"{label} is not a git-composition record (not JSON)")
+    if not isinstance(rec, dict) or rec.get("record") != "git-composition":
+        raise ValidationError(f"{label} is not a git-composition record (no `record: git-composition`)")
+    missing = [k for k in COMPOSITION_REQUIRED if k not in rec]
+    if missing:
+        raise ValidationError(f"{label} is not a complete git-composition record; missing {missing}")
+    return rec
+
+
+def load_composition_record(path: Path) -> dict[str, Any]:
+    try:
+        text = Path(path).read_text(encoding="utf-8")
+    except OSError as exc:
+        raise ValidationError(f"cannot read the composition record {path}: {exc}")
+    return parse_composition_record(text, str(path))
+
+
 # ---- work ledger: landing is derived from git, claims are corroborated (BADF-WP-0019, #26) ----
 # One identity, three faces, one binding (BADF-WP-0070 / badf-git GIT-B): the
 # machine id is WP_NAMESPACE + NNNN. WP-2026- is the ledger's genesis namespace,
@@ -723,6 +782,25 @@ def reconcile_work_package(wp_arg: str) -> str:
     if not landed:
         raise ValidationError(f"{wp} has not landed on origin/{DEFAULT_BRANCH}: no first-parent commit carries its Work-Package line")
     sha = landed[-1]   # the first landing; later ones are named, not chosen
+    # GIT-F (BADF-WP-0079): MERGED != VERIFIED. The composition record is read from the
+    # LANDED commit's tree, never from the checkout, and the landed content tree is
+    # computed from the object store alone; a mismatch is the one window the
+    # expected-head merge guard cannot close -- main moved between the last CI run and
+    # the merge -- and it is a refusal, not a note. No record stays honest and visible.
+    record_text = _git("show", f"{sha}:work/{wp}/evidence/G07/composition-record.json")
+    if record_text is not None:
+        record = parse_composition_record(record_text, f"{sha[:12]}:work/{wp}/evidence/G07/composition-record.json")
+        landed_tree = content_tree(ROOT, wp, sha)
+        expected = record.get("expected_content_tree")
+        if landed_tree != expected:
+            raise ValidationError(
+                f"BLOCKED: the landed content of {wp} ({sha[:12]}, content tree {landed_tree[:12]}) is not the composition "
+                f"that was verified (recorded {str(expected)[:12]}) -- main moved between verification and merge; "
+                f"open recovery as a forward change, never rewrite {DEFAULT_BRANCH}")
+        target["landed_content_tree"] = landed_tree
+        target["composition_verified"] = True
+    else:
+        target["composition_verified"] = False
     target["landed_as"] = sha
     rec["external_target"] = target
     rec["status"] = "CLOSED"
@@ -730,7 +808,10 @@ def reconcile_work_package(wp_arg: str) -> str:
     path.write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
     write_lockfile()
     also = f" (also carried by {', '.join(s[:7] for s in landed[:-1])})" if len(landed) > 1 else ""
-    return f"BADF RECONCILE: {wp} CLOSED, landed_as {sha[:7]}{also}; lockfile re-signed -- ship it in the next work package's PR"
+    verified = ("composition_verified: true (landed content tree matches the record)" if target["composition_verified"]
+                else "composition_verified: false (no composition record on the landed tree)")
+    return (f"BADF RECONCILE: {wp} CLOSED, landed_as {sha[:7]}{also}; {verified}; lockfile re-signed -- "
+            f"ship it in the next work package's PR")
 
 
 DIGEST_FORM = re.compile(r"^sha256:[0-9a-f]{64}$")
