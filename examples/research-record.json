@@ -101,7 +101,8 @@
           "reproducible": true,
           "contradictions": 0
         }
-      }
+      },
+      "semantic_support": "NON_COVERAGE"
     },
     {
       "id": "C-002",
@@ -119,7 +120,8 @@
           "reproducible": true,
           "contradictions": 0
         }
-      }
+      },
+      "semantic_support": "NON_COVERAGE"
     }
   ],
   "findings": [

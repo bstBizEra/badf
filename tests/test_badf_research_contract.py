@@ -112,6 +112,24 @@ class ContractInvariantTests(unittest.TestCase):
         for ref in ("research-types.md", "lifecycle.md", "evidence-contract.md", "routing-and-authority.md", "acceptance.md"):
             self.assertIn(ref, text)
 
+    def test_acceptance_doc_does_not_assert_a_stale_status(self):
+        # #84 / WP-0061: acceptance.md must not hard-code a live status line that
+        # can drift from the registry (badf-research is ACTIVE, not DESIGNED, since
+        # WP-0058). It points to the registry as the source of truth instead --
+        # the same doc-drift defect class fixed for badf-architecture in WP-0059.
+        text = (REF / "acceptance.md").read_text(encoding="utf-8")
+        self.assertNotIn("The capability is `DESIGNED`", text)
+        self.assertIn("skill-registry.json", text)
+
+    def test_rsr_i06_boundary_is_stated_in_the_contract(self):
+        # control 27 and the citation != support boundary are frozen in the docs.
+        acc = (REF / "acceptance.md").read_text(encoding="utf-8")
+        self.assertIn("RSR-I06", acc)
+        self.assertIn("| 27 |", acc)
+        ev = (REF / "evidence-contract.md").read_text(encoding="utf-8")
+        for state in ("SOURCE_EXISTS", "SOURCE_BOUND", "SOURCE_CURRENT", "SOURCE_SUPPORTS_CLAIM"):
+            self.assertIn(state, ev)
+
 
 class RouterDeterminismTests(unittest.TestCase):
     """BADF-WP-0056 (#83): the research router names every route to a real subskill or

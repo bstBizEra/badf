@@ -92,7 +92,8 @@
           "reproducible": true,
           "contradictions": 0
         }
-      }
+      },
+      "semantic_support": "NON_COVERAGE"
     }
   ],
   "findings": [

@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0.0",
-  "id": "BADF-RSR-0003",
-  "demand": "BADF-DEM-0027",
+  "id": "BADF-RSR-0006",
+  "demand": "BADF-DEM-0048",
   "source": {
     "repository": "bstBizEra/badf",
-    "issue": 67
+    "issue": 84
   },
   "researcher": {
     "principal": "badf-research-agent",
@@ -89,7 +89,7 @@
           "contradictions": 0
         }
       },
-      "semantic_support": "NON_COVERAGE"
+      "semantic_support": "ASSESSED"
     }
   ],
   "findings": [
@@ -128,5 +128,31 @@
     "implementation_authority": false
   },
   "evidence_digest": "sha256:ba2e21525579f2f347be6d2686f5594421e5e6c4e7d7de10e8a83c72851a75b0",
-  "recorded_at": "2026-08-28T15:10:00Z"
+  "recorded_at": "2026-08-28T15:10:00Z",
+  "support_assessments": [
+    {
+      "claim_ref": "C-001",
+      "source_ref": "S-001",
+      "relation": "SUPPORTS",
+      "assessment": "SUBSTANTIATED",
+      "assessor": "agent://badf/research/fact-checking",
+      "method": "FACT_CHECKING",
+      "locator": {
+        "type": "LINE_RANGE",
+        "value": "1-26"
+      }
+    },
+    {
+      "claim_ref": "C-001",
+      "source_ref": "S-002",
+      "relation": "SUPPORTS",
+      "assessment": "SUBSTANTIATED",
+      "assessor": "agent://badf/research/fact-checking",
+      "method": "FACT_CHECKING",
+      "locator": {
+        "type": "LINE_RANGE",
+        "value": "2865-2876"
+      }
+    }
+  ]
 }

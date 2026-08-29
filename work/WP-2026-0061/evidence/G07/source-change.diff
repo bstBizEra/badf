@@ -1,0 +1,822 @@
+diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
+index 29cdadf..ee403d4 100644
+--- a/.github/workflows/badf-gates.yml
++++ b/.github/workflows/badf-gates.yml
+@@ -52,6 +52,7 @@ jobs:
+           python3 scripts/badf_gate.py research examples/research-record-shadow-control15.json
+           python3 scripts/badf_gate.py research examples/research-record-shadow-composed-red.json
+           python3 scripts/badf_gate.py research examples/research-record-shadow-ci-parity.json
++          python3 scripts/badf_gate.py research examples/research-record-shadow-support-assessment.json
+           python3 scripts/badf_gate.py assure examples/architecture-assurance.json
+           python3 scripts/badf_gate.py assure examples/architecture-assurance-shadow-stdlib-compliant.json
+           python3 scripts/badf_gate.py assure examples/architecture-assurance-shadow-pyyaml-drift.json
+diff --git a/badf/demands/BADF-DEM-0048.json b/badf/demands/BADF-DEM-0048.json
+new file mode 100644
+index 0000000..1705fc8
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0048.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0048",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 84,
++    "url": "https://github.com/bstBizEra/badf/issues/84",
++    "exported_at": "2026-08-29T12:20:56Z",
++    "body_digest": "sha256:83bfd878dc1db9b9a62fba53c057a6ceeb59b90132a89d0e6a1b364c50153681"
++  },
++  "title": "GOV-0031: source-supports-claim is not machine-checkable \u2014 a VERIFIED claim can cite a resolving source whose content does not entail it (RSR-I06 candidate)",
++  "problem": "## Observed\n`fact-checking` (WP-0047) makes claim status\u2194evidence consistency deterministic (control 21), but one part of its `CITATION \u2260 SUPPORT` invariant is **not machine-checkable with the current contract**. A claim can be `VERIFIED` citing a resolving, `PRIMARY`, digest-bound source whose **content does not actually entail the claim** \u2014 and the gate accepts it, because a source record carries only `id`, `uri`, `source_type`, `retrieved_at`, `digest`, `note`. There is no content excerpt, locator, or entailment field for the gate to compare the claim against.\n\nMeasured: source item properties = `['digest','id','note','retrieved_at','source_type','uri']` \u2014 no content/entailment locator. So `SOURCE_EXISTS \u2260 SOURCE_SUPPORTS_CLAIM` cannot be enforced deterministically today.\n\n## Expected\nDecide, before `badf-research` reaches `ACTIVE`, whether to make semantic support machine-checkable \u2014 the candidate invariant:\n\n```\nRSR-I06 (candidate): a source may support a claim only if the cited evidence\nsemantically entails or directly substantiates it. SOURCE_EXISTS != SOURCE_SUPPORTS_CLAIM.\n```\n\nPossible directions (design decision, not yet chosen):\n- add an **evidence locator** to the claim\u2194source binding (a quoted excerpt + a byte/line/anchor range within the digest-bound source) that a human or a later `deep-research` receipt fills, so the gate can at least require a locator for a `VERIFIED`/`PRIMARY` binding (presence-of-locator is deterministic; semantic entailment is not);\n- or keep semantic support as a **declared non-coverage** the `fact-checking` skill must state (control 9/non-coverage), never asserted as machine-verified.\n\n## Unknowns\nWhether BADF wants a locator field at all (schema growth vs. leanness), and whether entailment stays a human/AI judgment recorded as non-coverage rather than a gate control. This issue records the gap; the resolution is a separate governed WP.\n\ndiscovered-by: BADF-WP-0047 (fact-checking, failing-first) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T12:20:56Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Resolves GOV-0031 by adopting RSR-I06 (SOURCE_EXISTS != SOURCE_SUPPORTS_CLAIM) as a separation-of-responsibility invariant, plus a machine-enforceable support-assessment receipt (locator) and control 27 (semantic-support coverage honesty). Semantic entailment stays evidence-assessment, never a deterministic policy assertion; authority impact NONE. Operator directive 2026-08-29. Worked as BADF-WP-0061."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 3a4bf87..0dc4267 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -85,7 +85,7 @@
+         "local-shell"
+       ],
+       "status": "IMPLEMENTED",
+-      "digest": "sha256:fa87749db7df5512f1f3cfdddba25e4b1f9f19ed9b56fdb8f01ee0a12c8669f8"
++      "digest": "sha256:695b89664612e662cbe3dfb8eb3816df235212ee67ead905a96ff6b102124d6f"
+     },
+     {
+       "name": "evidence-synthesis",
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index bb423b9..fdef88b 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -540,6 +540,34 @@ the binding) and names a **residual-risk owner** (*residual risk owned*). G05's
+ dossier above the C1 floor. Ships a **G04→G05** pair-acceptance (the full G00→G05 advance chain). Same
+ lean substrate as G01–G04.
+ 
++## RSR-I06 — citation ≠ support (`BADF-WP-0061`, Issue #84 / GOV-0031)
++
++`#84` recorded the last open research-contract design decision: a claim could be `VERIFIED` citing a
++resolving, `PRIMARY`, digest-bound source whose content does not entail it, because the record had no
++way to say whether semantic support was ever assessed. The resolution **freezes the boundary rather
++than pretending entailment is deterministic**: RSR-I06 — `SOURCE_EXISTS != SOURCE_SUPPORTS_CLAIM`. The
++gate verifies four states — a source **exists**, is **bound**, is **current** (control 6), and has been
++**adjudicated** (control 21) — and stops there. Whether natural language entails a claim is
++`fact-checking`'s judgment, recorded as evidence, never a policy-engine assertion.
++
++Control 27 gives the boundary teeth without crossing it: a `VERIFIED` claim on cited support declares
++`semantic_support` — `ASSESSED` (a `support_assessments` receipt with a non-empty `locator`, one per
++supporting source) or `NON_COVERAGE` (the honest fallback). **Silence is refused**, and a receipt whose
++own assessment does not substantiate the binding cannot back a `VERIFIED` claim. The receipt proves the
++assessment *happened under contract*; it never asserts the sentence is true. `semantic_support` and
++`support_assessments` are a *reading*, excluded from `evidence_digest` like findings/disposition — so
++recording an assessment never invalidates the evidence digest. RSR-I06 grants no implementation
++authority (RSR-I01 unchanged).
++
++**Governance-closure defect (recorded, not hidden).** `#84` said the decision should be made *before*
++`badf-research` reached `ACTIVE`; it was still open when `BADF-WP-0058` activated the family. This was
++**not** a safety defect — control 21 had explicitly declared semantic entailment outside its coverage,
++so no hidden control was ever claimed — but it was a governance-closure defect: the discovery was not
++formally dispositioned before activation. Activation is **retained**; this WP formalizes the boundary
++and closes GOV-0031. (Same doc-drift family as `#407` and the G-67 test-that-did-not-exist: the fix is
++to make the document match the enforced reality. Here `acceptance.md` also stopped hard-coding a
++`DESIGNED` status line that had drifted from the registry's `ACTIVE`.)
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/examples/research-record-challenged.json b/examples/research-record-challenged.json
+index dcbf2f6..c107ff9 100644
+--- a/examples/research-record-challenged.json
++++ b/examples/research-record-challenged.json
+@@ -87,7 +87,8 @@
+           "reproducible": true,
+           "contradictions": 0
+         }
+-      }
++      },
++      "semantic_support": "NON_COVERAGE"
+     }
+   ],
+   "findings": [
+diff --git a/examples/research-record-repo.json b/examples/research-record-repo.json
+index af978e4..d5f2f70 100644
+--- a/examples/research-record-repo.json
++++ b/examples/research-record-repo.json
+@@ -88,7 +88,8 @@
+           "reproducible": true,
+           "contradictions": 0
+         }
+-      }
++      },
++      "semantic_support": "NON_COVERAGE"
+     }
+   ],
+   "findings": [
+diff --git a/examples/research-record-shadow-composed-red.json b/examples/research-record-shadow-composed-red.json
+index f844f9a..b3c2bee 100644
+--- a/examples/research-record-shadow-composed-red.json
++++ b/examples/research-record-shadow-composed-red.json
+@@ -92,7 +92,8 @@
+           "reproducible": true,
+           "contradictions": 0
+         }
+-      }
++      },
++      "semantic_support": "NON_COVERAGE"
+     }
+   ],
+   "findings": [
+diff --git a/examples/research-record-shadow-control15.json b/examples/research-record-shadow-control15.json
+index b1584f0..7d0b522 100644
+--- a/examples/research-record-shadow-control15.json
++++ b/examples/research-record-shadow-control15.json
+@@ -82,7 +82,8 @@
+           "reproducible": true,
+           "contradictions": 0
+         }
+-      }
++      },
++      "semantic_support": "NON_COVERAGE"
+     }
+   ],
+   "findings": [
+diff --git a/examples/research-record-shadow-support-assessment.json b/examples/research-record-shadow-support-assessment.json
+new file mode 100644
+index 0000000..21d1a3c
+--- /dev/null
++++ b/examples/research-record-shadow-support-assessment.json
+@@ -0,0 +1,158 @@
++{
++  "schema_version": "1.0.0",
++  "id": "BADF-RSR-0006",
++  "demand": "BADF-DEM-0048",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 84
++  },
++  "researcher": {
++    "principal": "badf-research-agent",
++    "principal_type": "agent"
++  },
++  "type": "R02",
++  "depth": "D2",
++  "question": "How did BADF's main branch reach an all-green enforcement state, and what does the commit history show about the loop that got it there?",
++  "scope": {
++    "include": [
++      "work/ records",
++      "the composed-tree gate history",
++      "git log --first-parent main"
++    ],
++    "exclude": [
++      "the external actor's branches (#44/#47)"
++    ]
++  },
++  "baseline": {
++    "repository": "bstBizEra/badf",
++    "revision": "39dc6d9",
++    "observed_at": "2026-08-28T15:00:00Z"
++  },
++  "known": [
++    "main is PR-only under a zero-bypass ruleset since WP-0016",
++    "every WP lands via a squash commit carrying a Work-Package line"
++  ],
++  "unknown": [
++    "how many work packages the enforcement state took"
++  ],
++  "hypotheses": [
++    {
++      "id": "H-001",
++      "statement": "the enforcement state was reached incrementally, one squash-merged work package at a time",
++      "status": "RETAINED"
++    }
++  ],
++  "stop_conditions": [
++    "every finding is bound to a commit SHA",
++    "no material PR or issue for the change remains unread"
++  ],
++  "assumptions": [
++    "the git history is complete on this host"
++  ],
++  "decision_context": {
++    "decision_question": "what change, if any, does the enforcement-history investigation justify?"
++  },
++  "sources": [
++    {
++      "id": "S-001",
++      "uri": "git:bstBizEra/badf@39dc6d9:work/",
++      "source_type": "PRIMARY",
++      "retrieved_at": "2026-08-28T15:01:00Z",
++      "digest": null,
++      "freshness": "CURRENT"
++    },
++    {
++      "id": "S-002",
++      "uri": "git:bstBizEra/badf log --first-parent main",
++      "source_type": "PRIMARY",
++      "retrieved_at": "2026-08-28T15:02:00Z",
++      "digest": null,
++      "freshness": "CURRENT"
++    }
++  ],
++  "claims": [
++    {
++      "id": "C-001",
++      "statement": "the tree at 39dc6d9 carries a chain of squash-merged work-package records, each with a landed_as on the ledger",
++      "classification": "OBSERVED",
++      "supporting_sources": [
++        "S-001",
++        "S-002"
++      ],
++      "contradicting_sources": [],
++      "status": "VERIFIED",
++      "confidence": {
++        "level": "VERY_HIGH",
++        "basis": {
++          "independent_primary_sources": 2,
++          "reproducible": true,
++          "contradictions": 0
++        }
++      },
++      "semantic_support": "ASSESSED"
++    }
++  ],
++  "findings": [
++    {
++      "id": "F-001",
++      "statement": "the enforcement state was reached by the incremental Issue -> demand -> WP -> PR -> squash loop, not a single change",
++      "claim_refs": [
++        "C-001"
++      ]
++    }
++  ],
++  "alternatives": [],
++  "experiments": [],
++  "contradictions": [],
++  "non_coverage": [
++    {
++      "surface": "the external actor's branches",
++      "reason": "out of scope; not this agent's work"
++    }
++  ],
++  "recommendation": "none; this is a repository-investigation, not a solution search",
++  "challenge": {
++    "required": false,
++    "council": null
++  },
++  "state": "RECONCILED",
++  "disposition": {
++    "state": "RESEARCH_SUFFICIENT",
++    "reason": "the ledger and first-parent history are primary and reproducible"
++  },
++  "downstream": {
++    "decision_id": null,
++    "work_package_id": null
++  },
++  "authority": {
++    "implementation_authority": false
++  },
++  "evidence_digest": "sha256:ba2e21525579f2f347be6d2686f5594421e5e6c4e7d7de10e8a83c72851a75b0",
++  "recorded_at": "2026-08-28T15:10:00Z",
++  "support_assessments": [
++    {
++      "claim_ref": "C-001",
++      "source_ref": "S-001",
++      "relation": "SUPPORTS",
++      "assessment": "SUBSTANTIATED",
++      "assessor": "agent://badf/research/fact-checking",
++      "method": "FACT_CHECKING",
++      "locator": {
++        "type": "LINE_RANGE",
++        "value": "1-26"
++      }
++    },
++    {
++      "claim_ref": "C-001",
++      "source_ref": "S-002",
++      "relation": "SUPPORTS",
++      "assessment": "SUBSTANTIATED",
++      "assessor": "agent://badf/research/fact-checking",
++      "method": "FACT_CHECKING",
++      "locator": {
++        "type": "LINE_RANGE",
++        "value": "2865-2876"
++      }
++    }
++  ]
++}
+diff --git a/examples/research-record.json b/examples/research-record.json
+index c58fd33..9496c9e 100644
+--- a/examples/research-record.json
++++ b/examples/research-record.json
+@@ -101,7 +101,8 @@
+           "reproducible": true,
+           "contradictions": 0
+         }
+-      }
++      },
++      "semantic_support": "NON_COVERAGE"
+     },
+     {
+       "id": "C-002",
+@@ -119,7 +120,8 @@
+           "reproducible": true,
+           "contradictions": 0
+         }
+-      }
++      },
++      "semantic_support": "NON_COVERAGE"
+     }
+   ],
+   "findings": [
+diff --git a/schemas/research-record.schema.json b/schemas/research-record.schema.json
+index f332ae3..dbb8164 100644
+--- a/schemas/research-record.schema.json
++++ b/schemas/research-record.schema.json
+@@ -387,6 +387,48 @@
+                 }
+               }
+             }
++          },
++          "semantic_support": {
++            "type": "string",
++            "description": "RSR-I06: whether semantic support was assessed. ASSESSED requires a support_assessments receipt with a locator per supporting source; NON_COVERAGE honestly declares entailment was not machine-verified. A VERIFIED claim on cited support that declares neither is refused (control 27).",
++            "enum": [
++              "ASSESSED",
++              "NON_COVERAGE"
++            ]
++          }
++        }
++      }
++    },
++    "support_assessments": {
++      "type": "array",
++      "description": "RSR-I06 receipts: fact-checking's per-binding semantic assessment. The gate verifies each receipt exists, resolves to a carried claim and source, carries a non-empty locator, and is consistent with the binding it names (control 27). It never asserts the source entails the claim -- that judgment is evidence, not a policy assertion.",
++      "items": {
++        "type": "object",
++        "additionalProperties": false,
++        "required": [
++          "claim_ref",
++          "source_ref",
++          "relation",
++          "assessment",
++          "assessor",
++          "method",
++          "locator"
++        ],
++        "properties": {
++          "claim_ref": { "type": "string", "pattern": "^C-[0-9]{3,}$" },
++          "source_ref": { "type": "string", "pattern": "^S-[0-9]{3,}$" },
++          "relation": { "type": "string", "enum": ["SUPPORTS", "PARTIALLY_SUPPORTS", "DOES_NOT_SUPPORT", "CONTRADICTS"] },
++          "assessment": { "type": "string", "enum": ["SUBSTANTIATED", "PARTIALLY_SUBSTANTIATED", "NOT_SUBSTANTIATED"] },
++          "assessor": { "type": "string", "minLength": 1 },
++          "method": { "type": "string", "enum": ["FACT_CHECKING"] },
++          "locator": {
++            "type": "object",
++            "additionalProperties": false,
++            "required": ["type", "value"],
++            "properties": {
++              "type": { "type": "string", "enum": ["LINE_RANGE", "BYTE_RANGE", "ANCHOR", "QUOTE"] },
++              "value": { "type": "string", "minLength": 1 }
++            }
+           }
+         }
+       }
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 86be633..1f2e024 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -2865,10 +2865,16 @@ def derive_confidence(basis: dict[str, Any]) -> str:
+ def compute_research_evidence_digest(rec: dict[str, Any]) -> str:
+     """The digest of a record's MATERIAL evidence -- its sources, claims,
+     contradictions and experiments. Interpretation (findings, recommendation,
+-    disposition) is deliberately excluded: the digest changes when the
+-    evidence changes, not when its reading does (RSR-002 control 17). Canonical
+-    JSON so the same evidence always yields the same digest."""
+-    material = {k: rec[k] for k in ("sources", "claims", "contradictions", "experiments")}
++    disposition, and a claim's semantic_support -- fact-checking's reading of
++    the evidence under RSR-I06) is deliberately excluded: the digest changes
++    when the evidence changes, not when its reading does (RSR-002 control 17).
++    Canonical JSON so the same evidence always yields the same digest."""
++    material = {k: rec[k] for k in ("sources", "contradictions", "experiments")}
++    # semantic_support is fact-checking's reading of a claim (RSR-I06), not the
++    # evidence itself; support_assessments (a top-level key) is likewise a reading
++    # and is already outside the material set. Excluding both keeps recording an
++    # assessment from invalidating the evidence digest, like findings/disposition.
++    material["claims"] = [{k: v for k, v in c.items() if k != "semantic_support"} for c in rec["claims"]]
+     blob = json.dumps(material, sort_keys=True, separators=(",", ":")).encode("utf-8")
+     return "sha256:" + hashlib.sha256(blob).hexdigest()
+ 
+@@ -2961,6 +2967,42 @@ def validate_research_record(path: Path) -> str:
+         for ref in c["supporting_sources"] + c["contradicting_sources"]:
+             if sources[ref]["freshness"] != "CURRENT":
+                 raise ValidationError(f"claim {cid} rests on source {ref} whose freshness is {sources[ref]['freshness']}; a stale or unresolvable source cannot support a claim (control 6)")
++        # 27: a VERIFIED claim must not silently represent a source as supporting
++        # it (RSR-I06; SOURCE_EXISTS != SOURCE_SUPPORTS_CLAIM). The gate never
++        # proves entailment -- it requires the record to be honest about whether
++        # semantic support was assessed. A VERIFIED claim on cited support either
++        # carries a fact-checking receipt (with a locator) for each supporting
++        # source, or explicitly declares semantic-support NON_COVERAGE. Silence is
++        # refused. (The receipts themselves are checked for well-formedness and
++        # substantiation below, once every claim and source is known.)
++        if c["status"] == "VERIFIED" and c["supporting_sources"]:
++            mode = c.get("semantic_support")
++            if mode is None:
++                raise ValidationError(f"claim {cid} is VERIFIED on cited support but declares no semantic_support; a VERIFIED binding carries a fact-checking receipt or declares NON_COVERAGE -- semantic support is never represented in silence (RSR-I06, control 27)")
++            if mode == "ASSESSED":
++                receipted = {a["source_ref"] for a in rec.get("support_assessments", []) if a["claim_ref"] == cid}
++                for ref in c["supporting_sources"]:
++                    if ref not in receipted:
++                        raise ValidationError(f"claim {cid} declares semantic_support ASSESSED but carries no support-assessment receipt for supporting source {ref}; an assessed binding is receipted per source (RSR-I06, control 27)")
++    # 27 (receipts): every support-assessment resolves to a carried claim and
++    # source, carries a non-empty locator, and -- where it names a source cited as
++    # support for a VERIFIED claim -- its own assessment substantiates that support.
++    # A receipt the record's own reading does not substantiate cannot back a
++    # VERIFIED binding (RSR-I06). The gate checks the assessment happened under
++    # contract; it never asserts the source entails the claim.
++    claims_by_id = {c["id"]: c for c in rec["claims"]}
++    substantiating = {"SUPPORTS", "PARTIALLY_SUPPORTS"}
++    for i, a in enumerate(rec.get("support_assessments", [])):
++        if a["claim_ref"] not in claims_by_id:
++            raise ValidationError(f"support_assessments[{i}] names claim {a['claim_ref']} the record does not carry (RSR-I06, control 27)")
++        if a["source_ref"] not in sources:
++            raise ValidationError(f"support_assessments[{i}] names source {a['source_ref']} the record does not carry (RSR-I06, control 27)")
++        if not a["locator"]["value"].strip():
++            raise ValidationError(f"support_assessments[{i}] carries an empty locator; a receipt names where in the source it looked (RSR-I06, control 27)")
++        claim = claims_by_id[a["claim_ref"]]
++        substantiates = a["relation"] in substantiating and a["assessment"] in ("SUBSTANTIATED", "PARTIALLY_SUBSTANTIATED")
++        if claim["status"] == "VERIFIED" and a["source_ref"] in claim["supporting_sources"] and not substantiates:
++            raise ValidationError(f"support_assessments[{i}]: source {a['source_ref']} is cited as support for VERIFIED claim {a['claim_ref']}, but its receipt records {a['relation']}/{a['assessment']}; a source the record's own assessment does not substantiate cannot back a VERIFIED binding (RSR-I06, control 27)")
+     for f in rec["findings"]:
+         # 22: a finding is grounded in the claims it synthesises (evidence-synthesis).
+         # A synthesis conclusion rests on adjudicated claims, not free assertion.
+diff --git a/skills/badf-research/references/acceptance.md b/skills/badf-research/references/acceptance.md
+index ae53a2b..4c233da 100644
+--- a/skills/badf-research/references/acceptance.md
++++ b/skills/badf-research/references/acceptance.md
+@@ -1,8 +1,10 @@
+ # Acceptance and admission
+ 
+-Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows `docs/07-skills-governance.md`: `DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED → APPROVED → ACTIVE`.
++Status: frozen contract v0.1. The capability's **live status is `badf/skill-registry.json`** (currently `ACTIVE`, reached at `BADF-WP-0058`) — this document defines the contract, not the status, so it never re-asserts a status line that can drift from the registry. Progression follows `docs/07-skills-governance.md`: `DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED → APPROVED → ACTIVE`.
+ 
+-## Controls required before `VALIDATED` (deterministic, in the gate and its tests)
++## Controls (deterministic, in the gate and its tests)
++
++Controls 1–26 were the bar for `VALIDATED`. Control 27 extends the frozen contract after activation (RSR-I06, `BADF-WP-0061`): it only ever refuses more, never approves more, so it hardens an `ACTIVE` capability without re-opening its admission.
+ 
+ | # | Control |
+ | :--- | :--- |
+@@ -26,16 +28,21 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows
+ | 18 | Research → Decision → Work Package traceability can be reconstructed |
+ | 19 | the research scope is bounded and machine-readable: a material run declares non-empty `stop_conditions`, `assumptions` distinct from evidence, and a `decision_context` naming the decision it serves (framing, excluded from the `evidence_digest`) |
+ | 20 | framing precedes evidence: a record in a pre-evidence state (`PROPOSED`/`FRAMED`/`BASELINED`) carries no `claims`, `sources`, or `findings` (the `problem-framing` invariant — sharpen the question, do not answer it) |
+-| 21 | a claim's status is consistent with its evidence (the `fact-checking` invariant): a `FALSIFIED` claim carries a contradicting source (no evidence ≠ false), and a `DISPUTED` claim carries both supporting and contradicting sources (support and contradiction coexist). Whether a source's *content* entails the claim is not machine-checkable here — the source carries no content locator — and is tracked separately |
++| 21 | a claim's status is consistent with its evidence (the `fact-checking` invariant): a `FALSIFIED` claim carries a contradicting source (no evidence ≠ false), and a `DISPUTED` claim carries both supporting and contradicting sources (support and contradiction coexist). Whether a source's *content* entails the claim is not machine-checkable here — that boundary is now frozen as RSR-I06 and given teeth by control 27 |
+ | 22 | a finding is grounded (the `evidence-synthesis` invariant): every finding references at least one claim — a synthesis conclusion rests on adjudicated evidence, not free assertion |
+ | 23 | a technical-solution run yields grounded options (the `technical-research` invariant): an `R04` record carries at least one `alternative`, and every id-shaped `evidence_ref` resolves to a claim, finding or source the record holds |
+ | 24 | a comparison weighs at least two options (the `comparative-evaluation` invariant): a `COMPARATIVE` (R07) record carries two or more `alternatives` |
+ | 25 | an independent refutation is not erased by declaring sufficiency (the `adversarial-research` invariant): a challenge council carrying a `REFUTED` ballot cannot reconcile to `RESEARCH_SUFFICIENT` |
+ | 26 | sufficiency means synthesis (the `research-reconciliation` invariant): a `RESEARCH_SUFFICIENT` record carries at least one finding -- research declared sufficient on nothing synthesised is incoherent |
++| 27 | semantic support is never represented in silence (RSR-I06, `SOURCE_EXISTS != SOURCE_SUPPORTS_CLAIM`): a `VERIFIED` claim on cited support declares `semantic_support` — either `ASSESSED` (a `support_assessments` receipt with a non-empty locator, produced by `fact-checking`, for each supporting source) or `NON_COVERAGE` (the honest fallback: entailment was not machine-verified). A receipt the record's own assessment does **not** substantiate (`NOT_SUBSTANTIATED`, or a non-supporting relation) cannot back a `VERIFIED` binding. The gate verifies the assessment happened under contract; it never asserts the source entails the claim — `semantic_support` and `support_assessments` are a *reading*, excluded from the `evidence_digest` like findings/disposition |
++
++### RSR-I06 — citation ≠ support
++
++The deterministic gate verifies four evidence states — a source **exists** (schema + id), is **bound** to a claim (referential integrity), is **current** (`freshness`, control 6), and has been **adjudicated** (status consistency, control 21). It does **not** prove `SOURCE_SUPPORTS_CLAIM`: whether natural-language content semantically entails a claim is an evidence-assessment judgment made by `fact-checking`, recorded as a `support_assessments` receipt or declared non-coverage — never a policy-engine assertion. RSR-I06 grants no implementation authority (RSR-I01 unchanged). The four states are set out in `references/evidence-contract.md`.
+ 
+ ## Admission
+ 
+ - `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family. **Now met (9 of 9):** `repository-research`, `problem-framing`, `fact-checking`, `evidence-synthesis`, `deep-research`, `technical-research`, `comparative-evaluation`, `adversarial-research`, `research-reconciliation`.
+ - `VALIDATED`: the 26 controls above pass as gate tests with mutation. **Now met: all 26 enforced (1–26).** (Control 15 landed with RSR-004/`BADF-WP-0038`; the earlier admission note that mistracked it as pending is corrected here.) IMPLEMENTED (9/9 subskills), VALIDATED (all 26 controls with mutation) and SHADOWED (`BADF-WP-0055`) are met.
+ - `SHADOWED`: the family is run retrospectively on real historical BADF cases without knowing the answer. **Shadow evidence produced (`BADF-WP-0055`):** three gate-valid records over distinct cases and controls -- `research-record-shadow-control15.json` (R02: the control-15 mistracking, baseline `e7ea929`), `research-record-shadow-composed-red.json` (R03 root-cause: the composed-tree red at `30186c5`), `research-record-shadow-ci-parity.json` (R10: `local-green != CI-green`, FALSIFIED with the contradiction preserved). See `references/shadow-evidence.md`. Advancing the family to `SHADOWED` is the operator's admission decision.
+-- `APPROVED` / `ACTIVE`: **reached (`BADF-WP-0058`).** Owner + security approval given (single-collaborator repo; the owner is also the security reviewer) and the registry digest is pinned. The family root `badf-research` is `ACTIVE` (its nine subskills remain `IMPLEMENTED` -- a two-tier model: family = capability admission, subskill = implementation status). It grants no implementation authority even when ACTIVE (RSR-I01).
++- `APPROVED` / `ACTIVE`: **reached (`BADF-WP-0058`).** Owner + security approval given (single-collaborator repo; the owner is also the security reviewer) and the registry digest is pinned. The family root `badf-research` is `ACTIVE` (its nine subskills remain `IMPLEMENTED` -- a two-tier model: family = capability admission, subskill = implementation status). It grants no implementation authority even when ACTIVE (RSR-I01). Control 27 (RSR-I06, `BADF-WP-0061`) hardened the contract after activation — it closes the `SOURCE_EXISTS != SOURCE_SUPPORTS_CLAIM` boundary that #84 (GOV-0031) recorded as an open design decision. Activation is retained: control 21 had already declared that boundary outside its coverage, so no hidden control was ever claimed; #84 was a governance-closure defect (the discovery was not formally dispositioned before activation), now resolved.
+diff --git a/skills/badf-research/references/evidence-contract.md b/skills/badf-research/references/evidence-contract.md
+index fc5cfed..174f8b7 100644
+--- a/skills/badf-research/references/evidence-contract.md
++++ b/skills/badf-research/references/evidence-contract.md
+@@ -28,7 +28,7 @@ Every material statement is a claim with a classification, supporting and contra
+ 
+ | Status | Meaning |
+ | :--- | :--- |
+-| `VERIFIED` | ≥1 independent primary source and no open contradiction |
++| `VERIFIED` | ≥1 independent primary source, no open contradiction, and a declared `semantic_support` (RSR-I06, control 27) |
+ | `PARTIALLY_VERIFIED` | supported, but not independently |
+ | `DISPUTED` | supporting and contradicting sources both present |
+ | `UNVERIFIED` | no source reached |
+@@ -46,6 +46,24 @@ Confidence is **derived** from `basis` — `independent_primary_sources` (`ips`)
+ | `HIGH` | ≥2 independent primary sources, reproducible, with an unresolved contradiction |
+ | `VERY_HIGH` | ≥2 independent primary sources, reproducible, no contradiction |
+ 
++## Semantic support (RSR-I06)
++
++`SOURCE_EXISTS != SOURCE_SUPPORTS_CLAIM`. The gate verifies four evidence states deterministically, and stops there:
++
++| State | Verified by |
++| :--- | :--- |
++| `SOURCE_EXISTS` | schema + a unique `S-` id |
++| `SOURCE_BOUND` | the source id resolves in `supporting_sources`/`contradicting_sources` (referential integrity) |
++| `SOURCE_CURRENT` | `freshness == CURRENT` — a STALE/UNKNOWN source cannot support a claim (control 6) |
++| `SOURCE_SUPPORTS_CLAIM` | **not machine-checkable** — an evidence-assessment judgment, never a policy assertion |
++
++Whether a source's natural-language content entails a claim is `fact-checking`'s judgment, not the policy engine's. A `VERIFIED` claim on cited support declares `semantic_support`:
++
++- `ASSESSED` — the record carries a `support_assessments` receipt for **each** supporting source: `{claim_ref, source_ref, relation, assessment, assessor, method, locator}`. The `locator` (a `LINE_RANGE`/`BYTE_RANGE`/`ANCHOR`/`QUOTE` into the digest-bound source) is where fact-checking looked; it must be non-empty. A receipt whose own `assessment` is `NOT_SUBSTANTIATED` (or whose `relation` does not support) cannot back a `VERIFIED` binding — the record may not represent a source as supporting a claim its own reading refutes.
++- `NON_COVERAGE` — the honest fallback: entailment was **not** machine-verified. Silence (neither) is refused (control 27).
++
++`semantic_support` and `support_assessments` are a *reading* of the evidence, not the evidence itself, so they are excluded from `evidence_digest` — recording an assessment does not invalidate the digest, exactly like findings and disposition. RSR-I06 grants no implementation authority (RSR-I01 unchanged).
++
+ ## Contradictions and non-coverage
+ 
+ `contradictions[]` are preserved with the claims they oppose; a majority does not erase one (RSR-I04). `non_coverage[]` names every surface not inspected, with a reason: silence is not coverage.
+diff --git a/skills/badf-research/subskills/fact-checking/SKILL.md b/skills/badf-research/subskills/fact-checking/SKILL.md
+index 0bcd335..60937f8 100644
+--- a/skills/badf-research/subskills/fact-checking/SKILL.md
++++ b/skills/badf-research/subskills/fact-checking/SKILL.md
+@@ -17,11 +17,17 @@ derived confidence. It has no authority; a verdict is evidence for a decision, n
+ NO EVIDENCE   ≠ FALSE      (absence of support does not falsify)
+ NO CONTRADICTION ≠ VERIFIED (absence of dispute does not confirm)
+ CITATION      ≠ SUPPORT    (a resolving reference is not adjudication)
++SOURCE_EXISTS ≠ SOURCE_SUPPORTS_CLAIM  (a resolving source is not entailment — RSR-I06)
+ ```
+ 
+ `verification_status` is a function of evidence, not of researcher judgment. Status↔evidence
+ consistency is enforced by the gate: a `FALSIFIED` claim carries a contradicting source, and a
+-`DISPUTED` claim carries both supporting and contradicting sources (control 21).
++`DISPUTED` claim carries both supporting and contradicting sources (control 21). Whether a source's
++content **substantiates** a claim is this skill's judgment, not the gate's: a `VERIFIED` claim on cited
++support either carries a `support_assessments` receipt (`{relation, assessment, locator, …}`, one per
++supporting source — the locator is where you looked) or declares `semantic_support: NON_COVERAGE`.
++The gate refuses silence and refuses a receipt that does not substantiate the binding (control 27,
++RSR-I06); it never asserts the entailment itself.
+ 
+ **Scope boundary — this is not the acquisition skill.** It operates only over evidence already in the
+ record: `repository-research` findings, operator-provided artifacts, and sources bound by an earlier
+@@ -34,7 +40,7 @@ something agrees".
+ 1. **Target** — identify the exact claim to verify.
+ 2. **Atomize** — split a compound assertion into independently verifiable atomic claims without changing meaning.
+ 3. **Bind** — map each atomic claim to `supporting_sources` and `contradicting_sources` already in the record.
+-4. **Check support** — ask whether the cited evidence actually substantiates the claim; a reference existing is not support.
++4. **Check support** — ask whether the cited evidence actually substantiates the claim; a reference existing is not support. For a `VERIFIED` binding, record the judgment as a `support_assessments` receipt (`relation`, `assessment`, and a `locator` into the digest-bound source) or, honestly, declare `semantic_support: NON_COVERAGE` — never leave it silent (control 27, RSR-I06).
+ 5. **Check contradiction** — inspect the contradictory evidence already available; do not discard it.
+ 6. **Classify** — keep `OBSERVED` / `REPORTED` / `INFERRED` / `HYPOTHESIS` / `DECIDED` distinct.
+ 7. **Adjudicate** — `VERIFIED` / `PARTIALLY_VERIFIED` / `DISPUTED` / `UNVERIFIED` / `FALSIFIED`, consistent with the bound evidence.
+diff --git a/tests/test_badf_research_contract.py b/tests/test_badf_research_contract.py
+index ab7983c..5042f47 100644
+--- a/tests/test_badf_research_contract.py
++++ b/tests/test_badf_research_contract.py
+@@ -112,6 +112,24 @@ class ContractInvariantTests(unittest.TestCase):
+         for ref in ("research-types.md", "lifecycle.md", "evidence-contract.md", "routing-and-authority.md", "acceptance.md"):
+             self.assertIn(ref, text)
+ 
++    def test_acceptance_doc_does_not_assert_a_stale_status(self):
++        # #84 / WP-0061: acceptance.md must not hard-code a live status line that
++        # can drift from the registry (badf-research is ACTIVE, not DESIGNED, since
++        # WP-0058). It points to the registry as the source of truth instead --
++        # the same doc-drift defect class fixed for badf-architecture in WP-0059.
++        text = (REF / "acceptance.md").read_text(encoding="utf-8")
++        self.assertNotIn("The capability is `DESIGNED`", text)
++        self.assertIn("skill-registry.json", text)
++
++    def test_rsr_i06_boundary_is_stated_in_the_contract(self):
++        # control 27 and the citation != support boundary are frozen in the docs.
++        acc = (REF / "acceptance.md").read_text(encoding="utf-8")
++        self.assertIn("RSR-I06", acc)
++        self.assertIn("| 27 |", acc)
++        ev = (REF / "evidence-contract.md").read_text(encoding="utf-8")
++        for state in ("SOURCE_EXISTS", "SOURCE_BOUND", "SOURCE_CURRENT", "SOURCE_SUPPORTS_CLAIM"):
++            self.assertIn(state, ev)
++
+ 
+ class RouterDeterminismTests(unittest.TestCase):
+     """BADF-WP-0056 (#83): the research router names every route to a real subskill or
+diff --git a/tests/test_badf_rsr_i06.py b/tests/test_badf_rsr_i06.py
+new file mode 100644
+index 0000000..54f929d
+--- /dev/null
++++ b/tests/test_badf_rsr_i06.py
+@@ -0,0 +1,200 @@
++"""RSR-I06 — citation != support, and control 27 (semantic-support coverage honesty).
++
++GOV-0031 (#84): a claim could be VERIFIED citing a resolving, PRIMARY, digest-bound
++source whose content does not entail it, because the record had no way to say whether
++semantic support was ever assessed. RSR-I06 freezes the boundary: the gate verifies
++source identity, provenance, freshness, binding and adjudication -- it does NOT prove
++natural-language entailment. Control 27 gives the boundary teeth without crossing it:
++a VERIFIED claim on cited support must EITHER carry a fact-checking support-assessment
++receipt (with a locator) for each supporting source, OR explicitly declare
++semantic-support NON_COVERAGE. Silence is refused, and a receipt whose own assessment
++does not substantiate the claim cannot back a VERIFIED binding. The gate checks that the
++assessment happened under contract; it never asserts the sentence is true.
++
++Every test mutates a copy of the shipped example and runs `badf_gate.py research`.
++"""
++import copy
++import json
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++EXAMPLE = json.loads((gate.ROOT / "examples/research-record.json").read_text())
++
++
++class RSRI06Base(unittest.TestCase):
++    def run_cli(self, rec):
++        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
++            json.dump(rec, f)
++            path = Path(f.name)
++        try:
++            return subprocess.run(
++                [sys.executable, "scripts/badf_gate.py", "research", str(path)],
++                cwd=str(gate.ROOT), capture_output=True, text=True)
++        finally:
++            path.unlink()
++
++    def base(self):
++        return copy.deepcopy(EXAMPLE)
++
++    def verified_claim(self, rec):
++        for c in rec["claims"]:
++            if c["status"] == "VERIFIED" and c["supporting_sources"]:
++                return c
++        raise AssertionError("fixture has no VERIFIED claim on cited support")
++
++    def receipt(self, claim_ref, source_ref, relation="SUPPORTS",
++                assessment="SUBSTANTIATED", value="120-138"):
++        return {
++            "claim_ref": claim_ref, "source_ref": source_ref,
++            "relation": relation, "assessment": assessment,
++            "assessor": "agent://badf/research/fact-checking",
++            "method": "FACT_CHECKING",
++            "locator": {"type": "LINE_RANGE", "value": value},
++        }
++
++    def refused(self, rec, needle):
++        r = self.run_cli(rec)
++        self.assertNotEqual(r.returncode, 0, "a defective record was admitted: " + r.stdout)
++        self.assertIn(needle, r.stderr, r.stderr)
++
++    def admitted(self, rec):
++        r = self.run_cli(rec)
++        self.assertEqual(r.returncode, 0, r.stderr)
++
++
++class HonestyGapTests(RSRI06Base):
++    """The #84 defect: a VERIFIED claim silently represents cited support."""
++
++    def test_verified_without_semantic_support_is_refused(self):
++        # The failing-first probe: strip any declaration -> the gate must refuse.
++        rec = self.base()
++        for c in rec["claims"]:
++            c.pop("semantic_support", None)
++        self.refused(rec, "control 27")
++
++    def test_non_coverage_is_the_honest_fallback(self):
++        rec = self.base()
++        for c in rec["claims"]:
++            if c["status"] == "VERIFIED" and c["supporting_sources"]:
++                c["semantic_support"] = "NON_COVERAGE"
++        self.admitted(rec)
++
++
++class AssessedReceiptTests(RSRI06Base):
++    def test_assessed_without_a_receipt_is_refused(self):
++        rec = self.base()
++        c = self.verified_claim(rec)
++        c["semantic_support"] = "ASSESSED"
++        rec.pop("support_assessments", None)
++        self.refused(rec, "control 27")
++
++    def test_assessed_with_a_receipt_per_source_is_admitted(self):
++        rec = self.base()
++        for c in rec["claims"]:
++            if c["status"] == "VERIFIED" and c["supporting_sources"]:
++                c["semantic_support"] = "NON_COVERAGE"
++        c = self.verified_claim(rec)
++        c["semantic_support"] = "ASSESSED"
++        rec["support_assessments"] = [self.receipt(c["id"], s) for s in c["supporting_sources"]]
++        self.admitted(rec)
++
++    def test_a_receipt_with_an_empty_locator_is_refused(self):
++        # the gate's schema walker ignores minLength, so non-empty locator is control-27 code.
++        rec = self.base()
++        for c in rec["claims"]:
++            if c["status"] == "VERIFIED" and c["supporting_sources"]:
++                c["semantic_support"] = "NON_COVERAGE"
++        c = self.verified_claim(rec)
++        c["semantic_support"] = "ASSESSED"
++        rec["support_assessments"] = [self.receipt(c["id"], s, value="   ") for s in c["supporting_sources"]]
++        self.refused(rec, "control 27")
++
++
++class NotSubstantiatedTeethTests(RSRI06Base):
++    """A receipt the record's own assessment does not substantiate cannot back VERIFIED."""
++
++    def test_a_not_substantiated_receipt_cannot_back_a_verified_binding(self):
++        rec = self.base()
++        for c in rec["claims"]:
++            if c["status"] == "VERIFIED" and c["supporting_sources"]:
++                c["semantic_support"] = "NON_COVERAGE"
++        c = self.verified_claim(rec)
++        c["semantic_support"] = "ASSESSED"
++        s = c["supporting_sources"][0]
++        rec["support_assessments"] = [self.receipt(c["id"], s, assessment="NOT_SUBSTANTIATED")]
++        for extra in c["supporting_sources"][1:]:
++            rec["support_assessments"].append(self.receipt(c["id"], extra))
++        self.refused(rec, "control 27")
++
++    def test_a_non_supporting_relation_cannot_back_a_verified_binding(self):
++        rec = self.base()
++        for c in rec["claims"]:
++            if c["status"] == "VERIFIED" and c["supporting_sources"]:
++                c["semantic_support"] = "NON_COVERAGE"
++        c = self.verified_claim(rec)
++        c["semantic_support"] = "ASSESSED"
++        s = c["supporting_sources"][0]
++        rec["support_assessments"] = [self.receipt(c["id"], s, relation="DOES_NOT_SUPPORT")]
++        for extra in c["supporting_sources"][1:]:
++            rec["support_assessments"].append(self.receipt(c["id"], extra))
++        self.refused(rec, "control 27")
++
++
++class ReceiptWellFormednessTests(RSRI06Base):
++    def test_a_receipt_naming_an_absent_claim_is_refused(self):
++        rec = self.base()
++        for c in rec["claims"]:
++            if c["status"] == "VERIFIED" and c["supporting_sources"]:
++                c["semantic_support"] = "NON_COVERAGE"
++        s = self.verified_claim(rec)["supporting_sources"][0]
++        rec["support_assessments"] = [self.receipt("C-999", s)]
++        self.refused(rec, "control 27")
++
++    def test_a_receipt_naming_an_absent_source_is_refused(self):
++        rec = self.base()
++        for c in rec["claims"]:
++            if c["status"] == "VERIFIED" and c["supporting_sources"]:
++                c["semantic_support"] = "NON_COVERAGE"
++        cid = self.verified_claim(rec)["id"]
++        rec["support_assessments"] = [self.receipt(cid, "S-999")]
++        self.refused(rec, "control 27")
++
++
++class ShippedShadowRecordTests(RSRI06Base):
++    """The committed positive shadow record exercises the ASSESSED receipt path."""
++
++    def test_the_support_assessment_shadow_record_is_admitted(self):
++        rec = json.loads((gate.ROOT / "examples/research-record-shadow-support-assessment.json").read_text())
++        self.admitted(rec)
++
++    def test_the_shadow_record_carries_a_located_receipt_for_each_assessed_binding(self):
++        rec = json.loads((gate.ROOT / "examples/research-record-shadow-support-assessment.json").read_text())
++        assessed = [c for c in rec["claims"] if c.get("semantic_support") == "ASSESSED"]
++        self.assertTrue(assessed, "the shadow record demonstrates no ASSESSED binding")
++        receipts = rec["support_assessments"]
++        for c in assessed:
++            for s in c["supporting_sources"]:
++                hit = [a for a in receipts if a["claim_ref"] == c["id"] and a["source_ref"] == s]
++                self.assertTrue(hit, f"no receipt for {c['id']}<-{s}")
++                self.assertTrue(hit[0]["locator"]["value"].strip(), "receipt carries an empty locator")
++
++
++class NoAuthorityDriftTests(RSRI06Base):
++    """RSR-I06 grants no implementation authority -- RSR-I01 is unchanged."""
++
++    def test_research_record_schema_still_fixes_implementation_authority_false(self):
++        schema = json.loads((gate.ROOT / "schemas/research-record.schema.json").read_text())
++        self.assertEqual(schema["properties"]["authority"]["properties"]["implementation_authority"]["enum"], [False])
++
++    def test_the_shipped_example_still_declares_no_implementation_authority(self):
++        self.assertEqual(EXAMPLE["authority"]["implementation_authority"], False)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0060/work-package.json b/work/WP-2026-0060/work-package.json
+index d0550f2..018df30 100644
+--- a/work/WP-2026-0060/work-package.json
++++ b/work/WP-2026-0060/work-package.json
+@@ -45,11 +45,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "27c9f1c"
++    "base_revision": "27c9f1c",
++    "landed_as": "f9a345f35c8b9cb95f60ce39c0998e53460c3a6e"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Reuses the G01-G04 substrate -- no new validator module. G05 min change class is C2, so the example dossier carries the four C2 authority roles (product_owner/engineering_owner/quality_authority/service_owner); security-approval mirrors product-approval (human, digest-bound). Reconciles WP-2026-0059."
+ }

@@ -1,0 +1,39 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index bb423b9..fdef88b 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -540,6 +540,34 @@ the binding) and names a **residual-risk owner** (*residual risk owned*). G05's
+ dossier above the C1 floor. Ships a **G04→G05** pair-acceptance (the full G00→G05 advance chain). Same
+ lean substrate as G01–G04.
+ 
++## RSR-I06 — citation ≠ support (`BADF-WP-0061`, Issue #84 / GOV-0031)
++
++`#84` recorded the last open research-contract design decision: a claim could be `VERIFIED` citing a
++resolving, `PRIMARY`, digest-bound source whose content does not entail it, because the record had no
++way to say whether semantic support was ever assessed. The resolution **freezes the boundary rather
++than pretending entailment is deterministic**: RSR-I06 — `SOURCE_EXISTS != SOURCE_SUPPORTS_CLAIM`. The
++gate verifies four states — a source **exists**, is **bound**, is **current** (control 6), and has been
++**adjudicated** (control 21) — and stops there. Whether natural language entails a claim is
++`fact-checking`'s judgment, recorded as evidence, never a policy-engine assertion.
++
++Control 27 gives the boundary teeth without crossing it: a `VERIFIED` claim on cited support declares
++`semantic_support` — `ASSESSED` (a `support_assessments` receipt with a non-empty `locator`, one per
++supporting source) or `NON_COVERAGE` (the honest fallback). **Silence is refused**, and a receipt whose
++own assessment does not substantiate the binding cannot back a `VERIFIED` claim. The receipt proves the
++assessment *happened under contract*; it never asserts the sentence is true. `semantic_support` and
++`support_assessments` are a *reading*, excluded from `evidence_digest` like findings/disposition — so
++recording an assessment never invalidates the evidence digest. RSR-I06 grants no implementation
++authority (RSR-I01 unchanged).
++
++**Governance-closure defect (recorded, not hidden).** `#84` said the decision should be made *before*
++`badf-research` reached `ACTIVE`; it was still open when `BADF-WP-0058` activated the family. This was
++**not** a safety defect — control 21 had explicitly declared semantic entailment outside its coverage,
++so no hidden control was ever claimed — but it was a governance-closure defect: the discovery was not
++formally dispositioned before activation. Activation is **retained**; this WP formalizes the boundary
++and closes GOV-0031. (Same doc-drift family as `#407` and the G-67 test-that-did-not-exist: the fix is
++to make the document match the enforced reality. Here `acceptance.md` also stopped hard-coding a
++`DESIGNED` status line that had drifted from the registry's `ACTIVE`.)
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

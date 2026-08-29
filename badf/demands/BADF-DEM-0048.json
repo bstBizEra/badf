@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0048",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 84,
+    "url": "https://github.com/bstBizEra/badf/issues/84",
+    "exported_at": "2026-08-29T12:20:56Z",
+    "body_digest": "sha256:83bfd878dc1db9b9a62fba53c057a6ceeb59b90132a89d0e6a1b364c50153681"
+  },
+  "title": "GOV-0031: source-supports-claim is not machine-checkable \u2014 a VERIFIED claim can cite a resolving source whose content does not entail it (RSR-I06 candidate)",
+  "problem": "## Observed\n`fact-checking` (WP-0047) makes claim status\u2194evidence consistency deterministic (control 21), but one part of its `CITATION \u2260 SUPPORT` invariant is **not machine-checkable with the current contract**. A claim can be `VERIFIED` citing a resolving, `PRIMARY`, digest-bound source whose **content does not actually entail the claim** \u2014 and the gate accepts it, because a source record carries only `id`, `uri`, `source_type`, `retrieved_at`, `digest`, `note`. There is no content excerpt, locator, or entailment field for the gate to compare the claim against.\n\nMeasured: source item properties = `['digest','id','note','retrieved_at','source_type','uri']` \u2014 no content/entailment locator. So `SOURCE_EXISTS \u2260 SOURCE_SUPPORTS_CLAIM` cannot be enforced deterministically today.\n\n## Expected\nDecide, before `badf-research` reaches `ACTIVE`, whether to make semantic support machine-checkable \u2014 the candidate invariant:\n\n```\nRSR-I06 (candidate): a source may support a claim only if the cited evidence\nsemantically entails or directly substantiates it. SOURCE_EXISTS != SOURCE_SUPPORTS_CLAIM.\n```\n\nPossible directions (design decision, not yet chosen):\n- add an **evidence locator** to the claim\u2194source binding (a quoted excerpt + a byte/line/anchor range within the digest-bound source) that a human or a later `deep-research` receipt fills, so the gate can at least require a locator for a `VERIFIED`/`PRIMARY` binding (presence-of-locator is deterministic; semantic entailment is not);\n- or keep semantic support as a **declared non-coverage** the `fact-checking` skill must state (control 9/non-coverage), never asserted as machine-verified.\n\n## Unknowns\nWhether BADF wants a locator field at all (schema growth vs. leanness), and whether entailment stays a human/AI judgment recorded as non-coverage rather than a gate control. This issue records the gap; the resolution is a separate governed WP.\n\ndiscovered-by: BADF-WP-0047 (fact-checking, failing-first) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-29T12:20:56Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Resolves GOV-0031 by adopting RSR-I06 (SOURCE_EXISTS != SOURCE_SUPPORTS_CLAIM) as a separation-of-responsibility invariant, plus a machine-enforceable support-assessment receipt (locator) and control 27 (semantic-support coverage honesty). Semantic entailment stays evidence-assessment, never a deterministic policy assertion; authority impact NONE. Operator directive 2026-08-29. Worked as BADF-WP-0061."
+}

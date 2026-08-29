@@ -2865,10 +2865,16 @@ def derive_confidence(basis: dict[str, Any]) -> str:
 def compute_research_evidence_digest(rec: dict[str, Any]) -> str:
     """The digest of a record's MATERIAL evidence -- its sources, claims,
     contradictions and experiments. Interpretation (findings, recommendation,
-    disposition) is deliberately excluded: the digest changes when the
-    evidence changes, not when its reading does (RSR-002 control 17). Canonical
-    JSON so the same evidence always yields the same digest."""
-    material = {k: rec[k] for k in ("sources", "claims", "contradictions", "experiments")}
+    disposition, and a claim's semantic_support -- fact-checking's reading of
+    the evidence under RSR-I06) is deliberately excluded: the digest changes
+    when the evidence changes, not when its reading does (RSR-002 control 17).
+    Canonical JSON so the same evidence always yields the same digest."""
+    material = {k: rec[k] for k in ("sources", "contradictions", "experiments")}
+    # semantic_support is fact-checking's reading of a claim (RSR-I06), not the
+    # evidence itself; support_assessments (a top-level key) is likewise a reading
+    # and is already outside the material set. Excluding both keeps recording an
+    # assessment from invalidating the evidence digest, like findings/disposition.
+    material["claims"] = [{k: v for k, v in c.items() if k != "semantic_support"} for c in rec["claims"]]
     blob = json.dumps(material, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return "sha256:" + hashlib.sha256(blob).hexdigest()
 
@@ -2961,6 +2967,42 @@ def validate_research_record(path: Path) -> str:
         for ref in c["supporting_sources"] + c["contradicting_sources"]:
             if sources[ref]["freshness"] != "CURRENT":
                 raise ValidationError(f"claim {cid} rests on source {ref} whose freshness is {sources[ref]['freshness']}; a stale or unresolvable source cannot support a claim (control 6)")
+        # 27: a VERIFIED claim must not silently represent a source as supporting
+        # it (RSR-I06; SOURCE_EXISTS != SOURCE_SUPPORTS_CLAIM). The gate never
+        # proves entailment -- it requires the record to be honest about whether
+        # semantic support was assessed. A VERIFIED claim on cited support either
+        # carries a fact-checking receipt (with a locator) for each supporting
+        # source, or explicitly declares semantic-support NON_COVERAGE. Silence is
+        # refused. (The receipts themselves are checked for well-formedness and
+        # substantiation below, once every claim and source is known.)
+        if c["status"] == "VERIFIED" and c["supporting_sources"]:
+            mode = c.get("semantic_support")
+            if mode is None:
+                raise ValidationError(f"claim {cid} is VERIFIED on cited support but declares no semantic_support; a VERIFIED binding carries a fact-checking receipt or declares NON_COVERAGE -- semantic support is never represented in silence (RSR-I06, control 27)")
+            if mode == "ASSESSED":
+                receipted = {a["source_ref"] for a in rec.get("support_assessments", []) if a["claim_ref"] == cid}
+                for ref in c["supporting_sources"]:
+                    if ref not in receipted:
+                        raise ValidationError(f"claim {cid} declares semantic_support ASSESSED but carries no support-assessment receipt for supporting source {ref}; an assessed binding is receipted per source (RSR-I06, control 27)")
+    # 27 (receipts): every support-assessment resolves to a carried claim and
+    # source, carries a non-empty locator, and -- where it names a source cited as
+    # support for a VERIFIED claim -- its own assessment substantiates that support.
+    # A receipt the record's own reading does not substantiate cannot back a
+    # VERIFIED binding (RSR-I06). The gate checks the assessment happened under
+    # contract; it never asserts the source entails the claim.
+    claims_by_id = {c["id"]: c for c in rec["claims"]}
+    substantiating = {"SUPPORTS", "PARTIALLY_SUPPORTS"}
+    for i, a in enumerate(rec.get("support_assessments", [])):
+        if a["claim_ref"] not in claims_by_id:
+            raise ValidationError(f"support_assessments[{i}] names claim {a['claim_ref']} the record does not carry (RSR-I06, control 27)")
+        if a["source_ref"] not in sources:
+            raise ValidationError(f"support_assessments[{i}] names source {a['source_ref']} the record does not carry (RSR-I06, control 27)")
+        if not a["locator"]["value"].strip():
+            raise ValidationError(f"support_assessments[{i}] carries an empty locator; a receipt names where in the source it looked (RSR-I06, control 27)")
+        claim = claims_by_id[a["claim_ref"]]
+        substantiates = a["relation"] in substantiating and a["assessment"] in ("SUBSTANTIATED", "PARTIALLY_SUBSTANTIATED")
+        if claim["status"] == "VERIFIED" and a["source_ref"] in claim["supporting_sources"] and not substantiates:
+            raise ValidationError(f"support_assessments[{i}]: source {a['source_ref']} is cited as support for VERIFIED claim {a['claim_ref']}, but its receipt records {a['relation']}/{a['assessment']}; a source the record's own assessment does not substantiate cannot back a VERIFIED binding (RSR-I06, control 27)")
     for f in rec["findings"]:
         # 22: a finding is grounded in the claims it synthesises (evidence-synthesis).
         # A synthesis conclusion rests on adjudicated claims, not free assertion.

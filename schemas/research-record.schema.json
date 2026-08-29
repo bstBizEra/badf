@@ -387,6 +387,48 @@
                 }
               }
             }
+          },
+          "semantic_support": {
+            "type": "string",
+            "description": "RSR-I06: whether semantic support was assessed. ASSESSED requires a support_assessments receipt with a locator per supporting source; NON_COVERAGE honestly declares entailment was not machine-verified. A VERIFIED claim on cited support that declares neither is refused (control 27).",
+            "enum": [
+              "ASSESSED",
+              "NON_COVERAGE"
+            ]
+          }
+        }
+      }
+    },
+    "support_assessments": {
+      "type": "array",
+      "description": "RSR-I06 receipts: fact-checking's per-binding semantic assessment. The gate verifies each receipt exists, resolves to a carried claim and source, carries a non-empty locator, and is consistent with the binding it names (control 27). It never asserts the source entails the claim -- that judgment is evidence, not a policy assertion.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "claim_ref",
+          "source_ref",
+          "relation",
+          "assessment",
+          "assessor",
+          "method",
+          "locator"
+        ],
+        "properties": {
+          "claim_ref": { "type": "string", "pattern": "^C-[0-9]{3,}$" },
+          "source_ref": { "type": "string", "pattern": "^S-[0-9]{3,}$" },
+          "relation": { "type": "string", "enum": ["SUPPORTS", "PARTIALLY_SUPPORTS", "DOES_NOT_SUPPORT", "CONTRADICTS"] },
+          "assessment": { "type": "string", "enum": ["SUBSTANTIATED", "PARTIALLY_SUBSTANTIATED", "NOT_SUBSTANTIATED"] },
+          "assessor": { "type": "string", "minLength": 1 },
+          "method": { "type": "string", "enum": ["FACT_CHECKING"] },
+          "locator": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "value"],
+            "properties": {
+              "type": { "type": "string", "enum": ["LINE_RANGE", "BYTE_RANGE", "ANCHOR", "QUOTE"] },
+              "value": { "type": "string", "minLength": 1 }
+            }
           }
         }
       }
