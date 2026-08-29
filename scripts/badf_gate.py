@@ -3515,6 +3515,39 @@ def validate_solution_composition(path: Path) -> str:
     return f"BADF SOLUTION-COMPOSITION PASS: {len(solutions)} composition(s) over {len(reqs)} requirement(s); structural + matrix-internal seams (SOL-C04/05/06)"
 
 
+def validate_security_composition(path: Path) -> str:
+    """`badf_gate.py security <path>`: the STRUCTURAL controls of a badf-security-design
+    composition matrix (WP-SEC-B). One record in the canonical gate -- not a second
+    validator (SEC-I15), and not a lifecycle result. It checks the matrix is internally
+    coherent: unique threat ids (SEC-C01), every threat resolving to real provenance
+    (SEC-C02 / SEC-I02), and every *controlled* threat actually carrying a control
+    (SEC-C03 / SEC-I03). The residual_risk enum omits a bare `ACCEPTED` (schema), so the
+    skill structurally cannot self-accept residual risk (SEC-I12). The cross-artifact SEAM
+    checks -- bidirectional traceability (SEC-I04), exact-baseline binding (SEC-I01) and
+    the semantic resolution of every ref against the architecture/solution artifacts -- are
+    WP-SEC-C, not here."""
+    rec = load_json(path)
+    check_schema("security-composition", rec)
+    _no_placeholders(rec, "security-composition")
+    threats = rec["threats"]
+    if not threats:
+        raise ValidationError("security-composition: no threats; an empty matrix models nothing")
+    # SEC-C01: a matrix cannot carry two rows under one threat id.
+    _unique_ids(threats, "security_id", "security-composition")
+    provenance_kinds = ("architecture_refs", "solution_refs", "requirement_refs",
+                        "trust_boundary_refs", "data_flow_refs")
+    for t in threats:
+        src = t.get("source") or {}
+        # SEC-C02 (SEC-I02): a threat that resolves to nothing is not a threat.
+        if not any(src.get(k) or [] for k in provenance_kinds):
+            raise ValidationError(f"security-composition: {t['security_id']} binds no provenance source; a material threat resolves to real assets/interfaces/flows/boundaries/requirements (SEC-C02 / SEC-I02)")
+        # SEC-C03 (SEC-I03): a threat dispositioned `controlled` must name a control.
+        if t["disposition"] == "controlled" and not (t.get("control_refs") or []):
+            raise ValidationError(f"security-composition: {t['security_id']} is dispositioned 'controlled' but carries no control_refs; a threat controlled by nothing is not controlled (SEC-C03 / SEC-I03)")
+    controlled = sum(1 for t in threats if t["disposition"] == "controlled")
+    return f"BADF SECURITY-COMPOSITION PASS: {len(threats)} threat(s), {controlled} controlled; structural (SEC-C01/02/03), seams deferred to WP-SEC-C"
+
+
 # ---- badf-git GIT-C: the read-only baseline inspector (BADF-WP-0069) ----------------
 def _git_at(root: Path, *args: str) -> str | None:
     """Like _git, for an arbitrary working tree. Read-only by construction: every
@@ -4018,6 +4051,8 @@ def main() -> int:
     assure_parser.add_argument("path", type=Path)
     sol_parser = subparsers.add_parser("solution", help="validate a solution-composition matrix's structural controls (WP-SOL-B)")
     sol_parser.add_argument("path", type=Path)
+    sec_parser = subparsers.add_parser("security", help="validate a security-composition matrix's structural controls (WP-SEC-B)")
+    sec_parser.add_argument("path", type=Path)
     args = parser.parse_args()
     try:
         if args.command == "repo":
@@ -4099,6 +4134,9 @@ def main() -> int:
             return 0
         elif args.command == "solution":
             print(validate_solution_composition(args.path))
+            return 0
+        elif args.command == "security":
+            print(validate_security_composition(args.path))
             return 0
         else:
             args._rendered = validate_dossier(args.path)

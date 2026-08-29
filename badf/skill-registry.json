@@ -248,7 +248,7 @@
       "version": "0.1.0",
       "risk_class": "C1",
       "allowed_tools": [],
-      "status": "DESIGNED",
+      "status": "IMPLEMENTED",
       "digest": "sha256:60d0a80d0ec829627555698c353b962975e519a2a71b081109b5d75320cdef6e"
     },
     {
