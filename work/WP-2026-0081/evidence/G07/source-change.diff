@@ -1,0 +1,616 @@
+diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
+index b6b1282..317c11a 100644
+--- a/.github/workflows/badf-gates.yml
++++ b/.github/workflows/badf-gates.yml
+@@ -46,6 +46,11 @@ jobs:
+         # BADF-WP-0080 (badf-git GIT-G): the before-state record on real infrastructure -- a clean,
+         # detached checkout has nothing unique to preserve. Read-only; --preserve is never run here.
+         run: python3 scripts/badf_gate.py git-recovery
++      - name: Release ref check (read-only; the historical baseline is RELEASE_BOUND)
++        # BADF-WP-0081 (badf-git GIT-H): TAG_EXISTS != RELEASE_AUTHORIZED, on real infrastructure.
++        # fetch-depth 0 fetches tags; the baseline must be annotated, on main's first parent,
++        # record-bound and unmoved.
++        run: python3 scripts/badf_gate.py git-release-check BADF-BASELINE-1.0.0
+       # QA finding m1: fail-fast hid every violation after the first. Negative
+       # control 1 went red at step 4 and steps 5-6 were skipped, so the
+       # authority refusal was never exercised and the operator saw one problem
+diff --git a/badf/demands/BADF-DEM-0068.json b/badf/demands/BADF-DEM-0068.json
+new file mode 100644
+index 0000000..cfabad1
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0068.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0068",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 155,
++    "url": "https://github.com/bstBizEra/badf/issues/155",
++    "exported_at": "2026-08-29T22:19:05Z",
++    "body_digest": "sha256:ad747f1cc3f44d0f2194205050550261de2c22ccfde7a3f5c0a5433a280d67dd"
++  },
++  "title": "GOV-0061: BADF-WP-GIT-H — release: `git-release-check` verifies a release ref is annotated, on main, unmoved and record-bound (TAG_EXISTS != RELEASE_AUTHORIZED); `git-release-record` writes the binding, never a tag; the baseline pinned; release-versioning subskill",
++  "problem": "## Observed\n\n`badf-git`'s release contract (`references/release-versioning.md`) binds a release to an authorized, verified `main` revision, its result-tree identity, a version/tag identity and release evidence, and states three inequalities — `MERGED != RELEASED`, **`TAG_EXISTS != RELEASE_AUTHORIZED`**, `RELEASED != PRODUCTION_VERIFIED`. It requires the version to come from an explicit release record or approved version source (never a branch name, a PR title, a commit prefix, or \"a tag that an unauthorized actor can create\"), release refs to be created only from `main`, and published release/baseline refs to be **immutable** — never moved, deleted, recreated or reused. Measured on `main` after GIT-G: the repository has exactly one release-class ref, the annotated, **unsigned** `BADF-BASELINE-1.0.0` → `3f6119b` (the unmodified import), no `vX.Y.Z` tag, no GitHub release, no version source of truth anywhere (`badf/lifecycle.json` carries only `policy_epoch`), no tag ruleset (the one ruleset targets branches), and **nothing that checks a tag** — `badf_gate.py` contains no tag logic at all. The baseline tag is already load-bearing (the G00 example dossier's `source_revision` is that tag): if it were moved, the example would silently govern a different commit. GTGM v0.1 §14 (retain `BADF-BASELINE-X.Y.Z`, introduce `vX.Y.Z`; SemVer as a governance decision; protected immutable tags with release evidence), §15 (`release-versioning` subskill), §17 **GIT-H — Release**.\n\n## Expected\n\n**A release ref becomes a checked binding; creating one stays a human act.**\n\n1. **`badf_gate.py git-release-check <tag> [<path>]`** (read-only, `GIT-O0`) verifies a release-class ref against the contract: the tag exists and is **annotated** (a lightweight tag is refused — it carries no tagger identity); its commit is on **`main`'s first-parent history** (release-from-main; a topic commit is refused); a **release record** exists at `badf/releases/<tag>.json` and binds this exact `source_revision` **and** `source_result_tree` (a record for a different commit means the tag *moved* — refused as an immutability breach; no record means `TAG_EXISTS != RELEASE_AUTHORIZED` — `BLOCKED`); the version in the record equals the tag name; and the record's provenance statement matches the tag (`signed: false` recorded, not hidden). Renders one JSON verdict (`RELEASE_BOUND` / `BLOCKED`) with the contract's `release_binding` fields observed from the object store; deterministic, no network.\n2. **`badf_gate.py git-release-record <version> [<path>]`** (`GIT-O1`: writes one file, never a ref) writes `badf/releases/<version>.json` — `version`, `tag_ref`, `source_ref: refs/heads/<default>`, `source_revision`, `source_result_tree`, `content_tree` (the GIT-E construction, for continuity with composition records), `policy_epoch`, `provenance: {annotated, signed, tagger}` when the tag already exists, `release_authority: HUMAN_REQUIRED` and `disposition: HUMAN_REQUIRED` — a **request**, exactly like the self-dossier. It refuses when HEAD is not a first-parent commit of `origin/<default>` (release-from-main), when a record for that version already exists with a different revision (reuse), or when the version is not `vX.Y.Z` / `BADF-BASELINE-X.Y.Z`. **It never runs `git tag`**: the tag is created by the release authority with `git tag -a`/`gh release` after the record, and `git-release-check` then verifies the pair.\n3. **The historical baseline is recorded and pinned**: `badf/releases/BADF-BASELINE-1.0.0.json` binds `3f6119b` and its tree with `provenance: {annotated: true, signed: false}` and the contract's note (\"historical; provenance limitation recorded, not rewritten\"); `badf_gate.py repo` gains the **immutability guard** — every record under `badf/releases/` whose tag exists must still point at the recorded revision, else `repo` fails (`release ref moved`). A tag that is recorded but absent locally is reported, not refused (a shallow clone is not a breach).\n4. **`release-versioning` subskill** (GTGM §15): the SemVer decision contract as the release authority's checklist (MAJOR/MINOR/PATCH criteria from the frozen reference; a decision, never a commit-prefix inference), the record → tag → check sequence, the two tag families and what each means, and the rule that a bad release is superseded or revoked by a new record, never by moving a tag. Registered `IMPLEMENTED`, C1, `allowed_tools: []`; the `badf-git` root stays `DESIGNED`.\n5. **CI positive control:** the runner runs `git-release-check BADF-BASELINE-1.0.0` (tags are fetched with `fetch-depth: 0`) and must render `RELEASE_BOUND`.\n6. **Not decided here:** whether and when BADF cuts its first `vX.Y.Z` — a release-authority decision (`HUMAN_REQUIRED`), enabled by this WP, not taken by it.\n\n## Acceptance criteria\n\n1. `git-release-check BADF-BASELINE-1.0.0` → `RELEASE_BOUND`, `source_revision 3f6119b…`, `provenance.signed: false` recorded, exit 0 — locally and on the runner.\n2. A lightweight tag → refused (`annotated`); a tag on a topic commit not on `main`'s first-parent → refused (release-from-main); a tag with no record → `BLOCKED` naming `TAG_EXISTS != RELEASE_AUTHORIZED`; a record whose revision differs from the tag's → refused as a moved tag; a record whose version ≠ tag → refused.\n3. `git-release-record v0.1.0` on a first-parent `main` commit writes the binding with all fields and `disposition: HUMAN_REQUIRED`; on a topic commit → refused; for a version already recorded against a different revision → refused; an unsupported version form → refused; it never creates a tag (`git tag -l` unchanged).\n4. `repo` refuses when a recorded release tag points elsewhere (moved), and passes when the tag is absent locally (reported).\n5. Read-only proven for `git-release-check` (refs/index/status byte-identical); deterministic modulo `observed_at`; each refusal and guard branch **load-bearing** (mutation).\n6. `release-versioning` registered `IMPLEMENTED` C1 `allowed_tools: []` with a real digest; root stays `DESIGNED`; no new script, no schema (records are artifacts; `badf/releases/` is a new governed directory covered by the lockfile), no ruleset/authority change; `repo` clean; full suite + compose green in CI.\n\n## Tests (`tests/test_badf_git_release.py`, scratch clones via `tests/_scratch.seed_clone`; tags created locally with `git tag -a`)\n\n- `test_baseline_tag_is_RELEASE_BOUND`\n- `test_lightweight_tag_is_refused`\n- `test_tag_off_main_first_parent_is_refused`\n- `test_tag_without_record_is_BLOCKED_tag_exists_is_not_authorized`\n- `test_moved_tag_is_refused_as_immutability_breach`\n- `test_record_version_must_equal_tag`\n- `test_release_record_writes_the_binding_as_HUMAN_REQUIRED_and_never_tags`\n- `test_release_record_refuses_off_main_reuse_and_bad_version_forms`\n- `test_repo_guard_refuses_a_moved_recorded_tag_and_tolerates_an_absent_one`\n- `test_release_check_is_read_only_and_deterministic`\n- `test_release_versioning_subskill_registered_and_root_stays_designed`\n\n## Out of scope\n\n- Creating, moving, deleting or signing any tag; creating a GitHub release; tag rulesets or signature enforcement (platform policy — recorded as a provenance limitation, applied to future refs by a later decision).\n- Cutting the first `vX.Y.Z` (release-authority decision); SBOM/attestation/deployment records (G10–G13 evidence types, measured gates); the remote-workspace mode (#133).\n- A version bump ledger or CHANGELOG (a later decision, if BADF ever publishes artifacts).\n\n## Risk / authority / stop conditions\n\n- Change class **C1** (read-only check; one artifact file written on request; no ref mutation; no authority change). Target gate **G07**, `HUMAN_REQUIRED`.\n- Stop if the guard would require network, a tag ruleset, or signing; or if scope grows past two subcommand modes + one `repo` guard + one record + one subskill + tests + doctrine.\n- Lean mode: **enforced** — reuse `_git_at`, `content_tree`, `ledger_landings`' first-parent walk, the scratch fixture.\n\n## Identity\n\n- Ledger **WP-2026-0081** · demand **BADF-DEM-0068** · this issue **GOV-0061** · phase label BADF-WP-GIT-H. Ids measured across `main`, every remote branch head and all issues at post time.\n- Branch `wp/WP-2026-0081-git-release` in a linked worktree from current `main`; reconciles whatever is `LANDED_UNRECONCILED` at branch time.\n- Sequence: A ✓ B ✓ C ✓ D ✓ E ✓ F ✓ G ✓ → **H (this)** → I → J.\n\nsource: GTGM v0.1 §14, §15, §17 (GIT-H); `release-versioning.md`; `docs/11-release-production.md` · discovered-by: BARCHI-2, the untested load-bearing baseline tag and the absent version source · status: PROPOSED\n\n🧠 **BARCHI-2** — plan posted; engineered under the operator's `/loop your goal on badf-git`.\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T22:19:05Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "BADF-WP-GIT-H release: `git-release-check <tag>` (annotated, on main first-parent, record-bound, unmoved; TAG_EXISTS != RELEASE_AUTHORIZED), `git-release-record <version>` (writes badf/releases/<version>.json as HUMAN_REQUIRED; never a tag), a `repo` immutability guard for recorded release refs, the historical BADF-BASELINE-1.0.0 recorded, release-versioning subskill. Ids measured across main, every remote branch head and all issues. Authority: operator `/loop your goal on badf-git` + 'proceed on your call' (2026-08-29), design order GTGM v0.1 section 17 after GIT-G (WP-2026-0080, 74282a4). Worked as BADF-WP-0081."
++}
+diff --git a/badf/releases/BADF-BASELINE-1.0.0.json b/badf/releases/BADF-BASELINE-1.0.0.json
+new file mode 100644
+index 0000000..43a53bc
+--- /dev/null
++++ b/badf/releases/BADF-BASELINE-1.0.0.json
+@@ -0,0 +1,23 @@
++{
++  "record": "git-release",
++  "schema_version": "1.0.0",
++  "observed_at": "2026-08-29T22:25:21Z",
++  "version": "BADF-BASELINE-1.0.0",
++  "tag_ref": "refs/tags/BADF-BASELINE-1.0.0",
++  "source_ref": "refs/heads/main",
++  "source_revision": "3f6119b05ae4a5158d40f5d9965d4ebe57bee794",
++  "source_result_tree": "3c222735fadcbf23442bba928a4ba0f30ae83337",
++  "policy_epoch": "BADF-2026-08-25",
++  "provenance": {
++    "annotated": true,
++    "signed": false,
++    "tagger": "BADF Baseline <badf@bizera.local>"
++  },
++  "release_authority": "HUMAN_REQUIRED",
++  "disposition": "HUMAN_REQUIRED",
++  "non_coverage": [
++    "the tag is created by the release authority (git tag -a / gh release), never by this tool",
++    "artifact/SBOM/attestation identity (docs/11) is G10/G11 evidence, not bound here",
++    "provenance limitation: the tag is unsigned; recorded, not rewritten"
++  ]
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index ccaf559..eb2afc3 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -270,6 +270,16 @@
+       "allowed_tools": [],
+       "status": "IMPLEMENTED",
+       "digest": "sha256:7d0dbbbcf8e81f507423541e07265fa78bdbc6c04468c189953a73a80156599d"
++    },
++    {
++      "name": "release-versioning",
++      "source": "skills/badf-git/subskills/release-versioning/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [],
++      "status": "IMPLEMENTED",
++      "digest": "sha256:cd4853d7c20c235ab6448568cb367bf019b02a03cf8d5db72595ff75766962b3"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index f5579aa..6c02139 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -965,6 +965,33 @@ recovery work package** with `git revert`, composed against current `main`, head
+ post-merge reconcile; `main` is never rewritten. The runner renders its own record every run
+ (`EVIDENCE_ONLY` on a clean, detached checkout). Release-ref recovery is GIT-H.
+ 
++## badf-git GIT-H — a release ref is a checked binding (`BADF-WP-0081`, Issue #155 / GOV-0061)
++
++The release contract says `TAG_EXISTS != RELEASE_AUTHORIZED`, that release refs are created only
++from `main` and are immutable, and that the version comes from an explicit record — never a branch
++name, a PR title, a commit prefix, or a tag anyone can create. Measured after GIT-G: one release-class
++ref existed, the annotated, **unsigned** `BADF-BASELINE-1.0.0` → `3f6119b`, which every G00–G02
++example evidence file names as its `source_revision`; no `vX.Y.Z`, no GitHub release, no version
++source of truth, no tag ruleset, and **no tag logic in the gate** — a moved baseline tag would have
++silently re-governed every example.
++
++**`badf_gate.py git-release-check <tag>`** (read-only) refuses a missing or lightweight tag, a tag off
++`main`'s first-parent history, a tag with no release record (`TAG_EXISTS != RELEASE_AUTHORIZED`), a
++record for a different revision (the tag *moved*), a version or result tree that differs, and a
++provenance statement the tag object contradicts — else `RELEASE_BOUND`. **`git-release-record
++<version>`** writes `badf/releases/<version>.json` — the contract's release binding — as a
++`HUMAN_REQUIRED` request: it binds an existing tag's own commit or, absent a tag, HEAD; only
++first-parent commits of `main` qualify; version reuse against different content is refused; **it
++never runs `git tag`** — the release authority creates the tag, then the check proves the pair. `repo`
++gains `verify_release_refs`: every recorded release ref that exists locally must still point at its
++recorded revision (an absent tag is tolerated — a shallow clone is not a breach); `badf/releases/` is
++lockfile-covered. The historical baseline is recorded through the tool with its provenance limitation
++stated (annotated, unsigned), not rewritten. The `release-versioning` subskill carries the SemVer
++decision as the release authority's checklist and the record → tag → check sequence. Whether BADF cuts
++its first `vX.Y.Z` is a release-authority decision this WP enables and does not take. The runner
++checks the baseline every run. Signing, tag rulesets, SBOM/attestation are the platform's and
++G10–G13's.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index d31cda5..32931e9 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -76,6 +76,7 @@ INTEGRITY_PATHS = [
+     "badf/tool-registry.json",
+     "badf/decisions/*.json",
+     "badf/demands/*.json",
++    "badf/releases/*.json",
+     "badf/repositories.json",
+     # Foreign work packages: the evidence ARTIFACTS are digest-bound already,
+     # but the dossier and evidence .json files were not -- a re-pointed digest
+@@ -896,6 +897,7 @@ def validate_repo() -> None:
+ 
+     verify_integrity()
+     verify_registry_digests()
++    verify_release_refs()
+     verify_demand_learnings()
+     verify_monotonic_authority()
+     verify_work_ledger()
+@@ -3829,6 +3831,153 @@ def git_recovery(root: Path, *, preserve: str | None = None, wp: str | None = No
+     }
+ 
+ 
++# ---- badf-git GIT-H: release refs are checked bindings (BADF-WP-0081) ------------------
++RELEASE_VERSION = re.compile(r"^(v[0-9]+\.[0-9]+\.[0-9]+|BADF-BASELINE-[0-9]+\.[0-9]+\.[0-9]+)$")
++RELEASE_REQUIRED = ("schema_version", "observed_at", "version", "tag_ref", "source_ref", "source_revision",
++                    "source_result_tree", "policy_epoch", "provenance", "release_authority", "disposition", "non_coverage")
++RELEASES_DIR = "badf/releases"
++
++
++def _tag_provenance(root: Path, tag: str) -> dict[str, Any] | None:
++    """What the tag object itself says: None when the tag does not exist; annotated
++    False for a lightweight tag (no tagger identity at all)."""
++    if _git_at(root, "rev-parse", "--verify", "-q", f"refs/tags/{tag}") is None:
++        return None
++    kind = _git_at(root, "cat-file", "-t", f"refs/tags/{tag}")
++    if kind != "tag":
++        return {"annotated": False, "signed": False, "tagger": None}
++    body = _git_at(root, "cat-file", "tag", f"refs/tags/{tag}") or ""
++    tagger = None
++    for line in body.splitlines():
++        if line.startswith("tagger "):
++            parts = line[len("tagger "):].rsplit(" ", 2)   # name <email> <ts> <tz>
++            tagger = parts[0] if len(parts) == 3 else line[len("tagger "):]
++            break
++    return {"annotated": True, "signed": "-----BEGIN" in body, "tagger": tagger}
++
++
++def _on_first_parent(root: Path, sha: str) -> bool:
++    return sha in set((_git_at(root, "rev-list", "--first-parent", f"refs/remotes/origin/{DEFAULT_BRANCH}") or "").split())
++
++
++def parse_release_record(text: str, label: str) -> dict[str, Any]:
++    try:
++        rec = json.loads(text)
++    except ValueError:
++        raise ValidationError(f"{label} is not a git-release record (not JSON)")
++    if not isinstance(rec, dict) or rec.get("record") != "git-release":
++        raise ValidationError(f"{label} is not a git-release record (no `record: git-release`)")
++    missing = [k for k in RELEASE_REQUIRED if k not in rec]
++    if missing:
++        raise ValidationError(f"{label} is not a complete git-release record; missing {missing}")
++    return rec
++
++
++def git_release_check(root: Path, tag: str) -> dict[str, Any]:
++    """`badf_gate.py git-release-check <tag> [<path>]`: a release-class ref is a checked
++    binding. Read-only. Refuses (BLOCKED) a missing or lightweight tag, a tag whose commit is
++    not on main's first-parent history (release-from-main), a tag with no release record
++    (TAG_EXISTS != RELEASE_AUTHORIZED), a record for a different revision (the tag moved --
++    an immutability breach), a version that differs from the tag, a result tree that differs,
++    or a provenance statement the tag object contradicts."""
++    from datetime import datetime, timezone
++    baseline = git_baseline(root)
++    root = Path(baseline["worktree"]["path"]); top = Path(baseline["repository"]["root"])
++    prov = _tag_provenance(root, tag)
++    if prov is None:
++        raise ValidationError(f"BLOCKED: refs/tags/{tag} does not exist in {top}")
++    if not prov["annotated"]:
++        raise ValidationError(f"BLOCKED: refs/tags/{tag} is a lightweight tag; a release ref must be annotated (a tagger identity is part of the binding)")
++    commit = _git_at(root, "rev-parse", f"refs/tags/{tag}^{{commit}}")
++    if not _on_first_parent(root, commit):
++        raise ValidationError(f"BLOCKED: refs/tags/{tag} -> {commit[:12]} is not on the first-parent history of origin/{DEFAULT_BRANCH}; release refs are created only from main")
++    rec_path = top / RELEASES_DIR / f"{tag}.json"
++    if not rec_path.is_file():
++        raise ValidationError(f"BLOCKED: refs/tags/{tag} has no release record at {RELEASES_DIR}/{tag}.json -- TAG_EXISTS != RELEASE_AUTHORIZED")
++    rec = parse_release_record(rec_path.read_text(encoding="utf-8"), f"{RELEASES_DIR}/{tag}.json")
++    if rec["version"] != tag:
++        raise ValidationError(f"BLOCKED: {RELEASES_DIR}/{tag}.json records version {rec['version']!r}, not {tag}")
++    if rec["source_revision"] != commit:
++        raise ValidationError(f"BLOCKED: refs/tags/{tag} has moved: recorded at {str(rec['source_revision'])[:7]}, now at {commit[:7]} -- a published release ref is immutable; "
++                              "corrections are a new version or an explicit supersession, never a moved tag")
++    tree = _git_at(root, "rev-parse", f"{commit}^{{tree}}")
++    if rec["source_result_tree"] != tree:
++        raise ValidationError(f"BLOCKED: {RELEASES_DIR}/{tag}.json records result tree {str(rec['source_result_tree'])[:7]}, the tag's commit has {tree[:7]}")
++    recorded = rec.get("provenance") or {}
++    if recorded.get("annotated") is not True or bool(recorded.get("signed")) != prov["signed"]:
++        raise ValidationError(f"BLOCKED: {RELEASES_DIR}/{tag}.json's provenance {recorded} contradicts the tag object "
++                              f"(annotated {prov['annotated']}, signed {prov['signed']}); record the limitation, do not rewrite it")
++    return {
++        "record": "git-release-check", "schema_version": "1.0.0",
++        "observed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
++        "disposition": "RELEASE_BOUND", "version": tag, "tag_ref": f"refs/tags/{tag}",
++        "source_ref": f"refs/heads/{DEFAULT_BRANCH}", "source_revision": commit, "source_result_tree": tree,
++        "provenance": prov, "record_path": f"{RELEASES_DIR}/{tag}.json", "release_authority": rec.get("release_authority"),
++        "non_coverage": ["tag signature verification is not performed (recorded as provenance.signed only)",
++                         "artifact/SBOM/attestation identity (docs/11 release packet) is not bound here -- G10/G11 evidence"],
++    }
++
++
++def git_release_record(root: Path, version: str) -> dict[str, Any]:
++    """`badf_gate.py git-release-record <version> [<path>]`: write badf/releases/<version>.json
++    -- the contract's release binding -- as a HUMAN_REQUIRED request. Binds an EXISTING
++    tag's commit (recording a historical or freshly created ref) or, when no tag exists yet,
++    HEAD (a request for one). Only first-parent commits of origin/<default> qualify
++    (release-from-main). Never runs `git tag`; refuses version reuse against a different
++    revision and unsupported version forms."""
++    from datetime import datetime, timezone
++    if not RELEASE_VERSION.match(version):
++        raise ValidationError(f"BLOCKED: {version!r} is not a release version; use vX.Y.Z (forward releases) or BADF-BASELINE-X.Y.Z (historical baselines)")
++    baseline = git_baseline(root)
++    root = Path(baseline["worktree"]["path"]); top = Path(baseline["repository"]["root"])
++    prov = _tag_provenance(root, version)
++    commit = _git_at(root, "rev-parse", f"refs/tags/{version}^{{commit}}") if prov else baseline["source_head_sha"]
++    if not _on_first_parent(root, commit):
++        raise ValidationError(f"BLOCKED: {commit[:12]} is not on the first-parent history of origin/{DEFAULT_BRANCH}; release refs are created only from main")
++    rec_path = top / RELEASES_DIR / f"{version}.json"
++    if rec_path.is_file():
++        existing = parse_release_record(rec_path.read_text(encoding="utf-8"), f"{RELEASES_DIR}/{version}.json")
++        if existing.get("source_revision") != commit:
++            raise ValidationError(f"BLOCKED: version {version} is already recorded for {str(existing.get('source_revision'))[:7]}; a version is never reused for different content -- choose a new version or record a supersession")
++    epoch = None
++    life = top / "badf/lifecycle.json"
++    if life.is_file():
++        epoch = load_json(life).get("policy_epoch")
++    rec = {
++        "record": "git-release", "schema_version": "1.0.0",
++        "observed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
++        "version": version, "tag_ref": f"refs/tags/{version}", "source_ref": f"refs/heads/{DEFAULT_BRANCH}",
++        "source_revision": commit, "source_result_tree": _git_at(root, "rev-parse", f"{commit}^{{tree}}"),
++        "policy_epoch": epoch, "provenance": prov,
++        "release_authority": "HUMAN_REQUIRED", "disposition": "HUMAN_REQUIRED",
++        "non_coverage": ["the tag is created by the release authority (git tag -a / gh release), never by this tool",
++                         "artifact/SBOM/attestation identity (docs/11) is G10/G11 evidence, not bound here",
++                         *(["provenance limitation: the tag is unsigned; recorded, not rewritten"] if prov and not prov["signed"] else []),
++                         *(["no tag exists yet: this record is a request; git-release-check verifies the pair once the tag is created"] if not prov else [])],
++    }
++    rec_path.parent.mkdir(parents=True, exist_ok=True)
++    rec_path.write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
++    return rec
++
++
++def verify_release_refs() -> None:
++    """Every recorded release ref that exists locally still points at its recorded
++    revision (BADF-WP-0081): a moved release tag is an immutability breach and refuses
++    the repository contract. A recorded tag absent locally is tolerated (a shallow clone
++    is not a breach)."""
++    for path in sorted((ROOT / RELEASES_DIR).glob("*.json")):
++        rec = parse_release_record(path.read_text(encoding="utf-8"), path.relative_to(ROOT).as_posix())
++        version = rec["version"]
++        if path.stem != version:
++            raise ValidationError(f"{path.relative_to(ROOT).as_posix()} records version {version!r}; the file must be named {version}.json")
++        now = _git("rev-parse", "--verify", "-q", f"refs/tags/{version}^{{commit}}")
++        if now is None:
++            continue
++        if now != rec["source_revision"]:
++            raise ValidationError(f"release ref refs/tags/{version} has moved: recorded at {str(rec['source_revision'])[:7]}, now at {now[:7]}; "
++                                  "a published release ref is immutable -- restore it, or record a supersession under a new version")
++
++
+ def main() -> int:
+     parser = argparse.ArgumentParser(description=__doc__)
+     subparsers = parser.add_subparsers(dest="command", required=True)
+@@ -3846,6 +3995,10 @@ def main() -> int:
+     gr_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
+     gr_parser.add_argument("--preserve", metavar="LABEL", help="create refs/recovery/<WP>/<LABEL> at HEAD (+ -worktree snapshot of a dirty tree)")
+     gr_parser.add_argument("--wp", help="work package id that namespaces the recovery refs (required with --preserve)")
++    rc_parser = subparsers.add_parser("git-release-check", help="verify a release ref: annotated, on main first-parent, record-bound, unmoved (badf-git GIT-H; read-only)")
++    rc_parser.add_argument("tag"); rc_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
++    rr_parser = subparsers.add_parser("git-release-record", help="write badf/releases/<version>.json as a HUMAN_REQUIRED release binding; binds an existing tag or HEAD; never creates a tag")
++    rr_parser.add_argument("version"); rr_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
+     charter_parser = subparsers.add_parser("charter", help="bind an instance to the framework's authority floor at its pinned revision")
+     charter_parser.add_argument("path", type=Path)
+     adv_parser = subparsers.add_parser("advance", help="bind an APPROVED dossier for the instance's next gate; the gate is derived from the chain")
+@@ -3911,6 +4064,18 @@ def main() -> int:
+                 return 0
+             print(f"BADF GATE HELD: {summary}; preserve before any destructive step")
+             return 3
++        elif args.command == "git-release-check":
++            rec = git_release_check(args.path, args.tag)
++            print(json.dumps(rec, indent=2))
++            print(f"BADF GATE PASS: git-release-check -- RELEASE_BOUND {rec['version']} -> {rec['source_revision'][:7]} "
++                  f"(tree {rec['source_result_tree'][:7]}; annotated, signed={rec['provenance']['signed']})")
++            return 0
++        elif args.command == "git-release-record":
++            rec = git_release_record(args.path, args.version)
++            print(json.dumps(rec, indent=2))
++            print(f"BADF GATE HELD: git-release-record -- {rec['version']} bound to {rec['source_revision'][:7]} as HUMAN_REQUIRED; "
++                  f"the release authority creates the tag, then git-release-check verifies the pair")
++            return 3
+         elif args.command == "charter":
+             print(write_charter(args.path))
+             return 0
+diff --git a/skills/badf-git/subskills/release-versioning/SKILL.md b/skills/badf-git/subskills/release-versioning/SKILL.md
+new file mode 100644
+index 0000000..be0648a
+--- /dev/null
++++ b/skills/badf-git/subskills/release-versioning/SKILL.md
+@@ -0,0 +1,63 @@
++---
++name: release-versioning
++description: Decide and bind a BADF release the way the release contract requires -- the version is a governed SemVer decision by the release authority, the binding is written with `badf_gate.py git-release-record` before the tag is created, the tag is annotated and created only from a verified main revision, and `badf_gate.py git-release-check` proves the pair is annotated, on main, record-bound and unmoved. Use when preparing, recording or verifying a release or baseline ref. Do not use to create, move, delete or sign a tag on the tool's behalf, to derive a version from a commit prefix, or to grant release authority.
++---
++
++# release-versioning
++
++A subskill of `badf-git` (`../../SKILL.md`) for the RELEASE stage and the release contract
++(`../../references/release-versioning.md`). Its admission status is recorded in
++`badf/skill-registry.json`; this file defines behaviour and hardcodes no lifecycle status.
++
++**The invariants:** `MERGED != RELEASED` · **`TAG_EXISTS != RELEASE_AUTHORIZED`** ·
++`RELEASED != PRODUCTION_VERIFIED`. A tag is a name anyone with push rights can create; a
++*release* is a record the release authority binds to an authorized, verified `main` revision.
++Once published, a release ref is **immutable** — never moved, deleted, recreated or reused.
++
++## Two tag families
++
++| Ref | Meaning |
++| --- | --- |
++| `BADF-BASELINE-X.Y.Z` | a historical governance baseline; preserved as it is (the first, `BADF-BASELINE-1.0.0`, is unsigned — recorded as a provenance limitation, never rewritten) |
++| `vX.Y.Z` | the forward release convention for BADF as a framework |
++
++## The SemVer decision (the release authority's checklist, never a commit-prefix inference)
++
++- **MAJOR** — an intentional breaking change to a supported BADF contract: incompatible lifecycle/gate
++  semantics, an incompatible schema or artifact contract without a migration path, breaking
++  authority/CLI behaviour, a required migration that invalidates prior integration assumptions.
++- **MINOR** — an additive, backward-compatible gate, capability, skill, subcommand or feature.
++- **PATCH** — a backward-compatible correction or hardening.
++- Pure working documentation usually releases nothing. When in doubt, the lower tier.
++
++## The sequence: record → tag → check
++
++```text
++1. the release authority decides the version (above) at a verified first-parent commit of main
++2. python3 scripts/badf_gate.py git-release-record vX.Y.Z      # writes badf/releases/vX.Y.Z.json, HUMAN_REQUIRED
++3. commit the record (lockfile re-signed) -- it lands through the normal PR loop
++4. the release authority creates the tag:  git tag -a vX.Y.Z -m "…" <that commit>   (or gh release, from the same commit)
++5. python3 scripts/badf_gate.py git-release-check vX.Y.Z       # RELEASE_BOUND, or BLOCKED naming why
++```
++
++`git-release-record` binds an **existing** tag to its own commit (recording a historical or just-created
++ref) or, when no tag exists yet, HEAD — a request. It never runs `git tag`. It refuses a commit off
++`main`'s first-parent history, a version already recorded for different content, and any form other
++than `vX.Y.Z` / `BADF-BASELINE-X.Y.Z`.
++
++`git-release-check` refuses: a missing or **lightweight** tag; a tag off `main`'s first-parent
++history; a tag with no record (`TAG_EXISTS != RELEASE_AUTHORIZED`); a record for a different
++revision — the tag **moved**; a version or result tree that differs; a provenance statement the
++tag object contradicts. `badf_gate.py repo` enforces the same immutability for every recorded
++release ref that exists locally.
++
++## A bad release
++
++is superseded or revoked by a **new** record and version — never by moving or deleting the tag. The
++rollback is a governed forward change (`git-recovery`, `pull-request-integration`).
++
++## Boundaries
++
++- Tag creation, signing, GitHub releases, tag rulesets: the release authority's and the platform's;
++  this subskill records and verifies, it never mutates a ref.
++- SBOM / attestation / deployment records are G10–G13 evidence (`docs/11`), not bound here.
+diff --git a/tests/test_badf_git_release.py b/tests/test_badf_git_release.py
+new file mode 100644
+index 0000000..19cd922
+--- /dev/null
++++ b/tests/test_badf_git_release.py
+@@ -0,0 +1,184 @@
++"""GIT-H (BADF-WP-0081): a release ref is a checked binding; creating one stays a human act.
++
++The release contract says TAG_EXISTS != RELEASE_AUTHORIZED, release refs are created only
++from main and are immutable, and the version comes from an explicit record. The repository
++had one unsigned baseline tag that every G00-G02 example depends on, no version source of
++truth, no tag ruleset and no tag logic in the gate. `git-release-check <tag>` verifies
++annotated / on main's first parent / record-bound / unmoved; `git-release-record <version>`
++writes badf/releases/<version>.json (binding an existing tag's commit, else HEAD as a
++request) and never runs `git tag`; `repo` refuses a recorded release ref that moved.
++
++Every fixture is a scratch clone removed in cleanup; tags are created locally.
++"""
++import hashlib
++import json
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++from tests._scratch import seed_clone  # noqa: E402
++
++BASELINE = "BADF-BASELINE-1.0.0"
++TARGET = f"refs/remotes/origin/{gate.DEFAULT_BRANCH}"
++
++
++def g(repo: Path, *args: str) -> str:
++    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, check=True).stdout.strip()
++
++
++def cli(cmd: str, *args: str) -> subprocess.CompletedProcess:
++    return subprocess.run([sys.executable, "scripts/badf_gate.py", cmd, *args], cwd=str(gate.ROOT), capture_output=True, text=True)
++
++
++def record_of(r: subprocess.CompletedProcess) -> dict:
++    lines = r.stdout.rstrip("\n").splitlines()
++    assert lines and lines[-1].startswith("BADF GATE "), r.stdout + r.stderr
++    return json.loads("\n".join(lines[:-1]))
++
++
++def commit_file(repo: Path, name: str, text: str, msg: str) -> str:
++    (repo / name).write_text(text, encoding="utf-8"); g(repo, "add", name); g(repo, "commit", "-q", "-m", msg)
++    return g(repo, "rev-parse", "HEAD")
++
++
++class _Scratch(unittest.TestCase):
++    def setUp(self):
++        self.tmp = Path(tempfile.mkdtemp(prefix="badf-git-release-"))
++        self.addCleanup(shutil.rmtree, self.tmp, True)
++        self.repo = self.tmp / "badf"
++        self.base = seed_clone(self.repo, carry_working_state=True)   # carries badf/releases/ and the gate under test
++        (self.repo / "badf/releases").mkdir(parents=True, exist_ok=True)
++
++    def write_record(self, version: str, revision: str, tree: str | None = None, **extra) -> Path:
++        rec = {"record": "git-release", "schema_version": "1.0.0", "observed_at": "2026-08-29T00:00:00Z", "version": version,
++               "tag_ref": f"refs/tags/{version}", "source_ref": f"refs/heads/{gate.DEFAULT_BRANCH}", "source_revision": revision,
++               "source_result_tree": tree or g(self.repo, "rev-parse", f"{revision}^{{tree}}"), "policy_epoch": None,
++               "provenance": {"annotated": True, "signed": False, "tagger": "t"}, "release_authority": "HUMAN_REQUIRED",
++               "disposition": "HUMAN_REQUIRED", "non_coverage": []}
++        rec.update(extra)
++        p = self.repo / "badf/releases" / f"{version}.json"; p.write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
++        return p
++
++    def landed_commit(self, name: str) -> str:
++        """A new first-parent commit on the scratch's main (as a squash landing would be)."""
++        g(self.repo, "checkout", "-q", "-B", gate.DEFAULT_BRANCH, TARGET)
++        sha = commit_file(self.repo, f"docs/{name}.md", f"{name}\n", name); g(self.repo, "update-ref", TARGET, sha)
++        return sha
++
++
++class ReleaseCheckTests(_Scratch):
++    def test_baseline_tag_is_RELEASE_BOUND(self):
++        r = cli("git-release-check", BASELINE, str(self.repo))
++        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        rec = record_of(r)
++        self.assertEqual((rec["record"], rec["disposition"], rec["version"]), ("git-release-check", "RELEASE_BOUND", BASELINE))
++        self.assertTrue(rec["source_revision"].startswith("3f6119b")); self.assertEqual(rec["provenance"]["annotated"], True); self.assertEqual(rec["provenance"]["signed"], False)
++        self.assertIn("RELEASE_BOUND", r.stdout.splitlines()[-1])
++
++    def test_lightweight_tag_is_refused(self):
++        sha = self.landed_commit("lw"); g(self.repo, "tag", "v0.9.0", sha); self.write_record("v0.9.0", sha)
++        r = cli("git-release-check", "v0.9.0", str(self.repo))
++        self.assertEqual(r.returncode, 1, r.stdout + r.stderr); self.assertIn("annotated", r.stderr); self.assertIn("BLOCKED", r.stderr)
++
++    def test_tag_off_main_first_parent_is_refused(self):
++        g(self.repo, "checkout", "-q", "-b", "topic", self.base); sha = commit_file(self.repo, "t.txt", "t\n", "topic")
++        g(self.repo, "tag", "-a", "v0.9.1", "-m", "topic release", sha); self.write_record("v0.9.1", sha)
++        r = cli("git-release-check", "v0.9.1", str(self.repo))
++        self.assertEqual(r.returncode, 1, r.stdout + r.stderr); self.assertIn("first-parent", r.stderr)
++
++    def test_tag_without_record_is_BLOCKED_tag_exists_is_not_authorized(self):
++        sha = self.landed_commit("norec"); g(self.repo, "tag", "-a", "v0.9.2", "-m", "no record", sha)
++        r = cli("git-release-check", "v0.9.2", str(self.repo))
++        self.assertEqual(r.returncode, 1, r.stdout + r.stderr); self.assertIn("TAG_EXISTS != RELEASE_AUTHORIZED", r.stderr)
++
++    def test_moved_tag_is_refused_as_immutability_breach(self):
++        sha1 = self.landed_commit("one"); g(self.repo, "tag", "-a", "v0.9.3", "-m", "one", sha1); self.write_record("v0.9.3", sha1)
++        sha2 = self.landed_commit("two"); g(self.repo, "tag", "-d", "v0.9.3"); g(self.repo, "tag", "-a", "v0.9.3", "-m", "moved", sha2)
++        r = cli("git-release-check", "v0.9.3", str(self.repo))
++        self.assertEqual(r.returncode, 1, r.stdout + r.stderr); self.assertIn("moved", r.stderr.lower()); self.assertIn(sha1[:7], r.stderr); self.assertIn(sha2[:7], r.stderr)
++
++    def test_record_version_must_equal_tag(self):
++        sha = self.landed_commit("ver"); g(self.repo, "tag", "-a", "v0.9.4", "-m", "ver", sha)
++        rp = self.write_record("v0.9.4", sha); rec = json.loads(rp.read_text(encoding="utf-8")); rec["version"] = "v9.9.9"
++        rp.write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")   # the file is v0.9.4.json, the record says v9.9.9
++        r = cli("git-release-check", "v0.9.4", str(self.repo))
++        self.assertEqual(r.returncode, 1, r.stdout + r.stderr); self.assertIn("v9.9.9", r.stderr)
++
++
++class ReleaseRecordTests(_Scratch):
++    def test_release_record_writes_the_binding_as_HUMAN_REQUIRED_and_never_tags(self):
++        sha = self.landed_commit("rel"); tags_before = g(self.repo, "tag", "-l")
++        r = cli("git-release-record", "v0.1.0", str(self.repo))
++        self.assertEqual(r.returncode, 3, r.stdout + r.stderr)   # HELD: a request for release authority
++        rec = json.loads((self.repo / "badf/releases/v0.1.0.json").read_text(encoding="utf-8"))
++        for k in ("record", "schema_version", "observed_at", "version", "tag_ref", "source_ref", "source_revision", "source_result_tree",
++                  "policy_epoch", "provenance", "release_authority", "disposition", "non_coverage"):
++            self.assertIn(k, rec, k)
++        self.assertEqual((rec["record"], rec["version"], rec["tag_ref"], rec["source_revision"], rec["disposition"]),
++                         ("git-release", "v0.1.0", "refs/tags/v0.1.0", sha, "HUMAN_REQUIRED"))
++        self.assertEqual(rec["source_result_tree"], g(self.repo, "rev-parse", f"{sha}^{{tree}}")); self.assertIsNone(rec["provenance"])
++        self.assertEqual(g(self.repo, "tag", "-l"), tags_before, "the record tool must never create a tag")
++
++    def test_release_record_binds_an_existing_tag_to_its_own_commit(self):
++        sha = self.landed_commit("older"); g(self.repo, "tag", "-a", "v0.2.0", "-m", "older", sha); self.landed_commit("newer")
++        r = cli("git-release-record", "v0.2.0", str(self.repo)); self.assertEqual(r.returncode, 3, r.stdout + r.stderr)
++        rec = json.loads((self.repo / "badf/releases/v0.2.0.json").read_text(encoding="utf-8"))
++        self.assertEqual(rec["source_revision"], sha); self.assertEqual(rec["provenance"], {"annotated": True, "signed": False, "tagger": "t <t@t>"})
++        self.assertEqual(cli("git-release-check", "v0.2.0", str(self.repo)).returncode, 0)
++
++    def test_release_record_refuses_off_main_reuse_and_bad_version_forms(self):
++        g(self.repo, "checkout", "-q", "-b", "topic", self.base); commit_file(self.repo, "t.txt", "t\n", "topic")
++        r = cli("git-release-record", "v0.3.0", str(self.repo)); self.assertEqual(r.returncode, 1, r.stdout + r.stderr); self.assertIn("first-parent", r.stderr)
++        sha = self.landed_commit("reuse"); self.write_record("v0.3.0", self.base)
++        r = cli("git-release-record", "v0.3.0", str(self.repo)); self.assertEqual(r.returncode, 1, r.stdout + r.stderr); self.assertIn("reuse", r.stderr.lower())
++        for bad in ("0.3.0", "release-1", "v1.2"):
++            with self.subTest(bad=bad):
++                r = cli("git-release-record", bad, str(self.repo)); self.assertEqual(r.returncode, 1, r.stdout + r.stderr); self.assertIn("vX.Y.Z", r.stderr)
++
++
++class RepoGuardTests(_Scratch):
++    def _repo(self) -> subprocess.CompletedProcess:
++        subprocess.run([sys.executable, "scripts/badf_gate.py", "lock"], cwd=str(self.repo), capture_output=True, text=True, check=True)
++        return subprocess.run([sys.executable, "scripts/badf_gate.py", "repo"], cwd=str(self.repo), capture_output=True, text=True)
++
++    def test_repo_guard_refuses_a_moved_recorded_tag_and_tolerates_an_absent_one(self):
++        sha1 = self.landed_commit("g1"); g(self.repo, "tag", "-a", "v0.4.0", "-m", "g1", sha1); self.write_record("v0.4.0", sha1)
++        self.assertEqual(self._repo().returncode, 0)
++        lock = json.loads((self.repo / "badf/lockfile.json").read_text(encoding="utf-8"))
++        self.assertTrue(any("badf/releases/v0.4.0.json" in k for k in json.dumps(lock).split('"')), "release records must be lockfile-covered")
++        sha2 = self.landed_commit("g2"); g(self.repo, "tag", "-d", "v0.4.0"); g(self.repo, "tag", "-a", "v0.4.0", "-m", "moved", sha2)
++        r = self._repo(); self.assertEqual(r.returncode, 1, r.stdout + r.stderr); self.assertIn("moved", (r.stdout + r.stderr).lower())
++        g(self.repo, "tag", "-d", "v0.4.0")
++        r = self._repo(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++
++
++class ReleasePropertyTests(_Scratch):
++    def test_release_check_is_read_only_and_deterministic(self):
++        before = (g(self.repo, "rev-parse", "HEAD"), g(self.repo, "status", "--porcelain=v2"), sorted(g(self.repo, "for-each-ref", "--format=%(refname) %(objectname)").splitlines()))
++        a = gate.git_release_check(self.repo, BASELINE); b = gate.git_release_check(self.repo, BASELINE)
++        self.assertEqual((g(self.repo, "rev-parse", "HEAD"), g(self.repo, "status", "--porcelain=v2"), sorted(g(self.repo, "for-each-ref", "--format=%(refname) %(objectname)").splitlines())), before)
++        a.pop("observed_at"); b.pop("observed_at"); self.assertEqual(a, b)
++
++
++class ReleaseVersioningSubskillTests(unittest.TestCase):
++    def test_release_versioning_subskill_registered_and_root_stays_designed(self):
++        reg = gate.load_json(gate.ROOT / "badf/skill-registry.json"); by = {s["name"]: s for s in reg["skills"]}
++        self.assertIn("release-versioning", by); entry = by["release-versioning"]
++        self.assertEqual(entry["source"], "skills/badf-git/subskills/release-versioning/SKILL.md")
++        self.assertEqual((entry["status"], entry["risk_class"], entry["allowed_tools"]), ("IMPLEMENTED", "C1", []))
++        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
++        self.assertEqual(by["badf-git"]["status"], "DESIGNED")
++        text = (gate.ROOT / entry["source"]).read_text(encoding="utf-8")
++        self.assertIn("badf/skill-registry.json", text); self.assertNotIn("Status: `", text)
++        for token in ("TAG_EXISTS != RELEASE_AUTHORIZED", "git-release-check", "git-release-record", "badf/releases/", "MAJOR", "MINOR", "PATCH", "BADF-BASELINE-", "vX.Y.Z", "never"):
++            self.assertIn(token, text)
++        self.assertTrue((gate.ROOT / "badf/releases" / f"{BASELINE}.json").is_file(), "the historical baseline must be recorded")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0080/work-package.json b/work/WP-2026-0080/work-package.json
+index 362089c..e9216bc 100644
+--- a/work/WP-2026-0080/work-package.json
++++ b/work/WP-2026-0080/work-package.json
+@@ -44,11 +44,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "928fc6b"
++    "base_revision": "928fc6b",
++    "landed_content_tree": "89d58b12a704bdfea0c70309487f7bda096251e2",
++    "composition_verified": true,
++    "landed_as": "74282a4f21405378ccb84f7dace7b58aac5af2d9"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-G per GTGM v0.1 section 17, after GIT-F (WP-2026-0079 / 928fc6b). Resolves #153 / GOV-0060. Reconciles WP-2026-0079 (composition_verified true). Engineered by BARCHI-2 in a linked worktree under the operator's /loop ('proceed on your call')."
+ }
