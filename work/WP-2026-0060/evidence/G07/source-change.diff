@@ -1,0 +1,764 @@
+diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
+index 369bc2b..29cdadf 100644
+--- a/.github/workflows/badf-gates.yml
++++ b/.github/workflows/badf-gates.yml
+@@ -45,6 +45,7 @@ jobs:
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G02.json
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G03.json
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G04.json
++          python3 scripts/badf_gate.py dossier examples/gate-dossier.G05.json
+           python3 scripts/badf_gate.py research examples/research-record.json
+           python3 scripts/badf_gate.py research examples/research-record-challenged.json
+           python3 scripts/badf_gate.py research examples/research-record-repo.json
+diff --git a/badf/demands/BADF-DEM-0047.json b/badf/demands/BADF-DEM-0047.json
+new file mode 100644
+index 0000000..5336b0c
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0047.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0047",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 110,
++    "url": "https://github.com/bstBizEra/badf/issues/110",
++    "exported_at": "2026-08-29T11:44:41Z",
++    "body_digest": "sha256:283b39f4759dbd997c43c88247f0b54344200e98800d1ed9828dad683fb9e6e2"
++  },
++  "title": "GOV-0043: Gate 05 declared but unenforced \u2014 no per-type rules, schemas, or example for threat-model/privacy-assessment/supply-chain-plan/security-approval",
++  "problem": "## Observed\nG05 (Security, privacy and AI safety; owner `security_authority`, min C2) is the next declared-but-unenforced gate after G04. `lifecycle.json` lists G05's four `required_evidence` types \u2014 **threat-model, privacy-assessment, supply-chain-plan, security-approval** \u2014 yet `validate_evidence` has no per-type rule for any of them, no G05 example, and none of the four schemas. A G05 dossier today would pass on names alone.\n\n## Expected\nThe four G05 types get per-type rules in `validate_evidence`, each mapping to a G05 exit criterion (the gate OPENS each artifact):\n- `threat-model` \u2014 every threat/abuse case carries a **mitigation** (\"threats and abuse cases controlled\"); an uncontrolled threat is refused.\n- `privacy-assessment` \u2014 every data category carries a **lawful basis** and **handling** (\"privacy obligations addressed\").\n- `supply-chain-plan` \u2014 **secret controls** are declared and every dependency carries a **control** (\"dependency and secret controls planned\").\n- `security-approval` \u2014 a **human `security_authority`** approval, **digest-bound to the threat-model**, with a named **residual-risk owner** (\"residual risk owned\").\nPlus `examples/gate-dossier.G05.json` (C2, validated in CI beside G00-G04) and a **G04->G05** pair-acceptance (the full G00->G05 chain).\n\n## Evidence\n- G05 required_evidence = [threat-model, privacy-assessment, supply-chain-plan, security-approval]; enforced of 4 -> 0; no G05 example; no schemas\n- G05 minimum_change_class is C2, so the example dossier carries the four C2 authority roles\n\n## Unknowns\nNone for the gate contract. This WP is the deterministic G05 evidence contract; a `badf-security` authoring skill is a later WP if a real task needs it.\n\n## Proposed work package\n`BADF-WP-0060` (G05). Four `check_*` + registration; four schemas; `examples/gate-dossier.G05.json` + its four evidence/artifact pairs; `tests/test_badf_g05.py` failing-first + a G04->G05 pair-acceptance; mutation; own G07 self-dossier. C2.\n\ndiscovered-by: BADF-WP-0059 (the gate march reached G05) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T11:44:41Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "G05 security gate contract (threat-model/privacy-assessment/supply-chain-plan/security-approval); next gate after G04. Authority: operator 'proceed' (2026-08-29). Worked as BADF-WP-0060."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 35d37e0..bb423b9 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -525,6 +525,21 @@ detected, 0 false positives, INDETERMINATE handled without a false pass, no drif
+ run declares non-coverage — **no contract gap surfaced**. `badf-architecture` advances
+ `VALIDATED → SHADOWED`; `APPROVED`/`ACTIVE` remain the operator's admission decision.
+ 
++## Gate 05 — security, privacy and AI safety (`BADF-WP-0060`, Issue #110)
++
++The gate march reaches security: G05's four types (`threat-model`, `privacy-assessment`,
++`supply-chain-plan`, `security-approval`) were declared but unenforced. Each now has a per-type rule
++mapping to a G05 exit criterion. `threat-model` — every threat/abuse case carries a **mitigation** (an
++uncontrolled threat is refused: *threats and abuse cases controlled*). `privacy-assessment` — every
++data category carries a **lawful basis** and **handling** (*privacy obligations addressed*).
++`supply-chain-plan` — **secret controls** are declared and every dependency carries a **control**
++(*dependency and secret controls planned*). `security-approval` — a **human `security_authority`**
++whose approval is **digest-bound to the threat-model** (a threat model edited after approval breaks
++the binding) and names a **residual-risk owner** (*residual risk owned*). G05's minimum change class is
++**C2**, so `examples/gate-dossier.G05.json` carries the four C2 authority roles — the first example
++dossier above the C1 floor. Ships a **G04→G05** pair-acceptance (the full G00→G05 advance chain). Same
++lean substrate as G01–G04.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/examples/evidence/G05/privacy-assessment.artifact.json b/examples/evidence/G05/privacy-assessment.artifact.json
+new file mode 100644
+index 0000000..dda5888
+--- /dev/null
++++ b/examples/evidence/G05/privacy-assessment.artifact.json
+@@ -0,0 +1,14 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "data_categories": [
++    {
++      "id": "PD-001",
++      "data": "governance records (demands, WPs, dossiers)",
++      "classification": "internal",
++      "lawful_basis": "legitimate interest in auditable delivery",
++      "handling": "git-tracked in the BADF tree; no personal data",
++      "retention": "repository lifetime"
++    }
++  ]
++}
+diff --git a/examples/evidence/G05/privacy-assessment.json b/examples/evidence/G05/privacy-assessment.json
+new file mode 100644
+index 0000000..6ee5c2d
+--- /dev/null
++++ b/examples/evidence/G05/privacy-assessment.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G05",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G05-PRIVACY-ASSESSMENT-v1",
++  "claim": "Example privacy-assessment bound to PRD-BADF-0001",
++  "evidence_type": "privacy-assessment",
++  "producer": {
++    "id": "example-security-authority",
++    "type": "human"
++  },
++  "operation": "assess privacy obligations",
++  "artifact": "examples/evidence/G05/privacy-assessment.artifact.json",
++  "digest": "sha256:fe294fc209103de61d62de3aa732f34c332a411fc65e37b9bdf83d89a7609065"
++}
+diff --git a/examples/evidence/G05/security-approval.artifact.json b/examples/evidence/G05/security-approval.artifact.json
+new file mode 100644
+index 0000000..829f58d
+--- /dev/null
++++ b/examples/evidence/G05/security-approval.artifact.json
+@@ -0,0 +1,14 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "threat_model_digest": "sha256:c90b6862ff344f718d512111907d9e30c62a8ae58c7a23fb86045e1c60a4bbc3",
++  "approved_by": {
++    "principal": "example-security-authority",
++    "principal_type": "human",
++    "role": "security_authority"
++  },
++  "residual_risk_owner": "the operator (human_sponsor)",
++  "decision": "APPROVED",
++  "approved_at": "2026-08-25T00:00:05Z",
++  "note": "residual risks T-001/T-002 accepted and owned"
++}
+diff --git a/examples/evidence/G05/security-approval.json b/examples/evidence/G05/security-approval.json
+new file mode 100644
+index 0000000..18f8a96
+--- /dev/null
++++ b/examples/evidence/G05/security-approval.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G05",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G05-SECURITY-APPROVAL-v1",
++  "claim": "Example security-approval bound to PRD-BADF-0001",
++  "evidence_type": "security-approval",
++  "producer": {
++    "id": "example-security-authority",
++    "type": "human"
++  },
++  "operation": "own the residual risk",
++  "artifact": "examples/evidence/G05/security-approval.artifact.json",
++  "digest": "sha256:a0d96d3397e467d12e17c827c39c9a4ed8034ba8615ff7c3ac4c8a1353d636aa"
++}
+diff --git a/examples/evidence/G05/supply-chain-plan.artifact.json b/examples/evidence/G05/supply-chain-plan.artifact.json
+new file mode 100644
+index 0000000..4e0101f
+--- /dev/null
++++ b/examples/evidence/G05/supply-chain-plan.artifact.json
+@@ -0,0 +1,9 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "dependencies": [],
++  "secret_controls": [
++    "the gate stores no secrets and makes no network call",
++    "GitHub Actions secrets are scoped to CI and never read by the gate"
++  ]
++}
+diff --git a/examples/evidence/G05/supply-chain-plan.json b/examples/evidence/G05/supply-chain-plan.json
+new file mode 100644
+index 0000000..2de6496
+--- /dev/null
++++ b/examples/evidence/G05/supply-chain-plan.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G05",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G05-SUPPLY-CHAIN-PLAN-v1",
++  "claim": "Example supply-chain-plan bound to PRD-BADF-0001",
++  "evidence_type": "supply-chain-plan",
++  "producer": {
++    "id": "example-security-authority",
++    "type": "human"
++  },
++  "operation": "plan dependency and secret controls",
++  "artifact": "examples/evidence/G05/supply-chain-plan.artifact.json",
++  "digest": "sha256:48d271bc7a5d2ef0be1444ec5f7f643e7a33f2389b8f71df6ae4932ce3322d50"
++}
+diff --git a/examples/evidence/G05/threat-model.artifact.json b/examples/evidence/G05/threat-model.artifact.json
+new file mode 100644
+index 0000000..c04ac0d
+--- /dev/null
++++ b/examples/evidence/G05/threat-model.artifact.json
+@@ -0,0 +1,20 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "threats": [
++    {
++      "id": "T-001",
++      "category": "SPOOFING",
++      "statement": "the three agents share one BizEraERP identity; a banner is self-asserted and can be forged",
++      "mitigation": "authorship comes from the bst-sa-agent[bot] structural actor field, never body text; the bst-agent OS fence isolates worktrees",
++      "residual_risk": "a compromised operator session"
++    },
++    {
++      "id": "T-002",
++      "category": "TAMPERING",
++      "statement": "a non-stdlib import could make a green local run mask a red CI run (faithful-runner break)",
++      "mitigation": "stdlib-only (ADR-0001); the composed-tree gate runs in the bare-runner environment; PyYAML shadowed in verification",
++      "residual_risk": "a new optional dependency added without a guard"
++    }
++  ]
++}
+diff --git a/examples/evidence/G05/threat-model.json b/examples/evidence/G05/threat-model.json
+new file mode 100644
+index 0000000..028a3cd
+--- /dev/null
++++ b/examples/evidence/G05/threat-model.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G05",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G05-THREAT-MODEL-v1",
++  "claim": "Example threat-model bound to PRD-BADF-0001",
++  "evidence_type": "threat-model",
++  "producer": {
++    "id": "example-security-authority",
++    "type": "human"
++  },
++  "operation": "model threats and abuse cases",
++  "artifact": "examples/evidence/G05/threat-model.artifact.json",
++  "digest": "sha256:c90b6862ff344f718d512111907d9e30c62a8ae58c7a23fb86045e1c60a4bbc3"
++}
+diff --git a/examples/gate-dossier.G05.json b/examples/gate-dossier.G05.json
+new file mode 100644
+index 0000000..f2560c8
+--- /dev/null
++++ b/examples/gate-dossier.G05.json
+@@ -0,0 +1,78 @@
++{
++  "schema_version": "1.0.0",
++  "id": "DOS-WP-2026-0001-G05-v1",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G05",
++  "policy_epoch": "BADF-2026-08-25",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "change_class": "C2",
++  "evidence": [
++    {
++      "type": "threat-model",
++      "path": "examples/evidence/G05/threat-model.json"
++    },
++    {
++      "type": "privacy-assessment",
++      "path": "examples/evidence/G05/privacy-assessment.json"
++    },
++    {
++      "type": "supply-chain-plan",
++      "path": "examples/evidence/G05/supply-chain-plan.json"
++    },
++    {
++      "type": "security-approval",
++      "path": "examples/evidence/G05/security-approval.json"
++    }
++  ],
++  "approvals": [
++    {
++      "role": "product_owner",
++      "decision": "APPROVED",
++      "by": "example-product_owner-signature",
++      "revision": "BADF-BASELINE-1.0.0",
++      "policy_epoch": "BADF-2026-08-25",
++      "approved_at": "2026-08-25T00:00:07Z",
++      "scope": "example-only",
++      "principal_type": "human"
++    },
++    {
++      "role": "engineering_owner",
++      "decision": "APPROVED",
++      "by": "example-engineering_owner-signature",
++      "revision": "BADF-BASELINE-1.0.0",
++      "policy_epoch": "BADF-2026-08-25",
++      "approved_at": "2026-08-25T00:00:07Z",
++      "scope": "example-only",
++      "principal_type": "human"
++    },
++    {
++      "role": "quality_authority",
++      "decision": "APPROVED",
++      "by": "example-quality_authority-signature",
++      "revision": "BADF-BASELINE-1.0.0",
++      "policy_epoch": "BADF-2026-08-25",
++      "approved_at": "2026-08-25T00:00:07Z",
++      "scope": "example-only",
++      "principal_type": "human"
++    },
++    {
++      "role": "service_owner",
++      "decision": "APPROVED",
++      "by": "example-service_owner-signature",
++      "revision": "BADF-BASELINE-1.0.0",
++      "policy_epoch": "BADF-2026-08-25",
++      "approved_at": "2026-08-25T00:00:07Z",
++      "scope": "example-only",
++      "principal_type": "human"
++    }
++  ],
++  "exceptions": [],
++  "risks": [],
++  "council": null,
++  "disposition": "PASS",
++  "created_at": "2026-08-25T00:00:06Z",
++  "author": "example-author",
++  "author_type": "human",
++  "conditions": []
++}
+diff --git a/schemas/privacy-assessment.schema.json b/schemas/privacy-assessment.schema.json
+new file mode 100644
+index 0000000..b5e2ce4
+--- /dev/null
++++ b/schemas/privacy-assessment.schema.json
+@@ -0,0 +1,27 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/privacy-assessment.schema.json",
++  "title": "G05 privacy-assessment evidence artifact -- data categories with a lawful basis and handling",
++  "type": "object",
++  "additionalProperties": false,
++  "required": ["schema_version", "prd_id", "data_categories"],
++  "properties": {
++    "schema_version": {"type": "string", "enum": ["1.0.0"]},
++    "prd_id": {"type": "string", "pattern": "^PRD-[A-Za-z0-9._-]+$"},
++    "data_categories": {
++      "type": "array", "minItems": 1,
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["id", "data", "classification", "lawful_basis", "handling"],
++        "properties": {
++          "id": {"type": "string", "pattern": "^PD-[0-9]{3,}$"},
++          "data": {"type": "string", "minLength": 1},
++          "classification": {"type": "string", "enum": ["public", "internal", "confidential", "restricted", "personal", "sensitive"]},
++          "lawful_basis": {"type": "string"},
++          "handling": {"type": "string"},
++          "retention": {"type": "string"}
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/security-approval.schema.json b/schemas/security-approval.schema.json
+new file mode 100644
+index 0000000..9235af5
+--- /dev/null
++++ b/schemas/security-approval.schema.json
+@@ -0,0 +1,26 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/security-approval.schema.json",
++  "title": "G05 security-approval evidence artifact -- a human security authority owns the residual risk",
++  "type": "object",
++  "additionalProperties": false,
++  "required": ["schema_version", "prd_id", "threat_model_digest", "approved_by", "residual_risk_owner", "decision", "approved_at"],
++  "properties": {
++    "schema_version": {"type": "string", "enum": ["1.0.0"]},
++    "prd_id": {"type": "string", "pattern": "^PRD-[A-Za-z0-9._-]+$"},
++    "threat_model_digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
++    "approved_by": {
++      "type": "object", "additionalProperties": false,
++      "required": ["principal", "principal_type", "role"],
++      "properties": {
++        "principal": {"type": "string", "minLength": 1},
++        "principal_type": {"type": "string", "enum": ["human"]},
++        "role": {"type": "string", "enum": ["security_authority"]}
++      }
++    },
++    "residual_risk_owner": {"type": "string"},
++    "decision": {"type": "string", "enum": ["APPROVED"]},
++    "approved_at": {"type": "string"},
++    "note": {"type": "string"}
++  }
++}
+diff --git a/schemas/supply-chain-plan.schema.json b/schemas/supply-chain-plan.schema.json
+new file mode 100644
+index 0000000..d1ecc79
+--- /dev/null
++++ b/schemas/supply-chain-plan.schema.json
+@@ -0,0 +1,26 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/supply-chain-plan.schema.json",
++  "title": "G05 supply-chain-plan evidence artifact -- dependency and secret controls",
++  "type": "object",
++  "additionalProperties": false,
++  "required": ["schema_version", "prd_id", "dependencies", "secret_controls"],
++  "properties": {
++    "schema_version": {"type": "string", "enum": ["1.0.0"]},
++    "prd_id": {"type": "string", "pattern": "^PRD-[A-Za-z0-9._-]+$"},
++    "dependencies": {
++      "type": "array",
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["id", "name", "control"],
++        "properties": {
++          "id": {"type": "string", "pattern": "^DEP-[0-9]{3,}$"},
++          "name": {"type": "string", "minLength": 1},
++          "control": {"type": "string"},
++          "provenance": {"type": "string"}
++        }
++      }
++    },
++    "secret_controls": {"type": "array", "items": {"type": "string", "minLength": 1}}
++  }
++}
+diff --git a/schemas/threat-model.schema.json b/schemas/threat-model.schema.json
+new file mode 100644
+index 0000000..78063fb
+--- /dev/null
++++ b/schemas/threat-model.schema.json
+@@ -0,0 +1,26 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/threat-model.schema.json",
++  "title": "G05 threat-model evidence artifact -- threats and abuse cases, each controlled",
++  "type": "object",
++  "additionalProperties": false,
++  "required": ["schema_version", "prd_id", "threats"],
++  "properties": {
++    "schema_version": {"type": "string", "enum": ["1.0.0"]},
++    "prd_id": {"type": "string", "pattern": "^PRD-[A-Za-z0-9._-]+$"},
++    "threats": {
++      "type": "array", "minItems": 1,
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["id", "category", "statement", "mitigation"],
++        "properties": {
++          "id": {"type": "string", "pattern": "^T-[0-9]{3,}$"},
++          "category": {"type": "string", "enum": ["SPOOFING", "TAMPERING", "REPUDIATION", "INFO_DISCLOSURE", "DENIAL_OF_SERVICE", "ELEVATION_OF_PRIVILEGE", "ABUSE_CASE", "AI_SAFETY"]},
++          "statement": {"type": "string", "minLength": 1},
++          "mitigation": {"type": "string"},
++          "residual_risk": {"type": "string"}
++        }
++      }
++    }
++  }
++}
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 3aae128..86be633 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -1245,13 +1245,70 @@ def check_operability_design(artifact: Path, dossier: dict[str, Any], evidence:
+             raise ValidationError(f"operability-design: failure mode {fm['id']} names element {fm['element']} absent from the baseline")
+ 
+ 
++# ---- G05 evidence contract: security, privacy and AI safety (BADF-WP-0060, #109-successor) ----
++def check_threat_model(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("threat-model", doc)
++    _no_placeholders(doc, "threat-model")
++    threats = doc["threats"]
++    if not threats:
++        raise ValidationError("threat-model: no threats; a threat model of nothing controls nothing")
++    _unique_ids(threats, "id", "threat-model")
++    for t in threats:
++        if not (t.get("mitigation") or "").strip():
++            raise ValidationError(f"threat-model: threat {t['id']} has no mitigation; threats and abuse cases must be controlled")
++
++
++def check_privacy_assessment(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("privacy-assessment", doc)
++    _no_placeholders(doc, "privacy-assessment")
++    cats = doc["data_categories"]
++    if not cats:
++        raise ValidationError("privacy-assessment: no data categories")
++    _unique_ids(cats, "id", "privacy-assessment")
++    for c in cats:
++        if not (c.get("lawful_basis") or "").strip() or not (c.get("handling") or "").strip():
++            raise ValidationError(f"privacy-assessment: data category {c['id']} has no lawful basis or handling; privacy obligations must be addressed")
++
++
++def check_supply_chain_plan(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("supply-chain-plan", doc)
++    _no_placeholders(doc, "supply-chain-plan")
++    if not doc["secret_controls"]:
++        raise ValidationError("supply-chain-plan: no secret controls declared; dependency and secret controls must be planned")
++    _unique_ids(doc["dependencies"], "id", "supply-chain-plan")
++    for d in doc["dependencies"]:
++        if not (d.get("control") or "").strip():
++            raise ValidationError(f"supply-chain-plan: dependency {d['id']} has no control; each dependency must be controlled")
++
++
++def check_security_approval(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("security-approval", doc)
++    _no_placeholders(doc, "security-approval")
++    producer = evidence["producer"]
++    if producer.get("type") != "human":
++        raise ValidationError("security-approval must be produced by a human security_authority; a non-human producer cannot own residual risk")
++    if producer.get("id") != doc["approved_by"]["principal"]:
++        raise ValidationError(f"security-approval producer {producer.get('id')!r} is not approved_by.principal {doc['approved_by']['principal']!r}")
++    if not (doc.get("residual_risk_owner") or "").strip():
++        raise ValidationError("security-approval: no residual_risk_owner; residual risk must be owned")
++    tm_path, tm = _sibling_artifact(dossier, "threat-model", "security-approval")
++    if doc["threat_model_digest"] != sha256(tm_path):
++        raise ValidationError("security-approval: threat_model_digest does not match the threat-model artifact in this dossier (the threat model changed after approval, or the approval is for other bytes)")
++
++
+ EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_criteria, "product-approval": check_product_approval,
+                   "requirements": check_requirements, "nfr": check_nfr, "traceability": check_traceability,
+                   "definition-of-ready": check_definition_of_ready,
+                   "journeys": check_journeys, "service-blueprint": check_service_blueprint,
+                   "accessibility": check_accessibility, "user-validation": check_user_validation,
+                   "architecture": check_architecture, "adr": check_adr, "data-model": check_data_model,
+-                  "api-contract": check_api_contract, "operability-design": check_operability_design}
++                  "api-contract": check_api_contract, "operability-design": check_operability_design,
++                  "threat-model": check_threat_model, "privacy-assessment": check_privacy_assessment,
++                  "supply-chain-plan": check_supply_chain_plan, "security-approval": check_security_approval}
+ 
+ 
+ def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -> None:
+diff --git a/tests/test_badf_advance.py b/tests/test_badf_advance.py
+index e4a4a4d..2b7319e 100644
+--- a/tests/test_badf_advance.py
++++ b/tests/test_badf_advance.py
+@@ -197,9 +197,55 @@ class AdvanceScratch(ValidatedInstance):
+         assert r.returncode == 0 and "APPROVED" in r.stdout, r.stdout + r.stderr
+         return f"work/{self.wp()}/gate-dossier.G04.json"
+ 
++    def make_g05(self):
++        """A G05 dossier for the same WP at the G05/C2 floor: threat-model, privacy,
++        supply-chain and a human security-approval digest-bound to the threat model,
++        modelled on the shipped example. C2 needs the four security roles."""
++        d = self.wp_dir(); ev_dir = d / "evidence/G05"; ev_dir.mkdir(parents=True, exist_ok=True)
++        g04 = json.loads((d / "gate-dossier.G04.json").read_text())
++        ex = gate.ROOT / "examples/evidence/G05"
++        for t in ("threat-model", "privacy-assessment", "supply-chain-plan", "security-approval"):
++            art = json.loads((ex / f"{t}.artifact.json").read_text()); art["prd_id"] = "PRD-SCRATCH-0001"
++            (ev_dir / f"{t}.artifact.json").write_text(json.dumps(art, indent=2) + "\n")
++        # rebind the approval to this scratch threat model and its scratch approver
++        sa = json.loads((ev_dir / "security-approval.artifact.json").read_text())
++        sa["threat_model_digest"] = gate.sha256(ev_dir / "threat-model.artifact.json")
++        sa["approved_by"]["principal"] = "scratch-security-authority"
++        (ev_dir / "security-approval.artifact.json").write_text(json.dumps(sa, indent=2) + "\n")
++        index = []
++        for t in ("threat-model", "privacy-assessment", "supply-chain-plan", "security-approval"):
++            e = {"schema_version": "1.0.0", "id": f"EVD-{self.wp()}-G05-{t}", "work_package_id": self.wp(), "gate": "G05",
++                 "claim": f"{t} present", "evidence_type": t, "producer": {"id": "scratch-security-authority", "type": "human"},
++                 "source_revision": g04["source_revision"], "target": g04["target"],
++                 "toolchain": {"name": "human-review", "version": "1"}, "operation": "review",
++                 "started_at": g04["created_at"], "completed_at": g04["created_at"], "outcome": "PASS",
++                 "artifact": f"work/{self.wp()}/evidence/G05/{t}.artifact.json", "digest": gate.sha256(ev_dir / f"{t}.artifact.json")}
++            (ev_dir / f"{t}.json").write_text(json.dumps(e, indent=2) + "\n")
++            index.append({"type": t, "path": f"work/{self.wp()}/evidence/G05/{t}.json"})
++        approvals = []
++        for role in ("product_owner", "engineering_owner", "quality_authority", "service_owner"):
++            a = bound(EXAMPLE["approvals"][0], g04); a["role"] = role; a["by"] = f"{role}-signature"; approvals.append(a)
++        doc = dict(g04, id=f"DOS-{self.wp()}-G05-v1", gate="G05", change_class="C2", evidence=index, approvals=approvals)
++        (d / "gate-dossier.G05.json").write_text(json.dumps(doc, indent=2) + "\n")
++        self.framework_lock()
++        r = self.dossier_cli(f"work/{self.wp()}/gate-dossier.G05.json")
++        assert r.returncode == 0 and "APPROVED" in r.stdout, r.stdout + r.stderr
++        return f"work/{self.wp()}/gate-dossier.G05.json"
++
+ 
+ class AdvanceTests(AdvanceScratch):
+ 
++    def test_g04_approved_instance_advances_to_g05(self):
++        self.approve_g00(); self.assertEqual(self.advance(f"work/{self.wp()}/gate-dossier.G00.json").returncode, 0)
++        self.assertEqual(self.advance(self.make_g01()).returncode, 0)
++        self.assertEqual(self.advance(self.make_g02()).returncode, 0)
++        self.assertEqual(self.advance(self.make_g03()).returncode, 0)
++        self.assertEqual(self.advance(self.make_g04()).returncode, 0)
++        g05 = self.make_g05()
++        r = self.advance(g05); self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
++        self.assertEqual(self.state()["lifecycle"], {"current_gate": "G05", "state": "APPROVED", "target": "PRODUCTION"})
++        r = self.instance(); self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("G05 / APPROVED", r.stdout)
++
+     def test_g03_approved_instance_advances_to_g04(self):
+         self.approve_g00(); self.assertEqual(self.advance(f"work/{self.wp()}/gate-dossier.G00.json").returncode, 0)
+         self.assertEqual(self.advance(self.make_g01()).returncode, 0)
+diff --git a/tests/test_badf_g05.py b/tests/test_badf_g05.py
+new file mode 100644
+index 0000000..ba56bbd
+--- /dev/null
++++ b/tests/test_badf_g05.py
+@@ -0,0 +1,119 @@
++"""G05 evidence contract (BADF-WP-0060; the gate march reaches security).
++
++G05's four required evidence types have semantics the gate enforces by opening
++the artifact, inside validate_evidence, each mapping to a G05 exit criterion:
++threats and abuse cases are each controlled (a threat with no mitigation is
++refused); privacy obligations are addressed (a data category with no lawful basis
++or handling is refused); dependency and secret controls are planned (no secret
++controls, or an uncontrolled dependency, is refused); and residual risk is owned
++by a human security_authority whose approval is digest-bound to the threat model.
++Faithful-runner shape.
++"""
++import hashlib
++import json
++import os
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++from tests._scratch import seed_clone  # noqa: E402
++
++DOSSIER = "examples/gate-dossier.G05.json"
++EV = "examples/evidence/G05"
++
++
++class G05Scratch(unittest.TestCase):
++    def setUp(self):
++        self.tmp = tempfile.mkdtemp(); self.root = Path(self.tmp) / "badf"
++        seed_clone(self.root, carry_working_state=True)
++        for rel in ("schemas", "tests"):
++            shutil.rmtree(self.root / rel, ignore_errors=True); shutil.copytree(gate.ROOT / rel, self.root / rel)
++        self.env = {k: v for k, v in os.environ.items() if not k.startswith("BADF_")}
++
++    def tearDown(self):
++        shutil.rmtree(self.tmp, ignore_errors=True)
++
++    def cli(self):
++        subprocess.run([sys.executable, "scripts/badf_gate.py", "lock"], cwd=self.root, env=self.env, capture_output=True, check=True)
++        return subprocess.run([sys.executable, "scripts/badf_gate.py", "dossier", DOSSIER], cwd=self.root, env=self.env, capture_output=True, text=True)
++
++    def artifact(self, t):
++        return json.loads((self.root / EV / f"{t}.artifact.json").read_text())
++
++    def rewrite(self, t, obj):
++        p = self.root / EV / f"{t}.artifact.json"; p.write_text(json.dumps(obj, indent=2) + "\n")
++        rec_p = self.root / EV / f"{t}.json"; rec = json.loads(rec_p.read_text())
++        rec["digest"] = "sha256:" + hashlib.sha256(p.read_bytes()).hexdigest(); rec_p.write_text(json.dumps(rec, indent=2) + "\n")
++
++    def record(self, t, fn):
++        rec_p = self.root / EV / f"{t}.json"; rec = json.loads(rec_p.read_text()); fn(rec); rec_p.write_text(json.dumps(rec, indent=2) + "\n")
++
++    def refused(self, needle):
++        r = self.cli()
++        self.assertNotEqual(r.returncode, 0, "a defective G05 dossier rendered APPROVED")
++        self.assertIn(needle, r.stderr, r.stderr)
++
++
++class G05ExampleTests(G05Scratch):
++
++    def test_shipped_example_renders_approved(self):
++        r = self.cli(); self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("APPROVED", r.stdout)
++
++    def test_missing_required_evidence_is_still_refused(self):
++        d = json.loads((self.root / DOSSIER).read_text()); d["evidence"] = [e for e in d["evidence"] if e["type"] != "privacy-assessment"]
++        (self.root / DOSSIER).write_text(json.dumps(d, indent=2) + "\n")
++        self.refused("missing evidence")
++
++
++class ThreatModelRuleTests(G05Scratch):
++
++    def test_an_uncontrolled_threat_is_refused(self):
++        t = self.artifact("threat-model"); t["threats"][0]["mitigation"] = ""; self.rewrite("threat-model", t)
++        self.refused("must be controlled")
++
++    def test_no_threats_is_refused(self):
++        t = self.artifact("threat-model"); t["threats"] = []; self.rewrite("threat-model", t)
++        self.refused("a threat model of nothing controls nothing")
++
++
++class PrivacyRuleTests(G05Scratch):
++
++    def test_a_category_without_lawful_basis_is_refused(self):
++        p = self.artifact("privacy-assessment"); p["data_categories"][0]["lawful_basis"] = ""; self.rewrite("privacy-assessment", p)
++        self.refused("privacy obligations must be addressed")
++
++
++class SupplyChainRuleTests(G05Scratch):
++
++    def test_no_secret_controls_is_refused(self):
++        s = self.artifact("supply-chain-plan"); s["secret_controls"] = []; self.rewrite("supply-chain-plan", s)
++        self.refused("dependency and secret controls must be planned")
++
++    def test_an_uncontrolled_dependency_is_refused(self):
++        s = self.artifact("supply-chain-plan"); s["dependencies"] = [{"id": "DEP-001", "name": "somelib", "control": ""}]; self.rewrite("supply-chain-plan", s)
++        self.refused("dependency DEP-001 has no control")
++
++
++class SecurityApprovalRuleTests(G05Scratch):
++
++    def test_a_non_human_approval_is_refused(self):
++        self.record("security-approval", lambda rec: rec.__setitem__("producer", {"id": "bot", "type": "automation"}))
++        self.refused("must be produced by a human security_authority")
++
++    def test_no_residual_risk_owner_is_refused(self):
++        a = self.artifact("security-approval"); a["residual_risk_owner"] = ""; self.rewrite("security-approval", a)
++        self.refused("residual risk must be owned")
++
++    def test_a_wrong_threat_model_digest_is_refused(self):
++        # tamper the threat model after approval: the approval's bound digest no longer matches.
++        t = self.artifact("threat-model"); t["threats"][0]["statement"] += " (edited after approval)"; self.rewrite("threat-model", t)
++        self.refused("threat_model_digest does not match")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0059/work-package.json b/work/WP-2026-0059/work-package.json
+index 4ff67ea..6592a69 100644
+--- a/work/WP-2026-0059/work-package.json
++++ b/work/WP-2026-0059/work-package.json
+@@ -44,11 +44,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "73a2b17"
++    "base_revision": "73a2b17",
++    "landed_as": "27c9f1cf9369d5f495667de30c2b4a359ff56a51"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Docs + shadow records + status advance -- no gate control (empty gate diff). Fixes a real doc-drift defect the operator caught, and produces the SHADOWED calibration evidence. Advances badf-architecture VALIDATED -> SHADOWED; APPROVED/ACTIVE remain the operator's call. Reconciles WP-2026-0058."
+ }

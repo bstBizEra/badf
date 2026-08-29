@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "threats": [
+    {
+      "id": "T-001",
+      "category": "SPOOFING",
+      "statement": "the three agents share one BizEraERP identity; a banner is self-asserted and can be forged",
+      "mitigation": "authorship comes from the bst-sa-agent[bot] structural actor field, never body text; the bst-agent OS fence isolates worktrees",
+      "residual_risk": "a compromised operator session"
+    },
+    {
+      "id": "T-002",
+      "category": "TAMPERING",
+      "statement": "a non-stdlib import could make a green local run mask a red CI run (faithful-runner break)",
+      "mitigation": "stdlib-only (ADR-0001); the composed-tree gate runs in the bare-runner environment; PyYAML shadowed in verification",
+      "residual_risk": "a new optional dependency added without a guard"
+    }
+  ]
+}

@@ -1245,13 +1245,70 @@ def check_operability_design(artifact: Path, dossier: dict[str, Any], evidence: 
             raise ValidationError(f"operability-design: failure mode {fm['id']} names element {fm['element']} absent from the baseline")
 
 
+# ---- G05 evidence contract: security, privacy and AI safety (BADF-WP-0060, #109-successor) ----
+def check_threat_model(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("threat-model", doc)
+    _no_placeholders(doc, "threat-model")
+    threats = doc["threats"]
+    if not threats:
+        raise ValidationError("threat-model: no threats; a threat model of nothing controls nothing")
+    _unique_ids(threats, "id", "threat-model")
+    for t in threats:
+        if not (t.get("mitigation") or "").strip():
+            raise ValidationError(f"threat-model: threat {t['id']} has no mitigation; threats and abuse cases must be controlled")
+
+
+def check_privacy_assessment(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("privacy-assessment", doc)
+    _no_placeholders(doc, "privacy-assessment")
+    cats = doc["data_categories"]
+    if not cats:
+        raise ValidationError("privacy-assessment: no data categories")
+    _unique_ids(cats, "id", "privacy-assessment")
+    for c in cats:
+        if not (c.get("lawful_basis") or "").strip() or not (c.get("handling") or "").strip():
+            raise ValidationError(f"privacy-assessment: data category {c['id']} has no lawful basis or handling; privacy obligations must be addressed")
+
+
+def check_supply_chain_plan(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("supply-chain-plan", doc)
+    _no_placeholders(doc, "supply-chain-plan")
+    if not doc["secret_controls"]:
+        raise ValidationError("supply-chain-plan: no secret controls declared; dependency and secret controls must be planned")
+    _unique_ids(doc["dependencies"], "id", "supply-chain-plan")
+    for d in doc["dependencies"]:
+        if not (d.get("control") or "").strip():
+            raise ValidationError(f"supply-chain-plan: dependency {d['id']} has no control; each dependency must be controlled")
+
+
+def check_security_approval(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("security-approval", doc)
+    _no_placeholders(doc, "security-approval")
+    producer = evidence["producer"]
+    if producer.get("type") != "human":
+        raise ValidationError("security-approval must be produced by a human security_authority; a non-human producer cannot own residual risk")
+    if producer.get("id") != doc["approved_by"]["principal"]:
+        raise ValidationError(f"security-approval producer {producer.get('id')!r} is not approved_by.principal {doc['approved_by']['principal']!r}")
+    if not (doc.get("residual_risk_owner") or "").strip():
+        raise ValidationError("security-approval: no residual_risk_owner; residual risk must be owned")
+    tm_path, tm = _sibling_artifact(dossier, "threat-model", "security-approval")
+    if doc["threat_model_digest"] != sha256(tm_path):
+        raise ValidationError("security-approval: threat_model_digest does not match the threat-model artifact in this dossier (the threat model changed after approval, or the approval is for other bytes)")
+
+
 EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_criteria, "product-approval": check_product_approval,
                   "requirements": check_requirements, "nfr": check_nfr, "traceability": check_traceability,
                   "definition-of-ready": check_definition_of_ready,
                   "journeys": check_journeys, "service-blueprint": check_service_blueprint,
                   "accessibility": check_accessibility, "user-validation": check_user_validation,
                   "architecture": check_architecture, "adr": check_adr, "data-model": check_data_model,
-                  "api-contract": check_api_contract, "operability-design": check_operability_design}
+                  "api-contract": check_api_contract, "operability-design": check_operability_design,
+                  "threat-model": check_threat_model, "privacy-assessment": check_privacy_assessment,
+                  "supply-chain-plan": check_supply_chain_plan, "security-approval": check_security_approval}
 
 
 def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -> None:

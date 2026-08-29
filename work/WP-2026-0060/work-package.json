@@ -1,0 +1,55 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0060",
+  "title": "G05: security/privacy/AI-safety gate contract (threat-model / privacy-assessment / supply-chain-plan / security-approval)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0047",
+  "objective": "Enforce Gate 05, declared in lifecycle.json but unbacked: give its four required_evidence types per-type rules in validate_evidence, exactly as G01-G04, so the gate OPENS each artifact. Ship examples/gate-dossier.G05.json (C2, validated in CI) and prove an instance advances G04->G05 on a valid G05 dossier.",
+  "business_value": "Without per-type rules a G05 dossier passes on names alone. This makes the four security exit criteria -- threats controlled, privacy obligations addressed, dependency+secret controls planned, residual risk owned -- deterministic gate refusals, with the security approval bound by digest to the threat model and owned by a human security_authority.",
+  "in_scope": [
+    "check_threat_model / check_privacy_assessment / check_supply_chain_plan / check_security_approval in badf_gate.py + registration in EVIDENCE_RULES",
+    "schemas/threat-model.schema.json, privacy-assessment.schema.json, supply-chain-plan.schema.json, security-approval.schema.json",
+    "examples/gate-dossier.G05.json (C2, four authority roles) + its four evidence/artifact pairs; CI validates it",
+    "tests/test_badf_g05.py (failing-first) + a G04->G05 pair-acceptance in tests/test_badf_advance.py",
+    "mutation; own G07 self-dossier; doctrine section in GITHUB_CONTROL_PLANE.md"
+  ],
+  "out_of_scope": [
+    "a badf-security authoring skill (a later WP if a real task needs it)",
+    "later gates G06+ -- one WP each; any change to G05 authority",
+    "#84; the architecture status advance"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "examples/gate-dossier.G05.json renders APPROVED via `dossier`",
+    "a threat with no mitigation, a data category with no lawful basis/handling, missing secret controls, an uncontrolled dependency are each refused",
+    "a non-human security-approval, a missing residual_risk_owner, and a threat_model_digest mismatch are each refused",
+    "an instance at G04/APPROVED advances to G05/APPROVED on a valid G05 dossier",
+    "mutation kills; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_g05.py",
+    "tests/test_badf_advance.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "27c9f1c"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Reuses the G01-G04 substrate -- no new validator module. G05 min change class is C2, so the example dossier carries the four C2 authority roles (product_owner/engineering_owner/quality_authority/service_owner); security-approval mirrors product-approval (human, digest-bound). Reconciles WP-2026-0059."
+}

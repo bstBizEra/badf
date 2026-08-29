@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G05",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G05-PRIVACY-ASSESSMENT-v1",
+  "claim": "Example privacy-assessment bound to PRD-BADF-0001",
+  "evidence_type": "privacy-assessment",
+  "producer": {
+    "id": "example-security-authority",
+    "type": "human"
+  },
+  "operation": "assess privacy obligations",
+  "artifact": "examples/evidence/G05/privacy-assessment.artifact.json",
+  "digest": "sha256:fe294fc209103de61d62de3aa732f34c332a411fc65e37b9bdf83d89a7609065"
+}

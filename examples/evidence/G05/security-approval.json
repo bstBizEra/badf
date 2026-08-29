@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0001",
+  "gate": "G05",
+  "source_revision": "BADF-BASELINE-1.0.0",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "BADF example generator",
+    "version": "1.0.0"
+  },
+  "started_at": "2026-08-25T00:00:04Z",
+  "completed_at": "2026-08-25T00:00:05Z",
+  "outcome": "PASS",
+  "sanitization": "No secrets or personal data",
+  "id": "EVD-WP-2026-0001-G05-SECURITY-APPROVAL-v1",
+  "claim": "Example security-approval bound to PRD-BADF-0001",
+  "evidence_type": "security-approval",
+  "producer": {
+    "id": "example-security-authority",
+    "type": "human"
+  },
+  "operation": "own the residual risk",
+  "artifact": "examples/evidence/G05/security-approval.artifact.json",
+  "digest": "sha256:a0d96d3397e467d12e17c827c39c9a4ed8034ba8615ff7c3ac4c8a1353d636aa"
+}
