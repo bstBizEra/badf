@@ -45,11 +45,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "bc9eb30"
+    "base_revision": "bc9eb30",
+    "landed_as": "2e46fe7071a9a1b8fdd802a660bf4f6d92416966"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-ARCH-C completes the architecture capability's validation: controls 13-18 enforced by the assure command, mutation-tested. Advances badf-architecture to VALIDATED (operator's stated expectation). Reconciles WP-2026-0056. SHADOWED/APPROVED/ACTIVE remain the operator's admission calls."
 }

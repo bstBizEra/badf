@@ -95,11 +95,14 @@ class ContractInvariantTests(unittest.TestCase):
             self.assertIn(inv, text, f"{inv} not stated")
         self.assertIn("RESEARCH_SUFFICIENT", text); self.assertIn("IMPLEMENTATION_AUTHORIZED", text)
 
-    def test_registry_entry_is_designed_with_a_real_digest(self):
+    def test_registry_entry_is_active_with_a_real_digest(self):
+        # WP-0058 advanced the family DESIGNED -> ACTIVE (IMPLEMENTED/VALIDATED/SHADOWED met, owner approved).
         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
         entry = next(e for e in reg["skills"] if e["name"] == "badf-research")
-        self.assertEqual(entry["status"], "DESIGNED")
+        self.assertEqual(entry["status"], "ACTIVE")
         self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
+        # even ACTIVE, the family grants no implementation authority (RSR-I01, schema-fixed).
+        self.assertEqual(schema()["properties"]["authority"]["properties"]["implementation_authority"]["enum"], [False])
 
     def test_no_research_validator_beside_the_gate(self):
         self.assertEqual(sorted(p.name for p in (gate.ROOT / "scripts").glob("*research*")), [], "a competing research validator exists")

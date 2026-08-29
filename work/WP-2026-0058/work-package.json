@@ -1,0 +1,53 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0058",
+  "title": "Finish badf-research: advance the family DESIGNED -> ACTIVE (owner approval; IMPLEMENTED/VALIDATED/SHADOWED met)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0045",
+  "objective": "Advance the badf-research family root DESIGNED -> ACTIVE, the terminal admission status, now that every prior criterion is met: IMPLEMENTED (9/9 subskills), VALIDATED (26/26 controls with mutation), SHADOWED (WP-0055 shadow evidence), with owner + security approval given. Update the root SKILL.md status, the registry (re-digest), the acceptance ladder, and the contract test. The nine subskills remain IMPLEMENTED as the active family's machinery (family = capability admission, subskill = implementation status). The family grants no implementation authority even when ACTIVE (RSR-I01).",
+  "business_value": "Finishing badf-research turns a fully-built, validated, shadow-tested capability from held-at-DESIGNED into a live, governed research capability -- while the schema-fixed RSR-I01 boundary guarantees that activation never grants execution authority (research produces evidence; humans and gates decide).",
+  "in_scope": [
+    "skills/badf-research/SKILL.md status line DESIGNED -> ACTIVE",
+    "badf/skill-registry.json: badf-research ACTIVE with a re-signed digest",
+    "skills/badf-research/references/acceptance.md admission ladder: APPROVED/ACTIVE reached",
+    "tests/test_badf_research_contract.py: assert ACTIVE (and no-authority-even-ACTIVE); doctrine note; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "advancing the nine subskills off IMPLEMENTED (they are the active family's components)",
+    "any gate control, schema change, or authority change (implementation_authority stays schema-fixed false)",
+    "P1 research skills; #84; the external PR #47"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "badf-research registry status is ACTIVE with digest == sha256(SKILL.md); `repo` passes",
+    "the root SKILL.md status line reads ACTIVE and states it grants no implementation authority",
+    "acceptance.md records APPROVED/ACTIVE reached with the owner-approval rationale",
+    "the contract test asserts ACTIVE and that implementation_authority stays enum [false]",
+    "compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research_contract.py",
+    "tests/test_badf_registry_digest.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "2e46fe7"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Governance-only WP (docs + registry status) -- no gate control (empty gate diff). Advances badf-research to ACTIVE on the operator's explicit 'finish badf-research' approval. Reconciles WP-2026-0057. Grants no authority even ACTIVE (RSR-I01)."
+}

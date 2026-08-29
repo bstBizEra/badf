@@ -495,6 +495,21 @@ This meets the `VALIDATED` criterion, so **`badf-architecture` advances `IMPLEME
 (the operator's stated expectation). `SHADOWED`/`APPROVED`/`ACTIVE` remain the operator's admission
 decisions.
 
+## badf-research finished — DESIGNED → ACTIVE (`BADF-WP-0058`, Issue #106)
+
+The `badf-research` family was deliberately held at `DESIGNED` through every build WP while the
+capability was assembled. With all prior ladder criteria met — **IMPLEMENTED** (9/9 subskills),
+**VALIDATED** (26/26 controls, mutation-tested), **SHADOWED** (`BADF-WP-0055`, three real-history
+shadow records, no gap) — and the operator's explicit approval ("finish badf-research"), the family
+root is advanced **`DESIGNED → ACTIVE`**, the terminal admission status. The nine subskills remain
+`IMPLEMENTED` — a two-tier model: the family status is the capability's admission gate, the subskill
+status is implementation. Crucially, **activation grants no implementation authority**:
+`implementation_authority` is schema-fixed `false` (RSR-I01), so an ACTIVE research family still only
+produces evidence — a decision (`BADF-DEC-*`) and a work package (`BADF-WP-*`), authored by their own
+authorities, remain between research and execution. This WP is governance-only (docs + registry
+status; empty gate diff). `badf-architecture` sits at `VALIDATED`; `badf-research` is now the first
+research capability to reach `ACTIVE`.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

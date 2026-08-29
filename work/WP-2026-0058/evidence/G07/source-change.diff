@@ -1,0 +1,135 @@
+diff --git a/badf/demands/BADF-DEM-0045.json b/badf/demands/BADF-DEM-0045.json
+new file mode 100644
+index 0000000..45e767f
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0045.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0045",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 106,
++    "url": "https://github.com/bstBizEra/badf/issues/106",
++    "exported_at": "2026-08-29T07:13:18Z",
++    "body_digest": "sha256:ab90dab37c80f566fd2d634de5743f56e78a955d711229faf6ec0e331af0b450"
++  },
++  "title": "GOV-0041: finish badf-research \u2014 advance the family DESIGNED -> ACTIVE (IMPLEMENTED/VALIDATED/SHADOWED met, owner approved)",
++  "problem": "## Observed\n`badf-research` is held at `DESIGNED`, but every admission-ladder criterion below `ACTIVE` is now objectively met and unblocked by the operator's explicit approval:\n- **IMPLEMENTED** \u2014 all nine P0 subskills exist as concise `SKILL.md` files (registered `IMPLEMENTED`).\n- **VALIDATED** \u2014 all 26 controls are enforced in the gate and pass with mutation.\n- **SHADOWED** \u2014 three gate-valid shadow records over real historical BADF cases (`BADF-WP-0055`), measured faithful, no contract gap.\nThe only remaining gate is `APPROVED`/`ACTIVE`: owner + security approval with the registry digest pinned \u2014 which the operator has now given (\"finish badf-research\").\n\n## Expected\nAdvance the **family root** `badf-research` `DESIGNED \u2192 ACTIVE`, and record the reasoning: the capability is live for autonomous research use, its nine subskills are its `IMPLEMENTED` machinery (a two-tier model: family = capability admission, subskill = implementation status), and it **still grants no implementation authority** (RSR-I01, schema-fixed) even when ACTIVE \u2014 research produces evidence; `badf-delivery` governs what authorised actors do with it. Update the root `SKILL.md` status line, the registry (re-digest), the acceptance ladder, and the contract test.\n\n## Evidence\n- registry: `badf-research` DESIGNED; 9 subskills IMPLEMENTED; 26 controls enforced (acceptance.md)\n- SHADOWED evidence: `skills/badf-research/references/shadow-evidence.md` (WP-0055)\n- authority: `implementation_authority` schema-fixed `false` (RSR-I01) \u2014 activation cannot grant execution authority\n\n## Unknowns\nNone. `APPROVED` and `ACTIVE` are a single ladder step in this single-collaborator repo (the owner is also the security reviewer, as the acceptance docs note). The subskills stay `IMPLEMENTED` as the active family's components.\n\n## Proposed work package\n`BADF-WP-0058`. Advance `badf-research` `DESIGNED \u2192 ACTIVE`: SKILL.md status, registry re-digest, acceptance ladder, contract test; own G07 self-dossier. C2. No gate control or schema change.\n\ndiscovered-by: operator directive \"finish badf-research\" (2026-08-29) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T07:13:18Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Finish badf-research: advance family DESIGNED->ACTIVE (IMPLEMENTED/VALIDATED/SHADOWED met + owner approval). Grants no authority even ACTIVE (RSR-I01). Authority: operator 'finish badf-research' (2026-08-29). Worked as BADF-WP-0058."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index b46d979..b3d1ed8 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -35,8 +35,8 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "DESIGNED",
+-      "digest": "sha256:464d924de93ef8325209ed48172e29227f43104902b252d0152cce806e0e008f"
++      "status": "ACTIVE",
++      "digest": "sha256:a1328ce15ebf36b341631e6b76d869d31164508316ddad9213b0cb77c4b4a035"
+     },
+     {
+       "name": "repository-research",
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 41b44f6..a4c0bfe 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -495,6 +495,21 @@ This meets the `VALIDATED` criterion, so **`badf-architecture` advances `IMPLEME
+ (the operator's stated expectation). `SHADOWED`/`APPROVED`/`ACTIVE` remain the operator's admission
+ decisions.
+ 
++## badf-research finished — DESIGNED → ACTIVE (`BADF-WP-0058`, Issue #106)
++
++The `badf-research` family was deliberately held at `DESIGNED` through every build WP while the
++capability was assembled. With all prior ladder criteria met — **IMPLEMENTED** (9/9 subskills),
++**VALIDATED** (26/26 controls, mutation-tested), **SHADOWED** (`BADF-WP-0055`, three real-history
++shadow records, no gap) — and the operator's explicit approval ("finish badf-research"), the family
++root is advanced **`DESIGNED → ACTIVE`**, the terminal admission status. The nine subskills remain
++`IMPLEMENTED` — a two-tier model: the family status is the capability's admission gate, the subskill
++status is implementation. Crucially, **activation grants no implementation authority**:
++`implementation_authority` is schema-fixed `false` (RSR-I01), so an ACTIVE research family still only
++produces evidence — a decision (`BADF-DEC-*`) and a work package (`BADF-WP-*`), authored by their own
++authorities, remain between research and execution. This WP is governance-only (docs + registry
++status; empty gate diff). `badf-architecture` sits at `VALIDATED`; `badf-research` is now the first
++research capability to reach `ACTIVE`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/skills/badf-research/SKILL.md b/skills/badf-research/SKILL.md
+index d2e318a..e59a2ff 100644
+--- a/skills/badf-research/SKILL.md
++++ b/skills/badf-research/SKILL.md
+@@ -5,7 +5,7 @@ description: Govern evidence-based research for BADF questions, issues, defects,
+ 
+ # BADF Research
+ 
+-Status: `DESIGNED` (contract frozen by `BADF-WP-0031`). The `research` gate command enforces the record contract, and the `problem-framing`, `repository-research`, `fact-checking`, `evidence-synthesis`, `deep-research`, `technical-research`, `comparative-evaluation`, `adversarial-research` and `research-reconciliation` subskills exist -- all nine P0 subskills; the family is not yet activated for autonomous use (9 of 9 P0 subskills). Research determines what the evidence supports; `badf-delivery` governs what authorised actors may do with that conclusion.
++Status: `ACTIVE` (contract frozen by `BADF-WP-0031`; advanced `DESIGNED -> ACTIVE` by `BADF-WP-0058` after all nine P0 subskills, 26 of 26 controls, and the `SHADOWED` evidence of `BADF-WP-0055`, with owner approval). The `research` gate command enforces the record contract; all nine P0 subskills are `IMPLEMENTED`; the family is activated for autonomous research use. It **still grants no implementation authority** (RSR-I01, schema-fixed): research determines what the evidence supports; `badf-delivery` governs what authorised actors may do with that conclusion.
+ 
+ 1. Read the repository `AGENTS.md` and the documents it marks required.
+ 2. Resolve the research question, the originating Issue and its demand record, the research type and depth (`references/research-types.md`), scope and non-goals, source and data boundaries, authority and mutation constraints, required evidence, and the bounded scope contract — non-empty **stop conditions** (when the run stops), the **assumptions** it rests on (kept distinct from evidence), and the **decision it serves** — all first-class in the record (`schemas/research-record.schema.json`, control 19).
+diff --git a/skills/badf-research/references/acceptance.md b/skills/badf-research/references/acceptance.md
+index 2c07f83..ae53a2b 100644
+--- a/skills/badf-research/references/acceptance.md
++++ b/skills/badf-research/references/acceptance.md
+@@ -36,6 +36,6 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows
+ ## Admission
+ 
+ - `IMPLEMENTED`: the nine P0 subskills exist as concise `SKILL.md` files under this family. **Now met (9 of 9):** `repository-research`, `problem-framing`, `fact-checking`, `evidence-synthesis`, `deep-research`, `technical-research`, `comparative-evaluation`, `adversarial-research`, `research-reconciliation`.
+-- `VALIDATED`: the 26 controls above pass as gate tests with mutation. **Now met: all 26 enforced (1–26).** (Control 15 landed with RSR-004/`BADF-WP-0038`; the earlier admission note that mistracked it as pending is corrected here.) The registry status advance DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED → APPROVED → ACTIVE is the operator's admission decision; the family stays `DESIGNED` until then.
++- `VALIDATED`: the 26 controls above pass as gate tests with mutation. **Now met: all 26 enforced (1–26).** (Control 15 landed with RSR-004/`BADF-WP-0038`; the earlier admission note that mistracked it as pending is corrected here.) IMPLEMENTED (9/9 subskills), VALIDATED (all 26 controls with mutation) and SHADOWED (`BADF-WP-0055`) are met.
+ - `SHADOWED`: the family is run retrospectively on real historical BADF cases without knowing the answer. **Shadow evidence produced (`BADF-WP-0055`):** three gate-valid records over distinct cases and controls -- `research-record-shadow-control15.json` (R02: the control-15 mistracking, baseline `e7ea929`), `research-record-shadow-composed-red.json` (R03 root-cause: the composed-tree red at `30186c5`), `research-record-shadow-ci-parity.json` (R10: `local-green != CI-green`, FALSIFIED with the contradiction preserved). See `references/shadow-evidence.md`. Advancing the family to `SHADOWED` is the operator's admission decision.
+-- `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. Until then the registry entry stays `DESIGNED`.
++- `APPROVED` / `ACTIVE`: **reached (`BADF-WP-0058`).** Owner + security approval given (single-collaborator repo; the owner is also the security reviewer) and the registry digest is pinned. The family root `badf-research` is `ACTIVE` (its nine subskills remain `IMPLEMENTED` -- a two-tier model: family = capability admission, subskill = implementation status). It grants no implementation authority even when ACTIVE (RSR-I01).
+diff --git a/tests/test_badf_research_contract.py b/tests/test_badf_research_contract.py
+index 6130c3e..ab7983c 100644
+--- a/tests/test_badf_research_contract.py
++++ b/tests/test_badf_research_contract.py
+@@ -95,11 +95,14 @@ class ContractInvariantTests(unittest.TestCase):
+             self.assertIn(inv, text, f"{inv} not stated")
+         self.assertIn("RESEARCH_SUFFICIENT", text); self.assertIn("IMPLEMENTATION_AUTHORIZED", text)
+ 
+-    def test_registry_entry_is_designed_with_a_real_digest(self):
++    def test_registry_entry_is_active_with_a_real_digest(self):
++        # WP-0058 advanced the family DESIGNED -> ACTIVE (IMPLEMENTED/VALIDATED/SHADOWED met, owner approved).
+         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
+         entry = next(e for e in reg["skills"] if e["name"] == "badf-research")
+-        self.assertEqual(entry["status"], "DESIGNED")
++        self.assertEqual(entry["status"], "ACTIVE")
+         self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
++        # even ACTIVE, the family grants no implementation authority (RSR-I01, schema-fixed).
++        self.assertEqual(schema()["properties"]["authority"]["properties"]["implementation_authority"]["enum"], [False])
+ 
+     def test_no_research_validator_beside_the_gate(self):
+         self.assertEqual(sorted(p.name for p in (gate.ROOT / "scripts").glob("*research*")), [], "a competing research validator exists")
+diff --git a/work/WP-2026-0057/work-package.json b/work/WP-2026-0057/work-package.json
+index a93e933..51c3649 100644
+--- a/work/WP-2026-0057/work-package.json
++++ b/work/WP-2026-0057/work-package.json
+@@ -45,11 +45,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "bc9eb30"
++    "base_revision": "bc9eb30",
++    "landed_as": "2e46fe7071a9a1b8fdd802a660bf4f6d92416966"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-ARCH-C completes the architecture capability's validation: controls 13-18 enforced by the assure command, mutation-tested. Advances badf-architecture to VALIDATED (operator's stated expectation). Reconciles WP-2026-0056. SHADOWED/APPROVED/ACTIVE remain the operator's admission calls."
+ }
