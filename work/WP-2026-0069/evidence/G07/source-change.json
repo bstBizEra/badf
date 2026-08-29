@@ -16,9 +16,9 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-08-29T19:01:45Z",
-  "completed_at": "2026-08-29T19:01:45Z",
+  "started_at": "2026-08-29T19:04:30Z",
+  "completed_at": "2026-08-29T19:04:30Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0069/evidence/G07/source-change.diff",
-  "digest": "sha256:73878694af3d73ef419d9aad677890c4bbe5c78cb8b4deaa7c6ac4ee7d0d3b80"
+  "digest": "sha256:519ce51788d77de0ffb53a88a9acfdfe64ba466cb1e5c07651cb779fc80673b7"
 }

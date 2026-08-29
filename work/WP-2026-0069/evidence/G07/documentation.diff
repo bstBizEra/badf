@@ -1,10 +1,10 @@
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 62126b8..e7c2450 100644
+index 8a0d4f6..7e73c3e 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -753,6 +753,30 @@ canonically. Calendar-year rollover was considered and rejected — a namespace
- smallest change that removes the drift. The PR that shipped this was its own first subject on the
- runner. GIT-C (the read-only baseline inspector, #127) follows in design order.
+@@ -771,6 +771,30 @@ WPs, not faked. Still one canonical gate (SOL-I12), no `lifecycle.json` change.
+ operator's `/loop` driving badf-solution-design toward ACTIVE; built in an isolated worktree, landing as
+ the second seat after BARCHI-2's badf-git GIT-B (#134) and reconciling `WP-2026-0070`.
  
 +## badf-git GIT-C — the read-only baseline inspector (`BADF-WP-0069`, Issue #127 / GOV-0048)
 +

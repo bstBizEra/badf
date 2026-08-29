@@ -43,12 +43,12 @@ index 0000000..fd16a89
 +  "note": "BADF-WP-GIT-C read-only Git baseline inspector (`badf_gate.py git-baseline`, GIT-O0, writes nothing) + repository-state subskill. Authority: operator `/loop your goal on badf-git` (2026-08-29), design order GTGM v0.1 section 17, after GIT-B (WP-2026-0070, 0343c8e). Worked as BADF-WP-0069."
 +}
 diff --git a/badf/skill-registry.json b/badf/skill-registry.json
-index 961b477..478a5c7 100644
+index f0a7d9b..a2f1753 100644
 --- a/badf/skill-registry.json
 +++ b/badf/skill-registry.json
 @@ -210,6 +210,16 @@
        "allowed_tools": [],
-       "status": "IMPLEMENTED",
+       "status": "VALIDATED",
        "digest": "sha256:5d8848ef97cdd21c62cccfa4ff37b30f71823516566638fbee3cf1d60530ea46"
 +    },
 +    {
@@ -64,12 +64,12 @@ index 961b477..478a5c7 100644
    ]
  }
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 62126b8..e7c2450 100644
+index 8a0d4f6..7e73c3e 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -753,6 +753,30 @@ canonically. Calendar-year rollover was considered and rejected — a namespace
- smallest change that removes the drift. The PR that shipped this was its own first subject on the
- runner. GIT-C (the read-only baseline inspector, #127) follows in design order.
+@@ -771,6 +771,30 @@ WPs, not faked. Still one canonical gate (SOL-I12), no `lifecycle.json` change.
+ operator's `/loop` driving badf-solution-design toward ACTIVE; built in an isolated worktree, landing as
+ the second seat after BARCHI-2's badf-git GIT-B (#134) and reconciling `WP-2026-0070`.
  
 +## badf-git GIT-C — the read-only baseline inspector (`BADF-WP-0069`, Issue #127 / GOV-0048)
 +
@@ -99,11 +99,11 @@ index 62126b8..e7c2450 100644
  
  Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
 diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
-index b56bdf3..b1eeaad 100644
+index 260482e..ef2b755 100644
 --- a/scripts/badf_gate.py
 +++ b/scripts/badf_gate.py
-@@ -3403,6 +3403,108 @@ def validate_solution_composition(path: Path) -> str:
-     return f"BADF SOLUTION-COMPOSITION PASS: {len(solutions)} composition(s) over {len(reqs)} requirement(s); structural only -- seams are WP-SOL-C"
+@@ -3416,6 +3416,108 @@ def validate_solution_composition(path: Path) -> str:
+     return f"BADF SOLUTION-COMPOSITION PASS: {len(solutions)} composition(s) over {len(reqs)} requirement(s); structural + matrix-internal seams (SOL-C04/05/06)"
  
  
 +# ---- badf-git GIT-C: the read-only baseline inspector (BADF-WP-0069) ----------------
@@ -211,7 +211,7 @@ index b56bdf3..b1eeaad 100644
  def main() -> int:
      parser = argparse.ArgumentParser(description=__doc__)
      subparsers = parser.add_subparsers(dest="command", required=True)
-@@ -3411,6 +3513,8 @@ def main() -> int:
+@@ -3424,6 +3526,8 @@ def main() -> int:
      lock_parser.add_argument("--instance", type=Path, default=None, help="re-sign a project instance's badf/lockfile.json instead")
      inst_parser = subparsers.add_parser("instance", help="validate a project instance at <path>; writes nothing")
      inst_parser.add_argument("path", type=Path)
@@ -220,7 +220,7 @@ index b56bdf3..b1eeaad 100644
      charter_parser = subparsers.add_parser("charter", help="bind an instance to the framework's authority floor at its pinned revision")
      charter_parser.add_argument("path", type=Path)
      adv_parser = subparsers.add_parser("advance", help="bind an APPROVED dossier for the instance's next gate; the gate is derived from the chain")
-@@ -3444,6 +3548,12 @@ def main() -> int:
+@@ -3457,6 +3561,12 @@ def main() -> int:
              for line in validate_instance(args.path):
                  print(line)
              return 0
@@ -505,11 +505,11 @@ index 0000000..de926a4
 +
 +if __name__ == "__main__":
 +    unittest.main()
-diff --git a/work/WP-2026-0070/work-package.json b/work/WP-2026-0070/work-package.json
-index 292701a..c5c90b4 100644
---- a/work/WP-2026-0070/work-package.json
-+++ b/work/WP-2026-0070/work-package.json
-@@ -48,11 +48,12 @@
+diff --git a/work/WP-2026-0072/work-package.json b/work/WP-2026-0072/work-package.json
+index 56647c2..d90142c 100644
+--- a/work/WP-2026-0072/work-package.json
++++ b/work/WP-2026-0072/work-package.json
+@@ -45,11 +45,12 @@
      "reversible": true,
      "method": "revert the squash commit via PR"
    },
@@ -518,9 +518,9 @@ index 292701a..c5c90b4 100644
    "external_target": {
      "repository": "bstBizEra/badf",
      "branch": "main",
--    "base_revision": "aba7de3"
-+    "base_revision": "aba7de3",
-+    "landed_as": "0343c8e96740f97fdfe54f7b29b574e296c559a2"
+-    "base_revision": "0343c8e"
++    "base_revision": "0343c8e",
++    "landed_as": "9cf4b13bd3c56d860c517f558ac7c53dc6316bf2"
    },
-   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-B per GTGM v0.1 section 17 (design order: B before C; GIT-C queued as #127 / WP-2026-0069). Resolves #129 / GOV-0049. Reconciles WP-2026-0067, WP-2026-0068 (c04981d) and WP-2026-0071 (aba7de3) -- both landed while this branch was open; branch rebased onto aba7de3. Engineered by BARCHI-2 in a linked worktree; parallel seat BARCHI-1 holds WP-2026-0068 (badf-solution-design)."
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Extends the `solution` command (canonical gate, SOL-I12); no lifecycle change. Rebased onto 0343c8e as the 2nd lander after BARCHI-2's GIT-B (#134); reconciles WP-2026-0070 (the land-time-current LANDED_UNRECONCILED WP). Built in an isolated worktree (badf-wt-solc, GIT-I04). Shipped via operator /loop 'badf-solution-design to active'. Resolves #135 / GOV-0051."
  }
