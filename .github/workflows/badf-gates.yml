@@ -30,6 +30,11 @@ jobs:
           # merge-base(HEAD, origin/main) or refuses.
           BADF_AUTHORITY_BASELINE: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: python3 scripts/badf_gate.py repo
+      - name: Git baseline (read-only; the runner's own checkout -- detached on pull_request)
+        # BADF-WP-0069 (badf-git GIT-C): the positive control on real infrastructure. GIT-O0 --
+        # writes nothing, fetches nothing; on a pull_request the checkout is the detached
+        # refs/pull/N/merge ref, so head_kind must render `detached` here, not a branch.
+        run: python3 scripts/badf_gate.py git-baseline
       # QA finding m1: fail-fast hid every violation after the first. Negative
       # control 1 went red at step 4 and steps 5-6 were skipped, so the
       # authority refusal was never exercised and the operator saw one problem

@@ -1,0 +1,55 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0069",
+  "title": "GIT-C read-only Git baseline inspector: `badf_gate.py git-baseline` renders the GIT_BASELINED record (GIT-O0, writes nothing) + repository-state subskill",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0056",
+  "repository": "bstBizEra/badf",
+  "objective": "Make the badf-git BASELINE stage (git-cycle.md section 2 / GIT_BASELINED) a record a tool measures instead of a claim an agent types: a deterministic, read-only `badf_gate.py git-baseline [<path>]` subcommand that prints one JSON git-baseline record to stdout -- repository identity, worktree path / branch or detached / linked-worktree flag, working-tree and index status as counts only (staged, unstaged, untracked, stash), target ref + SHA + tree (origin/<default> as known locally), source ref + HEAD SHA + tree, merge base, ahead/behind, head_is_ancestor_of_target, honest no-fetch remote freshness, policy_epoch, disposition -- and a `BADF GATE PASS` line; writes nothing, performs no network operation, never mutates refs, index, worktree, stash or reflog. Three fail-closed refusals (not a git repository; no origin/<default>; unborn HEAD) exit 1 with a BLOCKED reason. A declarative subskill skills/badf-git/subskills/repository-state/SKILL.md routes to it. A CI step runs it on the PR runner (detached refs/pull/N/merge) as a positive control on real infrastructure.",
+  "business_value": "badf_gate.py resolves an authority baseline and reads revisions but has no working-tree/index/worktree observation at all; BADF's own G07 dossiers bind source_revision: HEAD symbolically; the composition tuple CI computes is printed to a log and recorded nowhere; and this session found two agents in one working tree with no record of that state. The inspector is the producer of most GIT_BASELINED fields, the prerequisite for GIT-D/E/G tooling, and stays at GIT-O0 so it adds no authority and no mutation path -- GTGM v0.1 sections 4, 15 and 17 (GIT-C).",
+  "in_scope": [
+    "badf_gate.py: `git-baseline [<path>]` subcommand (default: BADF's own root) built on the existing helpers (a path-aware git call like badf_compose.py's, self_repository, DEFAULT_BRANCH, the 0/1/2/3 exit convention); JSON record to stdout + PASS line; three refusals",
+    "skills/badf-git/subskills/repository-state/SKILL.md (declarative router to the subcommand) registered IMPLEMENTED, C1, allowed_tools [], real digest; badf-git root stays DESIGNED",
+    ".github/workflows/badf-gates.yml: a read-only `git-baseline` step on the runner (positive control; detached HEAD case)",
+    "tests/test_badf_git_baseline.py (12 tests, failing-first, scratch clones via tests/_scratch.seed_clone; read-only and determinism proofs)",
+    "GITHUB_CONTROL_PLANE.md doctrine section; own G07 self-dossier; lockfile re-signed"
+  ],
+  "out_of_scope": [
+    "any mutation (fetch, checkout, worktree add, stash, clean) -- GIT-D and later; any network call",
+    "composition tuple / expected_result_tree / evidence-object writing -- GIT-E; GitHub API, PR/ruleset inspection -- GIT-F",
+    "a scripts/badf_git.py or any second validator (GIT-I12); test_set_epoch (BADF defines none -- declared as non-coverage); advancing badf-git root beyond DESIGNED"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "clean checkout at origin/<default>: GIT_BASELINED, ahead=0 behind=0, merge_base == head == target, equal trees, zero counts, exit 0; topic branch: ahead=1, merge_base == target; behind: behind=1, head_is_ancestor_of_target true; detached: head_kind detached, source_ref null -- also on the CI PR runner",
+    "dirty state reported as counts only (no path, no content); the three refusals exit 1 BLOCKED and each is load-bearing (mutation); read-only proven (status/reflog/stash/index byte-identical, no files created); deterministic modulo observed_at",
+    "record keys cover every git-cycle.md section 2 BASELINE item except test-set epoch (declared non-coverage); repository-state registered IMPLEMENTED C1 allowed_tools [] with a real digest, root stays DESIGNED",
+    "no Git authority, no mutation path, no network, no new script, no schema change; authority-matrix, tool-registry, schemas unchanged; repo integrity clean; compose green; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_git_baseline.py"
+  ],
+  "evidence": [
+    "failing-first run",
+    "mutation",
+    "compose output",
+    "CI runner git-baseline step output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "0343c8e"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-C per GTGM v0.1 section 17, after GIT-B (WP-2026-0070 / 0343c8e). Resolves #127 / GOV-0048. Reconciles WP-2026-0070. Engineered by BARCHI-2 in a linked worktree under the operator's /loop; parallel seat BARCHI-1 on WP-2026-0072."
+}

@@ -210,6 +210,16 @@
       "allowed_tools": [],
       "status": "VALIDATED",
       "digest": "sha256:5d8848ef97cdd21c62cccfa4ff37b30f71823516566638fbee3cf1d60530ea46"
+    },
+    {
+      "name": "repository-state",
+      "source": "skills/badf-git/subskills/repository-state/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:decd6f8bbdc450a824e48b14e1196a99b4498ade470a8501afc40123a8f33772"
     }
   ]
 }

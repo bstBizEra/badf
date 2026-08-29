@@ -1,0 +1,526 @@
+diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
+index 46b6605..eeb01b3 100644
+--- a/.github/workflows/badf-gates.yml
++++ b/.github/workflows/badf-gates.yml
+@@ -30,6 +30,11 @@ jobs:
+           # merge-base(HEAD, origin/main) or refuses.
+           BADF_AUTHORITY_BASELINE: ${{ github.event.pull_request.base.sha || github.event.before }}
+         run: python3 scripts/badf_gate.py repo
++      - name: Git baseline (read-only; the runner's own checkout -- detached on pull_request)
++        # BADF-WP-0069 (badf-git GIT-C): the positive control on real infrastructure. GIT-O0 --
++        # writes nothing, fetches nothing; on a pull_request the checkout is the detached
++        # refs/pull/N/merge ref, so head_kind must render `detached` here, not a branch.
++        run: python3 scripts/badf_gate.py git-baseline
+       # QA finding m1: fail-fast hid every violation after the first. Negative
+       # control 1 went red at step 4 and steps 5-6 were skipped, so the
+       # authority refusal was never exercised and the operator saw one problem
+diff --git a/badf/demands/BADF-DEM-0056.json b/badf/demands/BADF-DEM-0056.json
+new file mode 100644
+index 0000000..fd16a89
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0056.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0056",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 127,
++    "url": "https://github.com/bstBizEra/badf/issues/127",
++    "exported_at": "2026-08-29T18:50:12Z",
++    "body_digest": "sha256:423def71d86f05bca4737dde53967aacc72b4081c2f455e5ec16558924685d76"
++  },
++  "title": "GOV-0048: BADF-WP-GIT-C — read-only Git baseline inspector (deterministic GIT_BASELINED record; GIT-O0, writes nothing)",
++  "problem": "## Observed\n\n`badf-git` is frozen `DESIGNED` (WP-2026-0066, `b1e0f5a`). Its BASELINE stage (`references/git-cycle.md` §2) and `GIT_BASELINED` state (`references/git-state-machine.md`) require an agent to *observe before editing* — repository identity, worktree/branch/index status, target ref + SHA, source ref + SHA, merge base, remote freshness, policy epoch, and unknown local state — and to exit BASELINE only when \"a reproducible baseline exists\". Today nothing produces that record deterministically: `badf_gate.py` resolves an authority baseline (`resolve_authority_baseline`) and reads revisions, but has no working-tree/index/worktree observation at all, so `GIT_BASELINED` is a claim an agent types, not a record a tool measures. Measured on `main` `8673d9a` (2026-08-29): BADF's own G07 dossiers bind `source_revision: \"HEAD\"` (symbolic); the composition tuple CI computes is printed to a job log and recorded nowhere; and this session found a parallel agent operating in the same working tree with no record of that state. The design (GTGM v0.1 §17) names this unit **BADF-WP-GIT-C — Read-Only Inspector**.\n\n## Expected\n\nA deterministic, **read-only** (`GIT-O0 OBSERVE`) baseline inspector, shipped as a subcommand of the existing canonical control (`python3 scripts/badf_gate.py git-baseline [<path>]`, default = BADF's own root), plus the declarative subskill `skills/badf-git/subskills/repository-state/SKILL.md` that routes to it. The subcommand prints one JSON **git-baseline record** to stdout and a `BADF GATE PASS` line, writes nothing, performs no network operation, and never mutates refs, index, worktree, stash, or reflog. The record carries the BASELINE items of `git-cycle.md` §2:\n\n- repository identity (the `SELF` registry name via `self_repository()` + the resolved root path);\n- current worktree path, branch (or `detached`), and whether this is a linked worktree;\n- working-tree/index status as **counts only** (staged, unstaged, untracked, stash entries) — never paths or contents;\n- target ref (`refs/heads/<default>` as known locally via `origin/<default>`) + target SHA + target tree;\n- source ref + source HEAD SHA + HEAD tree; `head_kind: branch | detached`;\n- merge base of HEAD and target; `ahead`/`behind` counts; `head_is_ancestor_of_target`;\n- remote freshness stated honestly: the locally known `origin/<default>` SHA with `observed_without_fetch: true`;\n- `policy_epoch` from `badf/lifecycle.json`;\n- `disposition`: `GIT_BASELINED`, or a refusal.\n\n**Fail-closed refusals (exit 1, `BLOCKED`, reason on stdout):** not a git repository; no `origin/<default>` ref (mirrors the monotonic baseline resolver — no fallback to HEAD); HEAD unresolvable (unborn branch). A refusal still writes nothing.\n\n**Non-coverage declared, not hidden:** `test_set_epoch`/toolchain epoch — BADF defines no such epoch today; the record omits it and says so. Composition fields (`expected_result_tree`, `merge_method`) are **GIT-E**, not this WP. Branch-name/identity conformance is **GIT-B**, not this WP: the record *reports* the branch name; it does not judge it.\n\n**CI positive control:** `badf-gates.yml` runs `git-baseline` on the PR runner and prints the record. Note the semantics there: `actions/checkout` on `pull_request` sets no `ref`, so the runner's HEAD is the detached `refs/pull/N/merge` — the record must report `head_kind: detached` and must not present that merge ref as the PR head. This is a **detached-HEAD positive control on real infrastructure**, not a claim.\n\n## Acceptance criteria\n\n1. `badf_gate.py git-baseline` on a clean checkout at `origin/<default>` renders `GIT_BASELINED`, `ahead=0 behind=0`, `merge_base == head_sha == target_sha`, equal trees, all status counts 0, exit 0.\n2. On a topic branch one commit past target: `ahead=1`, `merge_base == target_sha`, `source_ref == refs/heads/<branch>`, `head_kind: branch`.\n3. When target has advanced past HEAD: `behind=1`, `head_is_ancestor_of_target: true`.\n4. Detached HEAD renders `head_kind: detached` with `source_ref: null` — and the same on the CI PR runner (the merge-ref case).\n5. Dirty state is reported as counts only; the record contains no file path and no content from the working tree.\n6. The three refusals each exit 1 with `BLOCKED` and a reason; each refusal branch is **load-bearing** (mutation: removing any one admits a false baseline).\n7. Read-only proven: `git status --porcelain=v2`, the reflog line count, `git stash list`, and the index digest are byte-identical before and after a run; no file is created under the repository.\n8. Deterministic: two consecutive runs produce identical records modulo `observed_at`.\n9. The record's keys cover every BASELINE item of `git-cycle.md` §2 except test-set epoch, which the record declares as non-coverage.\n10. `repository-state` is registered in `badf/skill-registry.json` (`IMPLEMENTED`, `C1`, `allowed_tools: []`, real digest); `badf-git` root stays `DESIGNED`; `SKILL.md` points to the registry and hardcodes no status.\n11. No Git authority, no mutation path, no network: no new script file, no schema change, no ruleset/workflow-permission change; `git diff` shows `badf/authority-matrix.json`, `badf/tool-registry.json`, `schemas/` unchanged.\n12. `repo` integrity clean; lockfile re-signed; G07 self-dossier bound; full `unittest discover` + composed-tree compose green in CI (faithful-runner shape, stdlib only).\n\n## Tests (`tests/test_badf_git_baseline.py`, scratch clones via `tests/_scratch.seed_clone`)\n\n- `test_baseline_on_clean_clone_reports_GIT_BASELINED`\n- `test_baseline_on_topic_branch_reports_ahead_and_merge_base`\n- `test_baseline_detects_behind_target`\n- `test_baseline_reports_detached_head_without_source_ref`\n- `test_baseline_reports_dirty_counts_without_paths_or_contents`\n- `test_baseline_refuses_outside_a_git_repository`\n- `test_baseline_refuses_without_origin_default`\n- `test_baseline_refuses_unborn_head`\n- `test_baseline_is_read_only_and_creates_no_files`\n- `test_baseline_is_deterministic_modulo_observed_at`\n- `test_baseline_record_covers_contract_baseline_items`\n- `test_repository_state_subskill_registered_and_root_stays_designed`\n\n## Out of scope\n\n- Any mutation (`fetch`, `checkout`, `worktree add`, `stash`, `clean`) — GIT-D and later.\n- Composition tuple / `expected_result_tree` / evidence-object writing — **GIT-E**.\n- Branch-name or WP-id enforcement — **GIT-B**.\n- GitHub API, PR/ruleset inspection — **GIT-F**.\n- A `scripts/badf_git.py` or any second validator (GIT-I12).\n- Advancing `badf-git` root beyond `DESIGNED`.\n\n## Risk / authority / stop conditions\n\n- Change class **C1** (read-only observation; G07 minimum is C1) → base roles `engineering_owner` + `independent_reviewer`; no C2 lens panel required.\n- Target gate **G07** (self-dossier, `HUMAN_REQUIRED` under a single collaborator, as WP-0066/0067).\n- Stop if the inspector would need a fetch, a write, or a credential; if `origin/<default>` semantics require a fallback to HEAD; or if scope grows past one subcommand + one subskill doc + tests + doctrine section.\n- Lean mode: **enforced** — minimality ladder stop at ⑥ (minimum change to existing `badf_gate.py`, reusing the `_git` helper pattern (with the repository path as an argument, as `badf_compose.py` already does), `self_repository`, `DEFAULT_BRANCH`, the 0/1/2/3 exit convention, and `tests/_scratch.seed_clone`). No new module.\n\n## Identity\n\n- Ledger: **WP-2026-0069** · demand **BADF-DEM-0056** · this issue **GOV-0048** · phase label BADF-WP-GIT-C.\n- Branch `wp/WP-2026-0069-git-baseline` in a **linked worktree** (GIT-I04; the shared clone is in use by a parallel seat).\n- The branch first runs `badf_gate.py reconcile` for whichever work package is `LANDED_UNRECONCILED` at branch time (expected: WP-2026-0068 — BARCHI-1's `badf-solution-design` WP-SOL-A composition-contract freeze, per the BARCHI-1 ↔ BARCHI-2 handshake of 2026-08-29, final track confirmed by the operator; WP-2026-0067 if 0068 has not landed — the reconcile is content-agnostic).\n- Parallel seat: BARCHI-1 holds WP-2026-0068 / BADF-DEM-0055 / GOV-0047 (`badf-solution-design` WP-SOL-A, **not** GIT-B). No shared files between the two WPs.\n- **Ordering flag for the operator:** GTGM §17 sequences GIT-B (identity) before GIT-C. GIT-B is currently **unowned**. GIT-C has no dependency on B — it reports the branch name and never judges it, and the ledger id form is already normalized by `badf_compose.py` (`WP_LINE` accepts both forms) — so landing C first creates no dead control and no contradiction. But B requires an operator decision C does not (which WP-id form is canonical: `WP-2026-NNNN` in `work/` and the ledger vs `BADF-WP-NNNN` in 40/40 commit subjects). Approve C now, or hold C for B — your call; BARCHI-2 will plan B on request once that form is decided.\n\nsource: GTGM v0.1 §4 (`GIT_BASELINED`), §15 (`subskills/repository-state/`), §17 (GIT-C) · discovered-by: BARCHI-2 assessment of badf-git on `8673d9a` · status: PROPOSED\n\n🧠 **BARCHI-2** — plan posted; engineering starts on human approval.\n<!-- agent: architect -->\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T18:50:12Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "BADF-WP-GIT-C read-only Git baseline inspector (`badf_gate.py git-baseline`, GIT-O0, writes nothing) + repository-state subskill. Authority: operator `/loop your goal on badf-git` (2026-08-29), design order GTGM v0.1 section 17, after GIT-B (WP-2026-0070, 0343c8e). Worked as BADF-WP-0069."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 961b477..478a5c7 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -210,6 +210,16 @@
+       "allowed_tools": [],
+       "status": "IMPLEMENTED",
+       "digest": "sha256:5d8848ef97cdd21c62cccfa4ff37b30f71823516566638fbee3cf1d60530ea46"
++    },
++    {
++      "name": "repository-state",
++      "source": "skills/badf-git/subskills/repository-state/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [],
++      "status": "IMPLEMENTED",
++      "digest": "sha256:decd6f8bbdc450a824e48b14e1196a99b4498ade470a8501afc40123a8f33772"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 62126b8..e7c2450 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -753,6 +753,30 @@ canonically. Calendar-year rollover was considered and rejected — a namespace
+ smallest change that removes the drift. The PR that shipped this was its own first subject on the
+ runner. GIT-C (the read-only baseline inspector, #127) follows in design order.
+ 
++## badf-git GIT-C — the read-only baseline inspector (`BADF-WP-0069`, Issue #127 / GOV-0048)
++
++badf-git's BASELINE stage requires an agent to *observe before editing* and to leave the stage only
++when "a reproducible baseline exists" — yet nothing produced that record deterministically:
++`badf_gate.py` resolved an authority baseline and read revisions but had no working-tree, index or
++worktree observation at all, BADF's own G07 dossiers bind `source_revision: HEAD` symbolically, and
++this session found two agents in one working tree with no record of that state. `GIT_BASELINED`
++was a sentence an agent typed.
++
++**A baseline is measured, not typed.** `python3 scripts/badf_gate.py git-baseline [<path>]` prints
++one JSON git-baseline record — repository identity; worktree path, `branch`/`detached`, linked
++worktree; index and worktree status as **counts only** (never a path, never content); target ref +
++SHA + tree as known locally; source ref + HEAD SHA + tree; merge base, ahead/behind, ancestry;
++remote freshness stated honestly (`observed_without_fetch: true`); `policy_epoch` — and a PASS line.
++It is `GIT-O0 OBSERVE`: writes nothing, fetches nothing, moves nothing (proven by a test that
++snapshots status, reflog, stash, index and the file list before and after). It refuses, `BLOCKED`,
++outside a git tree, when `origin/<default>` does not resolve (no fallback to HEAD — the monotonic
++resolver's rule), and on an unborn HEAD. The contract's test-set epoch does not exist in BADF and is
++declared as non-coverage rather than invented. The `repository-state` subskill routes to it and is
++registered `IMPLEMENTED` (C1, no tools of its own); the `badf-git` root stays `DESIGNED`. A CI step
++runs the inspector on the runner's own checkout — detached at `refs/pull/N/merge` on a pull request —
++as the positive control on real infrastructure. Composition identity is GIT-E; branch conformance
++is GIT-B's check; platform state is GIT-F.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index b56bdf3..b1eeaad 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -3403,6 +3403,108 @@ def validate_solution_composition(path: Path) -> str:
+     return f"BADF SOLUTION-COMPOSITION PASS: {len(solutions)} composition(s) over {len(reqs)} requirement(s); structural only -- seams are WP-SOL-C"
+ 
+ 
++# ---- badf-git GIT-C: the read-only baseline inspector (BADF-WP-0069) ----------------
++def _git_at(root: Path, *args: str) -> str | None:
++    """Like _git, for an arbitrary working tree. Read-only by construction: every
++    caller passes an observation command; nothing here writes a ref, the index,
++    the worktree, the stash or the reflog, and nothing fetches."""
++    try:
++        return subprocess.run(["git", "-C", str(root), *args], capture_output=True,
++                              text=True, check=True).stdout.strip()
++    except (subprocess.CalledProcessError, FileNotFoundError):
++        return None
++
++
++def git_baseline(root: Path) -> dict[str, Any]:
++    """`badf_gate.py git-baseline [<path>]`: the GIT_BASELINED record of a working
++    tree -- badf-git's BASELINE stage (references/git-cycle.md section 2) measured,
++    not typed. GIT-O0 OBSERVE: writes nothing, fetches nothing, moves nothing.
++
++    Repository identity; worktree path / branch or detached / linked; index and
++    worktree status as COUNTS ONLY (never a path or a byte of content); the target
++    (origin/<default> as known locally) ref + SHA + tree; the source HEAD ref + SHA
++    + tree; merge base, ahead/behind, ancestry; remote freshness stated honestly
++    (observed without a fetch); the policy epoch. Refuses -- BLOCKED -- outside a
++    git working tree, when origin/<default> does not resolve (no fallback to HEAD,
++    the monotonic resolver's rule), and on an unborn HEAD. The test-set/toolchain
++    epoch the contract mentions does not exist in BADF and is declared as
++    non-coverage rather than invented. Deterministic modulo `observed_at`.
++    """
++    from datetime import datetime, timezone
++    root = Path(root).resolve()
++    top = _git_at(root, "rev-parse", "--show-toplevel")
++    if top is None:
++        raise ValidationError(f"BLOCKED: {root} is not inside a git working tree; there is no repository to baseline")
++    top_path = Path(top)
++    tracking = f"refs/remotes/origin/{DEFAULT_BRANCH}"
++    target = _git_at(root, "rev-parse", "--verify", "-q", f"{tracking}^{{commit}}")
++    if target is None:
++        raise ValidationError(f"BLOCKED: origin/{DEFAULT_BRANCH} ({tracking}) does not resolve in {top}; the target is "
++                              "unknown and this inspector never falls back to HEAD and never fetches")
++    head = _git_at(root, "rev-parse", "--verify", "-q", "HEAD^{commit}")
++    if head is None:
++        raise ValidationError(f"BLOCKED: HEAD is unborn in {top} (no commit is checked out); there is no source state to baseline")
++    branch = _git_at(root, "symbolic-ref", "-q", "HEAD")
++    git_dir = _git_at(root, "rev-parse", "--git-dir") or ".git"
++    common_dir = _git_at(root, "rev-parse", "--git-common-dir") or git_dir
++    linked = (root / git_dir).resolve() != (root / common_dir).resolve()
++    counts = _git_at(root, "rev-list", "--left-right", "--count", f"HEAD...{tracking}") or "0\t0"
++    ahead, behind = (int(x) for x in counts.split())
++    ancestor = subprocess.run(["git", "-C", str(root), "merge-base", "--is-ancestor", "HEAD", target],
++                              capture_output=True).returncode == 0
++    staged = unstaged = untracked = unmerged = 0
++    for line in (_git_at(root, "status", "--porcelain=v2", "--untracked-files=all") or "").splitlines():
++        if line.startswith(("1 ", "2 ")):
++            xy = line.split(" ", 2)[1]
++            staged += xy[0] != "."
++            unstaged += xy[1] != "."
++        elif line.startswith("u "):
++            unmerged += 1
++        elif line.startswith("? "):
++            untracked += 1
++    stash = len([l for l in (_git_at(root, "stash", "list") or "").splitlines() if l.strip()])
++    name = None
++    reg_path = top_path / REPOSITORIES
++    if reg_path.is_file():
++        try:
++            for n, spec in (load_json(reg_path).get("repositories") or {}).items():
++                if isinstance(spec, dict) and spec.get("resolution") == "SELF":
++                    name = n
++        except ValidationError:
++            name = None
++    epoch = None
++    life = top_path / "badf/lifecycle.json"
++    if life.is_file():
++        try:
++            epoch = load_json(life).get("policy_epoch")
++        except ValidationError:
++            epoch = None
++    return {
++        "record": "git-baseline",
++        "schema_version": "1.0.0",
++        "observed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
++        "disposition": "GIT_BASELINED",
++        "repository": {"name": name, "root": top},
++        "worktree": {"path": str(root), "linked": linked,
++                     "head_kind": "branch" if branch else "detached", "branch": branch},
++        "index": {"staged": staged, "unstaged": unstaged, "untracked": untracked, "unmerged": unmerged, "stash": stash},
++        "target_ref": f"refs/heads/{DEFAULT_BRANCH}",
++        "target_sha": target,
++        "target_tree": _git_at(root, "rev-parse", f"{target}^{{tree}}"),
++        "source_ref": branch,
++        "source_head_sha": head,
++        "source_tree": _git_at(root, "rev-parse", "HEAD^{tree}"),
++        "merge_base_sha": _git_at(root, "merge-base", "HEAD", target),
++        "ahead": ahead,
++        "behind": behind,
++        "head_is_ancestor_of_target": ancestor,
++        "remote_freshness": {"tracking_ref": tracking, "sha": target, "observed_without_fetch": True},
++        "policy_epoch": epoch,
++        "non_coverage": ["test_set_epoch: BADF defines no test-set/toolchain epoch (git-cycle.md section 2); "
++                         "not recorded rather than invented"],
++    }
++
++
+ def main() -> int:
+     parser = argparse.ArgumentParser(description=__doc__)
+     subparsers = parser.add_subparsers(dest="command", required=True)
+@@ -3411,6 +3513,8 @@ def main() -> int:
+     lock_parser.add_argument("--instance", type=Path, default=None, help="re-sign a project instance's badf/lockfile.json instead")
+     inst_parser = subparsers.add_parser("instance", help="validate a project instance at <path>; writes nothing")
+     inst_parser.add_argument("path", type=Path)
++    gb_parser = subparsers.add_parser("git-baseline", help="render the read-only GIT_BASELINED record of <path> (default: this repository); writes nothing, fetches nothing (badf-git GIT-O0)")
++    gb_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
+     charter_parser = subparsers.add_parser("charter", help="bind an instance to the framework's authority floor at its pinned revision")
+     charter_parser.add_argument("path", type=Path)
+     adv_parser = subparsers.add_parser("advance", help="bind an APPROVED dossier for the instance's next gate; the gate is derived from the chain")
+@@ -3444,6 +3548,12 @@ def main() -> int:
+             for line in validate_instance(args.path):
+                 print(line)
+             return 0
++        elif args.command == "git-baseline":
++            rec = git_baseline(args.path)
++            print(json.dumps(rec, indent=2))
++            print(f"BADF GATE PASS: git-baseline -- GIT_BASELINED {rec['source_head_sha'][:7]} on "
++                  f"{rec['target_sha'][:7]} (ahead {rec['ahead']}, behind {rec['behind']})")
++            return 0
+         elif args.command == "charter":
+             print(write_charter(args.path))
+             return 0
+diff --git a/skills/badf-git/subskills/repository-state/SKILL.md b/skills/badf-git/subskills/repository-state/SKILL.md
+new file mode 100644
+index 0000000..9e5312c
+--- /dev/null
++++ b/skills/badf-git/subskills/repository-state/SKILL.md
+@@ -0,0 +1,50 @@
++---
++name: repository-state
++description: Observe and record the Git baseline of a working tree before any material Git operation -- repository identity, worktree/branch/index state as counts, target and source revisions and trees, merge base, ahead/behind, remote freshness and policy epoch -- by running the read-only `badf_gate.py git-baseline` inspector. Use at badf-git's BASELINE stage and whenever a claim about "where the checkout is" must be measured rather than typed. Do not use to fetch, check out, stash, clean, reset or otherwise change Git state, and never as a source of authority.
++---
++
++# repository-state
++
++A subskill of `badf-git` (`../../SKILL.md`). It produces the **git-baseline record** that
++badf-git's BASELINE stage (`../../references/git-cycle.md` section 2) and the
++`GIT_BASELINED` state (`../../references/git-state-machine.md`) require before editing. Its
++admission status is recorded in `badf/skill-registry.json`; this file defines behaviour and
++hardcodes no lifecycle status.
++
++**The invariant: a baseline is measured, not typed.** Until this subskill existed,
++`GIT_BASELINED` was a sentence an agent wrote. The record is produced by one deterministic
++command in the canonical control (GIT-I12: no second validator):
++
++```text
++python3 scripts/badf_gate.py git-baseline [<path>]      # default: this repository
++```
++
++It is `GIT-O0 OBSERVE` (`../../references/operation-authority-matrix.md`): it writes nothing,
++fetches nothing, and never moves a ref, the index, the worktree, the stash or the reflog. It
++grants nothing (GIT-I01) -- a green baseline is a fact about the checkout, not permission to
++change it.
++
++## What the record carries
++
++- repository identity (the `SELF` registry name when the tree is a BADF repository, and the root path);
++- worktree path, `head_kind` (`branch` | `detached`), branch, whether it is a linked worktree;
++- index and worktree status as **counts only** -- staged, unstaged, untracked, unmerged, stash entries --
++  never a path and never a byte of content;
++- `target_ref` (`refs/heads/<default>`), `target_sha`, `target_tree` -- the target as known locally;
++- `source_ref` (null when detached), `source_head_sha`, `source_tree`;
++- `merge_base_sha`, `ahead`, `behind`, `head_is_ancestor_of_target`;
++- `remote_freshness` stated honestly: the tracking ref's SHA with `observed_without_fetch: true`;
++- `policy_epoch` from `badf/lifecycle.json`; `observed_at`; `disposition: GIT_BASELINED`;
++- `non_coverage`: the contract's test-set/toolchain epoch does not exist in BADF and is declared, not invented.
++
++## Dispositions
++
++- `GIT_BASELINED` (exit 0) -- a reproducible baseline exists; the record is the evidence.
++- `BLOCKED` (exit 1) -- outside a git working tree; `origin/<default>` does not resolve (the inspector
++  never falls back to HEAD, the same rule the monotonic authority resolver follows); HEAD is unborn.
++
++## Boundaries
++
++- Composition identity (`expected_result_tree`, `merge_method`, epochs) is GIT-E, not this subskill.
++- Branch-name conformance is judged by `check_pr_traceability.py` (GIT-B); this record only *reports* the branch.
++- Platform state (pull requests, rulesets, checks) is GIT-F; nothing here talks to GitHub.
+diff --git a/tests/test_badf_git_baseline.py b/tests/test_badf_git_baseline.py
+new file mode 100644
+index 0000000..de926a4
+--- /dev/null
++++ b/tests/test_badf_git_baseline.py
+@@ -0,0 +1,210 @@
++"""GIT-C (BADF-WP-0069): the read-only Git baseline inspector.
++
++badf-git's BASELINE stage (references/git-cycle.md section 2) and its
++GIT_BASELINED state require an agent to observe before editing and to exit
++BASELINE only when "a reproducible baseline exists". Until this WP nothing
++produced that record deterministically -- GIT_BASELINED was a claim an agent
++typed. `badf_gate.py git-baseline [<path>]` prints one JSON record (identity,
++worktree/branch/index as counts only, target/source SHAs and trees, merge base,
++ahead/behind, honest no-fetch remote freshness, policy epoch) and a PASS line.
++It is GIT-O0: it writes nothing, fetches nothing, and never moves a ref.
++
++Every fixture is a scratch clone built by tests/_scratch.seed_clone and removed
++in cleanup -- interrupted runs must not leave the checkout dirty (the integrity
++suite's residue blocked a rebase during WP-0070).
++"""
++import hashlib
++import json
++import os
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++from tests._scratch import seed_clone  # noqa: E402
++
++TARGET = f"refs/remotes/origin/{gate.DEFAULT_BRANCH}"
++
++
++def run_cli(path: Path) -> subprocess.CompletedProcess:
++    return subprocess.run([sys.executable, "scripts/badf_gate.py", "git-baseline", str(path)],
++                          cwd=str(gate.ROOT), capture_output=True, text=True)
++
++
++def record_of(r: subprocess.CompletedProcess) -> dict:
++    lines = r.stdout.rstrip("\n").splitlines()
++    assert lines and lines[-1].startswith("BADF GATE PASS: git-baseline"), r.stdout + r.stderr
++    return json.loads("\n".join(lines[:-1]))
++
++
++def g(repo: Path, *args: str) -> str:
++    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, check=True).stdout.strip()
++
++
++def commit_file(repo: Path, name: str, text: str, msg: str) -> str:
++    (repo / name).write_text(text, encoding="utf-8")
++    g(repo, "add", name); g(repo, "commit", "-q", "-m", msg)
++    return g(repo, "rev-parse", "HEAD")
++
++
++class _Scratch(unittest.TestCase):
++    def setUp(self):
++        self.tmp = Path(tempfile.mkdtemp(prefix="badf-git-baseline-"))
++        self.addCleanup(shutil.rmtree, self.tmp, True)
++        self.repo = self.tmp / "badf"
++        self.base = seed_clone(self.repo)
++
++
++class GitBaselineRecordTests(_Scratch):
++    def test_baseline_on_clean_clone_reports_GIT_BASELINED(self):
++        r = run_cli(self.repo)
++        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        rec = record_of(r)
++        self.assertEqual(rec["disposition"], "GIT_BASELINED")
++        self.assertEqual(rec["source_head_sha"], self.base)
++        self.assertEqual(rec["target_sha"], self.base)
++        self.assertEqual(rec["merge_base_sha"], self.base)
++        self.assertEqual(rec["source_tree"], rec["target_tree"])
++        self.assertEqual((rec["ahead"], rec["behind"]), (0, 0))
++        self.assertTrue(rec["head_is_ancestor_of_target"])
++        self.assertEqual(rec["worktree"]["head_kind"], "branch")
++        self.assertEqual(rec["source_ref"], f"refs/heads/{gate.DEFAULT_BRANCH}")
++        self.assertEqual(rec["index"], {"staged": 0, "unstaged": 0, "untracked": 0, "unmerged": 0, "stash": 0})
++        self.assertIn(f"GIT_BASELINED {self.base[:7]} on {self.base[:7]}", r.stdout.splitlines()[-1])
++
++    def test_baseline_on_topic_branch_reports_ahead_and_merge_base(self):
++        g(self.repo, "checkout", "-q", "-b", "wp/WP-2026-0016-topic")
++        head = commit_file(self.repo, "topic.txt", "x\n", "topic")
++        rec = gate.git_baseline(self.repo)
++        self.assertEqual(rec["source_ref"], "refs/heads/wp/WP-2026-0016-topic")
++        self.assertEqual(rec["source_head_sha"], head)
++        self.assertEqual(rec["merge_base_sha"], self.base)
++        self.assertEqual((rec["ahead"], rec["behind"]), (1, 0))
++        self.assertFalse(rec["head_is_ancestor_of_target"])
++        self.assertEqual(rec["worktree"]["head_kind"], "branch")
++
++    def test_baseline_detects_behind_target(self):
++        newer = commit_file(self.repo, "upstream.txt", "y\n", "upstream moved")
++        g(self.repo, "update-ref", TARGET, newer)
++        g(self.repo, "reset", "-q", "--hard", self.base)
++        rec = gate.git_baseline(self.repo)
++        self.assertEqual(rec["target_sha"], newer)
++        self.assertEqual((rec["ahead"], rec["behind"]), (0, 1))
++        self.assertTrue(rec["head_is_ancestor_of_target"])
++        self.assertEqual(rec["merge_base_sha"], self.base)
++
++    def test_baseline_reports_detached_head_without_source_ref(self):
++        g(self.repo, "checkout", "-q", "--detach")
++        rec = gate.git_baseline(self.repo)
++        self.assertEqual(rec["worktree"]["head_kind"], "detached")
++        self.assertIsNone(rec["source_ref"])
++        self.assertEqual(rec["source_head_sha"], self.base)
++        self.assertEqual(rec["disposition"], "GIT_BASELINED")
++
++    def test_baseline_reports_dirty_counts_without_paths_or_contents(self):
++        secret_name, secret_text = "very-private-untracked-file.txt", "SECRET-CONTENT-8f3a"
++        (self.repo / "README.md").write_text("unstaged edit 9c1d\n", encoding="utf-8")           # unstaged
++        (self.repo / "AGENTS.md").write_text("staged edit 7b2e\n", encoding="utf-8"); g(self.repo, "add", "AGENTS.md")  # staged
++        (self.repo / secret_name).write_text(secret_text + "\n", encoding="utf-8")                 # untracked
++        (self.repo / "docs/00-operating-model.md").write_text("stash me\n", encoding="utf-8")
++        g(self.repo, "stash", "push", "-q", "--", "docs/00-operating-model.md")                  # stash
++        rec = gate.git_baseline(self.repo)
++        self.assertEqual(rec["index"], {"staged": 1, "unstaged": 1, "untracked": 1, "unmerged": 0, "stash": 1})
++        dump = json.dumps(rec)
++        for leak in (secret_name, secret_text, "README.md", "AGENTS.md", "9c1d", "7b2e"):
++            self.assertNotIn(leak, dump, f"the record leaks {leak!r}")
++
++
++class GitBaselineRefusalTests(_Scratch):
++    def test_baseline_refuses_outside_a_git_repository(self):
++        plain = self.tmp / "plain"; plain.mkdir()
++        r = run_cli(plain)
++        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
++        self.assertIn("BLOCKED", r.stderr); self.assertNotIn("PASS", r.stdout); self.assertNotIn("Traceback", r.stderr)
++        # The refusal must name the actual condition: with this branch removed the origin/<default>
++        # check still refuses a plain directory -- with the WRONG diagnosis (mutation survivor, WP-0069).
++        self.assertIn("not inside a git working tree", r.stderr)
++
++    def test_baseline_refuses_without_origin_default(self):
++        g(self.repo, "update-ref", "-d", TARGET)
++        r = run_cli(self.repo)
++        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
++        self.assertIn("BLOCKED", r.stderr); self.assertIn(f"origin/{gate.DEFAULT_BRANCH}", r.stderr)
++        self.assertNotIn("PASS", r.stdout)
++
++    def test_baseline_refuses_unborn_head(self):
++        unborn = self.tmp / "unborn"; unborn.mkdir()
++        g(unborn, "init", "-q"); g(unborn, "remote", "add", "origin", str(self.repo))
++        g(unborn, "fetch", "-q", "origin", self.base); g(unborn, "update-ref", TARGET, self.base)
++        r = run_cli(unborn)
++        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
++        self.assertIn("BLOCKED", r.stderr); self.assertIn("HEAD", r.stderr); self.assertNotIn("PASS", r.stdout)
++
++
++class GitBaselinePropertyTests(_Scratch):
++    def _snapshot(self) -> tuple:
++        files = sorted(str(p.relative_to(self.repo)) for p in self.repo.rglob("*") if ".git" not in p.parts)
++        index = hashlib.sha256(g(self.repo, "ls-files", "-s").encode()).hexdigest()
++        return (g(self.repo, "status", "--porcelain=v2"), len(g(self.repo, "reflog").splitlines()),
++                g(self.repo, "stash", "list"), index, files, g(self.repo, "rev-parse", "HEAD"), g(self.repo, "rev-parse", TARGET))
++
++    def test_baseline_is_read_only_and_creates_no_files(self):
++        (self.repo / "README.md").write_text("dirty on purpose\n", encoding="utf-8")
++        before = self._snapshot()
++        r = run_cli(self.repo); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        self.assertEqual(self._snapshot(), before)
++
++    def test_baseline_is_deterministic_modulo_observed_at(self):
++        a, b = gate.git_baseline(self.repo), gate.git_baseline(self.repo)
++        self.assertIn("observed_at", a); a.pop("observed_at"); b.pop("observed_at")
++        self.assertEqual(a, b)
++
++    def test_baseline_record_covers_contract_baseline_items(self):
++        rec = gate.git_baseline(self.repo)
++        # git-cycle.md section 2 -- repository identity; worktree/branch/index status; target ref + SHA;
++        # source ref + SHA; merge base; remote freshness; policy epoch; unknown local state (stash/untracked).
++        for key in ("record", "schema_version", "observed_at", "disposition", "repository", "worktree", "index",
++                    "target_ref", "target_sha", "target_tree", "source_ref", "source_head_sha", "source_tree",
++                    "merge_base_sha", "ahead", "behind", "head_is_ancestor_of_target", "remote_freshness",
++                    "policy_epoch", "non_coverage"):
++            self.assertIn(key, rec, key)
++        self.assertEqual(rec["record"], "git-baseline")
++        self.assertEqual(rec["target_ref"], f"refs/heads/{gate.DEFAULT_BRANCH}")
++        self.assertEqual(rec["remote_freshness"]["tracking_ref"], TARGET)
++        self.assertTrue(rec["remote_freshness"]["observed_without_fetch"])
++        self.assertEqual(rec["policy_epoch"], gate.load_json(gate.ROOT / "badf/lifecycle.json")["policy_epoch"])
++        self.assertTrue(any("test_set_epoch" in n for n in rec["non_coverage"]))
++        self.assertIn("root", rec["repository"]); self.assertIn("linked", rec["worktree"])
++
++
++class GitBaselineOnThisCheckoutTests(unittest.TestCase):
++    def test_baseline_of_this_checkout_renders(self):
++        """The runner's own checkout: a branch locally, a detached merge ref on a pull_request runner."""
++        r = run_cli(gate.ROOT)
++        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        rec = record_of(r)
++        self.assertEqual(rec["disposition"], "GIT_BASELINED")
++        self.assertIn(rec["worktree"]["head_kind"], ("branch", "detached"))
++        self.assertEqual(rec["repository"]["name"], gate.self_repository())
++
++    def test_repository_state_subskill_registered_and_root_stays_designed(self):
++        reg = gate.load_json(gate.ROOT / "badf/skill-registry.json")
++        by = {s["name"]: s for s in reg["skills"]}
++        self.assertIn("repository-state", by)
++        entry = by["repository-state"]
++        self.assertEqual(entry["source"], "skills/badf-git/subskills/repository-state/SKILL.md")
++        self.assertEqual((entry["status"], entry["risk_class"], entry["allowed_tools"]), ("IMPLEMENTED", "C1", []))
++        digest = "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest()
++        self.assertEqual(entry["digest"], digest)
++        self.assertEqual(by["badf-git"]["status"], "DESIGNED")
++        text = (gate.ROOT / entry["source"]).read_text(encoding="utf-8")
++        self.assertIn("badf/skill-registry.json", text); self.assertNotIn("Status: `", text)
++        self.assertIn("git-baseline", text); self.assertIn("GIT-O0", text)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0070/work-package.json b/work/WP-2026-0070/work-package.json
+index 292701a..c5c90b4 100644
+--- a/work/WP-2026-0070/work-package.json
++++ b/work/WP-2026-0070/work-package.json
+@@ -48,11 +48,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "aba7de3"
++    "base_revision": "aba7de3",
++    "landed_as": "0343c8e96740f97fdfe54f7b29b574e296c559a2"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-B per GTGM v0.1 section 17 (design order: B before C; GIT-C queued as #127 / WP-2026-0069). Resolves #129 / GOV-0049. Reconciles WP-2026-0067, WP-2026-0068 (c04981d) and WP-2026-0071 (aba7de3) -- both landed while this branch was open; branch rebased onto aba7de3. Engineered by BARCHI-2 in a linked worktree; parallel seat BARCHI-1 holds WP-2026-0068 (badf-solution-design)."
+ }

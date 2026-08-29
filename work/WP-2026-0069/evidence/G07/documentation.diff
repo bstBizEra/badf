@@ -1,0 +1,35 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 62126b8..e7c2450 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -753,6 +753,30 @@ canonically. Calendar-year rollover was considered and rejected — a namespace
+ smallest change that removes the drift. The PR that shipped this was its own first subject on the
+ runner. GIT-C (the read-only baseline inspector, #127) follows in design order.
+ 
++## badf-git GIT-C — the read-only baseline inspector (`BADF-WP-0069`, Issue #127 / GOV-0048)
++
++badf-git's BASELINE stage requires an agent to *observe before editing* and to leave the stage only
++when "a reproducible baseline exists" — yet nothing produced that record deterministically:
++`badf_gate.py` resolved an authority baseline and read revisions but had no working-tree, index or
++worktree observation at all, BADF's own G07 dossiers bind `source_revision: HEAD` symbolically, and
++this session found two agents in one working tree with no record of that state. `GIT_BASELINED`
++was a sentence an agent typed.
++
++**A baseline is measured, not typed.** `python3 scripts/badf_gate.py git-baseline [<path>]` prints
++one JSON git-baseline record — repository identity; worktree path, `branch`/`detached`, linked
++worktree; index and worktree status as **counts only** (never a path, never content); target ref +
++SHA + tree as known locally; source ref + HEAD SHA + tree; merge base, ahead/behind, ancestry;
++remote freshness stated honestly (`observed_without_fetch: true`); `policy_epoch` — and a PASS line.
++It is `GIT-O0 OBSERVE`: writes nothing, fetches nothing, moves nothing (proven by a test that
++snapshots status, reflog, stash, index and the file list before and after). It refuses, `BLOCKED`,
++outside a git tree, when `origin/<default>` does not resolve (no fallback to HEAD — the monotonic
++resolver's rule), and on an unborn HEAD. The contract's test-set epoch does not exist in BADF and is
++declared as non-coverage rather than invented. The `repository-state` subskill routes to it and is
++registered `IMPLEMENTED` (C1, no tools of its own); the `badf-git` root stays `DESIGNED`. A CI step
++runs the inspector on the runner's own checkout — detached at `refs/pull/N/merge` on a pull request —
++as the positive control on real infrastructure. Composition identity is GIT-E; branch conformance
++is GIT-B's check; platform state is GIT-F.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
