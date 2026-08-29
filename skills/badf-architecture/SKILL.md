@@ -5,7 +5,7 @@ description: Govern architecture design, architectural decisions, architecture f
 
 # BADF Architecture
 
-Status: `SHADOWED` (contract frozen by `BADF-WP-0043`; the five G04 DESIGN evidence types enforced by `BADF-WP-0044`; the ASSURE substrate -- controls 13-18 -- enforced by `BADF-WP-0057` / WP-ARCH-C; shadow-calibrated on real architecture cases by `BADF-WP-0059` / WP-ARCH-D). `APPROVED` / `ACTIVE` remain the operator's admission decisions. This is an architecture **engineering + assurance** capability, not a diagram skill. Its primary lifecycle gate is **G04 — Architecture, Data and API**; it also feeds G05 (trust boundaries + data flows), G08/G09 verification and post-merge drift review.
+Contract frozen by `BADF-WP-0043`; the five G04 DESIGN evidence types enforced by `BADF-WP-0044`; the ASSURE substrate -- controls 13-18 -- enforced by `BADF-WP-0057` / WP-ARCH-C; shadow-calibrated on real architecture cases by `BADF-WP-0059` / WP-ARCH-D; admitted `ACTIVE` by the operator at `BADF-WP-0065`. The capability's **live status is `badf/skill-registry.json`** -- this file defines the contract, not the status, so it never hardcodes a status line that can drift from the registry. This is an architecture **engineering + assurance** capability, not a diagram skill. Its primary lifecycle gate is **G04 — Architecture, Data and API**; it also feeds G05 (trust boundaries + data flows), G08/G09 verification and post-merge drift review.
 
 Fundamental rule — four distinctions that never collapse:
 

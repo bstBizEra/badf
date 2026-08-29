@@ -1,6 +1,6 @@
 # Acceptance, invariants and admission
 
-Status: frozen contract v0.1. The capability is `SHADOWED` (advanced `DESIGNED -> IMPLEMENTED -> VALIDATED -> SHADOWED` across WP-ARCH-A/B/C/D). Progression follows `docs/07-skills-governance.md`: `DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED → APPROVED → ACTIVE`.
+Status: frozen contract v0.1. The capability's **live status is `badf/skill-registry.json`** (admitted `ACTIVE` at `BADF-WP-0065`) — this document defines the contract, not the status, so it never hardcodes a status line that can drift from the registry. Progression follows `docs/07-skills-governance.md`: `DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED → APPROVED → ACTIVE`.
 
 ## Canonical invariants
 
@@ -45,4 +45,4 @@ Status: frozen contract v0.1. The capability is `SHADOWED` (advanced `DESIGNED -
 - `IMPLEMENTED`: the G04 DESIGN evidence semantics (`architecture`, `adr`, `data-model`, `api-contract`, `operability-design`) exist as deterministic gate rules with schemas (WP-ARCH-B).
 - `VALIDATED`: **met (`BADF-WP-0057` / WP-ARCH-C).** The ASSURE substrate is deterministic -- controls 13-18 enforced by the `assure` gate command with mutation-tested tests; the `architecture-assurance` record binds one baseline + one observed revision, never infers compliance, never self-authorises drift, and grants no authority. The registry status is advanced to `VALIDATED`.
 - `SHADOWED`: **met (`BADF-WP-0059` / WP-ARCH-D).** ASSURE run retrospectively on real BADF architecture cases spanning the outcome space (COMPLIANT stdlib-boundary; NONCOMPLIANT dependency drift; INDETERMINATE unobservable ADR); measured for true violations, false positives, INDETERMINATE handling and declared non-coverage -- no contract gap surfaced. See `references/assurance-shadow-evidence.md`. Registry status advanced to `SHADOWED`.
-- `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. These remain the operator's admission decision; `badf-architecture` sits at `SHADOWED` until then.
+- `APPROVED` / `ACTIVE`: **reached (`BADF-WP-0065`).** The operator's admission decision, given — owner + security approval (single-collaborator repo; the owner is also the security reviewer) and the registry digest is pinned. `badf-architecture` is `ACTIVE`. It grants **no** authority even when `ACTIVE`: the ARCH-I invariants hold at every status, and `badf_gate.py` remains the sole G04/ASSURE authority (ARCH-I11). An admission advance changes status, not the contract — the DESIGN and ASSURE controls are unchanged.
