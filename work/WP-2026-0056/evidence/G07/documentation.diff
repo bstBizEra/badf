@@ -1,0 +1,23 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 7d4f8a4..5caf1b8 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -467,6 +467,18 @@ the falsification kept its contradiction, findings were grounded, sufficiency re
+ because the cases actually happened. `badf-research` stays `DESIGNED`; advancing it up the ladder
+ (`… → SHADOWED → APPROVED → ACTIVE`) is the operator's admission decision, now backed by shadow data.
+ 
++## Router hardening — no unnamed hops (`BADF-WP-0056`, Issue #83)
++
++The research router (`references/research-types.md`) left two routes ending in an **unnamed conceptual
++hop**: R08 (EMPIRICAL_EXPERIMENT) → "experimental loop", R09 (STANDARDS) → "authoritative sources". A
++route that ends unnamed cannot be followed deterministically — a pre-`ACTIVE` gap (#83). Now, with all
++9 P0 subskills present, **R09 is named to existing subskills** (`framing → deep → fact-check →
++synthesis`) and **R08 is pinned to the existing BADF experiment mechanism** (composed-tree gate +
++mutation + `experiments[]`), with a dedicated `experimental-research` subskill **deferred to P1** —
++*not* a tenth P0 subskill. The teeth are doc-structural, not a record control (the router is
++documentation): `RouterDeterminismTests` refuses a reintroduced unnamed hop and asserts every route
++token resolves to a registered subskill. Closes #83. `badf-research` stays `DESIGNED`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

@@ -1,0 +1,128 @@
+diff --git a/badf/demands/BADF-DEM-0043.json b/badf/demands/BADF-DEM-0043.json
+new file mode 100644
+index 0000000..12ea36a
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0043.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0043",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 83,
++    "url": "https://github.com/bstBizEra/badf/issues/83",
++    "exported_at": "2026-08-28T17:55:01Z",
++    "body_digest": "sha256:521ddcfb63aab7beefc32ad3fa9c2c2efa3049f1030434ff26c94c135e20ffed"
++  },
++  "title": "GOV-0030: research router has unnamed hops \u2014 R08 (experimental loop) and R09 (authoritative sources) are nondeterministic before ACTIVE",
++  "problem": "## Observed\nThe frozen research taxonomy has two routes that terminate in an **unnamed** hop, which makes routing nondeterministic:\n- **R08 / EMPIRICAL_EXPERIMENT** routes to `framing \u2192 experimental loop (D5)`, but the nine P0 subskills contain no `experimental-research` / `experimental-loop` subskill.\n- **R09 / STANDARDS** routes to `authoritative sources` rather than a named subskill.\n\n## Expected\nBefore `badf-research` reaches `ACTIVE`, make the router state each route explicitly \u2014 **without creating a tenth skill yet**:\n- `R08` \u2192 **either** the existing BADF engineering experiment mechanism **or** a future dedicated `experimental-research` subskill (state which).\n- `R09` \u2192 the canonical named route (e.g. `problem-framing \u2192 deep-research \u2192 fact-checking \u2192 evidence-synthesis`).\nA route that ends in a conceptual, unnamed hop is a routing defect: it cannot be validated deterministically.\n\n## Evidence\n- `skills/badf-research/references/research-types.md`: R08 \u2192 \"experimental loop\"; R09 \u2192 \"authoritative sources\"\n- `skills/badf-research/subskills/`: only `repository-research`, `problem-framing` \u2014 no `experimental-research`\n\n## Unknowns\nWhether R08 should bind to an existing mechanism or a new subskill is an open design decision for the operator; this issue only records the defect and defers the resolution. Not to be fixed in-passing \u2014 it is a router-contract change gated behind a governed WP.\n\ndiscovered-by: BADF-WP-0046 (problem-framing) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-28T17:55:01Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Router hardening: name R09's canonical route (framing->deep->fact-check->synthesis) and pin R08 to the existing BADF experiment mechanism (experimental-research subskill deferred to P1). No gate control -- doc-structural contract test guards it. Authority: operator 'proceed on your call' (2026-08-29). Closes #83. Worked as BADF-WP-0056."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 7d4f8a4..5caf1b8 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -467,6 +467,18 @@ the falsification kept its contradiction, findings were grounded, sufficiency re
+ because the cases actually happened. `badf-research` stays `DESIGNED`; advancing it up the ladder
+ (`… → SHADOWED → APPROVED → ACTIVE`) is the operator's admission decision, now backed by shadow data.
+ 
++## Router hardening — no unnamed hops (`BADF-WP-0056`, Issue #83)
++
++The research router (`references/research-types.md`) left two routes ending in an **unnamed conceptual
++hop**: R08 (EMPIRICAL_EXPERIMENT) → "experimental loop", R09 (STANDARDS) → "authoritative sources". A
++route that ends unnamed cannot be followed deterministically — a pre-`ACTIVE` gap (#83). Now, with all
++9 P0 subskills present, **R09 is named to existing subskills** (`framing → deep → fact-check →
++synthesis`) and **R08 is pinned to the existing BADF experiment mechanism** (composed-tree gate +
++mutation + `experiments[]`), with a dedicated `experimental-research` subskill **deferred to P1** —
++*not* a tenth P0 subskill. The teeth are doc-structural, not a record control (the router is
++documentation): `RouterDeterminismTests` refuses a reintroduced unnamed hop and asserts every route
++token resolves to a registered subskill. Closes #83. `badf-research` stays `DESIGNED`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/skills/badf-research/references/research-types.md b/skills/badf-research/references/research-types.md
+index 103d2e1..c101e67 100644
+--- a/skills/badf-research/references/research-types.md
++++ b/skills/badf-research/references/research-types.md
+@@ -15,8 +15,8 @@ A request may touch several types but has ONE primary question and one primary t
+ | `R05` | `ARCHITECTURE` | boundaries, patterns, ADR options | framing → deep → technical → comparison |
+ | `R06` | `SECURITY` | threats, CVEs, attack paths | framing → repository / deep → adversarial (challenge required) |
+ | `R07` | `COMPARATIVE` | decide between alternatives | framing → deep → comparison |
+-| `R08` | `EMPIRICAL_EXPERIMENT` | measure under control | framing → experimental loop (D5) |
+-| `R09` | `STANDARDS` | what a standard or regulation requires | framing → authoritative sources |
++| `R08` | `EMPIRICAL_EXPERIMENT` | measure under control | framing → experiments via the BADF experiment mechanism (composed-tree gate + mutation + `experiments[]`; a dedicated `experimental-research` subskill is deferred to P1) → synthesis (D5) |
++| `R09` | `STANDARDS` | what a standard or regulation requires | framing → deep → fact-check → synthesis |
+ | `R10` | `FACT_VERIFICATION` | is a claim true | fact-checking |
+ 
+ ## Depths (`depth`)
+diff --git a/tests/test_badf_research_contract.py b/tests/test_badf_research_contract.py
+index eeedde4..6130c3e 100644
+--- a/tests/test_badf_research_contract.py
++++ b/tests/test_badf_research_contract.py
+@@ -110,5 +110,38 @@ class ContractInvariantTests(unittest.TestCase):
+             self.assertIn(ref, text)
+ 
+ 
++class RouterDeterminismTests(unittest.TestCase):
++    """BADF-WP-0056 (#83): the research router names every route to a real subskill or
++    a named mechanism -- an unnamed conceptual hop makes routing nondeterministic."""
++
++    TYPES_MD = (REF / "research-types.md").read_text(encoding="utf-8")
++    ROUTE_TOKEN_TO_SUBSKILL = {
++        "framing": "problem-framing", "repository": "repository-research",
++        "deep": "deep-research", "technical": "technical-research",
++        "comparison": "comparative-evaluation", "adversarial": "adversarial-research",
++        "synthesis": "evidence-synthesis", "fact-check": "fact-checking",
++    }
++
++    def test_no_unnamed_router_hops(self):
++        for phrase in ("experimental loop", "authoritative sources"):
++            self.assertNotIn(phrase, self.TYPES_MD, f"unnamed router hop {phrase!r} remains")
++
++    def test_r09_route_names_existing_subskills(self):
++        row = next(l for l in self.TYPES_MD.splitlines() if "`R09`" in l)
++        for tok in ("framing", "deep", "fact-check", "synthesis"):
++            self.assertIn(tok, row, f"R09 route does not name {tok}")
++
++    def test_r08_route_names_the_mechanism_and_the_deferral(self):
++        row = next(l for l in self.TYPES_MD.splitlines() if "`R08`" in l)
++        self.assertIn("BADF experiment mechanism", row)
++        self.assertIn("experimental-research", row)
++        self.assertIn("P1", row)
++
++    def test_every_route_token_resolves_to_a_registered_subskill(self):
++        existing = {p.name for p in (gate.ROOT / "skills/badf-research/subskills").iterdir() if p.is_dir()}
++        for token, subskill in self.ROUTE_TOKEN_TO_SUBSKILL.items():
++            self.assertIn(subskill, existing, f"route token {token!r} names {subskill!r}, which does not exist")
++
++
+ if __name__ == "__main__":
+     unittest.main()
+diff --git a/work/WP-2026-0055/work-package.json b/work/WP-2026-0055/work-package.json
+index ddb5f33..d868b33 100644
+--- a/work/WP-2026-0055/work-package.json
++++ b/work/WP-2026-0055/work-package.json
+@@ -43,11 +43,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "45b1a8c"
++    "base_revision": "45b1a8c",
++    "landed_as": "10e7821d3c1ef7dd686e5a0adb700030d7bdd347"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Shadow evaluation of the completed P0 family: 3 real historical cases, faithfully represented, no contract gap surfaced. Reconciles WP-2026-0054. badf-research stays DESIGNED; SHADOWED evidence produced -- the status advance up the admission ladder is the operator's call."
+ }

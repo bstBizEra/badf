@@ -1,0 +1,51 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0056",
+  "title": "Router hardening: name R09's canonical route and pin R08's mechanism (close #83, the unnamed-hops defect)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0043",
+  "objective": "Close the research-router determinism gap (#83): the routing table left R08 (EMPIRICAL_EXPERIMENT) routing to an unnamed 'experimental loop' and R09 (STANDARDS) to unnamed 'authoritative sources'. Name R09's route to existing subskills (framing -> deep -> fact-check -> synthesis) and pin R08 to the existing BADF experiment mechanism (composed-tree gate + mutation + experiments[]), deferring a dedicated experimental-research subskill to P1 -- not creating a 10th subskill. Add a doc-structural contract test so no unnamed hop can return. badf-research stays DESIGNED.",
+  "business_value": "A route that ends in an unnamed conceptual hop cannot be followed deterministically; naming R08/R09 to real subskills and a named mechanism makes every research route reconstructable, which is a pre-ACTIVE requirement, and the guard test stops the regression.",
+  "in_scope": [
+    "skills/badf-research/references/research-types.md: R08 and R09 routes named",
+    "tests/test_badf_research_contract.py: RouterDeterminismTests (no unnamed hop; R08/R09 named; route vocabulary resolves to registered subskills)",
+    "doctrine note; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "creating an experimental-research subskill (deferred to P1)",
+    "any gate control on records (the router is docs; the teeth are the contract test)",
+    "#84 (semantic support); the family status advance"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "research-types.md no longer contains 'experimental loop' or 'authoritative sources'",
+    "R09 routes to framing -> deep -> fact-check -> synthesis; R08 names the BADF experiment mechanism + the P1 deferral",
+    "the router contract test passes and would fail on a reintroduced unnamed hop",
+    "the taxonomy contract tests still pass (R-codes/D-codes unaffected)",
+    "compose green both shapes; PyYAML-absent suite green; #83 closed by this PR"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_research_contract.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "10e7821"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Docs + contract-test only -- earns no gate control (the router is documentation, guarded doc-structurally). Reconciles WP-2026-0055. Closes #83. badf-research stays DESIGNED."
+}

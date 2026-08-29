@@ -43,11 +43,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "45b1a8c"
+    "base_revision": "45b1a8c",
+    "landed_as": "10e7821d3c1ef7dd686e5a0adb700030d7bdd347"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Shadow evaluation of the completed P0 family: 3 real historical cases, faithfully represented, no contract gap surfaced. Reconciles WP-2026-0054. badf-research stays DESIGNED; SHADOWED evidence produced -- the status advance up the admission ladder is the operator's call."
 }

@@ -15,8 +15,8 @@ A request may touch several types but has ONE primary question and one primary t
 | `R05` | `ARCHITECTURE` | boundaries, patterns, ADR options | framing → deep → technical → comparison |
 | `R06` | `SECURITY` | threats, CVEs, attack paths | framing → repository / deep → adversarial (challenge required) |
 | `R07` | `COMPARATIVE` | decide between alternatives | framing → deep → comparison |
-| `R08` | `EMPIRICAL_EXPERIMENT` | measure under control | framing → experimental loop (D5) |
-| `R09` | `STANDARDS` | what a standard or regulation requires | framing → authoritative sources |
+| `R08` | `EMPIRICAL_EXPERIMENT` | measure under control | framing → experiments via the BADF experiment mechanism (composed-tree gate + mutation + `experiments[]`; a dedicated `experimental-research` subskill is deferred to P1) → synthesis (D5) |
+| `R09` | `STANDARDS` | what a standard or regulation requires | framing → deep → fact-check → synthesis |
 | `R10` | `FACT_VERIFICATION` | is a claim true | fact-checking |
 
 ## Depths (`depth`)
