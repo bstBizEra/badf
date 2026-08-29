@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0065",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 149,
+    "url": "https://github.com/bstBizEra/badf/issues/149",
+    "exported_at": "2026-08-29T20:48:55Z",
+    "body_digest": "sha256:32661acfeefe9e1edd479ecdd5ff20bfccf4c5d2ae7d89e2fade6c79d6600f82"
+  },
+  "title": "GOV-0058: WP-SEC-A \u2014 freeze badf-security-design (G05 security-design composition/router; DESIGNED; OWASP adapt-not-authority; design != assurance)",
+  "problem": "## Observed\n\nBADF has badf-architecture (G04) and badf-solution-design (G03/G04) ACTIVE, and the lifecycle defines G05 (Security, privacy and AI safety: threat-model / privacy-assessment / supply-chain-plan / security-approval; owner security_authority; min C2) \u2014 but no security-design capability exists to author that evidence.\n\n## Expected\n\n**WP-SEC-A \u2014 freeze badf-security-design as a G05 security-DESIGN composition/router, DESIGNED only.** Pre-implementation: models how the intended system (architecture + solution baselines) can be abused, derives controls + security requirements, normalizes specialist outputs into the EXISTING G05 design artifacts. Thin router; NOT a scanner, second gate, or authority. Security ASSURANCE (code review, SAST, SCA, secrets, IaC, API/web/mobile review, remediation) is OUT of scope -> future badf-security-assurance at G08/G09. OWASP = ADAPT-as-methodology, never adopt-as-authority. security-approval stays with security_authority. No scripts/badf_security_design.py, no schema, no lifecycle change, no gate-code change.\n\n## Evidence\n\n- lifecycle.json G05 required_evidence confirms the seam (threat-model/privacy-assessment/supply-chain-plan/security-approval).\n- Mirrors the badf-solution-design / badf-architecture DESIGNED-first admission ladder (contract freeze, prove later).\n\n## Unknowns\n\nWhich specialists earn independent subskill status vs. stay cross-cutting (security-requirements likely cross-cutting) \u2014 deferred to WP-SEC-B+.\n\ndiscovered-by: operator design directive 2026-08-30 \u00b7 status: DISCOVERED\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-29T20:48:55Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "WP-SEC-A freezes badf-security-design (G05 security-design composition/router, DESIGNED) per the operator's detailed design directive 2026-08-30. Pre-implementation design only; assurance deferred to a future badf-security-assurance (G08/G09); OWASP adapt-not-authority; security-approval reserved to security_authority; no gate/schema/lifecycle change. DEM-0065/GOV-0058/WP-0078. Reconciles WP-2026-0077."
+}

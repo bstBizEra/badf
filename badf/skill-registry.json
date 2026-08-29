@@ -240,6 +240,16 @@
       "allowed_tools": [],
       "status": "IMPLEMENTED",
       "digest": "sha256:257649dd0b700fdf9c9f51a2b9edc651793b65154dec7eb8219ba79d77505e74"
+    },
+    {
+      "name": "badf-security-design",
+      "source": "skills/badf-security-design/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [],
+      "status": "DESIGNED",
+      "digest": "sha256:60d0a80d0ec829627555698c353b962975e519a2a71b081109b5d75320cdef6e"
     }
   ]
 }

@@ -1,0 +1,54 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0078",
+  "title": "WP-SEC-A: freeze badf-security-design (G05 security-design composition/router; DESIGNED)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0065",
+  "repository": "bstBizEra/badf",
+  "objective": "Freeze the badf-security-design capability contract as DESIGNED: a thin G05 security-DESIGN composition/router that consumes the architecture + solution baselines, models abuse, derives controls and security requirements, and normalizes specialist outputs into the EXISTING G05 design artifacts (threat-model / privacy-assessment / supply-chain-plan). Root SKILL.md + 14 references (routing, g05-contract, threat-model, security-requirements, privacy, abuse-case, api-security, iam-security, supply-chain, ai-agent-security, normalization, traceability, acceptance, external-methodology) + SEC-I01..SEC-I15. Pre-implementation only: security assurance (code review/SAST/SCA/secrets/IaC/API-review/remediation) is deferred to a future badf-security-assurance at G08/G09. OWASP is ADAPT-as-methodology, never gate authority. security-approval is reserved to security_authority. NO scripts/badf_security_design.py, NO schema, NO gate-code, NO lifecycle change.",
+  "business_value": "G05 has evidence types but no capability to author them coherently. A DESIGNED contract freeze fixes the ownership boundaries first (architecture declares structure; solution-design declares behavior; security-design models abuse + derives controls; assurance later verifies the build; only security_authority approves), so the later IMPLEMENTED/VALIDATED/SHADOWED/ACTIVE WPs build on a stable contract instead of re-litigating scope. It captures the OWASP ecosystem's value as reference methodology without turning BADF into an OWASP wrapper or letting a scanner grant a gate.",
+  "in_scope": [
+    "skills/badf-security-design/SKILL.md: thin router; SEC-I01..SEC-I15; FRAME->INGEST->CLASSIFY->ROUTE->SPECIALIZE->RECONCILE->CHALLENGE->NORMALIZE->PACKAGE; architecture/solution-design consume-not-rediscover boundary; REQUIREMENT_CHANGE_REQUIRED + ARCHITECTURE_CHANGE_REQUIRED escalation",
+    "skills/badf-security-design/references/: routing, g05-contract, threat-model-contract, security-requirements, privacy-contract, abuse-case-contract, api-security-contract, iam-security-contract, supply-chain-contract, ai-agent-security-contract, normalization, traceability, acceptance, external-methodology",
+    "badf/skill-registry.json: register badf-security-design DESIGNED (C-class, allowed_tools [])",
+    "tests/test_badf_security_design_contract.py: declarative-surface guards (exact reference set, no second gate/schema, invariants+workflow present, normalization maps to G05 evidence + reserves security-approval, routing reference-adapt, OWASP adapt-not-authority, no lifecycle change, registry DESIGNED)",
+    "GITHUB_CONTROL_PLANE.md doctrine section; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "any scanner / SAST / SCA / secrets / IaC / code-review / PR-review / remediation (security ASSURANCE -> future badf-security-assurance at G08/G09)",
+    "scripts/badf_security_design.py, any schema, any lifecycle.json change, any gate-code change (SEC-I15 no second gate)",
+    "producing security-approval or accepting residual risk (reserved to security_authority; SEC-I12/I13)",
+    "activating any specialist subskill (routing names who would own each concern; activation is a later WP)",
+    "IMPLEMENTED/VALIDATED/SHADOWED/ACTIVE (later WP-SEC-B..E); the badf-git program (BARCHI-2)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "SKILL.md states SEC-I01..SEC-I15, the 9-step workflow, the architecture/solution boundaries, and both *_CHANGE_REQUIRED escalations",
+    "normalization.md maps specialists -> threat-model/privacy-assessment/supply-chain-plan and reserves security-approval to security_authority; external-methodology.md records OWASP ADAPT + explicit NOT-ADOPT",
+    "no scripts/badf_security_design.py; no security-*.schema.json; lifecycle.json G05 unchanged; badf-security-design registered DESIGNED",
+    "tests pass; repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_security_design_contract.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "5aaeb62"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. DESIGNED contract freeze; no gate code (controls are WP-SEC-C) -> no mutation. Built in isolated worktree (badf-wt-sec, GIT-I04) parallel to BARCHI-2's badf-git GIT-E (#148). Ids WP-0078/DEM-0065/GOV-0058. Reconciles WP-2026-0076 (GIT-E, landed 5aaeb62; WP-0077 already reconciled on main by GIT-E). Operator design directive 2026-08-30. Resolves #149 / GOV-0058."
+}

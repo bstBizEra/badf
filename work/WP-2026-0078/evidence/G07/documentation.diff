@@ -1,0 +1,37 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 06ebc66..70e3a80 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -884,6 +884,32 @@ point). The `composition-verification` subskill carries the author's order of op
+ content change recomputes the record, never edits it. This work package's own PR carried its record
+ and CI verified it. Approval staleness and the expected-head merge guard are GIT-F; the landed-tree
+ comparison after merge is GIT-F/G.
++## badf-security-design — G05 security-design contract freeze (`BADF-WP-0078` / WP-SEC-A, Issue #149 / GOV-0058)
++
++BADF had G05 evidence types (`threat-model`, `privacy-assessment`, `supply-chain-plan`,
++`security-approval`) but no capability to author them coherently. `badf-security-design` is that
++capability, frozen `DESIGNED`: a thin **pre-implementation** composition/router that consumes the
++architecture and solution baselines, models how the intended system can be abused, derives controls
++and security requirements, and **normalizes** its specialists into the three G05 **design** artifacts.
++The fourth, `security-approval`, is **never authored by the skill** — it is `security_authority`'s,
++referencing exact digests (SEC-I13). SKILL.md + 14 references + `SEC-I01…SEC-I15`.
++
++Three boundaries carry the design: **(1) design ≠ assurance** — code review / SAST / SCA / secrets /
++IaC / API-review / remediation are security *assurance* and belong to a future `badf-security-assurance`
++at G08/G09; absence of a design finding never establishes implementation security (SEC-I14). **(2)
++consume, don't rediscover** — architecture owns boundaries (a missing one raises
++`ARCHITECTURE_CHANGE_REQUIRED`, not an invented boundary, SEC-I05) and solution-design owns the
++functional IAM/API/data contracts (security-design *secures and challenges* them — least privilege,
++bypass resistance, isolation — it does not fork a second IAM model, SEC-I06); a derived security
++requirement that changes scope raises `REQUIREMENT_CHANGE_REQUIRED` rather than silently rewriting G02
++(SEC-I04). **(3) OWASP is ADAPT, not authority** — the Secure Agent Playbook and AppSec Agent are
++adapted for procedural decomposition, CWE/ASVS/OWASP/OpenCRE traceability, structured findings and
++agent/API taxonomies; their agent output, lifecycle and scanner results are **never** BADF gate
++authority (`OWASP agent says PASS → G05 PASS` must never happen). `ai-agent-security-design` is
++conditional (`NOT_APPLICABLE_WITH_REASON` for non-agentic work), first-class for BADF itself, and rests
++on `CAPABILITY ≠ AUTHORITY`. No `scripts/badf_security_design.py`, no schema, no `lifecycle.json`
++change, no gate-code, no specialist activated. Ladder WP-SEC-A…E mirrors solution-design; the deferred
++`badf-security-assurance` is named, not built.
+ 
+ ## Discovery ≠ scope expansion
+ 
