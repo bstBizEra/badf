@@ -1,0 +1,54 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0074",
+  "title": "WP-SOL-D: representative shadow calibration (badf-solution-design -> SHADOWED)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0061",
+  "repository": "bstBizEra/badf",
+  "objective": "Advance badf-solution-design VALIDATED -> SHADOWED by running the `solution` command retrospectively over representative composition matrices spanning the outcome space, and recording the calibration: true positives (every structural + seam defect refused), zero false positives (clean multi-requirement compositions pass), and declared non-coverage (the external-artifact seams SOL-I02/05/07/10/11 are not exercised -- they need the specialist adapters). Because BADF has no real project compositions yet, the shadow is REPRESENTATIVE and labelled so; a real re-shadow is owed on the first real use. Ship 1-2 committed representative shadow matrices, a shadow-evidence reference, and advance the registry.",
+  "business_value": "SHADOWED is the rung before APPROVED/ACTIVE. It proves the composition/seam controls behave correctly across the outcome space and honestly bounds what they do NOT yet cover. Doing it on representative cases -- and saying plainly that it is representative, not real-project -- keeps the admission ladder truthful: the operator can hold APPROVED/ACTIVE for a real re-shadow if preferred, rather than a synthetic one masquerading as production calibration.",
+  "in_scope": [
+    "skills/badf-solution-design/references/shadow-evidence.md: the calibration (TP/FP/non-coverage) over representative matrices, explicitly REPRESENTATIVE-not-real, with the external-artifact non-coverage declared",
+    "examples/solution-composition-shadow-refund.json + solution-composition-shadow-reporting.json (representative clean compositions, all seams satisfied) validated in CI",
+    "registry badf-solution-design VALIDATED -> SHADOWED",
+    "tests/test_badf_solution_composition.py: the shadow matrices pass; the shadow-evidence doc carries the representative caveat + the non-coverage list; registry SHADOWED",
+    "GITHUB_CONTROL_PLANE.md doctrine section; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "a real-project shadow (no real compositions exist yet -- deferred honestly to first real use)",
+    "the external-artifact seams (SOL-I02/05/07/10/11) -- still need the specialist adapters",
+    "APPROVED/ACTIVE (the loop's later operator-authorized admission step); specialist adapters; a lifecycle.json change; any second validator (SOL-I12)",
+    "the badf-git program (BARCHI-2 + a third actor); the measured-gate ADR"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the representative shadow matrices render PASS via `solution`",
+    "shadow-evidence.md records the TP defects (empty/dup/binds-nothing/api-no-authz/authz-no-audit/ux-no-a11y all refused), the FP-free clean passes, the declared non-coverage (SOL-I02/05/07/10/11), and the REPRESENTATIVE caveat",
+    "badf-solution-design is registered SHADOWED; no scripts/badf_solution_design.py; lifecycle.json unchanged",
+    "tests pass; repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_solution_composition.py",
+    "tests/test_badf_solution_design_contract.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "f1a0a5c"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Shadow evidence + status advance; no new gate control (the controls are WP-SOL-B/C), so no mutation. Built in an isolated worktree (badf-wt-sold, GIT-I04) parallel to BARCHI-2's badf-git GIT-D (#140). Ids WP-0074/DEM-0061/GOV-0053 (0073 poisoned by third actor, avoided). Reconciles WP-2026-0075 (GIT-D, landed f1a0a5c; WP-0069 already reconciled on main by GIT-D). Shipped via operator /loop 'badf-solution-design to active'. Resolves #141 / GOV-0053."
+}

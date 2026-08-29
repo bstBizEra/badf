@@ -1,0 +1,33 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index fa7b108..695a263 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -819,6 +819,28 @@ discipline (`git add -p`, inspect the staged diff, atomic commits) and the rule
+ baseline before verification, judge it before publishing or opening a PR, recompute on a rewrite. CI
+ stores the runner's own baseline and checks it (`CURRENT`) every run. Composition identity is GIT-E;
+ approval staleness is GIT-F.
++## badf-solution-design → SHADOWED — representative calibration (`BADF-WP-0074` / WP-SOL-D, Issue #141 / GOV-0053)
++
++`SHADOWED` is the rung before `APPROVED`/`ACTIVE`, and it means *the controls were run against
++cases and behaved*. `badf-research` and `badf-architecture` shadowed on **real** historical BADF
++records; `badf-solution-design` has **no real project compositions yet** — BADF is a governance
++framework with no UX/API/authorization surface of its own to compose. So this shadow is
++**REPRESENTATIVE**, and the evidence (`references/shadow-evidence.md`) says so in its first
++sentence: a real re-shadow is owed the first time a project actually uses the skill, and the
++operator may hold `APPROVED`/`ACTIVE` until then.
++
++The calibration ran the `solution` command over representative matrices: **all seven defect classes
++refused** (empty matrix, duplicate id, a row binding no artifact, malformed `requirement_ref`,
++api-without-authz SOL-C04, authz-without-audit SOL-C05, ux-without-a11y SOL-C06); **zero false
++positives** on three clean compositions — including the reporting matrix's **data-only row**, the
++false-positive check that proves the seams are *co-occurrence, not blanket* (a row with no
++`api_refs` correctly needs no `authorization_refs`). And it **declares its non-coverage**: the
++external-artifact seams (SOL-I02/05/07/10/11) and the *semantic* resolution of each ref against its
++specialist artifact are not exercised — they need adapters that do not exist. Silence is not
++coverage; the gaps are named, not implied to pass. Two committed shadow matrices
++(`examples/solution-composition-shadow-refund.json`, `-reporting.json`) are validated in CI. No
++`lifecycle.json` change, no new control (the controls are WP-SOL-B/C), no second validator. Registry
++`VALIDATED → SHADOWED`; `APPROVED`/`ACTIVE` remains the operator's admission decision.
+ 
+ ## Discovery ≠ scope expansion
+ 

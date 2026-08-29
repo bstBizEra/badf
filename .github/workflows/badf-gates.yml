@@ -72,6 +72,8 @@ jobs:
           python3 scripts/badf_gate.py assure examples/architecture-assurance-shadow-pyyaml-drift.json
           python3 scripts/badf_gate.py assure examples/architecture-assurance-shadow-indeterminate.json
           python3 scripts/badf_gate.py solution examples/solution-composition.json
+          python3 scripts/badf_gate.py solution examples/solution-composition-shadow-refund.json
+          python3 scripts/badf_gate.py solution examples/solution-composition-shadow-reporting.json
       - name: PR traceability + identity (Work-Package + Closes #N; title + branch carry the same NNNN)
         # BADF-MAIN-001. Only a PR has a body; a push to main has already been
         # traced by the PR that produced it. Reports on the PR event only.

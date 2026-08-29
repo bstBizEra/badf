@@ -110,11 +110,35 @@ class MatrixInternalSeamTests(SolutionCompositionBase):
         self.admitted(rec)
 
 
+class ShadowCalibrationTests(SolutionCompositionBase):
+    """WP-SOL-D: the representative shadow matrices pass, and the shadow-evidence
+    reference labels itself REPRESENTATIVE (not real-project) and declares the
+    external-artifact seams it does NOT cover -- silence is not coverage."""
+
+    SHADOWS = ("solution-composition-shadow-refund.json", "solution-composition-shadow-reporting.json")
+
+    def test_representative_shadow_matrices_pass(self):
+        for name in self.SHADOWS:
+            rec = json.loads((gate.ROOT / "examples" / name).read_text())
+            self.admitted(rec)
+
+    def test_shadow_evidence_declares_representative_caveat(self):
+        doc = (gate.ROOT / "skills/badf-solution-design/references/shadow-evidence.md").read_text()
+        self.assertIn("REPRESENTATIVE", doc)
+        self.assertIn("no real project compositions yet", doc)
+
+    def test_shadow_evidence_declares_noncoverage(self):
+        doc = (gate.ROOT / "skills/badf-solution-design/references/shadow-evidence.md").read_text()
+        self.assertIn("non-coverage", doc.lower())
+        for seam in ("SOL-I02", "SOL-I05", "SOL-I07", "SOL-I10", "SOL-I11"):
+            self.assertIn(seam, doc, f"{seam} not declared as non-covered")
+
+
 class RegistryStatusTests(unittest.TestCase):
-    def test_badf_solution_design_is_registered_validated(self):
+    def test_badf_solution_design_is_registered_shadowed(self):  # WP-SOL-D advanced VALIDATED -> SHADOWED
         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
         entry = next(e for e in reg["skills"] if e["name"] == "badf-solution-design")
-        self.assertEqual(entry["status"], "VALIDATED")
+        self.assertEqual(entry["status"], "SHADOWED")
 
 
 if __name__ == "__main__":

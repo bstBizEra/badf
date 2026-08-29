@@ -21,7 +21,7 @@ REFS = {
     "composition-contract.md", "routing.md", "traceability.md", "ux-contract.md",
     "authorization-contract.md", "data-contract.md", "api-contract.md",
     "accessibility-contract.md", "cross-artifact-consistency.md", "acceptance.md",
-    "external-methodology.md",
+    "external-methodology.md", "shadow-evidence.md",  # WP-SOL-D shadow calibration
 }
 
 
