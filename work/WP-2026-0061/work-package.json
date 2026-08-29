@@ -1,0 +1,61 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0061",
+  "title": "Resolve GOV-0031 / adopt RSR-I06 (citation != support boundary) + control 27 (semantic-support coverage honesty)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0048",
+  "repository": "bstBizEra/badf",
+  "objective": "Close #84 by adopting RSR-I06 as a separation-of-responsibility invariant: SOURCE_EXISTS != SOURCE_SUPPORTS_CLAIM. The deterministic gate verifies source identity, provenance, digest/freshness, binding, contradiction structure and required adjudication; it does NOT claim to prove natural-language entailment. Add the small machine-enforceable receipt #84 asked for (a support_assessments array carrying a locator, produced by fact-checking) plus control 27: a VERIFIED claim must EITHER carry a support-assessment receipt for its cited support OR explicitly declare semantic-support non-coverage -- silence is refused, and a receipt that says a source does NOT substantiate a claim cannot back a VERIFIED binding. The gate verifies the assessment happened under contract; it never says the policy engine proved the sentence true.",
+  "business_value": "#84 (GOV-0031) is the last open research-contract design decision, and it was left OPEN when badf-research reached ACTIVE at WP-0058. Control 21 already declared semantic entailment outside its coverage, so activation claimed no hidden control -- but the discovery was never formally dispositioned. This WP closes that governance-closure defect: it freezes the deterministic/semantic boundary, gives the boundary machine-enforceable teeth (a claim cannot silently represent a source as supporting it), and keeps entailment where it belongs -- evidence produced by research intelligence, validated for existence, not adjudicated by the policy engine.",
+  "in_scope": [
+    "schemas/research-record.schema.json: optional per-claim semantic_support enum (ASSESSED|NON_COVERAGE) + optional record-level support_assessments array (claim_ref, source_ref, relation, assessment, assessor, method, locator{type,value})",
+    "control 27 in validate_research_record: a VERIFIED claim with supporting_sources must declare semantic_support; ASSESSED requires a substantiating receipt per supporting source with a locator; a NOT_SUBSTANTIATED/non-supporting receipt cannot back a VERIFIED binding; every receipt must be well-formed and consistent with the binding it names",
+    "migrate the 5 example records' VERIFIED claims to declare semantic_support=NON_COVERAGE (honest: entailment was never machine-verified) + one positive shadow record research-record-shadow-support-assessment.json exercising the ASSESSED receipt path; CI validates it",
+    "tests/test_badf_rsr_i06.py (failing-first) covering the honesty gap, the receipt path, the NOT_SUBSTANTIATED teeth, locator presence, consistency, and RSR-I01 authority unchanged",
+    "acceptance.md: control 27 row, RSR-I06 invariant + the four evidence states (SOURCE_EXISTS/SOURCE_BOUND/SOURCE_CURRENT/SOURCE_SUPPORTS_CLAIM), control 21 boundary note; fix the stale 'capability is DESIGNED' status line (badf-research is ACTIVE) + guard test",
+    "skills/badf-research/subskills/fact-checking/SKILL.md: semantic substantiation is an evidence-assessment responsibility recorded as a support_assessment receipt or declared non-coverage (extends CITATION != SUPPORT)",
+    "mutation; own G07 self-dossier; GITHUB_CONTROL_PLANE.md doctrine section incl. the WP-0058 governance-closure-defect finding"
+  ],
+  "out_of_scope": [
+    "making natural-language entailment itself a deterministic gate invariant (explicitly refused -- RSR-I06 forbids representing semantic entailment as machine-proven)",
+    "re-shadowing or de-activating badf-research: activation is RETAINED (control 21 already declared the boundary); control 27 only refuses more, never approves more",
+    "a semantic/NLP verifier, source content ingestion, or a standalone evidence-contract.md file (the four-state contract folds into acceptance.md to stay lean)",
+    "P1 research skills; the badf-architecture status advance; gates G06+"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "a VERIFIED claim with supporting_sources and no semantic_support declaration is refused (control 27 -- the #84 honesty gap; passes today)",
+    "a VERIFIED claim declaring ASSESSED but missing a receipt for a supporting source is refused; a receipt missing a locator is refused",
+    "a support-assessment whose assessment is NOT_SUBSTANTIATED (or whose relation does not support) cannot back a VERIFIED binding -- refused",
+    "the NON_COVERAGE path passes (honest fallback); research-record-shadow-support-assessment.json renders admissible via `research`",
+    "RSR-I01 holds unchanged: adopting RSR-I06 grants no implementation authority (implementation_authority stays false)",
+    "acceptance.md no longer asserts a stale DESIGNED status; the 5 migrated example records + all shadow records validate in CI",
+    "mutation kills every control-27 branch; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_rsr_i06.py",
+    "tests/test_badf_research.py",
+    "tests/test_badf_research_contract.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "f9a345f"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Extends the frozen research contract (extend-only): control 26 -> 27, no new module. Authority impact NONE (RSR-I06 grants no implementation authority). badf-research stays ACTIVE. Resolves #84 / GOV-0031. Reconciles WP-2026-0060."
+}

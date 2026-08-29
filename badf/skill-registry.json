@@ -85,7 +85,7 @@
         "local-shell"
       ],
       "status": "IMPLEMENTED",
-      "digest": "sha256:fa87749db7df5512f1f3cfdddba25e4b1f9f19ed9b56fdb8f01ee0a12c8669f8"
+      "digest": "sha256:695b89664612e662cbe3dfb8eb3816df235212ee67ead905a96ff6b102124d6f"
     },
     {
       "name": "evidence-synthesis",

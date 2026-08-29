@@ -28,7 +28,7 @@ Every material statement is a claim with a classification, supporting and contra
 
 | Status | Meaning |
 | :--- | :--- |
-| `VERIFIED` | ≥1 independent primary source and no open contradiction |
+| `VERIFIED` | ≥1 independent primary source, no open contradiction, and a declared `semantic_support` (RSR-I06, control 27) |
 | `PARTIALLY_VERIFIED` | supported, but not independently |
 | `DISPUTED` | supporting and contradicting sources both present |
 | `UNVERIFIED` | no source reached |
@@ -45,6 +45,24 @@ Confidence is **derived** from `basis` — `independent_primary_sources` (`ips`)
 | `MODERATE` | 1 independent primary source reproducible, or ≥2 not reproducible |
 | `HIGH` | ≥2 independent primary sources, reproducible, with an unresolved contradiction |
 | `VERY_HIGH` | ≥2 independent primary sources, reproducible, no contradiction |
+
+## Semantic support (RSR-I06)
+
+`SOURCE_EXISTS != SOURCE_SUPPORTS_CLAIM`. The gate verifies four evidence states deterministically, and stops there:
+
+| State | Verified by |
+| :--- | :--- |
+| `SOURCE_EXISTS` | schema + a unique `S-` id |
+| `SOURCE_BOUND` | the source id resolves in `supporting_sources`/`contradicting_sources` (referential integrity) |
+| `SOURCE_CURRENT` | `freshness == CURRENT` — a STALE/UNKNOWN source cannot support a claim (control 6) |
+| `SOURCE_SUPPORTS_CLAIM` | **not machine-checkable** — an evidence-assessment judgment, never a policy assertion |
+
+Whether a source's natural-language content entails a claim is `fact-checking`'s judgment, not the policy engine's. A `VERIFIED` claim on cited support declares `semantic_support`:
+
+- `ASSESSED` — the record carries a `support_assessments` receipt for **each** supporting source: `{claim_ref, source_ref, relation, assessment, assessor, method, locator}`. The `locator` (a `LINE_RANGE`/`BYTE_RANGE`/`ANCHOR`/`QUOTE` into the digest-bound source) is where fact-checking looked; it must be non-empty. A receipt whose own `assessment` is `NOT_SUBSTANTIATED` (or whose `relation` does not support) cannot back a `VERIFIED` binding — the record may not represent a source as supporting a claim its own reading refutes.
+- `NON_COVERAGE` — the honest fallback: entailment was **not** machine-verified. Silence (neither) is refused (control 27).
+
+`semantic_support` and `support_assessments` are a *reading* of the evidence, not the evidence itself, so they are excluded from `evidence_digest` — recording an assessment does not invalidate the digest, exactly like findings and disposition. RSR-I06 grants no implementation authority (RSR-I01 unchanged).
 
 ## Contradictions and non-coverage
 

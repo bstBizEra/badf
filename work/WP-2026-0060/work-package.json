@@ -45,11 +45,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "27c9f1c"
+    "base_revision": "27c9f1c",
+    "landed_as": "f9a345f35c8b9cb95f60ce39c0998e53460c3a6e"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Reuses the G01-G04 substrate -- no new validator module. G05 min change class is C2, so the example dossier carries the four C2 authority roles (product_owner/engineering_owner/quality_authority/service_owner); security-approval mirrors product-approval (human, digest-bound). Reconciles WP-2026-0059."
 }
