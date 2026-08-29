@@ -16,6 +16,16 @@
       "digest": "sha256:2370199aa8cc0b6c4c4d0c44eedceba41e645948acd8a65562b86040f97f9771"
     },
     {
+      "name": "badf-git",
+      "source": "skills/badf-git/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C2",
+      "allowed_tools": [],
+      "status": "DESIGNED",
+      "digest": "sha256:17ea1e412a1c5b35cf87b66797a82872cb2e414cb26be573a8f5ee66fba61778"
+    },
+    {
       "name": "badf-prd",
       "source": "skills/badf-prd/SKILL.md",
       "owner": "BADF Governance Authority",
