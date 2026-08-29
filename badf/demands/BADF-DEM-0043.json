@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0043",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 83,
+    "url": "https://github.com/bstBizEra/badf/issues/83",
+    "exported_at": "2026-08-28T17:55:01Z",
+    "body_digest": "sha256:521ddcfb63aab7beefc32ad3fa9c2c2efa3049f1030434ff26c94c135e20ffed"
+  },
+  "title": "GOV-0030: research router has unnamed hops \u2014 R08 (experimental loop) and R09 (authoritative sources) are nondeterministic before ACTIVE",
+  "problem": "## Observed\nThe frozen research taxonomy has two routes that terminate in an **unnamed** hop, which makes routing nondeterministic:\n- **R08 / EMPIRICAL_EXPERIMENT** routes to `framing \u2192 experimental loop (D5)`, but the nine P0 subskills contain no `experimental-research` / `experimental-loop` subskill.\n- **R09 / STANDARDS** routes to `authoritative sources` rather than a named subskill.\n\n## Expected\nBefore `badf-research` reaches `ACTIVE`, make the router state each route explicitly \u2014 **without creating a tenth skill yet**:\n- `R08` \u2192 **either** the existing BADF engineering experiment mechanism **or** a future dedicated `experimental-research` subskill (state which).\n- `R09` \u2192 the canonical named route (e.g. `problem-framing \u2192 deep-research \u2192 fact-checking \u2192 evidence-synthesis`).\nA route that ends in a conceptual, unnamed hop is a routing defect: it cannot be validated deterministically.\n\n## Evidence\n- `skills/badf-research/references/research-types.md`: R08 \u2192 \"experimental loop\"; R09 \u2192 \"authoritative sources\"\n- `skills/badf-research/subskills/`: only `repository-research`, `problem-framing` \u2014 no `experimental-research`\n\n## Unknowns\nWhether R08 should bind to an existing mechanism or a new subskill is an open design decision for the operator; this issue only records the defect and defers the resolution. Not to be fixed in-passing \u2014 it is a router-contract change gated behind a governed WP.\n\ndiscovered-by: BADF-WP-0046 (problem-framing) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-28T17:55:01Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Router hardening: name R09's canonical route (framing->deep->fact-check->synthesis) and pin R08 to the existing BADF experiment mechanism (experimental-research subskill deferred to P1). No gate control -- doc-structural contract test guards it. Authority: operator 'proceed on your call' (2026-08-29). Closes #83. Worked as BADF-WP-0056."
+}

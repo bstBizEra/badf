@@ -110,5 +110,38 @@ class ContractInvariantTests(unittest.TestCase):
             self.assertIn(ref, text)
 
 
+class RouterDeterminismTests(unittest.TestCase):
+    """BADF-WP-0056 (#83): the research router names every route to a real subskill or
+    a named mechanism -- an unnamed conceptual hop makes routing nondeterministic."""
+
+    TYPES_MD = (REF / "research-types.md").read_text(encoding="utf-8")
+    ROUTE_TOKEN_TO_SUBSKILL = {
+        "framing": "problem-framing", "repository": "repository-research",
+        "deep": "deep-research", "technical": "technical-research",
+        "comparison": "comparative-evaluation", "adversarial": "adversarial-research",
+        "synthesis": "evidence-synthesis", "fact-check": "fact-checking",
+    }
+
+    def test_no_unnamed_router_hops(self):
+        for phrase in ("experimental loop", "authoritative sources"):
+            self.assertNotIn(phrase, self.TYPES_MD, f"unnamed router hop {phrase!r} remains")
+
+    def test_r09_route_names_existing_subskills(self):
+        row = next(l for l in self.TYPES_MD.splitlines() if "`R09`" in l)
+        for tok in ("framing", "deep", "fact-check", "synthesis"):
+            self.assertIn(tok, row, f"R09 route does not name {tok}")
+
+    def test_r08_route_names_the_mechanism_and_the_deferral(self):
+        row = next(l for l in self.TYPES_MD.splitlines() if "`R08`" in l)
+        self.assertIn("BADF experiment mechanism", row)
+        self.assertIn("experimental-research", row)
+        self.assertIn("P1", row)
+
+    def test_every_route_token_resolves_to_a_registered_subskill(self):
+        existing = {p.name for p in (gate.ROOT / "skills/badf-research/subskills").iterdir() if p.is_dir()}
+        for token, subskill in self.ROUTE_TOKEN_TO_SUBSKILL.items():
+            self.assertIn(subskill, existing, f"route token {token!r} names {subskill!r}, which does not exist")
+
+
 if __name__ == "__main__":
     unittest.main()
