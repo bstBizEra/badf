@@ -1,0 +1,70 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0073",
+  "title": "BADF-WP-GIT-A2: GitHub Remote Workspace contract correction",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0059",
+  "repository": "bstBizEra/badf",
+  "objective": "Upgrade the DESIGNED badf-git contract so BADF isolates work through GitHub-hosted topic refs and immutable commit/tree identities rather than local git worktrees, while preserving protected-main composition, evidence and authority boundaries.",
+  "business_value": "Makes BADF Git suitable for cloud/agentic execution without relying on a persistent local filesystem, gives concurrent agents stable GitHub-native workspace identities, and reduces local-state ambiguity while retaining optimistic concurrency, exact-state evidence and protected integration controls.",
+  "in_scope": [
+    "skills/badf-git/SKILL.md contract correction to GitHub Remote Workspace",
+    "badf-git branch/PR, cycle, state-machine, operation, evidence and recovery reference contracts",
+    "contract tests that prevent regression to local git-worktree isolation",
+    "badf-git registry version/digest re-pin while status remains DESIGNED and allowed_tools remains empty",
+    "BADF-DEM-0059 demand export and WP-2026-0073 ledger record",
+    "reconcile prior landed WP-2026-0071 before this work lands",
+    "remote-only implementation through GitHub refs/objects/PR and GitHub-hosted CI"
+  ],
+  "out_of_scope": [
+    "native/local git worktree creation, listing, path conventions, registry, cleanup or recovery",
+    "local working-tree/index/stash/reflog baseline implementation",
+    "scripts/badf_git.py or a second Git validator/gate",
+    "activation of a GitHub mutation subskill/tool; badf-git remains DESIGNED",
+    "changes to lifecycle.json or authority-matrix merge/release/production authority",
+    "merging this PR without the independent authority required by BADF"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "badf-git explicitly defines GitHub Remote Workspace as repository + target/base + source/head/tree (+ PR when opened) and contains no instruction to use local git worktree as the execution substrate",
+    "the nested Git Loop is remote-object based: OBSERVE -> READ -> PATCH -> BUILD TREE -> CREATE COMMIT -> ADVANCE REF -> VERIFY -> RECONCILE",
+    "branch/PR, cycle, state, operation, evidence and recovery references consistently use GitHub refs/commit/tree identities and optimistic expected-pre-state semantics",
+    "contract tests reject git worktree add/remove, linked-worktree isolation and local index/worktree canonical-state regression",
+    "badf-git remains DESIGNED, allowed_tools is empty, version is 0.2.0 and its registry digest equals sha256(SKILL.md)",
+    "WP-2026-0071 is CLOSED and bound to landed commit aba7de3bd8028f99ee6c4f78efc6fcda2111fca1 before WP-2026-0073 lands",
+    "repository integrity is re-signed and GitHub governance/composed-result CI is green on the final remote branch"
+  ],
+  "permissions": [
+    "read: bstBizEra/badf GitHub repository, refs, commits, trees, PRs, checks and rulesets",
+    "write: bstBizEra/badf topic branch wp/WP-2026-0073-github-remote-workspace through GitHub connector/API",
+    "write: create/update PR and issue comments for WP-2026-0073",
+    "no direct main mutation; no force protected refs; no release/deploy authority"
+  ],
+  "tests": [
+    "tests/test_badf_git_contract.py",
+    "python3 scripts/badf_gate.py repo",
+    "python3 -m unittest discover -s tests -p 'test_*.py'",
+    "existing GitHub composed-tree verification"
+  ],
+  "evidence": [
+    "GitHub Issue #133 demand record",
+    "remote branch/ref creation from exact main SHA",
+    "GitHub commit/tree identities for candidate mutations",
+    "GitHub Actions governance/composed-result check",
+    "PR review/authority disposition"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "Before merge, close the PR and retire the remote topic ref. After merge, revert the squash commit through a separately authorized PR; do not rewrite main."
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "aba7de3bd8028f99ee6c4f78efc6fcda2111fca1"
+  },
+  "note": "Operator instruction 2026-08-30 Asia/Vientiane: worktree in GitHub, not Local. This WP deliberately dogfoods the new design: its source branch was created directly on GitHub from exact main SHA and candidate changes are built as GitHub Git objects/commits with no local git worktree. WP-2026-0072 was observed concurrently claimed by solution-design PR #136, so this work failed closed, re-observed, and adopted the next unclaimed identity WP-2026-0073."
+}
