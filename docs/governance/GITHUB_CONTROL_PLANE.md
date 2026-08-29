@@ -510,6 +510,21 @@ authorities, remain between research and execution. This WP is governance-only (
 status; empty gate diff). `badf-architecture` sits at `VALIDATED`; `badf-research` is now the first
 research capability to reach `ACTIVE`.
 
+## ASSURE shadow calibration + a status-drift fix — VALIDATED → SHADOWED (`BADF-WP-0059`, Issue #108)
+
+WP-ARCH-D does two things the operator's review surfaced. First, it **fixes a documentation-state
+drift**: `badf-architecture`'s `acceptance.md` still called the capability `DESIGNED` (line 3) and said
+it "stays `DESIGNED`" (line 48) while the registry, `SKILL.md`, and the same doc's middle said
+`VALIDATED` — the claim-that-outlives-its-correction defect this repo keeps finding in itself; both
+stale lines are corrected. Second, it **shadow-calibrates the ASSURE substrate** on real BADF
+architecture cases spanning the outcome space: `COMPLIANT` (the stdlib-only boundary holds),
+`NONCOMPLIANT` (the #57 PyYAML dependency drift — a true `UNAUTHORIZED_DRIFT` / `NONCONFORMANT` with a
+MAJOR finding), and `INDETERMINATE` (an ADR not statically observable — which does *not* serialise as a
+pass, ARCH-I07/control 15). Measurement (`references/assurance-shadow-evidence.md`): 1/1 true violation
+detected, 0 false positives, INDETERMINATE handled without a false pass, no drift self-approved, every
+run declares non-coverage — **no contract gap surfaced**. `badf-architecture` advances
+`VALIDATED → SHADOWED`; `APPROVED`/`ACTIVE` remain the operator's admission decision.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

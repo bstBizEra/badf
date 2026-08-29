@@ -73,5 +73,30 @@ class AssureTests(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("ASSURE PASS", r.stdout)
 
 
+class ShadowCalibrationTests(unittest.TestCase):
+    """BADF-WP-0059 (WP-ARCH-D): the three shadow assurance records over real BADF
+    architecture cases are gate-valid and span the outcome space."""
+
+    SHADOWS = {"stdlib-compliant": "COMPLIANT", "pyyaml-drift": "NONCOMPLIANT", "indeterminate": "INDETERMINATE"}
+
+    def test_all_three_shadow_records_pass_and_span_the_outcomes(self):
+        seen = set()
+        for name, expected in self.SHADOWS.items():
+            rec = json.loads((gate.ROOT / f"examples/architecture-assurance-shadow-{name}.json").read_text())
+            self.assertEqual(rec["conclusion"], expected)
+            r = subprocess.run([sys.executable, "scripts/badf_gate.py", "assure",
+                                str(gate.ROOT / f"examples/architecture-assurance-shadow-{name}.json")],
+                               cwd=str(gate.ROOT), capture_output=True, text=True)
+            self.assertEqual(r.returncode, 0, f"{name}: {r.stderr}")
+            seen.add(rec["conclusion"])
+        self.assertEqual(seen, {"COMPLIANT", "NONCOMPLIANT", "INDETERMINATE"})
+
+    def test_the_drift_case_is_a_true_unauthorised_violation(self):
+        rec = json.loads((gate.ROOT / "examples/architecture-assurance-shadow-pyyaml-drift.json").read_text())
+        self.assertEqual(rec["drift"][0]["classification"], "UNAUTHORIZED_DRIFT")
+        self.assertEqual(rec["adr_compliance"][0]["result"], "NONCONFORMANT")
+        self.assertTrue(any(f["severity"] == "MAJOR" for f in rec["findings"]))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -72,12 +72,18 @@ class InvariantTests(unittest.TestCase):
 
 class RegistryAndAuthorityTests(unittest.TestCase):
 
-    def test_registry_entry_is_validated_with_a_real_digest(self):
-        # WP-ARCH-C advanced the capability IMPLEMENTED -> VALIDATED (the ASSURE substrate is deterministic; controls 13-18 pass with mutation).
+    def test_registry_entry_is_shadowed_with_a_real_digest(self):
+        # WP-ARCH-D advanced the capability VALIDATED -> SHADOWED (ASSURE calibrated on real cases).
         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
         entry = next(e for e in reg["skills"] if e["name"] == "badf-architecture")
-        self.assertEqual(entry["status"], "VALIDATED")
+        self.assertEqual(entry["status"], "SHADOWED")
         self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
+
+    def test_acceptance_doc_has_no_stale_designed_status(self):
+        # WP-ARCH-D fixed the doc drift: acceptance.md must not still call the capability DESIGNED.
+        acc = (REF / "acceptance.md").read_text(encoding="utf-8")
+        self.assertNotIn("The capability is `DESIGNED`", acc)
+        self.assertNotIn("stays `DESIGNED`", acc)
 
     def test_g04_is_mapped_but_unchanged(self):
         g04text = (REF / "g04-contract.md").read_text(encoding="utf-8")

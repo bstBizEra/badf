@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0.0",
+  "id": "BADF-ARA-0003",
+  "baseline": {
+    "repository": "bstBizEra/badf",
+    "revision": "59c5293",
+    "digest": "sha256:82b229e2ca3ed3426ae09ae21621fba75bb0af559d97f99d77f7c574dadb64c4"
+  },
+  "observed": {
+    "repository": "bstBizEra/badf",
+    "revision": "59c5293",
+    "observed_at": "2026-08-29T02:00:00Z"
+  },
+  "adr_set": [
+    "ADR-0001"
+  ],
+  "fitness_spec_set": [
+    "FIT-001"
+  ],
+  "adr_compliance": [
+    {
+      "adr": "ADR-0001",
+      "result": "NONCONFORMANT"
+    }
+  ],
+  "drift": [
+    {
+      "id": "DR-001",
+      "category": "DEPENDENCY_DRIFT",
+      "classification": "UNAUTHORIZED_DRIFT",
+      "affected_elements": [
+        "EL-001"
+      ],
+      "statement": "a test imported PyYAML, a non-stdlib dependency absent on the bare CI runner, breaking ADR-0001"
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "AF-001",
+      "kind": "DEPENDENCY",
+      "severity": "MAJOR",
+      "baseline_ref": "59c5293",
+      "observed_ref": "59c5293",
+      "affected_elements": [
+        "EL-001"
+      ],
+      "evidence_locations": [
+        "a test: import yaml"
+      ],
+      "expected": "the gate and its tests import only the standard library (ADR-0001)",
+      "observed": "import yaml in a test; ModuleNotFoundError on the bare runner",
+      "impact": "green local, red CI -- the faithful-runner property is violated",
+      "failure_scenario": "the composed-tree gate reports green locally while CI is red",
+      "recommendation_direction": "remove the non-stdlib import or guard it try/except ImportError",
+      "status": "OPEN",
+      "non_coverage": []
+    }
+  ],
+  "conclusion": "NONCOMPLIANT",
+  "non_coverage": [
+    {
+      "surface": "other optional-dependency imports",
+      "reason": "only the yaml import was in scope"
+    }
+  ],
+  "authority": {
+    "implementation_authority": false
+  },
+  "recorded_at": "2026-08-29T02:12:00Z"
+}

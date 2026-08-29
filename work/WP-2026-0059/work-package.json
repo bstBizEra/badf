@@ -1,0 +1,54 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0059",
+  "title": "WP-ARCH-D: fix acceptance.md status drift + shadow-calibrate ASSURE; badf-architecture VALIDATED -> SHADOWED",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0046",
+  "objective": "Two things the operator's review surfaced. (1) Fix a documentation-state drift: badf-architecture's acceptance.md still said the capability is DESIGNED (line 3) and stays DESIGNED (line 48) while the registry, SKILL.md and the middle of the same doc say VALIDATED -- the claim-that-outlives-its-correction defect. (2) Shadow-calibrate the ASSURE substrate: run it retrospectively on real BADF architecture cases spanning the outcome space (COMPLIANT stdlib boundary; NONCOMPLIANT #57 PyYAML dependency drift; INDETERMINATE unobservable ADR), measure faithfulness, and advance VALIDATED -> SHADOWED (not ACTIVE).",
+  "business_value": "The doc drift creates two conflicting normative statements inside one skill, which the next admission step would inherit; fixing it keeps the admission ladder honest. The shadow calibration converts 'the ASSURE controls pass on a synthetic example' into 'ASSURE detects a real violation, refuses to manufacture compliance, and handles the undecidable case' -- the SHADOWED evidence that must precede any advance to ACTIVE.",
+  "in_scope": [
+    "skills/badf-architecture/references/acceptance.md: remove the two stale DESIGNED statements; mark SHADOWED met",
+    "examples/architecture-assurance-shadow-{stdlib-compliant,pyyaml-drift,indeterminate}.json + CI validation",
+    "skills/badf-architecture/references/assurance-shadow-evidence.md (calibration note + measurement)",
+    "advance badf-architecture VALIDATED -> SHADOWED (SKILL.md status, registry re-digest, acceptance ladder)",
+    "tests/test_badf_assure.py ShadowCalibrationTests + contract-test updates; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "advancing badf-architecture to APPROVED/ACTIVE (operator admission decision; explicitly deferred)",
+    "any new gate control or schema change (the shadow records exercise the existing controls 13-18)",
+    "the P1 architecture subskills; #84"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "acceptance.md no longer says the capability is DESIGNED or stays DESIGNED; the contract test asserts it",
+    "the three shadow assurance records pass `assure` and span COMPLIANT/NONCOMPLIANT/INDETERMINATE",
+    "the drift case is a true UNAUTHORIZED_DRIFT / NONCONFORMANT with a MAJOR finding; the INDETERMINATE case does not serialise as a pass",
+    "badf-architecture registry status is SHADOWED with a real digest; the contract test asserts it",
+    "compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_assure.py",
+    "tests/test_badf_architecture_contract.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "73a2b17"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Docs + shadow records + status advance -- no gate control (empty gate diff). Fixes a real doc-drift defect the operator caught, and produces the SHADOWED calibration evidence. Advances badf-architecture VALIDATED -> SHADOWED; APPROVED/ACTIVE remain the operator's call. Reconciles WP-2026-0058."
+}
