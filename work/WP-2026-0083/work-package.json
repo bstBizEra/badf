@@ -1,0 +1,55 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0083",
+  "title": "WP-SEC-B: security-composition matrix + the security gate command (badf-security-design -> IMPLEMENTED)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0070",
+  "repository": "bstBizEra/badf",
+  "objective": "Advance badf-security-design DESIGNED -> IMPLEMENTED by giving its security-composition matrix a schema and structural validation in the one canonical gate. Add schemas/security-composition.schema.json (threat rows with security_id, source provenance, disposition, optional control/sec-req/verification refs, and a residual_risk enum that omits a bare ACCEPTED so SEC-I12 is structural) and a `security` subcommand -> validate_security_composition with structural controls earned failing-first: no-empty-matrix; SEC-C01 unique security_id; SEC-C02 each threat binds >=1 provenance source (SEC-I02); SEC-C03 a controlled threat carries >=1 control (SEC-I03). Ship examples/security-composition.json (CI-validated). Mirrors WP-SOL-B: one record in the canonical gate, NOT a second validator (SEC-I15); no lifecycle change.",
+  "business_value": "IMPLEMENTED makes the security reasoning machine-addressable: the threat->provenance->disposition->control chain becomes a checkable artifact instead of prose, so later WPs (seam controls, shadow, admission) build on a validated matrix. Baking SEC-I12 into the schema (no ACCEPTED value) means the skill structurally cannot self-accept residual risk -- an invariant enforced by construction, not by review.",
+  "in_scope": [
+    "schemas/security-composition.schema.json: the security RTM (threat rows; residual_risk enum excludes bare ACCEPTED -> SEC-I12 structural)",
+    "scripts/badf_gate.py: a `security` subparser + validate_security_composition (check_schema + _no_placeholders + no-empty + SEC-C01 unique + SEC-C02 provenance + SEC-C03 controlled-has-control)",
+    "examples/security-composition.json (CI-validated beside the other gate examples)",
+    "tests/test_badf_security_composition.py: failing-first per control + disposition-scoping + residual-risk structural + registry IMPLEMENTED",
+    "badf/skill-registry.json: badf-security-design DESIGNED -> IMPLEMENTED",
+    "skills/badf-security-design/references/traceability.md + acceptance.md: matrix now schema-backed, ladder rung IMPLEMENTED (registry is source of truth)",
+    "GITHUB_CONTROL_PLANE.md doctrine section; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "cross-artifact SEAM controls: SEC-I04 bidirectional traceability, SEC-I01 baseline-digest binding, semantic ref resolution against arch/solution artifacts (deferred to WP-SEC-C, failing-first)",
+    "scripts/badf_security_design.py or any second validator (SEC-I15); lifecycle.json change; security-approval; specialist activation",
+    "security ASSURANCE (G08/G09); the badf-git program (BARCHI-2)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "`badf_gate.py security examples/security-composition.json` renders PASS",
+    "each structural control refuses its mutation (empty / duplicate id / no-provenance / controlled-no-control), mutation-killed; residual_risk bare ACCEPTED refused by schema",
+    "badf-security-design registered IMPLEMENTED; no scripts/badf_security_design.py; lifecycle.json unchanged",
+    "tests pass; repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_security_composition.py",
+    "tests/test_badf_security_design_contract.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "605f97f"
+  },
+  "note": "Lands IN_PROGRESS by design; next WP reconciles it. Adds the `security` gate command (structural controls) -> mutation-tested. Built in isolated worktree (badf-wt-secb, GIT-I04) parallel to BARCHI-2 badf-git GIT-I (#157). Ids WP-0083/DEM-0070/GOV-0063 (0082/0069/0062 = GIT-I). Reconciles WP-2026-0081 (GIT-H, landed 605f97f; rendered composition_verified: true). Operator 'proceed on the badf-security-design' 2026-08-30. Resolves #158."
+}

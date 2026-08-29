@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0070",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 158,
+    "url": "https://github.com/bstBizEra/badf/issues/158",
+    "exported_at": "2026-08-29T23:09:45Z",
+    "body_digest": "sha256:b134829ed3be1f4f8f70e45f221eb447435a2f292a38aa36047413839624695a"
+  },
+  "title": "GOV-0063: WP-SEC-B \u2014 security-composition matrix + the security gate command (badf-security-design -> IMPLEMENTED)",
+  "problem": "## Observed\n\nbadf-security-design is DESIGNED (WP-SEC-A). Its traceability.md promised the security-composition matrix (the security RTM) as a WP-SEC-B artifact, but it has no schema or validation yet.\n\n## Expected\n\n**WP-SEC-B -> IMPLEMENTED.** schemas/security-composition.schema.json (threat rows: security_id, source provenance, disposition, optional control/sec-req/verification refs, residual_risk enum without a bare ACCEPTED so SEC-I12 is structural) + a `security` subcommand in the ONE canonical badf_gate.py -> validate_security_composition with structural controls earned failing-first: no-empty-matrix; SEC-C01 unique security_id; SEC-C02 each threat binds >=1 provenance source (SEC-I02); SEC-C03 a controlled threat carries >=1 control (SEC-I03). examples/security-composition.json validated in CI. Registry DESIGNED -> IMPLEMENTED. Cross-artifact SEAM controls (SEC-I04 bidirectional trace, SEC-I01 baseline digest, semantic resolution) deferred to WP-SEC-C, mirroring WP-SOL-B->C. No lifecycle change, no second validator (SEC-I15), no security-approval.\n\n## Evidence\n\n- Mirrors WP-SOL-B (solution-composition.schema.json + `solution` command + structural controls SOL-C01/C03/no-empty).\n\n## Unknowns\n\nNone blocking; the deeper seams need the specialist artifacts (WP-SEC-C+).\n\ndiscovered-by: operator 'proceed on the badf-security-design' 2026-08-30 \u00b7 status: DISCOVERED\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-29T23:09:45Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "WP-SEC-B advances badf-security-design DESIGNED->IMPLEMENTED: security-composition matrix schema + the `security` gate command + structural controls (no-empty/SEC-C01 unique/SEC-C02 provenance/SEC-C03 controlled-has-control), each failing-first + mutation. residual_risk enum bakes SEC-I12 (no bare ACCEPTED). Seams deferred to WP-SEC-C. Mirrors WP-SOL-B. DEM-0070/GOV-0063/WP-0083 (0082/0069/0062 taken by BARCHI-2 GIT-I #157). Reconciles WP-2026-0081 (GIT-H)."
+}
