@@ -1,0 +1,54 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0064",
+  "title": "Validate badf-requirements (IMPLEMENTED -> VALIDATED) with the three cases",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0051",
+  "repository": "bstBizEra/badf",
+  "objective": "Advance badf-requirements IMPLEMENTED -> VALIDATED by demonstrating the skill produces gate-correct outcomes across three cases against the CANONICAL G02 gate: (A) a valid dossier renders APPROVED; (B) the gate refuses exactly what the skill's discipline warns against -- an orphan requirement (decomposes no objective, REQ-I02) and a qualitative NFR (not quantified, REQ-I04) -- gate-backed by the existing G02 suite; (C) a security requirement introduced from a G05 concern passes the gate carrying its provenance (names the threat, traces to a security objective). Honest boundary: the canonical G02 gate has no security-source field, so REQ-I06 provenance is a skill-authoring discipline verified by inspection, not a deterministic gate control.",
+  "business_value": "IMPLEMENTED proves the skill exists and its architecture is guarded; VALIDATED proves it works. The three cases show the skill's authoring discipline is backed by the canonical gate where it can be (A, B) and honestly scoped where it cannot (C, REQ-I06 provenance) -- keeping the admission ladder truthful. No new gate control is invented: validation demonstrates existing enforcement, and the one unenforced discipline (security-source provenance) is named as a candidate future WP rather than smuggled in.",
+  "in_scope": [
+    "tests/test_badf_requirements_validation.py: Case A (shipped G02 example APPROVED), Case B (orphan requirement + qualitative NFR refused by the canonical gate), Case C (a security requirement passes the gate and carries provenance), and the registry-status assertion (VALIDATED)",
+    "skills/badf-requirements/references/validation-evidence.md: the three cases with commands/outcomes and the honest REQ-I06 boundary",
+    "badf/skill-registry.json: badf-requirements IMPLEMENTED -> VALIDATED (operator-authorized status advance, 'proceed one by one')",
+    "skills/badf-requirements/SKILL.md: stop hardcoding a status line (point to the registry) so the status never drifts -- same fix as the research acceptance.md drift",
+    "GITHUB_CONTROL_PLANE.md doctrine section; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "any change to badf_gate.py, the G02 schemas, or the G02 example (the gate is unchanged -- validation runs it, does not modify it)",
+    "adding a security-source (SRC->REQ) gate control -- REQ-I06 stays a skill discipline; a future failing-first WP adds it only if real project use proves the need",
+    "advancing badf-requirements past VALIDATED (SHADOWED/APPROVED/ACTIVE are later admission decisions); the badf-architecture status advance (the next track, separate WP)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "Case A: examples/gate-dossier.G02.json renders APPROVED via `dossier`",
+    "Case B: an orphan requirement is refused (decomposes no objective) and a qualitative NFR is refused (not quantified) by the canonical gate",
+    "Case C: a security requirement that names its G05 threat and traces to a security objective passes the gate; the test inspects that the provenance is present",
+    "badf-requirements is registered VALIDATED with a real digest; SKILL.md no longer hardcodes a status line",
+    "badf_gate.py + G02 schemas unchanged; repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_requirements_validation.py",
+    "tests/test_badf_requirements_skill.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "1867731"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Adds no gate code -- no new control, no mutation; validation runs the real canonical gate. Status advance IMPLEMENTED -> VALIDATED is operator-authorized ('proceed one by one'). Resolves #117 / GOV-0034. Reconciles WP-2026-0063."
+}

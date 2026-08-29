@@ -26,10 +26,12 @@ class SkillExistsTests(unittest.TestCase):
         for ref in ("requirements-decomposition.md", "methodology-provenance.md"):
             self.assertTrue((SKILL_DIR / "references" / ref).is_file(), f"references/{ref} is missing")
 
-    def test_registered_implemented_with_a_real_digest(self):
+    def test_registered_with_a_real_digest_at_a_valid_lifecycle_status(self):
+        # Do not pin a specific status here (it advances up the ladder); the exact
+        # status is asserted by the validation suite. This guards registration + digest.
         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
         entry = next(e for e in reg["skills"] if e["name"] == "badf-requirements")
-        self.assertEqual(entry["status"], "IMPLEMENTED")
+        self.assertIn(entry["status"], ("DESIGNED", "IMPLEMENTED", "VALIDATED", "SHADOWED", "APPROVED", "ACTIVE"))
         self.assertEqual(entry["source"], "skills/badf-requirements/SKILL.md")
         want = "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest()
         self.assertEqual(entry["digest"], want)

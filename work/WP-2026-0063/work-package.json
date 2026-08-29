@@ -2,7 +2,7 @@
   "$schema": "../../schemas/work-package.schema.json",
   "schema_version": "1.0.0",
   "id": "WP-2026-0063",
-  "title": "badf-requirements authoring skill (salvage PR #47 onto the canonical G02 gate) — IMPLEMENTED",
+  "title": "badf-requirements authoring skill (salvage PR #47 onto the canonical G02 gate) \u2014 IMPLEMENTED",
   "owner": "human_sponsor",
   "demand": "BADF-DEM-0050",
   "repository": "bstBizEra/badf",
@@ -46,11 +46,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "a20df5e"
+    "base_revision": "a20df5e",
+    "landed_as": "18677311c87a1fab4e4e06de340faadba7ce8def"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Adds no gate code -- so no new control and no mutation (mutation is for enforcement branches); the test guards existence + the anti-duplication architecture. Salvages PR #47's authoring layer only, like badf-prd salvaged PR #44. Resolves #115 / GOV-0033; supersedes #47. Reconciles WP-2026-0062."
 }

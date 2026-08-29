@@ -38,8 +38,8 @@
         "local-filesystem",
         "local-shell"
       ],
-      "status": "IMPLEMENTED",
-      "digest": "sha256:af7a654f28787acdfa35fee5b4c9cff84df8182cafc480dad5c1dd5955649b52"
+      "status": "VALIDATED",
+      "digest": "sha256:b66e2695b7538d3aca466108fc09dd419d4347ab3d5c017b2b8ca5dd4e3fc267"
     },
     {
       "name": "badf-research",

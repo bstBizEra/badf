@@ -64,4 +64,4 @@ REQ-I06 — Security Provenance
 9. **EVIDENCE** — the `definition-of-ready` packet is a **human** sign-off whose checklist covers every one of G02's own exit criteria; the requirements author must not produce it (REQ-I01).
 10. **DELIVER** — report the gate's verdict and the unresolved items. Never emit a G02 outcome, a "ready" score, or an approval as this skill's own decision.
 
-Read `references/requirements-decomposition.md` for the RTM authoring model (and which of its nodes the gate consumes today) and `references/methodology-provenance.md` for adapted external methodology. This skill is `IMPLEMENTED`; its status lives in `badf/skill-registry.json`.
+Read `references/requirements-decomposition.md` for the RTM authoring model (and which of its nodes the gate consumes today), `references/methodology-provenance.md` for adapted external methodology, and `references/validation-evidence.md` for the three validation cases. The skill's **live status is `badf/skill-registry.json`** — this file defines the contract, not the status, so it never hardcodes a status line that can drift from the registry.
