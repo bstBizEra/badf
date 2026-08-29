@@ -479,6 +479,22 @@ mutation + `experiments[]`), with a dedicated `experimental-research` subskill *
 documentation): `RouterDeterminismTests` refuses a reintroduced unnamed hop and asserts every route
 token resolves to a registered subskill. Closes #83. `badf-research` stays `DESIGNED`.
 
+## Architecture ASSURE substrate — `badf-architecture` VALIDATED (`BADF-WP-0057`, Issue #104)
+
+WP-ARCH-C builds the read-only ASSURE side of the frozen `badf-architecture` contract: an
+`architecture-assurance` record schema and an **`assure`** gate command enforcing controls 13–18.
+Per ARCH-I11 the structural analysis (dependency graph, cycles) is the skill's read-only work — the
+deterministic gate makes no network/exec call; it validates the record's integrity. The controls: an
+assurance run **binds one baseline and one observed revision** (13, ARCH-I09); a `COMPLIANT`
+conclusion **requires a baseline digest** — `NO BASELINE ≠ COMPLIANT` (14, ARCH-I07); an
+`INDETERMINATE` ADR result **cannot serialise as a pass** (15); a drift finding **cannot self-classify
+as approved evolution** — only independent authority may (16, ARCH-I08); the run **declares its
+non-coverage** (17); and **every finding is assessed against the single bound baseline** (18,
+ARCH-I01). The record is read-only — `implementation_authority` is schema-fixed `false` (ARCH-I12).
+This meets the `VALIDATED` criterion, so **`badf-architecture` advances `IMPLEMENTED → VALIDATED`**
+(the operator's stated expectation). `SHADOWED`/`APPROVED`/`ACTIVE` remain the operator's admission
+decisions.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

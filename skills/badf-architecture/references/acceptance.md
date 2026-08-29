@@ -43,6 +43,6 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows 
 ## Admission
 
 - `IMPLEMENTED`: the G04 DESIGN evidence semantics (`architecture`, `adr`, `data-model`, `api-contract`, `operability-design`) exist as deterministic gate rules with schemas (WP-ARCH-B).
-- `VALIDATED`: the controls above pass as gate tests with mutation, and the ASSURE substrate is deterministic where feasible (WP-ARCH-C).
+- `VALIDATED`: **met (`BADF-WP-0057` / WP-ARCH-C).** The ASSURE substrate is deterministic -- controls 13-18 enforced by the `assure` gate command with mutation-tested tests; the `architecture-assurance` record binds one baseline + one observed revision, never infers compliance, never self-authorises drift, and grants no authority. The registry status is advanced to `VALIDATED`.
 - `SHADOWED`: ASSURE is run retrospectively on historical architecture-impacting PRs without knowing the answer (WP-ARCH-D); measured for true violations, false positives, non-coverage and stability across composed trees.
 - `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. Until then the registry entry stays `DESIGNED`.

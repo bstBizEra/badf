@@ -3034,6 +3034,44 @@ def validate_research_record(path: Path) -> str:
     return f"BADF RESEARCH PASS: {rec['id']} ({rec['type']}/{rec['depth']}) -- {len(rec['claims'])} claims, disposition {rec['disposition']['state']}; grants no implementation authority"
 
 
+def validate_architecture_assurance(path: Path) -> str:
+    """`badf_gate.py assure <path>`: the ASSURE controls (13-18) of the frozen
+    badf-architecture contract (WP-ARCH-C). Read-only: an assurance record binds
+    to one baseline and one observed revision, never infers compliance, never
+    self-authorises drift, declares its non-coverage, and grants no authority."""
+    rec = load_json(path)
+    check_schema("architecture-assurance", rec)
+    base_rev = (rec["baseline"]["revision"] or "").strip()
+    obs_rev = (rec["observed"]["revision"] or "").strip()
+    conclusion = rec["conclusion"]
+    # 13: an ASSURE run binds one baseline revision and one observed revision;
+    # assessment against an unpinned, moving state is invalid (ARCH-I09).
+    if not base_rev or not obs_rev:
+        raise ValidationError("architecture assurance has no bound baseline or observed revision; assessment against an unpinned state is invalid (control 13)")
+    # 14: NO BASELINE != COMPLIANT -- a compliance verdict rests on a bound
+    # baseline digest; missing architecture documentation yields observations,
+    # never compliance (ARCH-I07).
+    if conclusion == "COMPLIANT" and not rec["baseline"]["digest"]:
+        raise ValidationError("architecture assurance concludes COMPLIANT with no baseline digest; missing architecture yields observations, never compliance (control 14)")
+    # 15: an INDETERMINATE ADR-compliance result cannot serialise as a COMPLIANT pass.
+    if conclusion == "COMPLIANT" and any(a["result"] == "INDETERMINATE" for a in rec["adr_compliance"]):
+        raise ValidationError("architecture assurance concludes COMPLIANT while an ADR compliance result is INDETERMINATE; INDETERMINATE never converts to PASS (control 15)")
+    # 16: the read-only run identifies drift; it cannot classify drift as approved
+    # evolution -- only independent authority may (ARCH-I08).
+    for d in rec["drift"]:
+        if d["classification"] == "APPROVED_EVOLUTION_NOT_BASELINED":
+            raise ValidationError(f"drift {d['id']} classifies itself as approved evolution, but an ASSURE run identifies drift, it does not authorise it (control 16)")
+    # 17: an ASSURE run declares what it did not inspect.
+    if not rec["non_coverage"]:
+        raise ValidationError("architecture assurance declares no non-coverage; a run that states nothing uninspected is incomplete (control 17)")
+    # 18: single baseline -- every finding is assessed against the one bound
+    # baseline revision; a stale baseline cannot silently pass (ARCH-I01).
+    for f in rec["findings"]:
+        if f["baseline_ref"] != base_rev:
+            raise ValidationError(f"finding {f['finding_id']} baseline_ref {f['baseline_ref']!r} is not the record's single bound baseline {base_rev!r}; one assurance, one baseline (control 18)")
+    return f"BADF ASSURE PASS: {rec['id']} -- baseline {base_rev[:12]} vs observed {obs_rev[:12]}; conclusion {conclusion}; grants no implementation authority"
+
+
 def validate_dossier(dossier_path: Path) -> str:
     validate_repo()
     dossier = load_json(dossier_path.resolve())
@@ -3157,6 +3195,8 @@ def main() -> int:
     self_parser.add_argument("work_package")
     research_parser = subparsers.add_parser("research", help="validate a research record's record/source/claim controls (RSR-002)")
     research_parser.add_argument("path", type=Path)
+    assure_parser = subparsers.add_parser("assure", help="validate an architecture-assurance record's ASSURE controls (WP-ARCH-C)")
+    assure_parser.add_argument("path", type=Path)
     args = parser.parse_args()
     try:
         if args.command == "repo":
@@ -3188,6 +3228,9 @@ def main() -> int:
             return 0
         elif args.command == "research":
             print(validate_research_record(args.path))
+            return 0
+        elif args.command == "assure":
+            print(validate_architecture_assurance(args.path))
             return 0
         else:
             args._rendered = validate_dossier(args.path)

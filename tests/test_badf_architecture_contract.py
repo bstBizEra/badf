@@ -72,11 +72,11 @@ class InvariantTests(unittest.TestCase):
 
 class RegistryAndAuthorityTests(unittest.TestCase):
 
-    def test_registry_entry_is_implemented_with_a_real_digest(self):
-        # WP-ARCH-B advanced the capability DESIGNED -> IMPLEMENTED (G04 DESIGN semantics enforced).
+    def test_registry_entry_is_validated_with_a_real_digest(self):
+        # WP-ARCH-C advanced the capability IMPLEMENTED -> VALIDATED (the ASSURE substrate is deterministic; controls 13-18 pass with mutation).
         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
         entry = next(e for e in reg["skills"] if e["name"] == "badf-architecture")
-        self.assertEqual(entry["status"], "IMPLEMENTED")
+        self.assertEqual(entry["status"], "VALIDATED")
         self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
 
     def test_g04_is_mapped_but_unchanged(self):
@@ -101,13 +101,15 @@ class ImplementationStatusTests(unittest.TestCase):
         for t in G04_EVIDENCE:
             self.assertIn(t, gate.EVIDENCE_RULES, f"{t} is a G04 type but has no per-type rule")
 
-    def test_g04_design_schemas_exist_but_assurance_does_not(self):
+    def test_g04_design_and_assurance_schemas_exist(self):
         for name in G04_EVIDENCE:
             self.assertTrue((gate.ROOT / "schemas" / f"{name}.schema.json").is_file(),
                             f"schemas/{name}.schema.json is missing")
-        # the ASSURE substrate (WP-ARCH-C) is not built yet
-        self.assertFalse((gate.ROOT / "schemas" / "architecture-assurance.schema.json").exists(),
-                         "an architecture-assurance schema exists, but ASSURE is WP-ARCH-C")
+        # the ASSURE substrate (WP-ARCH-C) is now built
+        self.assertTrue((gate.ROOT / "schemas" / "architecture-assurance.schema.json").is_file(),
+                        "the architecture-assurance schema is missing (WP-ARCH-C)")
+        self.assertTrue(hasattr(gate, "validate_architecture_assurance"),
+                        "the assure validator is missing")
 
 
 if __name__ == "__main__":

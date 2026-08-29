@@ -5,7 +5,7 @@ description: Govern architecture design, architectural decisions, architecture f
 
 # BADF Architecture
 
-Status: `IMPLEMENTED` for G04 DESIGN evidence (contract frozen by `BADF-WP-0043`; the five G04 DESIGN evidence types are enforced in the canonical gate by `BADF-WP-0044`). The ASSURE substrate and full validation are pending (WP-ARCH-C/D). This is an architecture **engineering + assurance** capability, not a diagram skill. Its primary lifecycle gate is **G04 — Architecture, Data and API**; it also feeds G05 (trust boundaries + data flows), G08/G09 verification and post-merge drift review.
+Status: `VALIDATED` (contract frozen by `BADF-WP-0043`; the five G04 DESIGN evidence types enforced by `BADF-WP-0044`; the ASSURE substrate -- controls 13-18 -- enforced by `BADF-WP-0057` / WP-ARCH-C via the `assure` gate command). `SHADOWED` / `APPROVED` / `ACTIVE` remain the operator's admission decisions. This is an architecture **engineering + assurance** capability, not a diagram skill. Its primary lifecycle gate is **G04 — Architecture, Data and API**; it also feeds G05 (trust boundaries + data flows), G08/G09 verification and post-merge drift review.
 
 Fundamental rule — four distinctions that never collapse:
 
