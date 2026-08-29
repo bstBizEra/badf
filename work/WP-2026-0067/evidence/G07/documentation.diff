@@ -1,0 +1,25 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 1e02bad..20d51ff 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -668,6 +668,20 @@ composition. No gate code, so no new control and nothing to mutate; the test gua
+ surface. Contract Freeze is deliberately first (WP-GIT-B…J deferred): an incorrect mutation model would
+ spread into every future BADF autonomous engineering loop.
+ 
++## Gate 06 — implementation planning (`BADF-WP-0067`, Issue #125 / GOV-0046)
++
++The gate march reaches planning: G06's four types (`work-breakdown`, `test-plan`, `release-plan`,
++`rollback-plan`) were declared but unenforced. Each now has a per-type rule mapping to a G06 exit
++criterion. `work-breakdown` — non-empty tasks, each bounded (a description), with a resolvable **and
++acyclic** dependency graph (an empty, dangling-dependency, or cyclic breakdown is refused: *work
++packages bounded* + *composition order defined*). `test-plan` — non-empty planned tests, each naming
++what it `verifies` (*tests planned first*). `release-plan` — non-empty `environments` and concrete
++`steps` (*environments and resources ready*). `rollback-plan` — an executable `method` + `steps` +
++non-empty `stop_conditions` (*rollback and stop conditions executable*). G06's minimum change class is
++**C1**, so `examples/gate-dossier.G06.json` carries the two base authority roles (engineering_owner +
++independent_reviewer). Ships a **G05→G06** pair-acceptance (the full G00→G06 advance chain). Same lean
++substrate as G01–G05 — no new module. Shipped through the operator's `/loop` self-paced gate march.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

@@ -232,8 +232,46 @@ class AdvanceScratch(ValidatedInstance):
         assert r.returncode == 0 and "APPROVED" in r.stdout, r.stdout + r.stderr
         return f"work/{self.wp()}/gate-dossier.G05.json"
 
+    def make_g06(self):
+        """A G06 dossier for the same WP at the G06/C1 floor: work-breakdown, test-plan,
+        release-plan, rollback-plan, modelled on the shipped example. C1 needs the two
+        base roles (engineering_owner + independent_reviewer)."""
+        d = self.wp_dir(); ev_dir = d / "evidence/G06"; ev_dir.mkdir(parents=True, exist_ok=True)
+        g05 = json.loads((d / "gate-dossier.G05.json").read_text())
+        ex = gate.ROOT / "examples/evidence/G06"
+        index = []
+        for t in ("work-breakdown", "test-plan", "release-plan", "rollback-plan"):
+            art = json.loads((ex / f"{t}.artifact.json").read_text()); art["prd_id"] = "PRD-SCRATCH-0001"
+            (ev_dir / f"{t}.artifact.json").write_text(json.dumps(art, indent=2) + "\n")
+            e = {"schema_version": "1.0.0", "id": f"EVD-{self.wp()}-G06-{t}", "work_package_id": self.wp(), "gate": "G06",
+                 "claim": f"{t} present", "evidence_type": t, "producer": {"id": "scratch-engineering-owner", "type": "human"},
+                 "source_revision": g05["source_revision"], "target": g05["target"],
+                 "toolchain": {"name": "human-review", "version": "1"}, "operation": "plan",
+                 "started_at": g05["created_at"], "completed_at": g05["created_at"], "outcome": "PASS",
+                 "artifact": f"work/{self.wp()}/evidence/G06/{t}.artifact.json", "digest": gate.sha256(ev_dir / f"{t}.artifact.json")}
+            (ev_dir / f"{t}.json").write_text(json.dumps(e, indent=2) + "\n")
+            index.append({"type": t, "path": f"work/{self.wp()}/evidence/G06/{t}.json"})
+        approvals = []
+        for role in ("engineering_owner", "independent_reviewer"):
+            a = bound(EXAMPLE["approvals"][0], g05); a["role"] = role; a["by"] = f"{role}-signature"; approvals.append(a)
+        doc = dict(g05, id=f"DOS-{self.wp()}-G06-v1", gate="G06", change_class="C1", evidence=index, approvals=approvals)
+        (d / "gate-dossier.G06.json").write_text(json.dumps(doc, indent=2) + "\n")
+        self.framework_lock()
+        r = self.dossier_cli(f"work/{self.wp()}/gate-dossier.G06.json")
+        assert r.returncode == 0 and "APPROVED" in r.stdout, r.stdout + r.stderr
+        return f"work/{self.wp()}/gate-dossier.G06.json"
+
 
 class AdvanceTests(AdvanceScratch):
+
+    def test_g05_approved_instance_advances_to_g06(self):
+        self.approve_g00(); self.assertEqual(self.advance(f"work/{self.wp()}/gate-dossier.G00.json").returncode, 0)
+        for mk in (self.make_g01, self.make_g02, self.make_g03, self.make_g04, self.make_g05):
+            self.assertEqual(self.advance(mk()).returncode, 0)
+        g06 = self.make_g06()
+        r = self.advance(g06); self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
+        self.assertEqual(self.state()["lifecycle"]["current_gate"], "G06")
+        self.assertEqual(self.state()["lifecycle"]["state"], "APPROVED")
 
     def test_g04_approved_instance_advances_to_g05(self):
         self.approve_g00(); self.assertEqual(self.advance(f"work/{self.wp()}/gate-dossier.G00.json").returncode, 0)

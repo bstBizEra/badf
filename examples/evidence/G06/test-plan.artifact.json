@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "planned_tests": [
+    {
+      "id": "PT-001",
+      "verifies": "WBS-001",
+      "description": "each G06 check refuses its defect (empty, dangling, cyclic)"
+    },
+    {
+      "id": "PT-002",
+      "verifies": "WBS-002",
+      "description": "the example G06 dossier renders APPROVED"
+    }
+  ]
+}

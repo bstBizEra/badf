@@ -1,0 +1,54 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0067",
+  "title": "G06: implementation-planning gate contract (work-breakdown / test-plan / release-plan / rollback-plan)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0054",
+  "repository": "bstBizEra/badf",
+  "objective": "Enforce Gate 06, declared in lifecycle.json but unbacked: give its four required_evidence types per-type rules in validate_evidence, exactly as G01-G05, so the gate OPENS each artifact. work-breakdown -- non-empty bounded tasks with a resolvable acyclic dependency graph (work packages bounded + composition order defined). test-plan -- non-empty planned tests, each naming what it verifies. release-plan -- non-empty environments and concrete steps. rollback-plan -- an executable method + steps + non-empty stop_conditions. Ship examples/gate-dossier.G06.json (C1, validated in CI) and prove an instance advances G05->G06 on a valid G06 dossier.",
+  "business_value": "Without per-type rules a G06 dossier passes on names alone. This makes the four implementation-planning exit criteria -- work bounded, composition order defined, environments/resources ready, rollback+stop-conditions executable -- deterministic gate refusals. Continues the gate march (G00-G06 now enforced) with the same lean substrate as G01-G05, no new module.",
+  "in_scope": [
+    "check_work_breakdown / check_test_plan / check_release_plan / check_rollback_plan in badf_gate.py + registration in EVIDENCE_RULES",
+    "schemas/work-breakdown.schema.json, test-plan.schema.json, release-plan.schema.json, rollback-plan.schema.json",
+    "examples/gate-dossier.G06.json (C1, engineering_owner + independent_reviewer) + its four evidence/artifact pairs; CI validates it",
+    "tests/test_badf_g06.py (failing-first refusals) + a G05->G06 pair-acceptance in tests/test_badf_advance.py",
+    "own G07 self-dossier; doctrine section in GITHUB_CONTROL_PLANE.md"
+  ],
+  "out_of_scope": [
+    "a badf-planning authoring skill (a later WP if a real task needs it)",
+    "later gates G07+ -- one WP each; any change to G06 authority",
+    "the badf-git program (WP-GIT-B+); the external #119/#122"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "examples/gate-dossier.G06.json renders APPROVED via `dossier`",
+    "an empty/dangling/cyclic work-breakdown, a test-plan test that verifies nothing, a release-plan with no environments or steps, and a rollback-plan with no method or no stop_conditions are each refused",
+    "an instance at G05/APPROVED advances to G06/APPROVED on a valid G06 dossier",
+    "each check branch is load-bearing (mutation/in-process verified); compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_g06.py",
+    "tests/test_badf_advance.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "b1e0f5a"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Reuses the G01-G05 substrate -- no new validator module. G06 min change class is C1, so the example dossier carries the two base roles (engineering_owner + independent_reviewer). Shipped via the operator's /loop self-paced gate march. Resolves #125 / GOV-0046. Reconciles WP-2026-0066."
+}

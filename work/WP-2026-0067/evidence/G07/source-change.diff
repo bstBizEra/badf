@@ -1,0 +1,902 @@
+diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
+index fdc3ee8..cd6f600 100644
+--- a/.github/workflows/badf-gates.yml
++++ b/.github/workflows/badf-gates.yml
+@@ -46,6 +46,7 @@ jobs:
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G03.json
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G04.json
+           python3 scripts/badf_gate.py dossier examples/gate-dossier.G05.json
++          python3 scripts/badf_gate.py dossier examples/gate-dossier.G06.json
+           python3 scripts/badf_gate.py research examples/research-record.json
+           python3 scripts/badf_gate.py research examples/research-record-challenged.json
+           python3 scripts/badf_gate.py research examples/research-record-repo.json
+diff --git a/badf/demands/BADF-DEM-0054.json b/badf/demands/BADF-DEM-0054.json
+new file mode 100644
+index 0000000..2c5868c
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0054.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0054",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 125,
++    "url": "https://github.com/bstBizEra/badf/issues/125",
++    "exported_at": "2026-08-29T16:33:58Z",
++    "body_digest": "sha256:d1684254aa270f73e72ab9e6612a573e9fb5cb1b3e15b5185fa3fc5d8d60806a"
++  },
++  "title": "GOV-0046: Gate 06 declared but unenforced \u2014 work-breakdown/test-plan/release-plan/rollback-plan",
++  "problem": "## Observed\n\nG06 (Implementation planning; owner `engineering_owner`, min C1) is the next declared-but-unenforced gate after G05. `lifecycle.json` lists G06's four `required_evidence` types \u2014 **work-breakdown, test-plan, release-plan, rollback-plan** \u2014 yet `validate_evidence` has no per-type rule for any of them, no G06 example, and none of the four schemas. A G06 dossier today would pass on names alone.\n\n## Expected\n\nThe four G06 types get per-type rules in `validate_evidence`, each mapping to a G06 exit criterion (the gate OPENS each artifact):\n- `work-breakdown` \u2014 non-empty tasks, each bounded (a description), with a resolvable, **acyclic** dependency graph (*work packages bounded* + *composition order defined*); an empty, dangling-dep, or cyclic breakdown is refused.\n- `test-plan` \u2014 non-empty planned tests, each naming what it `verifies` (*tests planned first*); an empty plan or a test that targets nothing is refused.\n- `release-plan` \u2014 non-empty `environments` and concrete `steps` (*environments and resources ready*).\n- `rollback-plan` \u2014 an executable `method` + `steps` + non-empty `stop_conditions` (*rollback and stop conditions executable*).\n\nPlus `examples/gate-dossier.G06.json` (C1, validated in CI beside G00-G05) and a **G05\u2192G06** pair-acceptance (the full G00\u2192G06 chain).\n\n## Evidence\n\n- G06 required_evidence = [work-breakdown, test-plan, release-plan, rollback-plan]; enforced of 4 \u2192 0; no G06 example; no schemas.\n- G06 minimum_change_class is C1, so the example dossier carries the two base authority roles (engineering_owner + independent_reviewer).\n\n## Unknowns\n\nNone for the gate contract. This WP is the deterministic G06 evidence contract; a `badf-planning` authoring skill is a later WP if a real task needs it.\n\ndiscovered-by: BADF-WP-0066 (the gate march reached G06) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T16:33:58Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "G06 implementation-planning gate contract (work-breakdown/test-plan/release-plan/rollback-plan); next gate after G05. C1 example (engineering_owner + independent_reviewer). Authority: operator /loop self-paced gate march (2026-08-29). Worked as BADF-WP-0067."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 1e02bad..20d51ff 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -668,6 +668,20 @@ composition. No gate code, so no new control and nothing to mutate; the test gua
+ surface. Contract Freeze is deliberately first (WP-GIT-B…J deferred): an incorrect mutation model would
+ spread into every future BADF autonomous engineering loop.
+ 
++## Gate 06 — implementation planning (`BADF-WP-0067`, Issue #125 / GOV-0046)
++
++The gate march reaches planning: G06's four types (`work-breakdown`, `test-plan`, `release-plan`,
++`rollback-plan`) were declared but unenforced. Each now has a per-type rule mapping to a G06 exit
++criterion. `work-breakdown` — non-empty tasks, each bounded (a description), with a resolvable **and
++acyclic** dependency graph (an empty, dangling-dependency, or cyclic breakdown is refused: *work
++packages bounded* + *composition order defined*). `test-plan` — non-empty planned tests, each naming
++what it `verifies` (*tests planned first*). `release-plan` — non-empty `environments` and concrete
++`steps` (*environments and resources ready*). `rollback-plan` — an executable `method` + `steps` +
++non-empty `stop_conditions` (*rollback and stop conditions executable*). G06's minimum change class is
++**C1**, so `examples/gate-dossier.G06.json` carries the two base authority roles (engineering_owner +
++independent_reviewer). Ships a **G05→G06** pair-acceptance (the full G00→G06 advance chain). Same lean
++substrate as G01–G05 — no new module. Shipped through the operator's `/loop` self-paced gate march.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/examples/evidence/G06/release-plan.artifact.json b/examples/evidence/G06/release-plan.artifact.json
+new file mode 100644
+index 0000000..5c7002f
+--- /dev/null
++++ b/examples/evidence/G06/release-plan.artifact.json
+@@ -0,0 +1,18 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "environments": [
++    "ci (github actions ubuntu-latest)",
++    "composed-tree verification"
++  ],
++  "steps": [
++    {
++      "id": "RS-001",
++      "description": "open a PR; CI validates the G06 dossier beside G00-G05"
++    },
++    {
++      "id": "RS-002",
++      "description": "squash-merge to main after a human approves; push-run confirms green"
++    }
++  ]
++}
+diff --git a/examples/evidence/G06/release-plan.json b/examples/evidence/G06/release-plan.json
+new file mode 100644
+index 0000000..6f9871f
+--- /dev/null
++++ b/examples/evidence/G06/release-plan.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G06",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G06-RELEASE-PLAN-v1",
++  "claim": "Example release-plan bound to PRD-BADF-0001",
++  "evidence_type": "release-plan",
++  "producer": {
++    "id": "example-engineering-owner",
++    "type": "human"
++  },
++  "operation": "plan release plan",
++  "artifact": "examples/evidence/G06/release-plan.artifact.json",
++  "digest": "sha256:c4d4a0a59e7320307a6191c5e0312e5930e43a84de50f8f3884b728c7eaeef02"
++}
+diff --git a/examples/evidence/G06/rollback-plan.artifact.json b/examples/evidence/G06/rollback-plan.artifact.json
+new file mode 100644
+index 0000000..cd851ee
+--- /dev/null
++++ b/examples/evidence/G06/rollback-plan.artifact.json
+@@ -0,0 +1,20 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "reversible": true,
++  "method": "revert the squash commit via a new PR (forward history; main is never rewritten)",
++  "steps": [
++    {
++      "id": "RB-001",
++      "description": "open a revert PR against current main"
++    },
++    {
++      "id": "RB-002",
++      "description": "verify the reverted tree is green, then squash-merge"
++    }
++  ],
++  "stop_conditions": [
++    "a G00-G05 example dossier stops rendering APPROVED",
++    "the composed-tree verification goes red"
++  ]
++}
+diff --git a/examples/evidence/G06/rollback-plan.json b/examples/evidence/G06/rollback-plan.json
+new file mode 100644
+index 0000000..aba9e91
+--- /dev/null
++++ b/examples/evidence/G06/rollback-plan.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G06",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G06-ROLLBACK-PLAN-v1",
++  "claim": "Example rollback-plan bound to PRD-BADF-0001",
++  "evidence_type": "rollback-plan",
++  "producer": {
++    "id": "example-engineering-owner",
++    "type": "human"
++  },
++  "operation": "plan rollback plan",
++  "artifact": "examples/evidence/G06/rollback-plan.artifact.json",
++  "digest": "sha256:e5eac2be8401540b57089d9e2f8e40676c94cd58e61f490d859932ede649f24d"
++}
+diff --git a/examples/evidence/G06/test-plan.artifact.json b/examples/evidence/G06/test-plan.artifact.json
+new file mode 100644
+index 0000000..a7dad1b
+--- /dev/null
++++ b/examples/evidence/G06/test-plan.artifact.json
+@@ -0,0 +1,16 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "planned_tests": [
++    {
++      "id": "PT-001",
++      "verifies": "WBS-001",
++      "description": "each G06 check refuses its defect (empty, dangling, cyclic)"
++    },
++    {
++      "id": "PT-002",
++      "verifies": "WBS-002",
++      "description": "the example G06 dossier renders APPROVED"
++    }
++  ]
++}
+diff --git a/examples/evidence/G06/test-plan.json b/examples/evidence/G06/test-plan.json
+new file mode 100644
+index 0000000..ebf84a2
+--- /dev/null
++++ b/examples/evidence/G06/test-plan.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G06",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G06-TEST-PLAN-v1",
++  "claim": "Example test-plan bound to PRD-BADF-0001",
++  "evidence_type": "test-plan",
++  "producer": {
++    "id": "example-engineering-owner",
++    "type": "human"
++  },
++  "operation": "plan test plan",
++  "artifact": "examples/evidence/G06/test-plan.artifact.json",
++  "digest": "sha256:83ac3456b2c91020065ad01eed5f4e10f3fa8951c2c371cec905949aea8d5e0a"
++}
+diff --git a/examples/evidence/G06/work-breakdown.artifact.json b/examples/evidence/G06/work-breakdown.artifact.json
+new file mode 100644
+index 0000000..c4ddd93
+--- /dev/null
++++ b/examples/evidence/G06/work-breakdown.artifact.json
+@@ -0,0 +1,24 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "tasks": [
++    {
++      "id": "WBS-001",
++      "description": "Add the four G06 check functions to the canonical gate"
++    },
++    {
++      "id": "WBS-002",
++      "description": "Ship the example G06 dossier and its evidence pairs",
++      "depends_on": [
++        "WBS-001"
++      ]
++    },
++    {
++      "id": "WBS-003",
++      "description": "Write failing-first tests and the mutation harness",
++      "depends_on": [
++        "WBS-001"
++      ]
++    }
++  ]
++}
+diff --git a/examples/evidence/G06/work-breakdown.json b/examples/evidence/G06/work-breakdown.json
+new file mode 100644
+index 0000000..e49867b
+--- /dev/null
++++ b/examples/evidence/G06/work-breakdown.json
+@@ -0,0 +1,25 @@
++{
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G06",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "BADF example generator",
++    "version": "1.0.0"
++  },
++  "started_at": "2026-08-25T00:00:04Z",
++  "completed_at": "2026-08-25T00:00:05Z",
++  "outcome": "PASS",
++  "sanitization": "No secrets or personal data",
++  "id": "EVD-WP-2026-0001-G06-WORK-BREAKDOWN-v1",
++  "claim": "Example work-breakdown bound to PRD-BADF-0001",
++  "evidence_type": "work-breakdown",
++  "producer": {
++    "id": "example-engineering-owner",
++    "type": "human"
++  },
++  "operation": "plan work breakdown",
++  "artifact": "examples/evidence/G06/work-breakdown.artifact.json",
++  "digest": "sha256:63705663a9b9f84fe231f8c4e98edb004fae9c360cca16a51b77c5d28d9477a5"
++}
+diff --git a/examples/gate-dossier.G06.json b/examples/gate-dossier.G06.json
+new file mode 100644
+index 0000000..9f73934
+--- /dev/null
++++ b/examples/gate-dossier.G06.json
+@@ -0,0 +1,58 @@
++{
++  "schema_version": "1.0.0",
++  "id": "DOS-WP-2026-0001-G06-v1",
++  "work_package_id": "WP-2026-0001",
++  "gate": "G06",
++  "policy_epoch": "BADF-2026-08-25",
++  "source_revision": "BADF-BASELINE-1.0.0",
++  "target": "bstBizEra/badf:main",
++  "change_class": "C1",
++  "evidence": [
++    {
++      "type": "work-breakdown",
++      "path": "examples/evidence/G06/work-breakdown.json"
++    },
++    {
++      "type": "test-plan",
++      "path": "examples/evidence/G06/test-plan.json"
++    },
++    {
++      "type": "release-plan",
++      "path": "examples/evidence/G06/release-plan.json"
++    },
++    {
++      "type": "rollback-plan",
++      "path": "examples/evidence/G06/rollback-plan.json"
++    }
++  ],
++  "approvals": [
++    {
++      "role": "engineering_owner",
++      "decision": "APPROVED",
++      "by": "example-engineering-owner",
++      "revision": "BADF-BASELINE-1.0.0",
++      "policy_epoch": "BADF-2026-08-25",
++      "approved_at": "2026-08-25T00:00:07Z",
++      "scope": "example-only",
++      "principal_type": "human"
++    },
++    {
++      "role": "independent_reviewer",
++      "decision": "APPROVED",
++      "by": "example-reviewer",
++      "revision": "BADF-BASELINE-1.0.0",
++      "policy_epoch": "BADF-2026-08-25",
++      "approved_at": "2026-08-25T00:00:07Z",
++      "scope": "example-only",
++      "principal_type": "human"
++    }
++  ],
++  "exceptions": [],
++  "risks": [],
++  "council": null,
++  "disposition": "PASS",
++  "created_at": "2026-08-25T00:00:06Z",
++  "author": "example-author",
++  "author_type": "human",
++  "conditions": []
++}
+diff --git a/schemas/release-plan.schema.json b/schemas/release-plan.schema.json
+new file mode 100644
+index 0000000..f3a877f
+--- /dev/null
++++ b/schemas/release-plan.schema.json
+@@ -0,0 +1,54 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/release-plan.schema.json",
++  "title": "G06 release-plan -- environments ready and concrete steps",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "schema_version",
++    "environments",
++    "steps"
++  ],
++  "properties": {
++    "schema_version": {
++      "type": "string",
++      "enum": [
++        "1.0.0"
++      ]
++    },
++    "prd_id": {
++      "type": "string",
++      "pattern": "^PRD-[A-Za-z0-9._-]+$"
++    },
++    "environments": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "string",
++        "minLength": 1
++      }
++    },
++    "steps": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "object",
++        "additionalProperties": false,
++        "required": [
++          "id",
++          "description"
++        ],
++        "properties": {
++          "id": {
++            "type": "string",
++            "pattern": "^RS-[0-9]{3,}$"
++          },
++          "description": {
++            "type": "string",
++            "minLength": 1
++          }
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/rollback-plan.schema.json b/schemas/rollback-plan.schema.json
+new file mode 100644
+index 0000000..93078ef
+--- /dev/null
++++ b/schemas/rollback-plan.schema.json
+@@ -0,0 +1,63 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/rollback-plan.schema.json",
++  "title": "G06 rollback-plan -- executable rollback with stop conditions",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "schema_version",
++    "reversible",
++    "method",
++    "steps",
++    "stop_conditions"
++  ],
++  "properties": {
++    "schema_version": {
++      "type": "string",
++      "enum": [
++        "1.0.0"
++      ]
++    },
++    "prd_id": {
++      "type": "string",
++      "pattern": "^PRD-[A-Za-z0-9._-]+$"
++    },
++    "reversible": {
++      "type": "boolean"
++    },
++    "method": {
++      "type": "string",
++      "minLength": 1
++    },
++    "steps": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "object",
++        "additionalProperties": false,
++        "required": [
++          "id",
++          "description"
++        ],
++        "properties": {
++          "id": {
++            "type": "string",
++            "pattern": "^RB-[0-9]{3,}$"
++          },
++          "description": {
++            "type": "string",
++            "minLength": 1
++          }
++        }
++      }
++    },
++    "stop_conditions": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "string",
++        "minLength": 1
++      }
++    }
++  }
++}
+diff --git a/schemas/test-plan.schema.json b/schemas/test-plan.schema.json
+new file mode 100644
+index 0000000..deb9862
+--- /dev/null
++++ b/schemas/test-plan.schema.json
+@@ -0,0 +1,48 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/test-plan.schema.json",
++  "title": "G06 test-plan -- planned tests, each targeting something",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "schema_version",
++    "planned_tests"
++  ],
++  "properties": {
++    "schema_version": {
++      "type": "string",
++      "enum": [
++        "1.0.0"
++      ]
++    },
++    "prd_id": {
++      "type": "string",
++      "pattern": "^PRD-[A-Za-z0-9._-]+$"
++    },
++    "planned_tests": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "object",
++        "additionalProperties": false,
++        "required": [
++          "id",
++          "verifies"
++        ],
++        "properties": {
++          "id": {
++            "type": "string",
++            "pattern": "^PT-[0-9]{3,}$"
++          },
++          "verifies": {
++            "type": "string",
++            "minLength": 1
++          },
++          "description": {
++            "type": "string"
++          }
++        }
++      }
++    }
++  }
++}
+diff --git a/schemas/work-breakdown.schema.json b/schemas/work-breakdown.schema.json
+new file mode 100644
+index 0000000..ea286fd
+--- /dev/null
++++ b/schemas/work-breakdown.schema.json
+@@ -0,0 +1,52 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/work-breakdown.schema.json",
++  "title": "G06 work-breakdown -- bounded tasks with a composition order",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "schema_version",
++    "tasks"
++  ],
++  "properties": {
++    "schema_version": {
++      "type": "string",
++      "enum": [
++        "1.0.0"
++      ]
++    },
++    "prd_id": {
++      "type": "string",
++      "pattern": "^PRD-[A-Za-z0-9._-]+$"
++    },
++    "tasks": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "object",
++        "additionalProperties": false,
++        "required": [
++          "id",
++          "description"
++        ],
++        "properties": {
++          "id": {
++            "type": "string",
++            "pattern": "^WBS-[0-9]{3,}$"
++          },
++          "description": {
++            "type": "string",
++            "minLength": 1
++          },
++          "depends_on": {
++            "type": "array",
++            "items": {
++              "type": "string",
++              "pattern": "^WBS-[0-9]{3,}$"
++            }
++          }
++        }
++      }
++    }
++  }
++}
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 68cc8f7..fecf688 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -1300,6 +1300,83 @@ def check_security_approval(artifact: Path, dossier: dict[str, Any], evidence: d
+         raise ValidationError("security-approval: threat_model_digest does not match the threat-model artifact in this dossier (the threat model changed after approval, or the approval is for other bytes)")
+ 
+ 
++# ---- G06 evidence contract: implementation planning -- work breakdown, test plan, release plan, rollback plan (BADF-WP-0067, #125) ----
++def check_work_breakdown(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("work-breakdown", doc)
++    _no_placeholders(doc, "work-breakdown")
++    tasks = doc["tasks"]
++    if not tasks:
++        raise ValidationError("work-breakdown: no tasks; an empty breakdown bounds no work (G06: work packages bounded)")
++    _unique_ids(tasks, "id", "work-breakdown")
++    ids = {t["id"] for t in tasks}
++    for t in tasks:
++        if not (t.get("description") or "").strip():
++            raise ValidationError(f"work-breakdown: task {t['id']} has no description; a bounded task states what it delivers")
++        for dep in t.get("depends_on") or []:
++            if dep not in ids:
++                raise ValidationError(f"work-breakdown: task {t['id']} depends on {dep} which the breakdown does not carry; the composition order must resolve")
++    # composition order is real only if a build order exists -- the dependency graph is acyclic.
++    graph = {t["id"]: list(t.get("depends_on") or []) for t in tasks}
++    color = {i: 0 for i in graph}  # 0=unvisited 1=on-stack 2=done
++
++    def acyclic(n: str) -> bool:
++        color[n] = 1
++        for m in graph[n]:
++            if color[m] == 1 or (color[m] == 0 and not acyclic(m)):
++                return False
++        color[n] = 2
++        return True
++    for i in graph:
++        if color[i] == 0 and not acyclic(i):
++            raise ValidationError("work-breakdown: the task dependency graph has a cycle; no composition order can be defined (G06: composition order defined)")
++
++
++def check_test_plan(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("test-plan", doc)
++    _no_placeholders(doc, "test-plan")
++    planned = doc["planned_tests"]
++    if not planned:
++        raise ValidationError("test-plan: no planned tests; 'tests first' cannot be established from an empty plan")
++    _unique_ids(planned, "id", "test-plan")
++    for pt in planned:
++        if not (pt.get("verifies") or "").strip():
++            raise ValidationError(f"test-plan: planned test {pt['id']} names nothing it verifies; a planned test targets a requirement or task")
++
++
++def check_release_plan(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("release-plan", doc)
++    _no_placeholders(doc, "release-plan")
++    if not [e for e in doc["environments"] if (e or "").strip()]:
++        raise ValidationError("release-plan: no environments; environments and resources must be ready (G06)")
++    steps = doc["steps"]
++    if not steps:
++        raise ValidationError("release-plan: no steps; a release with no steps is not a plan")
++    _unique_ids(steps, "id", "release-plan")
++    for s in steps:
++        if not (s.get("description") or "").strip():
++            raise ValidationError(f"release-plan: step {s['id']} has no description; each release step states what it does")
++
++
++def check_rollback_plan(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    doc = load_json(artifact)
++    check_schema("rollback-plan", doc)
++    _no_placeholders(doc, "rollback-plan")
++    if not (doc.get("method") or "").strip():
++        raise ValidationError("rollback-plan: no method; rollback must be executable, not aspirational (G06: rollback executable)")
++    steps = doc["steps"]
++    if not steps:
++        raise ValidationError("rollback-plan: no steps; an executable rollback has concrete steps")
++    _unique_ids(steps, "id", "rollback-plan")
++    for s in steps:
++        if not (s.get("description") or "").strip():
++            raise ValidationError(f"rollback-plan: step {s['id']} has no description; each rollback step states what it does")
++    if not [c for c in doc["stop_conditions"] if (c or "").strip()]:
++        raise ValidationError("rollback-plan: no stop_conditions; a rollback plan states when to stop (G06: stop conditions executable)")
++
++
+ EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_criteria, "product-approval": check_product_approval,
+                   "requirements": check_requirements, "nfr": check_nfr, "traceability": check_traceability,
+                   "definition-of-ready": check_definition_of_ready,
+@@ -1308,7 +1385,9 @@ EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_crit
+                   "architecture": check_architecture, "adr": check_adr, "data-model": check_data_model,
+                   "api-contract": check_api_contract, "operability-design": check_operability_design,
+                   "threat-model": check_threat_model, "privacy-assessment": check_privacy_assessment,
+-                  "supply-chain-plan": check_supply_chain_plan, "security-approval": check_security_approval}
++                  "supply-chain-plan": check_supply_chain_plan, "security-approval": check_security_approval,
++                  "work-breakdown": check_work_breakdown, "test-plan": check_test_plan,
++                  "release-plan": check_release_plan, "rollback-plan": check_rollback_plan}
+ 
+ 
+ def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -> None:
+diff --git a/tests/test_badf_advance.py b/tests/test_badf_advance.py
+index 2b7319e..20c21ca 100644
+--- a/tests/test_badf_advance.py
++++ b/tests/test_badf_advance.py
+@@ -232,9 +232,47 @@ class AdvanceScratch(ValidatedInstance):
+         assert r.returncode == 0 and "APPROVED" in r.stdout, r.stdout + r.stderr
+         return f"work/{self.wp()}/gate-dossier.G05.json"
+ 
++    def make_g06(self):
++        """A G06 dossier for the same WP at the G06/C1 floor: work-breakdown, test-plan,
++        release-plan, rollback-plan, modelled on the shipped example. C1 needs the two
++        base roles (engineering_owner + independent_reviewer)."""
++        d = self.wp_dir(); ev_dir = d / "evidence/G06"; ev_dir.mkdir(parents=True, exist_ok=True)
++        g05 = json.loads((d / "gate-dossier.G05.json").read_text())
++        ex = gate.ROOT / "examples/evidence/G06"
++        index = []
++        for t in ("work-breakdown", "test-plan", "release-plan", "rollback-plan"):
++            art = json.loads((ex / f"{t}.artifact.json").read_text()); art["prd_id"] = "PRD-SCRATCH-0001"
++            (ev_dir / f"{t}.artifact.json").write_text(json.dumps(art, indent=2) + "\n")
++            e = {"schema_version": "1.0.0", "id": f"EVD-{self.wp()}-G06-{t}", "work_package_id": self.wp(), "gate": "G06",
++                 "claim": f"{t} present", "evidence_type": t, "producer": {"id": "scratch-engineering-owner", "type": "human"},
++                 "source_revision": g05["source_revision"], "target": g05["target"],
++                 "toolchain": {"name": "human-review", "version": "1"}, "operation": "plan",
++                 "started_at": g05["created_at"], "completed_at": g05["created_at"], "outcome": "PASS",
++                 "artifact": f"work/{self.wp()}/evidence/G06/{t}.artifact.json", "digest": gate.sha256(ev_dir / f"{t}.artifact.json")}
++            (ev_dir / f"{t}.json").write_text(json.dumps(e, indent=2) + "\n")
++            index.append({"type": t, "path": f"work/{self.wp()}/evidence/G06/{t}.json"})
++        approvals = []
++        for role in ("engineering_owner", "independent_reviewer"):
++            a = bound(EXAMPLE["approvals"][0], g05); a["role"] = role; a["by"] = f"{role}-signature"; approvals.append(a)
++        doc = dict(g05, id=f"DOS-{self.wp()}-G06-v1", gate="G06", change_class="C1", evidence=index, approvals=approvals)
++        (d / "gate-dossier.G06.json").write_text(json.dumps(doc, indent=2) + "\n")
++        self.framework_lock()
++        r = self.dossier_cli(f"work/{self.wp()}/gate-dossier.G06.json")
++        assert r.returncode == 0 and "APPROVED" in r.stdout, r.stdout + r.stderr
++        return f"work/{self.wp()}/gate-dossier.G06.json"
++
+ 
+ class AdvanceTests(AdvanceScratch):
+ 
++    def test_g05_approved_instance_advances_to_g06(self):
++        self.approve_g00(); self.assertEqual(self.advance(f"work/{self.wp()}/gate-dossier.G00.json").returncode, 0)
++        for mk in (self.make_g01, self.make_g02, self.make_g03, self.make_g04, self.make_g05):
++            self.assertEqual(self.advance(mk()).returncode, 0)
++        g06 = self.make_g06()
++        r = self.advance(g06); self.assertEqual(r.returncode, 0, r.stderr + r.stdout)
++        self.assertEqual(self.state()["lifecycle"]["current_gate"], "G06")
++        self.assertEqual(self.state()["lifecycle"]["state"], "APPROVED")
++
+     def test_g04_approved_instance_advances_to_g05(self):
+         self.approve_g00(); self.assertEqual(self.advance(f"work/{self.wp()}/gate-dossier.G00.json").returncode, 0)
+         self.assertEqual(self.advance(self.make_g01()).returncode, 0)
+diff --git a/tests/test_badf_g06.py b/tests/test_badf_g06.py
+new file mode 100644
+index 0000000..04d0580
+--- /dev/null
++++ b/tests/test_badf_g06.py
+@@ -0,0 +1,121 @@
++"""G06 evidence contract (BADF-WP-0067; the gate march reaches implementation planning).
++
++G06's four required evidence types have semantics the gate enforces by opening the
++artifact, inside validate_evidence, each mapping to a G06 exit criterion: work is
++bounded and its composition order is a real (acyclic) order (a cyclic or empty
++work-breakdown is refused); tests are planned before build (an empty test-plan, or a
++planned test that targets nothing, is refused); environments and resources are ready
++(a release-plan with no environments or no steps is refused); and rollback plus stop
++conditions are executable (a rollback-plan with no method or no stop conditions is
++refused). Every test runs the real CLI on the shipped G06 example, mutated in a scratch
++clone -- the faithful-runner shape.
++"""
++import hashlib
++import json
++import os
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++from tests._scratch import seed_clone  # noqa: E402
++
++DOSSIER = "examples/gate-dossier.G06.json"
++EV = "examples/evidence/G06"
++
++
++class G06Scratch(unittest.TestCase):
++    def setUp(self):
++        self.tmp = tempfile.mkdtemp(); self.root = Path(self.tmp) / "badf"
++        seed_clone(self.root, carry_working_state=True)
++        for rel in ("schemas", "tests"):
++            shutil.rmtree(self.root / rel, ignore_errors=True); shutil.copytree(gate.ROOT / rel, self.root / rel)
++        self.env = {k: v for k, v in os.environ.items() if not k.startswith("BADF_")}
++
++    def tearDown(self):
++        shutil.rmtree(self.tmp, ignore_errors=True)
++
++    def cli(self):
++        subprocess.run([sys.executable, "scripts/badf_gate.py", "lock"], cwd=self.root, env=self.env, capture_output=True, check=True)
++        return subprocess.run([sys.executable, "scripts/badf_gate.py", "dossier", DOSSIER], cwd=self.root, env=self.env, capture_output=True, text=True)
++
++    def artifact(self, t):
++        return json.loads((self.root / EV / f"{t}.artifact.json").read_text())
++
++    def rewrite(self, t, obj):
++        p = self.root / EV / f"{t}.artifact.json"; p.write_text(json.dumps(obj, indent=2) + "\n")
++        rec_p = self.root / EV / f"{t}.json"; rec = json.loads(rec_p.read_text())
++        rec["digest"] = "sha256:" + hashlib.sha256(p.read_bytes()).hexdigest(); rec_p.write_text(json.dumps(rec, indent=2) + "\n")
++
++    def refused(self, needle):
++        r = self.cli()
++        self.assertNotEqual(r.returncode, 0, "a defective G06 dossier rendered APPROVED")
++        self.assertIn(needle, r.stderr, r.stderr)
++
++
++class G06ExampleTests(G06Scratch):
++    def test_shipped_example_renders_approved(self):
++        r = self.cli(); self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("APPROVED", r.stdout)
++
++    def test_missing_required_evidence_is_still_refused(self):
++        d = json.loads((self.root / DOSSIER).read_text()); d["evidence"] = [e for e in d["evidence"] if e["type"] != "rollback-plan"]
++        (self.root / DOSSIER).write_text(json.dumps(d, indent=2) + "\n")
++        self.refused("missing evidence")
++
++
++class WorkBreakdownRuleTests(G06Scratch):
++    def test_no_tasks_is_refused(self):
++        wb = self.artifact("work-breakdown"); wb["tasks"] = []; self.rewrite("work-breakdown", wb)
++        self.refused("an empty breakdown bounds no work")
++
++    def test_a_task_without_a_description_is_refused(self):
++        wb = self.artifact("work-breakdown"); wb["tasks"][0]["description"] = ""; self.rewrite("work-breakdown", wb)
++        self.refused("has no description")
++
++    def test_a_dangling_dependency_is_refused(self):
++        wb = self.artifact("work-breakdown"); wb["tasks"][1]["depends_on"] = ["WBS-999"]; self.rewrite("work-breakdown", wb)
++        self.refused("the composition order must resolve")
++
++    def test_a_cyclic_dependency_graph_is_refused(self):
++        wb = self.artifact("work-breakdown")
++        wb["tasks"][0]["depends_on"] = ["WBS-002"]  # WBS-001 <-> WBS-002 cycle (WBS-002 already depends on WBS-001)
++        self.rewrite("work-breakdown", wb)
++        self.refused("has a cycle")
++
++
++class TestPlanRuleTests(G06Scratch):
++    def test_no_planned_tests_is_refused(self):
++        tp = self.artifact("test-plan"); tp["planned_tests"] = []; self.rewrite("test-plan", tp)
++        self.refused("cannot be established from an empty plan")
++
++    def test_a_planned_test_that_verifies_nothing_is_refused(self):
++        tp = self.artifact("test-plan"); tp["planned_tests"][0]["verifies"] = ""; self.rewrite("test-plan", tp)
++        self.refused("names nothing it verifies")
++
++
++class ReleasePlanRuleTests(G06Scratch):
++    def test_no_environments_is_refused(self):
++        rp = self.artifact("release-plan"); rp["environments"] = []; self.rewrite("release-plan", rp)
++        self.refused("environments and resources must be ready")
++
++    def test_no_steps_is_refused(self):
++        rp = self.artifact("release-plan"); rp["steps"] = []; self.rewrite("release-plan", rp)
++        self.refused("a release with no steps is not a plan")
++
++
++class RollbackPlanRuleTests(G06Scratch):
++    def test_no_method_is_refused(self):
++        rb = self.artifact("rollback-plan"); rb["method"] = ""; self.rewrite("rollback-plan", rb)
++        self.refused("rollback must be executable")
++
++    def test_no_stop_conditions_is_refused(self):
++        rb = self.artifact("rollback-plan"); rb["stop_conditions"] = []; self.rewrite("rollback-plan", rb)
++        self.refused("a rollback plan states when to stop")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0066/work-package.json b/work/WP-2026-0066/work-package.json
+index e160cf9..a43ee2a 100644
+--- a/work/WP-2026-0066/work-package.json
++++ b/work/WP-2026-0066/work-package.json
+@@ -2,7 +2,7 @@
+   "$schema": "../../schemas/work-package.schema.json",
+   "schema_version": "1.0.0",
+   "id": "WP-2026-0066",
+-  "title": "Freeze badf-git capability contract (GTGM, DESIGNED) — salvage PR #122 onto a fresh WP",
++  "title": "Freeze badf-git capability contract (GTGM, DESIGNED) \u2014 salvage PR #122 onto a fresh WP",
+   "owner": "human_sponsor",
+   "demand": "BADF-DEM-0053",
+   "repository": "bstBizEra/badf",
+@@ -43,11 +43,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "5fac18d"
++    "base_revision": "5fac18d",
++    "landed_as": "b1e0f5aebde56a18f02a3ba7cead25d34ee270d0"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Adds no gate code -- no new control, no mutation; a declarative contract freeze. Salvages PR #122's authoring layer (operator directed), like badf-requirements salvaged #47. Resolves #123 / GOV-0045; supersedes #119/#122. Reconciles WP-2026-0065."
+ }

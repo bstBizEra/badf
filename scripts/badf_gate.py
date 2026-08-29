@@ -1300,6 +1300,83 @@ def check_security_approval(artifact: Path, dossier: dict[str, Any], evidence: d
         raise ValidationError("security-approval: threat_model_digest does not match the threat-model artifact in this dossier (the threat model changed after approval, or the approval is for other bytes)")
 
 
+# ---- G06 evidence contract: implementation planning -- work breakdown, test plan, release plan, rollback plan (BADF-WP-0067, #125) ----
+def check_work_breakdown(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("work-breakdown", doc)
+    _no_placeholders(doc, "work-breakdown")
+    tasks = doc["tasks"]
+    if not tasks:
+        raise ValidationError("work-breakdown: no tasks; an empty breakdown bounds no work (G06: work packages bounded)")
+    _unique_ids(tasks, "id", "work-breakdown")
+    ids = {t["id"] for t in tasks}
+    for t in tasks:
+        if not (t.get("description") or "").strip():
+            raise ValidationError(f"work-breakdown: task {t['id']} has no description; a bounded task states what it delivers")
+        for dep in t.get("depends_on") or []:
+            if dep not in ids:
+                raise ValidationError(f"work-breakdown: task {t['id']} depends on {dep} which the breakdown does not carry; the composition order must resolve")
+    # composition order is real only if a build order exists -- the dependency graph is acyclic.
+    graph = {t["id"]: list(t.get("depends_on") or []) for t in tasks}
+    color = {i: 0 for i in graph}  # 0=unvisited 1=on-stack 2=done
+
+    def acyclic(n: str) -> bool:
+        color[n] = 1
+        for m in graph[n]:
+            if color[m] == 1 or (color[m] == 0 and not acyclic(m)):
+                return False
+        color[n] = 2
+        return True
+    for i in graph:
+        if color[i] == 0 and not acyclic(i):
+            raise ValidationError("work-breakdown: the task dependency graph has a cycle; no composition order can be defined (G06: composition order defined)")
+
+
+def check_test_plan(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("test-plan", doc)
+    _no_placeholders(doc, "test-plan")
+    planned = doc["planned_tests"]
+    if not planned:
+        raise ValidationError("test-plan: no planned tests; 'tests first' cannot be established from an empty plan")
+    _unique_ids(planned, "id", "test-plan")
+    for pt in planned:
+        if not (pt.get("verifies") or "").strip():
+            raise ValidationError(f"test-plan: planned test {pt['id']} names nothing it verifies; a planned test targets a requirement or task")
+
+
+def check_release_plan(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("release-plan", doc)
+    _no_placeholders(doc, "release-plan")
+    if not [e for e in doc["environments"] if (e or "").strip()]:
+        raise ValidationError("release-plan: no environments; environments and resources must be ready (G06)")
+    steps = doc["steps"]
+    if not steps:
+        raise ValidationError("release-plan: no steps; a release with no steps is not a plan")
+    _unique_ids(steps, "id", "release-plan")
+    for s in steps:
+        if not (s.get("description") or "").strip():
+            raise ValidationError(f"release-plan: step {s['id']} has no description; each release step states what it does")
+
+
+def check_rollback_plan(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    doc = load_json(artifact)
+    check_schema("rollback-plan", doc)
+    _no_placeholders(doc, "rollback-plan")
+    if not (doc.get("method") or "").strip():
+        raise ValidationError("rollback-plan: no method; rollback must be executable, not aspirational (G06: rollback executable)")
+    steps = doc["steps"]
+    if not steps:
+        raise ValidationError("rollback-plan: no steps; an executable rollback has concrete steps")
+    _unique_ids(steps, "id", "rollback-plan")
+    for s in steps:
+        if not (s.get("description") or "").strip():
+            raise ValidationError(f"rollback-plan: step {s['id']} has no description; each rollback step states what it does")
+    if not [c for c in doc["stop_conditions"] if (c or "").strip()]:
+        raise ValidationError("rollback-plan: no stop_conditions; a rollback plan states when to stop (G06: stop conditions executable)")
+
+
 EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_criteria, "product-approval": check_product_approval,
                   "requirements": check_requirements, "nfr": check_nfr, "traceability": check_traceability,
                   "definition-of-ready": check_definition_of_ready,
@@ -1308,7 +1385,9 @@ EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_crit
                   "architecture": check_architecture, "adr": check_adr, "data-model": check_data_model,
                   "api-contract": check_api_contract, "operability-design": check_operability_design,
                   "threat-model": check_threat_model, "privacy-assessment": check_privacy_assessment,
-                  "supply-chain-plan": check_supply_chain_plan, "security-approval": check_security_approval}
+                  "supply-chain-plan": check_supply_chain_plan, "security-approval": check_security_approval,
+                  "work-breakdown": check_work_breakdown, "test-plan": check_test_plan,
+                  "release-plan": check_release_plan, "rollback-plan": check_rollback_plan}
 
 
 def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -> None:
