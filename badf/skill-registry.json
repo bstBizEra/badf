@@ -260,6 +260,16 @@
       "allowed_tools": [],
       "status": "IMPLEMENTED",
       "digest": "sha256:fe791d3c83645bea915c6bc65325cadda46034f91047363c40585c728981095c"
+    },
+    {
+      "name": "git-recovery",
+      "source": "skills/badf-git/subskills/git-recovery/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:7d0dbbbcf8e81f507423541e07265fa78bdbc6c04468c189953a73a80156599d"
     }
   ]
 }

@@ -42,6 +42,10 @@ jobs:
         run: |
           python3 scripts/badf_gate.py git-baseline > "$RUNNER_TEMP/git-baseline.json"
           python3 scripts/badf_gate.py git-staleness "$RUNNER_TEMP/git-baseline.json"
+      - name: Git recovery inventory (read-only; the runner's own checkout is EVIDENCE_ONLY)
+        # BADF-WP-0080 (badf-git GIT-G): the before-state record on real infrastructure -- a clean,
+        # detached checkout has nothing unique to preserve. Read-only; --preserve is never run here.
+        run: python3 scripts/badf_gate.py git-recovery
       # QA finding m1: fail-fast hid every violation after the first. Negative
       # control 1 went red at step 4 and steps 5-6 were skipped, so the
       # authority refusal was never exercised and the operator saw one problem
