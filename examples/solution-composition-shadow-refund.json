@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-SHADOW-REFUND",
+  "solutions": [
+    {
+      "solution_id": "SOL-001",
+      "requirement_ref": "REQ-001",
+      "ux_refs": [
+        "FLOW-approve-refund"
+      ],
+      "api_refs": [
+        "POST /refunds/{id}/approve"
+      ],
+      "authorization_refs": [
+        "ACT-refund-approve"
+      ],
+      "data_refs": [
+        "ENT-Refund",
+        "ENT-RefundApproval"
+      ],
+      "audit_refs": [
+        "AUD-refund-approved"
+      ],
+      "accessibility_refs": [
+        "A11Y-approval-state"
+      ],
+      "test_refs": [
+        "TEST-refund-approve"
+      ]
+    },
+    {
+      "solution_id": "SOL-002",
+      "requirement_ref": "REQ-002",
+      "ux_refs": [
+        "FLOW-refund-denied-recovery"
+      ],
+      "api_refs": [
+        "POST /refunds/{id}/deny"
+      ],
+      "authorization_refs": [
+        "ACT-refund-deny"
+      ],
+      "data_refs": [
+        "ENT-Refund"
+      ],
+      "audit_refs": [
+        "AUD-refund-denied"
+      ],
+      "accessibility_refs": [
+        "A11Y-denied-announce"
+      ],
+      "test_refs": [
+        "TEST-refund-deny"
+      ]
+    }
+  ]
+}

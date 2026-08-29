@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-SHADOW-REPORTING",
+  "solutions": [
+    {
+      "solution_id": "SOL-001",
+      "requirement_ref": "REQ-010",
+      "ux_refs": [
+        "FLOW-view-report"
+      ],
+      "api_refs": [
+        "GET /reports/{id}"
+      ],
+      "authorization_refs": [
+        "ACT-report-read"
+      ],
+      "data_refs": [
+        "ENT-Report"
+      ],
+      "audit_refs": [
+        "AUD-report-accessed"
+      ],
+      "accessibility_refs": [
+        "A11Y-table-semantics"
+      ],
+      "test_refs": [
+        "TEST-report-view"
+      ]
+    },
+    {
+      "solution_id": "SOL-002",
+      "requirement_ref": "REQ-011",
+      "data_refs": [
+        "ENT-ReportSchedule"
+      ],
+      "test_refs": [
+        "TEST-schedule-migration"
+      ]
+    }
+  ]
+}
