@@ -1,0 +1,1084 @@
+diff --git a/badf/demands/BADF-DEM-0065.json b/badf/demands/BADF-DEM-0065.json
+new file mode 100644
+index 0000000..46dd9ca
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0065.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0065",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 149,
++    "url": "https://github.com/bstBizEra/badf/issues/149",
++    "exported_at": "2026-08-29T20:48:55Z",
++    "body_digest": "sha256:32661acfeefe9e1edd479ecdd5ff20bfccf4c5d2ae7d89e2fade6c79d6600f82"
++  },
++  "title": "GOV-0058: WP-SEC-A \u2014 freeze badf-security-design (G05 security-design composition/router; DESIGNED; OWASP adapt-not-authority; design != assurance)",
++  "problem": "## Observed\n\nBADF has badf-architecture (G04) and badf-solution-design (G03/G04) ACTIVE, and the lifecycle defines G05 (Security, privacy and AI safety: threat-model / privacy-assessment / supply-chain-plan / security-approval; owner security_authority; min C2) \u2014 but no security-design capability exists to author that evidence.\n\n## Expected\n\n**WP-SEC-A \u2014 freeze badf-security-design as a G05 security-DESIGN composition/router, DESIGNED only.** Pre-implementation: models how the intended system (architecture + solution baselines) can be abused, derives controls + security requirements, normalizes specialist outputs into the EXISTING G05 design artifacts. Thin router; NOT a scanner, second gate, or authority. Security ASSURANCE (code review, SAST, SCA, secrets, IaC, API/web/mobile review, remediation) is OUT of scope -> future badf-security-assurance at G08/G09. OWASP = ADAPT-as-methodology, never adopt-as-authority. security-approval stays with security_authority. No scripts/badf_security_design.py, no schema, no lifecycle change, no gate-code change.\n\n## Evidence\n\n- lifecycle.json G05 required_evidence confirms the seam (threat-model/privacy-assessment/supply-chain-plan/security-approval).\n- Mirrors the badf-solution-design / badf-architecture DESIGNED-first admission ladder (contract freeze, prove later).\n\n## Unknowns\n\nWhich specialists earn independent subskill status vs. stay cross-cutting (security-requirements likely cross-cutting) \u2014 deferred to WP-SEC-B+.\n\ndiscovered-by: operator design directive 2026-08-30 \u00b7 status: DISCOVERED\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T20:48:55Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-SEC-A freezes badf-security-design (G05 security-design composition/router, DESIGNED) per the operator's detailed design directive 2026-08-30. Pre-implementation design only; assurance deferred to a future badf-security-assurance (G08/G09); OWASP adapt-not-authority; security-approval reserved to security_authority; no gate/schema/lifecycle change. DEM-0065/GOV-0058/WP-0078. Reconciles WP-2026-0077."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 08655fd..10d98e9 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -230,6 +230,16 @@
+       "allowed_tools": [],
+       "status": "IMPLEMENTED",
+       "digest": "sha256:941dded6c33ac5793ed56063cb2ff7cf8dcbd25e3c8fa808d70533cff3196268"
++    },
++    {
++      "name": "badf-security-design",
++      "source": "skills/badf-security-design/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [],
++      "status": "DESIGNED",
++      "digest": "sha256:60d0a80d0ec829627555698c353b962975e519a2a71b081109b5d75320cdef6e"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 2610b45..bf1bf1a 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -859,6 +859,33 @@ representative, and the owed real-project re-shadow is filed as a tracked follow
+ the capability is admitted for use, its trust is honestly bounded to a representative shadow, and the
+ debt to re-shadow on real data is tracked rather than lost. Registry `SHADOWED → ACTIVE`.
+ 
++## badf-security-design — G05 security-design contract freeze (`BADF-WP-0078` / WP-SEC-A, Issue #149 / GOV-0058)
++
++BADF had G05 evidence types (`threat-model`, `privacy-assessment`, `supply-chain-plan`,
++`security-approval`) but no capability to author them coherently. `badf-security-design` is that
++capability, frozen `DESIGNED`: a thin **pre-implementation** composition/router that consumes the
++architecture and solution baselines, models how the intended system can be abused, derives controls
++and security requirements, and **normalizes** its specialists into the three G05 **design** artifacts.
++The fourth, `security-approval`, is **never authored by the skill** — it is `security_authority`'s,
++referencing exact digests (SEC-I13). SKILL.md + 14 references + `SEC-I01…SEC-I15`.
++
++Three boundaries carry the design: **(1) design ≠ assurance** — code review / SAST / SCA / secrets /
++IaC / API-review / remediation are security *assurance* and belong to a future `badf-security-assurance`
++at G08/G09; absence of a design finding never establishes implementation security (SEC-I14). **(2)
++consume, don't rediscover** — architecture owns boundaries (a missing one raises
++`ARCHITECTURE_CHANGE_REQUIRED`, not an invented boundary, SEC-I05) and solution-design owns the
++functional IAM/API/data contracts (security-design *secures and challenges* them — least privilege,
++bypass resistance, isolation — it does not fork a second IAM model, SEC-I06); a derived security
++requirement that changes scope raises `REQUIREMENT_CHANGE_REQUIRED` rather than silently rewriting G02
++(SEC-I04). **(3) OWASP is ADAPT, not authority** — the Secure Agent Playbook and AppSec Agent are
++adapted for procedural decomposition, CWE/ASVS/OWASP/OpenCRE traceability, structured findings and
++agent/API taxonomies; their agent output, lifecycle and scanner results are **never** BADF gate
++authority (`OWASP agent says PASS → G05 PASS` must never happen). `ai-agent-security-design` is
++conditional (`NOT_APPLICABLE_WITH_REASON` for non-agentic work), first-class for BADF itself, and rests
++on `CAPABILITY ≠ AUTHORITY`. No `scripts/badf_security_design.py`, no schema, no `lifecycle.json`
++change, no gate-code, no specialist activated. Ladder WP-SEC-A…E mirrors solution-design; the deferred
++`badf-security-assurance` is named, not built.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/skills/badf-security-design/SKILL.md b/skills/badf-security-design/SKILL.md
+new file mode 100644
+index 0000000..16094d5
+--- /dev/null
++++ b/skills/badf-security-design/SKILL.md
+@@ -0,0 +1,144 @@
++---
++name: badf-security-design
++description: Compose the pre-implementation security-design specialist contracts — threat model, security requirements, privacy, abuse cases, API/IAM/supply-chain security design, and (conditionally) AI-agent security — over the architecture and solution baselines, and normalize them into the existing G05 design evidence (threat-model, privacy-assessment, supply-chain-plan). Use when an architected, detailed solution (G04) must be modelled for abuse and given controls and security requirements before implementation. Do not use to verify an implementation, run a scanner, produce the G05 security-approval, accept residual risk, decide a gate, or invent architecture.
++---
++
++# BADF Security Design
++
++`badf-security-design` is the **pre-implementation security composition and orchestration layer** for
++G05. It consumes the architecture baseline (`badf-architecture`) and the solution baseline
++(`badf-solution-design`), models how that intended system can be abused, derives controls and security
++requirements, and **normalizes** its specialists' outputs into the **existing** G05 design evidence. It
++is a router and constraint contract — **not** a scanner, a second gate, a security authority, or a
++document-generation mega-skill.
++
++Its live status is `badf/skill-registry.json`; this file defines the contract, not the status, and never
++hardcodes a lifecycle status that can drift from the registry.
++
++## Canonical principle
++
++```text
++Architecture declares the security-relevant structure (boundaries, trust, data flows, ownership).
++Solution Design declares the detailed intended behavior (UX, API, IAM, data, audit).
++Security Design models how that intended system can be abused, derives controls and security
++    requirements, and packages normalized G05 evidence.
++Security Assurance later determines whether the IMPLEMENTATION satisfies those obligations (G08/G09).
++The canonical gate validates the evidence.
++Only security authority may approve G05 or accept residual risk.
++```
++
++**Capability ≠ authority.** A component (or an agent, or a tool) being *able* to act never implies
++*permission* to act. Security design's job is to make the difference explicit and defensible, not to
++grant it.
++
++## Design ≠ assurance (the hard scope line)
++
++`badf-security-design` is **pre-implementation**. It reasons about a *design*, not a *build*. It does
++**not** perform — and must not absorb — security **assurance/verification**:
++
++```text
++badf-security-design   (G05, PRE-implementation)   |   badf-security-assurance (future, G08/G09)
++threat-model                                        |   security code review / SAST
++security-requirements                               |   SCA / dependency CVE + reachability
++privacy-analysis                                    |   secrets scanning
++abuse-case-analysis                                 |   API/web/mobile attack-oriented review
++api-security-design                                 |   IaC security review
++iam-security-design                                 |   agent/MCP security audit
++supply-chain-design                                 |   remediation verification
++ai-agent-security-design [conditional]              |   security-validation (G09)
++```
++
++Absence of a design finding never establishes implementation security (SEC-I14). Assurance is a separate,
++later capability that consumes the implementation; it is **out of scope here**.
++
++## Boundary with badf-architecture and badf-solution-design
++
++Security design **consumes**, it does not rediscover.
++
++- **`badf-architecture`** owns boundaries, topology, trust transitions, data flows and ownership. Security
++  design **may constrain** architecture but **must not silently invent or rewrite** an architectural
++  boundary. When the architecture is insufficient for a required control:
++  `ARCHITECTURE_CHANGE_REQUIRED → ADR / architecture revision → re-baseline → resume security design` (SEC-I05).
++- **`badf-solution-design`** already owns the *functional* authorization seam
++  (`principal · resource · action · scope · decision point · default deny · audit obligation`). Security
++  design **challenges and secures** that contract — least privilege, bypass resistance, authentication
++  assurance, separation of duties, cross-tenant isolation, audit tamper-resistance — it **does not
++  recreate** a second, contradictory IAM model (SEC-I06). See `references/iam-security-contract.md`.
++
++## Security requirements cannot silently expand scope
++
++Security analysis often derives new requirements (e.g. "privileged operations require phishing-resistant
++MFA"). The skill **may derive** them, but if a derived requirement materially changes product behavior or
++scope it does **not** rewrite G02 in place:
++
++```text
++REQUIREMENT_CHANGE_REQUIRED → G02 requirements revision → solution/architecture reconciliation → resume G05
++```
++
++This preserves traceability; G05 never silently rewrites G02 (SEC-I04, and see `references/security-requirements.md`).
++
++## Invariants (SEC-I01 … SEC-I15)
++
++```text
++SEC-I01  Exact baseline            every security conclusion binds the exact architecture and solution baselines it reasoned over
++SEC-I02  Threat provenance         every material threat resolves to real assets, interfaces, data flows, trust boundaries or requirements
++SEC-I03  Threat disposition        every material threat is controlled, explicitly deferred, blocked, or submitted for independent residual-risk acceptance
++SEC-I04  Security traceability     a security requirement traces upstream to threat/requirement/NFR and downstream to a verification obligation; it cannot silently expand product scope
++SEC-I05  Architecture fidelity     security design may constrain architecture but cannot silently invent or rewrite architectural boundaries (ARCHITECTURE_CHANGE_REQUIRED)
++SEC-I06  Solution fidelity         security design challenges and secures the canonical IAM/API/data contracts; it cannot silently replace them with a second model
++SEC-I07  Privacy flow completeness material personal/sensitive-data processing resolves to declared data flows
++SEC-I08  Data protection           sensitive data has classification, purpose, protection and lifecycle (retention/deletion) treatment
++SEC-I09  Supply-chain provenance   material third-party components carry admission / provenance / update obligations (design, not a scan)
++SEC-I10  Agent least privilege     agent/tool/MCP capabilities are explicitly scoped when an agentic system exists (capability ≠ authority)
++SEC-I11  Non-coverage declared     unobserved or unmodelled security surfaces are explicit; silence is not coverage
++SEC-I12  Residual risk ≠ accepted  the skill may report residual risk but cannot self-accept it
++SEC-I13  Approval separation       the skill cannot produce its own G05 security-approval; that is security_authority's, referencing exact digests
++SEC-I14  Design ≠ verification     absence of a design finding does not establish implementation security (that is assurance, G08/G09)
++SEC-I15  No second gate            no scripts/badf_security_design.py or competing validator; deterministic evidence semantics live in the canonical gate
++```
++
++See `references/threat-model-contract.md` for the machine-addressable threat shape, and the other
++`references/*-contract.md` for each specialist's design surface.
++
++## Lifecycle placement
++
++`badf-security-design` composes into the **existing G05** — it adds **no** new gate and changes **no**
++`lifecycle.json`. It normalizes its specialists into the three G05 **design** artifacts and leaves the
++fourth to authority:
++
++```text
++G04 architecture + solution baseline → badf-security-design → { threat-model ; privacy-assessment ; supply-chain-plan }  (design evidence)
++                                                              security-approval  ← produced by security_authority (NOT the skill)
++```
++
++See `references/g05-contract.md` and `references/normalization.md`.
++
++## Workflow
++
++`FRAME → INGEST → CLASSIFY → ROUTE → SPECIALIZE → RECONCILE → CHALLENGE → NORMALIZE → PACKAGE`
++
++1. **FRAME** — scope the security design and its authority boundary; it is design, not assurance.
++2. **INGEST** — the architecture baseline + ADRs + trust boundaries + data flows, the solution baseline
++   (UX/API/IAM/data/audit), G02 requirements + NFRs. Bind their exact digests (SEC-I01).
++3. **CLASSIFY** — data classification, agentic-vs-not, regulatory surface; decide which specialists apply
++   (and record `NOT_APPLICABLE_WITH_REASON` for those that do not, e.g. `ai-agent-security-design` for a
++   non-agentic app).
++4. **ROUTE** — select only the specialists the work needs (`references/routing.md`); external
++   methodologies (OWASP) are **REFERENCE / ADAPT**, never BADF authority.
++5. **SPECIALIZE** — each specialist produces its domain contract (threat-model, security-requirements,
++   privacy, abuse-case, api-security, iam-security, supply-chain, ai-agent-security).
++6. **RECONCILE** — against the architecture and solution baselines (SEC-I05/I06); a boundary the baseline
++   lacks raises `ARCHITECTURE_CHANGE_REQUIRED`; a security requirement that changes scope raises
++   `REQUIREMENT_CHANGE_REQUIRED` — neither is patched silently.
++7. **CHALLENGE** — adversarial and false-positive review; every material threat gets a disposition
++   (SEC-I03); residual risk is reported, never self-accepted (SEC-I12).
++8. **NORMALIZE** — fold specialist outputs into the three G05 design artifacts
++   (`references/normalization.md`); declare non-coverage explicitly (SEC-I11).
++9. **PACKAGE** — emit the G05 design evidence; the gate validates it, and **security_authority** produces
++   `security-approval` and any residual-risk acceptance (SEC-I13). Never emit a gate outcome or an
++   approval as this skill's own decision.
++
++Read `references/acceptance.md` for the admission controls and the WP-SEC-A…E ladder, and
++`references/external-methodology.md` for the OWASP methodology dispositions (reference-only). This skill
++has **no authority of its own**: it composes and constrains; the canonical gate validates and
++security_authority decides.
+diff --git a/skills/badf-security-design/references/abuse-case-contract.md b/skills/badf-security-design/references/abuse-case-contract.md
+new file mode 100644
+index 0000000..0c2d43d
+--- /dev/null
++++ b/skills/badf-security-design/references/abuse-case-contract.md
+@@ -0,0 +1,43 @@
++# Abuse-case contract
++
++Abuse cases are kept **separate from threat models**: threat models are *structural* (attacker vs. an
++asset across a boundary); abuse cases capture **adversarial business behavior** — a legitimate flow
++driven to an illegitimate end. Both feed `threat-model` normalization, but they are authored distinctly.
++
++## Shape
++
++```yaml
++abuse_case_id: ABUSE-...
++requirement_ref: REQ-...       # the legitimate behavior being abused
++narrative: "..."               # what the adversary does with the legitimate flow
++derived_sec_req_refs: [SEC-REQ-...]
++control_refs: [CTRL-...]
++verification_obligation: TEST-SEC-...
++```
++
++## The example (stronger than a tag)
++
++```text
++REQ-021   "Customer may request one refund."
++   ↓
++ABUSE-008 "Customer automates repeated refund submissions across concurrent sessions."
++   ↓
++SEC-REQ-014  refund request must enforce idempotency + business-level replay protection
++   ↓
++API-017   POST /refunds
++   ↓
++CTRL-022  idempotency + transaction-level uniqueness
++   ↓
++TEST-SEC-031  parallel replay test
++```
++
++That full chain is far stronger than tagging `POST /refunds` with "OWASP API4" — it names the business
++requirement abused, the derived security requirement, the concrete control, and the verification
++obligation.
++
++## Rules
++
++- **Business provenance.** Every abuse case names the `requirement_ref` (the legitimate behavior) it
++  subverts. An abuse case with no legitimate behavior behind it is a threat, not an abuse case.
++- **Full chain (SEC-I04).** An abuse case that stops before a derived requirement / control / verification
++  obligation is unfinished — the value is the traceable chain, not the narrative.
+diff --git a/skills/badf-security-design/references/acceptance.md b/skills/badf-security-design/references/acceptance.md
+new file mode 100644
+index 0000000..f1bc295
+--- /dev/null
++++ b/skills/badf-security-design/references/acceptance.md
+@@ -0,0 +1,40 @@
++# Acceptance and admission
++
++The capability's **live status is `badf/skill-registry.json`** (`DESIGNED` at `BADF-WP-0078` / WP-SEC-A)
++— this document defines the contract, not the status, so it never hardcodes a status line that can drift
++from the registry. Progression follows `docs/07-skills-governance.md`.
++
++## Controlled admission ladder
++
++The same pattern that carried `badf-research`, `badf-architecture` and `badf-solution-design` — freeze the
++contract first, prove it later, in separate WPs. **Do not build every specialist in the first PR.**
++
++| WP | Outcome | Status |
++| :--- | :--- | :--- |
++| **WP-SEC-A** (this) | root `SKILL.md` + references: G05 mapping, routing, specialist boundaries, architecture/solution-design interfaces, threat/control/risk model, normalization contract, OWASP dispositions, SEC-I01…I15, admission criteria | `DESIGNED` |
++| WP-SEC-B | G05 security-design schemas + normalized evidence semantics | `IMPLEMENTED` |
++| WP-SEC-C | deterministic G05 security-design controls inside the canonical `badf_gate.py` (failing-first) | `VALIDATED` |
++| WP-SEC-D | historical / representative security-design shadow calibration | `SHADOWED` |
++| WP-SEC-E | independent admission | `ACTIVE` |
++
++## WP-SEC-A boundaries (no scope creep)
++
++- **No runtime, no second validator** — no `scripts/badf_security_design.py` (SEC-I15); `badf_gate.py` is
++  the sole gate authority.
++- **No schema, no lifecycle change** — G05 required_evidence and its gate rules are unchanged;
++  security-design normalizes into the **existing** G05 design artifacts.
++- **No scanner, no assurance** — code review / SAST / SCA / secrets / IaC / API-review / remediation are
++  **out of scope**; they are a future `badf-security-assurance` at G08/G09 (SEC-I14).
++- **No self-approval** — the skill does not produce `security-approval` or accept residual risk; those are
++  `security_authority`'s (SEC-I12/I13).
++- **No specialist activation** — routing names who would own each concern; the specialist adapters are not
++  admitted here. `ai-agent-security-design` is conditional and `NOT_APPLICABLE_WITH_REASON` for non-agentic
++  work.
++- **Architecture + solution spines respected** — security design consumes the baselines and raises
++  `ARCHITECTURE_CHANGE_REQUIRED` / `REQUIREMENT_CHANGE_REQUIRED` rather than rewriting them.
++
++## Admission
++
++- `DESIGNED`: the contract exists as this `SKILL.md` + references and is registered. **Met (WP-SEC-A).**
++- `IMPLEMENTED` … `ACTIVE`: earned by the later WPs above, each through the full loop; a seam becomes a
++  deterministic control only when a failing-first probe warrants it, never by precedent.
+diff --git a/skills/badf-security-design/references/ai-agent-security-contract.md b/skills/badf-security-design/references/ai-agent-security-contract.md
+new file mode 100644
+index 0000000..74a3c2a
+--- /dev/null
++++ b/skills/badf-security-design/references/ai-agent-security-contract.md
+@@ -0,0 +1,52 @@
++# AI-agent-security contract (conditional, first-class)
++
++`ai-agent-security-design` is **conditional**. For a non-agentic application it is
++`NOT_APPLICABLE_WITH_REASON`. For BADF itself or any agentic project it routes **automatically** and is
++first-class — because BADF's own doctrine is `CAPABILITY ≠ AUTHORITY`, and an agentic system is exactly
++where that line is easiest to lose.
++
++## Design concerns
++
++```text
++Agent identity                 Prompt / trust boundaries          Human authorization points
++Agent authority                Untrusted-context handling         Side-effect isolation
++Tool capability                Memory provenance                  Output trust
++MCP capability                 Secret visibility                  Model / provider trust
++Filesystem / network scope     Data exfiltration paths            Agent-to-agent delegation
++                               Recursive-delegation limits
++```
++
++## Shape
++
++```yaml
++agent_ref: AGENT-...
++capabilities:                  # explicitly scoped (SEC-I10)
++  tools: [...]
++  mcp: [...]
++  filesystem_scope: [...]
++  network_scope: [...]
++trust_boundaries:
++  untrusted_context_handling: "..."   # prompt-injection / untrusted-input containment
++  memory_provenance: "..."
++  secret_visibility: "..."
++authority:
++  human_authorization_points: [...]   # where a human gate is mandatory (capability ≠ authority)
++  delegation: "..."                   # agent-to-agent, with recursive-delegation limits
++  side_effect_isolation: "..."
++exfiltration_paths: [...]      # identified and controlled
++provenance:
++  model_provider_trust: "..."
++```
++
++## Rules
++
++- **Least privilege (SEC-I10).** Every agent/tool/MCP/filesystem/network capability is **explicitly
++  scoped**. An unscoped capability is a finding.
++- **Capability ≠ authority.** A model being able to call a tool never implies permission to use it; the
++  human authorization points and side-effect isolation make the difference enforceable, not implied.
++- **Untrusted context is contained.** Prompt/trust boundaries, memory provenance and secret visibility are
++  designed so untrusted input cannot escalate into authority or exfiltrate data.
++- **Delegation is bounded.** Agent-to-agent delegation carries explicit recursive-delegation limits;
++  unbounded delegation is refused by design.
++- This maps to OWASP's agent / MCP / LLM / multi-agent coverage as **reference** methodology
++  (`references/external-methodology.md`) — adapted, never adopted as authority.
+diff --git a/skills/badf-security-design/references/api-security-contract.md b/skills/badf-security-design/references/api-security-contract.md
+new file mode 100644
+index 0000000..be2732a
+--- /dev/null
++++ b/skills/badf-security-design/references/api-security-contract.md
+@@ -0,0 +1,41 @@
++# API-security contract (DESIGN, not review)
++
++`api-security-design` is **design-time**: it specifies the security properties an API must be built with.
++It is **not** the attack-oriented review that verifies whether those properties hold — that is assurance
++(`badf-security-assurance`, G08/G09), adapted later from OWASP's API-security review workflow.
++
++```text
++DESIGN (here, G05)                         REVIEW / VERIFY (later, G08/G09)
++authentication                             BOLA actually exploitable?
++authorization (object ownership)           authentication bypass?
++rate / resource controls                   mass assignment?
++field-level exposure                       rate-limit bypass?
++idempotency                                SSRF?
++anti-automation                            unsafe downstream consumption?
++input / output exposure                    shadow / undocumented API?
++webhook trust                              …attack execution…
++API inventory / version policy
++```
++
++## Shape (per protected operation)
++
++```yaml
++api_ref: API-...               # resolves to the solution baseline's API contract (SEC-I06)
++authentication: "..."          # assurance level required
++authorization_ref: ACT-...     # the solution IAM tuple this operation is bound to — referenced, not redefined
++object_ownership: "..."        # how per-object ownership is enforced (anti-BOLA by design)
++rate_controls: "..."
++anti_automation: "..."
++field_exposure: [...]          # request/response fields deliberately allowed; the rest denied
++idempotency: "..."
++webhook_trust: "..."           # if applicable
++```
++
++## Rules
++
++- **Bind, don't redefine (SEC-I06).** Each operation references the solution baseline's `API-…` and
++  `ACT-…`; api-security-design adds the *security properties*, it does not fork a second API/authz model.
++- **Ownership by design.** Object-level authorization (the anti-BOLA property) is a design requirement per
++  operation, not a review afterthought.
++- **Design ≠ exploitability (SEC-I14).** This contract states what must be true; whether it *is* true in
++  the build is proven by assurance, later.
+diff --git a/skills/badf-security-design/references/external-methodology.md b/skills/badf-security-design/references/external-methodology.md
+new file mode 100644
+index 0000000..1ed8560
+--- /dev/null
++++ b/skills/badf-security-design/references/external-methodology.md
+@@ -0,0 +1,56 @@
++# External methodology provenance
++
++Status: **REFERENCE / ADAPT ONLY — no external executable vendored, no external skill or agent granted
++authority.**
++
++`badf-security-design` adapts external security methodologies into BADF domain contracts and normalized
++evidence. The external projects are references, not BADF authority; any future vendoring or direct
++execution requires a separate external-skill admission WP under `docs/07-skills-governance.md`.
++
++## The disposition, frozen
++
++```text
++OWASP Secure Agent Playbook / OWASP AppSec Agent
++        =
++EXTERNAL SECURITY METHODOLOGY  →  ADAPT
++
++NOT
++        =
++BADF gate · BADF authority · BADF lifecycle · BADF evidence schema
++```
++
++The useful shape is always:
++
++```text
++specialized procedure → structured observation → BADF normalization → BADF evidence
++```
++
++never:
++
++```text
++OWASP agent says PASS → G05 PASS
++```
++
++That must never happen.
++
++## Dispositions
++
++| Source | BADF ADAPTs | BADF does NOT adopt |
++| :--- | :--- | :--- |
++| OWASP Secure Agent Playbook | procedural decomposition; OWASP/ASVS/CWE/OpenCRE traceability; structured finding format; API / agent / MCP / LLM security taxonomies; explicit evidence | its plugin lifecycle as BADF lifecycle; its agent output as gate authority; a scanner result as security-approval; remediation authority |
++| OWASP AppSec Agent | the threat-model workflow; repository/PR context extraction; adversarial challenge; false-positive challenge; the reviewer → adversary → fixer → verifier **separation** (one step never blesses its own fix) | its code reviewer / PR reviewer / PR adversary / FP adversary / code fixer / QA verifier as BADF authority (those are **assurance**, adapted later by `badf-security-assurance`) |
++
++## Where each adapted piece lands
++
++- The **design-time** taxonomies (API Top 10 categories, agent/MCP/LLM concerns, CWE/ASVS references)
++  are adapted at G05 as *design* checklists and threat categories.
++- The **attack-oriented execution** (is this BOLA actually exploitable? is this CVE reachable? does this
++  secret leak?) is **assurance** and is adapted later by `badf-security-assurance` at G08/G09 — not here
++  (SEC-I14).
++
++## Admission posture
++
++External methodologies grant no tool access, no execution permission, no gate authority and no runtime
++dependency. `badf-security-design` composes their *ideas* into contracts; the canonical gate validates
++the resulting evidence, and `security_authority` dispositions delivery. External capability can produce
++evidence; it can never expand authority.
+diff --git a/skills/badf-security-design/references/g05-contract.md b/skills/badf-security-design/references/g05-contract.md
+new file mode 100644
+index 0000000..6dd0f8b
+--- /dev/null
++++ b/skills/badf-security-design/references/g05-contract.md
+@@ -0,0 +1,36 @@
++# G05 contract
++
++`badf-security-design` composes into the **existing** G05 — **Security, privacy and AI safety** — and
++changes **no** `lifecycle.json`. G05's contract, unchanged, is:
++
++| Field | Value (from `lifecycle.json`) |
++| :--- | :--- |
++| id | `G05` |
++| name | Security privacy and AI safety |
++| owner_role | `security_authority` |
++| minimum_change_class | `C2` |
++| required_evidence | `threat-model`, `privacy-assessment`, `supply-chain-plan`, `security-approval` |
++| exit_criteria | threats and abuse cases controlled · privacy obligations addressed · dependency and secret controls planned · residual risk owned |
++
++## What the skill authors vs. what authority produces
++
++```text
++badf-security-design AUTHORS (design evidence):     security_authority PRODUCES (authority):
++  threat-model                                        security-approval
++  privacy-assessment                                  residual-risk acceptance
++  supply-chain-plan
++```
++
++The skill normalizes its specialists into the **three design artifacts**; the **fourth**,
++`security-approval`, is the owner_role's and references the exact digests of the three plus the
++architecture and solution baselines (SEC-I13, and see `references/normalization.md`).
++
++## Boundaries
++
++- **No new gate.** Security design is G05 evidence, not a "Security Design gate". The lifecycle is
++  untouched.
++- **No self-approval.** `disposition: PASS` on a G05 dossier is the gate + authority's, never the skill's
++  (SEC-I12/I13).
++- **Design, not verification.** G05 is pre-implementation. Implementation security is verified later at
++  G08/G09 by `badf-security-assurance` (`security-validation` is a G09 evidence type), never inferred from
++  the absence of a G05 design finding (SEC-I14).
+diff --git a/skills/badf-security-design/references/iam-security-contract.md b/skills/badf-security-design/references/iam-security-contract.md
+new file mode 100644
+index 0000000..a47453a
+--- /dev/null
++++ b/skills/badf-security-design/references/iam-security-contract.md
+@@ -0,0 +1,41 @@
++# IAM-security contract (secure and challenge — do not duplicate)
++
++`badf-solution-design` already owns the **functional** authorization seam. `iam-security-design` **secures
++and challenges** that contract; it **must not** recreate a second, contradictory IAM model (SEC-I06). Two
++IAM models is the failure this contract exists to prevent.
++
++## Ownership split
++
++| Solution design owns (functional) | Security design owns (security) |
++| :--- | :--- |
++| who can perform business action X? | can this privilege be escalated / bypassed? |
++| resource / action / scope | least privilege |
++| authorization decision point | trust / security of the PDP / PEP |
++| role / scoping semantics | separation of duties |
++| default deny (`NO MATCH = DENY`) | bypass resistance |
++| functional identity need | authentication assurance (incl. step-up / phishing-resistant MFA) |
++| API authorization mapping | token / session / service-identity security |
++| audit obligation exists | audit tamper-resistance and coverage |
++| tenant scope | cross-tenant isolation |
++
++## Shape
++
++```yaml
++authorization_ref: ACT-...     # the solution baseline tuple being secured (SEC-I06)
++authentication_assurance: "..."   # e.g. step-up for privileged operations
++least_privilege: "..."            # the minimal grant, and what is explicitly denied
++bypass_resistance: [...]          # how the PDP/PEP cannot be sidestepped
++separation_of_duties: "..."       # where required
++isolation: "..."                  # cross-tenant / cross-principal isolation
++audit_integrity: "..."            # tamper-resistance + coverage of the audit obligation
++```
++
++## Rules
++
++- **Reference the canonical tuple (SEC-I06).** Every entry binds a solution `ACT-…`. Security design adds
++  assurance and resistance properties; it does not invent new principals, resources, actions or scopes —
++  those that are genuinely new are `REQUIREMENT_CHANGE_REQUIRED` back to solution/requirements.
++- **Least privilege is explicit.** "Admin can do everything" is not a security design; the minimal grant
++  and the explicit denials are stated.
++- **Capability ≠ authority.** Being able to reach an endpoint is never permission to act on it; the PEP
++  enforces the tuple, and its bypass resistance is designed, not assumed.
+diff --git a/skills/badf-security-design/references/normalization.md b/skills/badf-security-design/references/normalization.md
+new file mode 100644
+index 0000000..6e65b7e
+--- /dev/null
++++ b/skills/badf-security-design/references/normalization.md
+@@ -0,0 +1,37 @@
++# Normalization — specialists → G05 evidence
++
++Specialist outputs are **normalized** into the three G05 **design** artifacts. This is the mapping that
++keeps security design inside the existing lifecycle instead of inventing a new gate.
++
++```text
++Specialists                                             G05 design artifact
++─────────────────────────────────────────────────────  ─────────────────────
++threat-model, abuse-case-analysis, security-requirements,
++  api-security-design, iam-security-design,
++  ai-agent-security-design                          →   threat-model
++privacy-analysis (classification, purpose, collection,
++  retention, disclosure, deletion)                  →   privacy-assessment
++supply-chain-design (dependency/provenance/SBOM/
++  signing/secret-distribution/update policy)        →   supply-chain-plan
++
++security-approval                                   →   NOT produced by the skill — security_authority
++```
++
++## Rules
++
++- **Every specialist output lands in exactly one design artifact** (above) or is declared non-coverage
++  (SEC-I11). A finding that maps nowhere is a normalization defect, not a silent drop.
++- **`security-approval` is never authored here.** It is produced by `security_authority` after reviewing
++  the three artifacts, and it references the exact digests of `threat-model`, `privacy-assessment`,
++  `supply-chain-plan`, the architecture baseline and the solution baseline — so approval is reproducible,
++  not a floating `"approved": true` (SEC-I13).
++- **Residual risk is reported, never accepted.** Each threat's `residual_risk.status` may be
++  `UNASSESSED` / `MITIGATED` / `DEFERRED` / `ACCEPTED-PENDING-AUTHORITY`; only `security_authority` moves
++  it to accepted (SEC-I12).
++- **Non-coverage is explicit.** Surfaces not modelled (a component not in the baseline, a specialist
++  recorded `NOT_APPLICABLE_WITH_REASON`) are named in the artifact, so silence is never read as coverage.
++
++## What normalization is not
++
++Normalization does not compute a verdict, a score, or a pass. It arranges specialist *design* evidence
++into the shapes G05 already expects. The gate validates the evidence; the authority approves it.
+diff --git a/skills/badf-security-design/references/privacy-contract.md b/skills/badf-security-design/references/privacy-contract.md
+new file mode 100644
+index 0000000..644c39e
+--- /dev/null
++++ b/skills/badf-security-design/references/privacy-contract.md
+@@ -0,0 +1,34 @@
++# Privacy contract
++
++`privacy-analysis` normalizes into the G05 **privacy-assessment** artifact. It is a *design* obligation:
++what personal/sensitive data the intended system processes, why, and how it is protected across its
++lifecycle — not a scan of a running system.
++
++## Shape
++
++```yaml
++data_flow_ref: DF-...         # resolves to an architecture/solution data flow (SEC-I07)
++data:
++  classification: PII         # PII | SENSITIVE-PII | FINANCIAL | HEALTH | CREDENTIAL | NONE
++  elements: [...]
++purpose: "..."                # why it is processed (lawful-basis surface)
++collection: "..."             # how/where it enters
++protection:
++  in_transit: [...]
++  at_rest: [...]
++  access_control_refs: [ACT-...]   # ties to the solution IAM contract (SEC-I06)
++retention: "..."              # how long, and the clock
++disclosure: [...]             # who/what it is shared with, incl. third parties/sub-processors
++deletion: "..."               # deletion/erasure treatment
++```
++
++## Rules
++
++- **Flow completeness (SEC-I07).** Every material personal/sensitive-data processing resolves to a
++  **declared data flow** in the baseline. Data that appears in a control but in no flow is a seam defect.
++- **Lifecycle completeness (SEC-I08).** Sensitive data has classification, purpose, protection
++  (transit + rest), retention and deletion treatment. A field with no lifecycle is unfinished.
++- **Access control is referenced, not recreated (SEC-I06).** Privacy binds to the solution baseline's
++  authorization contracts (`ACT-…`) rather than defining a parallel access model.
++- **Non-coverage explicit (SEC-I11).** A data domain not analyzed (e.g. a third-party sub-processor out of
++  scope this WP) is named, not silently omitted.
+diff --git a/skills/badf-security-design/references/routing.md b/skills/badf-security-design/references/routing.md
+new file mode 100644
+index 0000000..67b18cf
+--- /dev/null
++++ b/skills/badf-security-design/references/routing.md
+@@ -0,0 +1,42 @@
++# Routing
++
++The root skill routes each security concern to the specialist that owns it, and selects **only** the
++specialists the work needs. External methodologies (OWASP) are **REFERENCE / ADAPT**, never BADF
++authority:
++
++```text
++external methodology = REFERENCE / ADAPT     (not:  external agent output = BADF authority)
++```
++
++## Signal → specialist
++
++| Signal | Specialist (design contract) |
++| :--- | :--- |
++| asset, entry point, attack path, trust-boundary crossing | `threat-model` |
++| a derived security control that must become a requirement | `security-requirements` (cross-cutting) |
++| personal / sensitive data, purpose, retention, disclosure | `privacy-analysis` |
++| adversarial *business* behavior (replay, abuse of a legitimate flow) | `abuse-case-analysis` |
++| endpoint auth, object ownership, anti-automation, field exposure | `api-security-design` |
++| authentication assurance, least privilege, bypass resistance, isolation | `iam-security-design` |
++| dependency admission, provenance, SBOM, signing, secret distribution | `supply-chain-design` |
++| agent identity/authority, tool/MCP capability, prompt trust, delegation | `ai-agent-security-design` **[conditional]** |
++| architecture boundary / topology / trust decision | **`badf-architecture`** (the spine, not a specialist) |
++| detailed functional IAM/API/data behavior | **`badf-solution-design`** (the solution baseline, consumed) |
++| uncertainty requiring evidence | **`badf-research`** |
++| verifying an implementation (SAST/SCA/secrets/IaC/code review) | future **`badf-security-assurance`** (G08/G09) — **not here** |
++
++## Routing rules
++
++- Route the minimum: an unneeded specialist is scope, not thoroughness. A specialist that does not apply
++  is recorded `NOT_APPLICABLE_WITH_REASON`, not silently dropped (SEC-I11).
++- `ai-agent-security-design` is **conditional**: for a non-agentic application it is
++  `NOT_APPLICABLE_WITH_REASON`; for BADF itself or any agentic project it routes automatically and is
++  first-class.
++- A signal that names an architectural boundary/interface/owner routes to `badf-architecture`, not to a
++  security specialist — security design details and constrains interfaces, it does not invent them (SEC-I05).
++- A signal about detailed *functional* authorization routes to the **solution baseline**; security design
++  **secures and challenges** it (least privilege, bypass resistance), it does not recreate it (SEC-I06).
++- An assurance signal (scan a repo, find a CVE, review a PR, verify a fix) routes to the future
++  `badf-security-assurance`, never to this skill (SEC-I14).
++- No specialist is **activated** at contract-freeze — routing names who *would* own each concern;
++  specialist activation is a later WP.
+diff --git a/skills/badf-security-design/references/security-requirements.md b/skills/badf-security-design/references/security-requirements.md
+new file mode 100644
+index 0000000..5ab7611
+--- /dev/null
++++ b/skills/badf-security-design/references/security-requirements.md
+@@ -0,0 +1,36 @@
++# Security-requirements contract
++
++Security requirements are **derived** — from threats, abuse cases, NFRs and regulatory obligations — but
++they are **cross-cutting**: every other security specialist can produce them, so `security-requirements`
++stays a contract, not (at freeze) an independent executor.
++
++## Shape
++
++```yaml
++sec_req_id: SEC-REQ-...
++derived_from:                 # upstream trace (SEC-I04)
++  threat_refs: [THR-...]
++  abuse_case_refs: [ABUSE-...]
++  requirement_refs: [REQ-..., NFR-...]
++statement: "privileged operations require phishing-resistant MFA"
++control_refs: [CTRL-...]
++verification_obligation: SEC-TEST-...   # downstream trace (SEC-I04)
++scope_impact: NONE            # NONE | MATERIAL  (MATERIAL → REQUIREMENT_CHANGE_REQUIRED)
++```
++
++## Rules
++
++- **Bidirectional trace (SEC-I04).** A security requirement traces **upstream** to a threat / abuse case /
++  requirement / NFR and **downstream** to a verification obligation. An orphan security requirement is
++  either undeclared scope or dead work.
++- **No silent scope expansion (SEC-I04).** If a derived requirement materially changes product behavior
++  or scope (`scope_impact: MATERIAL`), it does **not** rewrite G02 in place:
++
++  ```text
++  REQUIREMENT_CHANGE_REQUIRED → G02 requirements revision → solution/architecture reconciliation → resume G05
++  ```
++
++  Security design proposes; the requirements gate (G02) and its authority decide. G05 never silently
++  rewrites G02.
++- **Derived, not invented.** A security requirement with no `derived_from` is not a requirement — it is an
++  assertion. Provenance is mandatory.
+diff --git a/skills/badf-security-design/references/supply-chain-contract.md b/skills/badf-security-design/references/supply-chain-contract.md
+new file mode 100644
+index 0000000..7cd1c59
+--- /dev/null
++++ b/skills/badf-security-design/references/supply-chain-contract.md
+@@ -0,0 +1,46 @@
++# Supply-chain contract (DESIGN, not SCA)
++
++`supply-chain-design` normalizes into the G05 **supply-chain-plan** artifact. It is **policy and
++obligation design** — what the supply chain must guarantee — **not** the actual dependency scan. The scan
++(SCA: real dependency graph, real CVEs, reachability, SBOM validation, malicious-package detection) is
++**assurance** at G09, adapted later from OWASP's `sca-audit`, never a G05 design subskill (SEC-I09/I14).
++
++```text
++G05 — supply-chain DESIGN (here)          G09 — supply-chain ASSURANCE (later)
++allowed registries                        actual dependency graph
++dependency admission policy               actual CVEs
++version / pinning policy                  reachability
++provenance requirements                   actual SBOM
++SBOM obligation                           signature validation
++signing / attestation                     provenance validation
++package admission                         malicious-package detection
++secret-handling / distribution design     license / policy violations
++base-image policy
++update / vulnerability SLA
++third-party trust policy
++```
++
++## Shape
++
++```yaml
++allowed_registries: [...]
++dependency_admission_policy: "..."
++version_policy: "..."          # pinning / range rules
++provenance_requirements: [...]
++sbom_obligation: "..."
++signing_attestation: "..."
++secret_distribution: "..."     # design of how secrets reach components (not the secrets)
++update_policy: "..."
++vulnerability_sla: "..."
++base_image_policy: "..."       # if applicable
++```
++
++## Rules
++
++- **Obligation, not observation (SEC-I09).** Each material third-party component carries an admission /
++  provenance / update *obligation*. Whether a specific installed version has a CVE is assurance's job,
++  later.
++- **Secret handling is designed, never embedded.** The plan designs how secrets are distributed and
++  scoped; it contains no secret material.
++- **Design ≠ scan (SEC-I14).** A green SCA later does not retroactively become G05 evidence; a supply-chain
++  plan here does not establish the built dependency graph is clean.
+diff --git a/skills/badf-security-design/references/threat-model-contract.md b/skills/badf-security-design/references/threat-model-contract.md
+new file mode 100644
+index 0000000..c6c2b95
+--- /dev/null
++++ b/skills/badf-security-design/references/threat-model-contract.md
+@@ -0,0 +1,66 @@
++# Threat-model contract
++
++A threat model is **structural and machine-addressable**, not prose. "An attacker might gain access" is
++not a threat; it names no asset, no entry point, no path, no disposition. Each material threat resolves
++to the baselines it reasoned over (SEC-I01/I02) and carries a disposition (SEC-I03).
++
++## Threat shape
++
++```yaml
++threat_id: THR-...
++source:                       # provenance — resolves to the baselines (SEC-I02)
++  architecture_elements: [...]
++  trust_boundaries: [...]
++  data_flows: [...]
++  api_refs: [...]
++  requirement_refs: [...]
++actor: external-attacker      # or: malicious-insider, compromised-dependency, compromised-agent, …
++asset: customer-account
++entry_point: API-017
++scenario:
++  preconditions: [...]
++  attack_path: [...]
++  impact: [...]
++classification:
++  category: authorization     # authn, authz, injection, replay, tampering, disclosure, dos, supply-chain, agent, …
++  cwe_refs: [...]
++  owasp_refs: [...]
++risk:
++  likelihood_basis: [...]     # evidence-grounded reasoning, not agent self-confidence
++  impact_basis: [...]
++controls:
++  - control_ref: CTRL-...
++    type: preventive          # or detective, corrective, deterrent
++residual_risk:
++  status: UNASSESSED          # UNASSESSED | MITIGATED | DEFERRED | ACCEPTED-PENDING-AUTHORITY
++verification_obligations:
++  - SEC-TEST-...              # downstream obligation (SEC-I04); assurance verifies later, not here
++```
++
++## Rules
++
++- **Provenance (SEC-I02).** Every `source.*` ref resolves to a real element of the architecture or
++  solution baseline. A threat against a component the baseline does not contain is either non-coverage
++  (declare it) or an `ARCHITECTURE_CHANGE_REQUIRED` signal — never an invented boundary.
++- **Disposition (SEC-I03).** Every material threat is `controlled` (has ≥1 `controls[]`), `DEFERRED`
++  (explicit, with reason), `blocked`, or submitted for independent residual-risk acceptance. A threat
++  with no disposition is unfinished work.
++- **Evidence-grounded risk.** `likelihood_basis` / `impact_basis` cite the baseline and the data
++  classification — not a bare severity label. BADF substitutes evidence for agent self-confidence.
++- **Verification is an obligation, not a result (SEC-I14).** `verification_obligations` name what
++  *assurance* must later prove; the threat model does not itself prove the implementation secure.
++- **Residual risk is not accepted here (SEC-I12).** The skill sets `residual_risk.status`; only
++  `security_authority` moves it to accepted.
++
++## The example this catches
++
++```text
++architecture:  API → Payment Service crosses TB-03; data classification = FINANCIAL
++solution:      POST /payments  (principal=customer, action=payment:create, resource=account, scope=own-account)
++threats:       credential compromise · BOLA · replay · privilege escalation · transaction tampering
++controls:      step-up authentication · ownership authorization · idempotency/replay protection ·
++               transaction integrity · audit obligation
++```
++
++Each threat binds the exact architecture element and API/solution ref it reasons over — reproducible,
++not free-floating.
+diff --git a/skills/badf-security-design/references/traceability.md b/skills/badf-security-design/references/traceability.md
+new file mode 100644
+index 0000000..659be57
+--- /dev/null
++++ b/skills/badf-security-design/references/traceability.md
+@@ -0,0 +1,48 @@
++# Security traceability
++
++Security conclusions are only defensible if they trace both directions: **upstream** to what motivated
++them, **downstream** to how they will be verified (SEC-I04). The chain is the evidence.
++
++## The chain
++
++```text
++architecture baseline + solution baseline   (SEC-I01, exact digests bound)
++        │
++        ▼
++threat / abuse case            (SEC-I02: resolves to real assets/interfaces/flows/boundaries)
++        │
++        ▼
++security requirement           (SEC-I04: derived, never invented; scope_impact declared)
++        │
++        ▼
++control                        (disposition of the threat — SEC-I03)
++        │
++        ▼
++verification obligation        (SEC-I14: what ASSURANCE must later prove — G08/G09, not here)
++```
++
++## Rules
++
++- **Exact baseline (SEC-I01).** Every artifact records the exact architecture and solution baseline
++  digests it reasoned over. A conclusion drawn against a since-changed baseline is stale, not valid.
++- **Bidirectional completeness (SEC-I04).** A threat with no disposition, a security requirement with no
++  verification obligation, or a control that traces to no threat, is an incomplete chain — a finding, not
++  a footnote.
++- **Downstream is an obligation, not a result (SEC-I14).** The verification obligation names what a later
++  assurance capability must prove. Security design never marks it satisfied; that would be verifying a
++  build it has not seen.
++- **Non-coverage declared (SEC-I11).** A surface not traced (a component out of scope, a specialist
++  `NOT_APPLICABLE_WITH_REASON`) is named in the trace, so an absent link reads as *declared out of scope*,
++  never as *secure*.
++
++## Security-composition matrix
++
++The security-design equivalent of the RTM — one row per material threat/abuse case, binding its chain so
++coverage and coherence are reconstructable in both directions. (No new global ID family is invented at
++freeze — a plain `security-composition` object is sufficient; a dedicated family waits for proven need in
++WP-SEC-B.)
++
++| Threat / Abuse | Source (arch/solution) | Sec-Req | Control | Verification obligation |
++| :--- | :--- | :--- | :--- | :--- |
++| THR-014 | TB-03 · API-017 | SEC-REQ-014 | CTRL-022 | SEC-TEST-031 |
++| ABUSE-008 | REQ-021 · API-017 | SEC-REQ-014 | CTRL-022 | TEST-SEC-031 |
+diff --git a/tests/test_badf_security_design_contract.py b/tests/test_badf_security_design_contract.py
+new file mode 100644
+index 0000000..e01350c
+--- /dev/null
++++ b/tests/test_badf_security_design_contract.py
+@@ -0,0 +1,120 @@
++"""badf-security-design contract freeze (BADF-WP-0078 / WP-SEC-A).
++
++badf-security-design is the pre-implementation G05 security-DESIGN composition/router over the
++security specialists (threat-model, security-requirements, privacy, abuse-case, api-security,
++iam-security, supply-chain, ai-agent-security). It consumes the architecture + solution baselines,
++models abuse, derives controls + security requirements, and NORMALIZES into the existing G05 design
++artifacts. It is NOT a scanner, a second gate, a security authority, or a security-ASSURANCE
++capability (that is a future badf-security-assurance at G08/G09). OWASP is ADAPT-as-methodology,
++never adopt-as-authority. This WP freezes the contract only: SKILL.md + 14 references, registered
++DESIGNED, with no runtime, no second validator, no schema, and no lifecycle change. These tests
++guard that declarative surface.
++"""
++import hashlib
++import json
++import unittest
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[1]
++SKILL = ROOT / "skills" / "badf-security-design" / "SKILL.md"
++REFERENCES = ROOT / "skills" / "badf-security-design" / "references"
++REGISTRY = ROOT / "badf" / "skill-registry.json"
++
++REFS = {
++    "routing.md", "g05-contract.md", "threat-model-contract.md", "security-requirements.md",
++    "privacy-contract.md", "abuse-case-contract.md", "api-security-contract.md",
++    "iam-security-contract.md", "supply-chain-contract.md", "ai-agent-security-contract.md",
++    "normalization.md", "traceability.md", "acceptance.md", "external-methodology.md",
++}
++
++
++class BadfSecurityDesignContractTests(unittest.TestCase):
++    def test_contract_surface_is_declarative_only(self):
++        self.assertTrue(SKILL.is_file())
++        self.assertEqual(REFS, {p.name for p in REFERENCES.glob("*.md")})
++        # no second gate / runtime (SEC-I15): no standalone validator script...
++        self.assertFalse((ROOT / "scripts" / "badf_security_design.py").exists())
++        # ...and this skill authors no schema at contract-freeze. (The four G05 evidence schemas
++        # -- threat-model / privacy-assessment / supply-chain-plan / security-approval -- pre-date
++        # this skill and belong to the gate; security-design normalizes INTO them. A skill-specific
++        # security-design/security-composition schema is a WP-SEC-B concern and absent here.)
++        for schema in ("security-design.schema.json", "security-composition.schema.json"):
++            self.assertFalse((ROOT / "schemas" / schema).exists(), schema)
++
++    def test_root_states_all_invariants_and_the_workflow(self):
++        text = SKILL.read_text(encoding="utf-8")
++        for n in range(1, 16):
++            self.assertIn(f"SEC-I{n:02d}", text)
++        self.assertIn(
++            "FRAME → INGEST → CLASSIFY → ROUTE → SPECIALIZE → RECONCILE → CHALLENGE → NORMALIZE → PACKAGE",
++            text,
++        )
++        # both escalations (does not silently rewrite architecture or requirements)
++        self.assertIn("ARCHITECTURE_CHANGE_REQUIRED", text)
++        self.assertIn("REQUIREMENT_CHANGE_REQUIRED", text)
++        # consume-not-rediscover boundaries with the two upstream spines
++        self.assertIn("badf-architecture", text)
++        self.assertIn("badf-solution-design", text)
++        # design != assurance, and capability != authority, are stated
++        self.assertRegex(text, r"[Dd]esign\s*[≠!=]+\s*assurance|Design ≠ assurance")
++        self.assertIn("badf-security-assurance", text)
++
++    def test_normalization_maps_specialists_to_g05_evidence(self):
++        text = (REFERENCES / "normalization.md").read_text(encoding="utf-8")
++        for artifact in ("threat-model", "privacy-assessment", "supply-chain-plan"):
++            self.assertIn(artifact, text)
++        # security-approval is the authority's, never authored by the skill (SEC-I13)
++        self.assertIn("security-approval", text)
++        self.assertIn("security_authority", text)
++        self.assertRegex(text, r"NOT produced by the skill|never authored here")
++
++    def test_routing_lists_specialists_as_reference_adapt(self):
++        text = (REFERENCES / "routing.md").read_text(encoding="utf-8")
++        self.assertIn("REFERENCE / ADAPT", text)
++        for spec in ("threat-model", "privacy-analysis", "abuse-case-analysis",
++                     "api-security-design", "iam-security-design", "supply-chain-design",
++                     "ai-agent-security-design"):
++            self.assertIn(spec, text)
++        # assurance routes elsewhere, and the two spines are named, not recreated
++        self.assertIn("badf-security-assurance", text)
++        self.assertIn("badf-architecture", text)
++        self.assertIn("badf-solution-design", text)
++
++    def test_external_methodology_is_adapt_not_authority(self):
++        text = (REFERENCES / "external-methodology.md").read_text(encoding="utf-8")
++        self.assertIn("OWASP", text)
++        self.assertIn("ADAPT", text)
++        self.assertRegex(text, r"NOT\b.*adopt|does NOT adopt|not:.*BADF authority")
++        # a scanner/agent verdict never becomes a gate pass
++        self.assertRegex(text, r"never|must never")
++
++    def test_no_lifecycle_change(self):
++        lifecycle = json.loads((ROOT / "badf" / "lifecycle.json").read_text())
++        gate_names = {g["id"]: g.get("name", "") for g in lifecycle["gates"]}
++        # no new "security design" gate was added.
++        self.assertNotIn("security design", " ".join(gate_names.values()).lower())
++        g05 = next(g for g in lifecycle["gates"] if g["id"] == "G05")
++        self.assertEqual(
++            set(g05["required_evidence"]),
++            {"threat-model", "privacy-assessment", "supply-chain-plan", "security-approval"},
++        )
++        self.assertEqual(g05.get("owner_role"), "security_authority")
++
++    def test_registry_pin_is_designed_and_tool_empty(self):
++        reg = json.loads(REGISTRY.read_text(encoding="utf-8"))
++        entries = [e for e in reg["skills"] if e.get("name") == "badf-security-design"]
++        self.assertEqual(1, len(entries))
++        entry = entries[0]
++        # the ladder can advance later; guard registration + empty tools + a real digest.
++        self.assertIn(entry["status"], ("DESIGNED", "IMPLEMENTED", "VALIDATED", "SHADOWED", "APPROVED", "ACTIVE"))
++        self.assertEqual([], entry["allowed_tools"])
++        self.assertEqual("sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest(), entry["digest"])
++
++    def test_skill_points_to_registry_not_a_hardcoded_status(self):
++        text = SKILL.read_text(encoding="utf-8")
++        self.assertIn("badf/skill-registry.json", text)
++        self.assertNotIn("Status: `DESIGNED`", text)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0077/work-package.json b/work/WP-2026-0077/work-package.json
+index 0ac1cd9..36c9d1f 100644
+--- a/work/WP-2026-0077/work-package.json
++++ b/work/WP-2026-0077/work-package.json
+@@ -44,11 +44,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR (registry back to SHADOWED)"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "dc6b608"
++    "base_revision": "dc6b608",
++    "landed_as": "1b80d7c9d20e1f39c6287aa033904e6cbff17dc3"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Registry admission SHADOWED->ACTIVE on the operator's explicit decision (AskUserQuestion 2026-08-30 'activate now, accept representative'); grants no authority (SOL-I12); caveat preserved; real re-shadow deferred to #145. No gate control (controls are WP-SOL-B/C) -> no mutation. Built in isolated worktree (badf-wt-sole, GIT-I04) parallel to BARCHI-2's badf-git GIT-E (#144). Ids WP-0077/DEM-0064/GOV-0056. Reconciles WP-2026-0074 (GIT-... no: WP-SOL-D, landed dc6b608). Resolves #146 / GOV-0056."
+ }
