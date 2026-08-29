@@ -135,10 +135,10 @@ class ShadowCalibrationTests(SolutionCompositionBase):
 
 
 class RegistryStatusTests(unittest.TestCase):
-    def test_badf_solution_design_is_registered_shadowed(self):  # WP-SOL-D advanced VALIDATED -> SHADOWED
+    def test_badf_solution_design_is_registered_active(self):  # WP-SOL-E admitted SHADOWED -> ACTIVE (operator admission)
         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
         entry = next(e for e in reg["skills"] if e["name"] == "badf-solution-design")
-        self.assertEqual(entry["status"], "SHADOWED")
+        self.assertEqual(entry["status"], "ACTIVE")
 
 
 if __name__ == "__main__":

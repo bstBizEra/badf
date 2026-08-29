@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0064",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 146,
+    "url": "https://github.com/bstBizEra/badf/issues/146",
+    "exported_at": "2026-08-29T20:21:40Z",
+    "body_digest": "sha256:f660c10d1f0649db60a0fc0be60d93824fa4776fb57f2c09c3b76125ee195660"
+  },
+  "title": "GOV-0056: WP-SOL-E \u2014 admit badf-solution-design SHADOWED \u2192 ACTIVE (representative shadow accepted; re-shadow deferred #145)",
+  "problem": "## Observed\n\n`badf-solution-design` is `SHADOWED` (WP-SOL-D / #143) on a REPRESENTATIVE shadow \u2014 BADF has no real project compositions yet. The next and final admission rung is `ACTIVE`, which is a human admission gate (self-approval is prohibited).\n\n## Expected\n\n**WP-SOL-E \u2014 admit `SHADOWED \u2192 ACTIVE`.** The operator has made the admission decision to activate now, accepting the representative shadow, with the real-project re-shadow tracked as a deferred follow-up (#145). Registry `badf-solution-design` status `SHADOWED \u2192 ACTIVE`; the representative caveat is preserved (shadow-evidence.md still points at #145); ACTIVE grants NO new authority (SOL-I12, the one canonical gate stays sole authority); no lifecycle change, no new control, no second validator. Mirrors badf-research WP-0058 and badf-architecture WP-0065.\n\n## Evidence\n\n- Operator admission decision recorded 2026-08-30 (AskUserQuestion: 'Activate now, accept representative').\n- shadow-evidence.md (WP-SOL-D) is the calibration backing the admission; #145 tracks the owed real re-shadow.\n\n## Unknowns\n\nNone that block admission \u2014 the representative-vs-real risk is explicitly accepted by the operator and bounded by the deferred re-shadow (#145).\n\ndiscovered-by: BADF-WP-0074 (badf-solution-design landed SHADOWED) \u00b7 status: DISCOVERED\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-29T20:21:40Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "WP-SOL-E admits badf-solution-design SHADOWED->ACTIVE on the operator's explicit admission decision (activate now, accept representative shadow; AskUserQuestion 2026-08-30). Grants no new authority (SOL-I12). Preserves the representative caveat; real re-shadow deferred to #145. DEM-0064/GOV-0056/WP-0077. Reconciles WP-2026-0074 (landed dc6b608)."
+}

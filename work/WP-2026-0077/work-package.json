@@ -1,0 +1,54 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0077",
+  "title": "WP-SOL-E: admit badf-solution-design SHADOWED -> ACTIVE (operator admission; representative shadow accepted)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0064",
+  "repository": "bstBizEra/badf",
+  "objective": "Record the operator's admission decision advancing badf-solution-design SHADOWED -> ACTIVE. The operator decided (AskUserQuestion 2026-08-30) to activate now on the REPRESENTATIVE shadow (WP-SOL-D), accepting the representative-vs-real risk, with the real-project re-shadow tracked as a deferred follow-up (#145). This is a governed registry advance mirroring badf-research WP-0058 and badf-architecture WP-0065: ACTIVE grants the skill NO new authority (SOL-I12 -- the one canonical `badf_gate.py solution` stays sole composition authority), no lifecycle change, no new control, no second validator. The representative caveat is preserved, not erased.",
+  "business_value": "ACTIVE is the admission the operator asked for ('to active'). Doing it as a governed WP -- with the operator's explicit admission recorded, the caveat preserved in-repo, and the owed real re-shadow filed as #145 -- keeps the admission ladder truthful: the capability is admitted for use, its trust is honestly bounded to a representative shadow, and the debt to re-shadow on real data is tracked rather than lost.",
+  "in_scope": [
+    "badf/skill-registry.json: badf-solution-design status SHADOWED -> ACTIVE (digest unchanged; SKILL.md untouched)",
+    "skills/badf-solution-design/references/acceptance.md: mark the ladder rung ACTIVE, citing the operator admission + the deferred re-shadow #145 (registry remains source of truth -- a pointer, not a second status)",
+    "GITHUB_CONTROL_PLANE.md doctrine section recording the admission, its operator authorization, and the deferred re-shadow #145",
+    "tests: registry pin SHADOWED -> ACTIVE; contract-surface unchanged; digest still consistent",
+    "own G07 self-dossier; reconcile WP-2026-0074 (landed dc6b608)"
+  ],
+  "out_of_scope": [
+    "the real-project re-shadow (deferred to #145; trigger = first real project composition)",
+    "any new gate control, lifecycle.json change, second validator (SOL-I12), or new authority",
+    "erasing or softening the representative caveat in shadow-evidence.md (it stays, pointing at #145)",
+    "the external-artifact seams SOL-I02/05/07/10/11; the badf-git program (BARCHI-2); the measured-gate ADR"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "badf-solution-design is registered ACTIVE; digest = sha256(SKILL.md); SKILL.md unchanged; lifecycle.json unchanged; no scripts/badf_solution_design.py",
+    "shadow-evidence.md still labels the shadow REPRESENTATIVE and references the deferred re-shadow (#145) -- ACTIVE did not erase the caveat",
+    "acceptance.md ladder shows ACTIVE via operator admission, pointing at the registry as source of truth",
+    "tests pass; repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_solution_composition.py",
+    "tests/test_badf_solution_design_contract.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR (registry back to SHADOWED)"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "dc6b608"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Registry admission SHADOWED->ACTIVE on the operator's explicit decision (AskUserQuestion 2026-08-30 'activate now, accept representative'); grants no authority (SOL-I12); caveat preserved; real re-shadow deferred to #145. No gate control (controls are WP-SOL-B/C) -> no mutation. Built in isolated worktree (badf-wt-sole, GIT-I04) parallel to BARCHI-2's badf-git GIT-E (#144). Ids WP-0077/DEM-0064/GOV-0056. Reconciles WP-2026-0074 (GIT-... no: WP-SOL-D, landed dc6b608). Resolves #146 / GOV-0056."
+}

@@ -14,8 +14,8 @@ contract first, prove it later, in separate WPs. **Do not build every specialist
 | **WP-SOL-A** (this) | root `SKILL.md` + references: composition model, routing, specialist ownership boundaries, cross-artifact traceability, SOL-I01…I12, G03/G04 mapping, architecture interaction, authority boundaries, external-methodology dispositions | `DESIGNED` |
 | WP-SOL-B | composition schemas + the solution-composition matrix artifact + deterministic controls | `IMPLEMENTED` |
 | WP-SOL-C | cross-artifact seam controls in the canonical `badf_gate.py` (failing-first) | `VALIDATED` |
-| WP-SOL-D | historical shadow calibration on real BADF solutions | `SHADOWED` |
-| — | owner / assurance admission, then registry activation | `APPROVED` → `ACTIVE` |
+| WP-SOL-D | **representative** shadow calibration (no real project compositions exist yet; real re-shadow deferred to #145) | `SHADOWED` |
+| WP-SOL-E | operator admission on the representative shadow (caveat preserved; #145 tracks the owed real re-shadow) → registry activation | `ACTIVE` |
 
 ## WP-SOL-A boundaries (no scope creep)
 
