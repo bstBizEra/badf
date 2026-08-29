@@ -3399,8 +3399,21 @@ def validate_solution_composition(path: Path) -> str:
         # SOL-C03: a requirement composed to nothing satisfies nothing.
         if not any(s.get(k) or [] for k in ref_kinds):
             raise ValidationError(f"solution-composition: {s['solution_id']} (for {s['requirement_ref']}) binds no specialist artifact; a requirement composed to nothing satisfies nothing (SOL-C03)")
+        # Matrix-internal seam controls (WP-SOL-C): the composition is coherent across
+        # concerns. The FULL seams reconcile against the specialist artifacts (which do
+        # not exist yet -- deferred to the adapter WPs); these enforce the co-occurrence
+        # the seams require, at the level the matrix alone can decide.
+        # SOL-C04 (SOL-I04, API <-> authorization): a protected operation carries its tuple.
+        if (s.get("api_refs") or []) and not (s.get("authorization_refs") or []):
+            raise ValidationError(f"solution-composition: {s['solution_id']} composes api_refs but no authorization_refs; a protected operation carries an authorization tuple (SOL-C04 / SOL-I04)")
+        # SOL-C05 (SOL-I06, authorization <-> audit): a security decision carries its audit.
+        if (s.get("authorization_refs") or []) and not (s.get("audit_refs") or []):
+            raise ValidationError(f"solution-composition: {s['solution_id']} composes authorization_refs but no audit_refs; a security-sensitive decision defines an audit obligation (SOL-C05 / SOL-I06)")
+        # SOL-C06 (SOL-I09, accessibility binds behavior): a UX interaction carries a11y.
+        if (s.get("ux_refs") or []) and not (s.get("accessibility_refs") or []):
+            raise ValidationError(f"solution-composition: {s['solution_id']} composes ux_refs but no accessibility_refs; accessibility binds interaction states (SOL-C06 / SOL-I09)")
     reqs = {s["requirement_ref"] for s in solutions}
-    return f"BADF SOLUTION-COMPOSITION PASS: {len(solutions)} composition(s) over {len(reqs)} requirement(s); structural only -- seams are WP-SOL-C"
+    return f"BADF SOLUTION-COMPOSITION PASS: {len(solutions)} composition(s) over {len(reqs)} requirement(s); structural + matrix-internal seams (SOL-C04/05/06)"
 
 
 def main() -> int:

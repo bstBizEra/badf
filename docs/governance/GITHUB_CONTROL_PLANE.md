@@ -753,6 +753,24 @@ canonically. Calendar-year rollover was considered and rejected — a namespace 
 smallest change that removes the drift. The PR that shipped this was its own first subject on the
 runner. GIT-C (the read-only baseline inspector, #127) follows in design order.
 
+## badf-solution-design → VALIDATED — matrix-internal seams (`BADF-WP-0072` / WP-SOL-C, Issue #135 / GOV-0051)
+
+WP-SOL-B made the composition matrix structurally sound; WP-SOL-C enforces the **cross-concern coherence**
+the skill exists for, at the level the matrix alone can decide — advancing `badf-solution-design`
+`IMPLEMENTED → VALIDATED`. The refund example the contract warns about (an API op with no authorization,
+an authorization with no audit, a UX interaction with no accessibility) now **fails** the `solution`
+command. Three matrix-internal seam controls, each earned failing-first + mutation-killed: **SOL-C04**
+(SOL-I04) a row with `api_refs` carries `authorization_refs`; **SOL-C05** (SOL-I06) a row with
+`authorization_refs` carries `audit_refs`; **SOL-C06** (SOL-I09) a row with `ux_refs` carries
+`accessibility_refs`. Co-occurrence, not blanket — a data-only row needs no authorization.
+
+The honest line: the **external-artifact** seams (SOL-I02 architecture baseline, SOL-I05 default-deny,
+SOL-I07 API↔data, SOL-I10/I11 migration/API-compat) and the *semantic* resolution of every ref against
+its specialist artifact **cannot** be enforced until the specialist adapters exist — deferred to those
+WPs, not faked. Still one canonical gate (SOL-I12), no `lifecycle.json` change. Shipped through the
+operator's `/loop` driving badf-solution-design toward ACTIVE; built in an isolated worktree, landing as
+the second seat after BARCHI-2's badf-git GIT-B (#134) and reconciling `WP-2026-0070`.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
