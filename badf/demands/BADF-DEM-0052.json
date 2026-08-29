@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0052",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 119,
+    "url": "https://github.com/bstBizEra/badf/issues/119",
+    "exported_at": "2026-08-29T15:36:37Z"
+  },
+  "title": "GOV-0044: BADF-WP-GIT-A — freeze the governed Git cycle/loop and badf-git contract (DESIGNED only)",
+  "problem": "The operator authorized BADF-WP-GIT-A as the next repository action: freeze a declarative badf-git capability contract that unifies BADF's Git cycle, nested Git loop, branch/worktree/PR binding, operation-risk classification, composition/staleness, recovery, release/versioning, and evidence semantics. Capability content is exactly skills/badf-git/SKILL.md plus eight reference contracts. No Git mutation script, no new Git authority, no GitHub ruleset/workflow change, no tool-registry expansion, no gate/schema change, no branch-name enforcement, and no activation are authorized in this work package.",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-29T15:36:37Z",
+  "provenance": "RECONSTRUCTED",
+  "status": "AUTHORIZED",
+  "note": "Reconstructed from the operator's explicit 2026-08-29 instruction naming BADF-WP-GIT-A and its exact scope, then bound to Issue #119. Canonical ledger identity is WP-2026-0065; BADF-WP-GIT-A is the phase label."
+}
