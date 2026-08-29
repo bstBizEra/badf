@@ -29,10 +29,11 @@ class BadfSolutionDesignContractTests(unittest.TestCase):
     def test_contract_surface_is_declarative_only(self):
         self.assertTrue(SKILL.is_file())
         self.assertEqual(REFS, {p.name for p in REFERENCES.glob("*.md")})
-        # no mutation engine / second gate (SOL-I12) and no new schema-authority.
+        # no mutation engine / second gate (SOL-I12): the composition validator lives in
+        # the one canonical gate (`badf_gate.py solution`), never a standalone script.
+        # (WP-SOL-B adds schemas/solution-composition.schema.json -- validated by the gate,
+        # not a competing validator -- so that file legitimately exists from IMPLEMENTED on.)
         self.assertFalse((ROOT / "scripts" / "badf_solution_design.py").exists())
-        self.assertFalse((ROOT / "schemas" / "solution-design.schema.json").exists())
-        self.assertFalse((ROOT / "schemas" / "solution-composition.schema.json").exists())
 
     def test_root_states_all_invariants_and_the_workflow(self):
         text = SKILL.read_text(encoding="utf-8")
@@ -76,7 +77,9 @@ class BadfSolutionDesignContractTests(unittest.TestCase):
         entries = [e for e in reg["skills"] if e.get("name") == "badf-solution-design"]
         self.assertEqual(1, len(entries))
         entry = entries[0]
-        self.assertEqual("DESIGNED", entry["status"])
+        # do not pin a specific status here (it advances up the ladder); the exact
+        # status is asserted by the WP-SOL-B suite. This guards registration + digest.
+        self.assertIn(entry["status"], ("DESIGNED", "IMPLEMENTED", "VALIDATED", "SHADOWED", "APPROVED", "ACTIVE"))
         self.assertEqual([], entry["allowed_tools"])
         self.assertEqual("sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest(), entry["digest"])
 

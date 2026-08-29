@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "badf/solution-composition.schema.json",
+  "title": "badf-solution-design composition matrix -- one row per requirement, binding the specialist refs that satisfy it (WP-SOL-B)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "solutions"],
+  "properties": {
+    "schema_version": {"type": "string", "enum": ["1.0.0"]},
+    "prd_id": {"type": "string", "pattern": "^PRD-[A-Za-z0-9._-]+$"},
+    "solutions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["solution_id", "requirement_ref"],
+        "properties": {
+          "solution_id": {"type": "string", "pattern": "^SOL-[0-9]{3,}$"},
+          "requirement_ref": {"type": "string", "pattern": "^REQ-[0-9]{3,}$"},
+          "ux_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+          "api_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+          "authorization_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+          "data_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+          "audit_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+          "accessibility_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+          "test_refs": {"type": "array", "items": {"type": "string", "minLength": 1}}
+        }
+      }
+    }
+  }
+}
