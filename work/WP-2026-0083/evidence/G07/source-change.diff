@@ -1,0 +1,520 @@
+diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
+index 317c11a..2614089 100644
+--- a/.github/workflows/badf-gates.yml
++++ b/.github/workflows/badf-gates.yml
+@@ -83,6 +83,7 @@ jobs:
+           python3 scripts/badf_gate.py solution examples/solution-composition.json
+           python3 scripts/badf_gate.py solution examples/solution-composition-shadow-refund.json
+           python3 scripts/badf_gate.py solution examples/solution-composition-shadow-reporting.json
++          python3 scripts/badf_gate.py security examples/security-composition.json
+       - name: PR traceability + identity (Work-Package + Closes #N; title + branch carry the same NNNN)
+         # BADF-MAIN-001. Only a PR has a body; a push to main has already been
+         # traced by the PR that produced it. Reports on the PR event only.
+diff --git a/badf/demands/BADF-DEM-0070.json b/badf/demands/BADF-DEM-0070.json
+new file mode 100644
+index 0000000..878edcd
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0070.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0070",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 158,
++    "url": "https://github.com/bstBizEra/badf/issues/158",
++    "exported_at": "2026-08-29T23:09:45Z",
++    "body_digest": "sha256:b134829ed3be1f4f8f70e45f221eb447435a2f292a38aa36047413839624695a"
++  },
++  "title": "GOV-0063: WP-SEC-B \u2014 security-composition matrix + the security gate command (badf-security-design -> IMPLEMENTED)",
++  "problem": "## Observed\n\nbadf-security-design is DESIGNED (WP-SEC-A). Its traceability.md promised the security-composition matrix (the security RTM) as a WP-SEC-B artifact, but it has no schema or validation yet.\n\n## Expected\n\n**WP-SEC-B -> IMPLEMENTED.** schemas/security-composition.schema.json (threat rows: security_id, source provenance, disposition, optional control/sec-req/verification refs, residual_risk enum without a bare ACCEPTED so SEC-I12 is structural) + a `security` subcommand in the ONE canonical badf_gate.py -> validate_security_composition with structural controls earned failing-first: no-empty-matrix; SEC-C01 unique security_id; SEC-C02 each threat binds >=1 provenance source (SEC-I02); SEC-C03 a controlled threat carries >=1 control (SEC-I03). examples/security-composition.json validated in CI. Registry DESIGNED -> IMPLEMENTED. Cross-artifact SEAM controls (SEC-I04 bidirectional trace, SEC-I01 baseline digest, semantic resolution) deferred to WP-SEC-C, mirroring WP-SOL-B->C. No lifecycle change, no second validator (SEC-I15), no security-approval.\n\n## Evidence\n\n- Mirrors WP-SOL-B (solution-composition.schema.json + `solution` command + structural controls SOL-C01/C03/no-empty).\n\n## Unknowns\n\nNone blocking; the deeper seams need the specialist artifacts (WP-SEC-C+).\n\ndiscovered-by: operator 'proceed on the badf-security-design' 2026-08-30 \u00b7 status: DISCOVERED\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T23:09:45Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-SEC-B advances badf-security-design DESIGNED->IMPLEMENTED: security-composition matrix schema + the `security` gate command + structural controls (no-empty/SEC-C01 unique/SEC-C02 provenance/SEC-C03 controlled-has-control), each failing-first + mutation. residual_risk enum bakes SEC-I12 (no bare ACCEPTED). Seams deferred to WP-SEC-C. Mirrors WP-SOL-B. DEM-0070/GOV-0063/WP-0083 (0082/0069/0062 taken by BARCHI-2 GIT-I #157). Reconciles WP-2026-0081 (GIT-H)."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index eb2afc3..facc7b2 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -248,7 +248,7 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "DESIGNED",
++      "status": "IMPLEMENTED",
+       "digest": "sha256:60d0a80d0ec829627555698c353b962975e519a2a71b081109b5d75320cdef6e"
+     },
+     {
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 6c02139..961453d 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -992,6 +992,25 @@ its first `vX.Y.Z` is a release-authority decision this WP enables and does not
+ checks the baseline every run. Signing, tag rulesets, SBOM/attestation are the platform's and
+ G10–G13's.
+ 
++## badf-security-design → IMPLEMENTED — the security-composition matrix (`BADF-WP-0083` / WP-SEC-B, Issue #158 / GOV-0063)
++
++WP-SEC-A froze the contract as prose; WP-SEC-B gives its central artifact — the **security-composition
++matrix**, the security-design equivalent of the RTM — a schema and structural validation in the one
++canonical gate (`badf_gate.py security`), mirroring `solution`. Each `threats[]` row binds a
++`security_id`, a `source` provenance object, a `disposition`
++(`controlled|deferred|blocked|pending-authority`), and optional control / security-requirement /
++verification refs. Four controls, each mutation-killed: a non-empty matrix; **SEC-C01** unique
++`security_id`; **SEC-C02** every threat resolves to ≥1 provenance source (SEC-I02 — a threat that
++resolves to nothing is not a threat); **SEC-C03** a `controlled` threat carries ≥1 `control_refs`
++(SEC-I03 — controlled by nothing is not controlled). One structural check is bought by the schema
++alone: `residual_risk`'s enum offers `ACCEPTED-PENDING-AUTHORITY` but **no bare `ACCEPTED`**, so
++**SEC-I12 is enforced by construction** — the skill has no value with which to self-accept residual
++risk. This is one record in the canonical gate, **not** a second validator (SEC-I15) and not a
++lifecycle result; `lifecycle.json` is unchanged. The cross-artifact **seams** — SEC-I04 bidirectional
++traceability, SEC-I01 exact-baseline binding, and the semantic resolution of every ref against the
++architecture/solution artifacts — are **deferred to WP-SEC-C** (failing-first), exactly as the solution
++seams were deferred from WP-SOL-B to WP-SOL-C. Registry `DESIGNED → IMPLEMENTED`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/examples/security-composition.json b/examples/security-composition.json
+new file mode 100644
+index 0000000..6c6a96d
+--- /dev/null
++++ b/examples/security-composition.json
+@@ -0,0 +1,94 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-EXAMPLE-PAYMENTS",
++  "architecture_baseline": "ARCH-BASELINE-1.0.0",
++  "solution_baseline": "SOL-BASELINE-1.0.0",
++  "threats": [
++    {
++      "security_id": "SEC-THR-001",
++      "source": {
++        "architecture_refs": [
++          "TB-03"
++        ],
++        "solution_refs": [
++          "API-017",
++          "ACT-payment-create"
++        ],
++        "data_flow_refs": [
++          "DF-payment"
++        ]
++      },
++      "disposition": "controlled",
++      "control_refs": [
++        "CTRL-step-up-auth"
++      ],
++      "security_requirement_refs": [
++        "SEC-REQ-001"
++      ],
++      "verification_refs": [
++        "SEC-TEST-001"
++      ],
++      "residual_risk": "MITIGATED"
++    },
++    {
++      "security_id": "SEC-THR-002",
++      "source": {
++        "solution_refs": [
++          "API-017"
++        ],
++        "requirement_refs": [
++          "REQ-021"
++        ]
++      },
++      "disposition": "controlled",
++      "control_refs": [
++        "CTRL-ownership-authz"
++      ],
++      "security_requirement_refs": [
++        "SEC-REQ-002"
++      ],
++      "verification_refs": [
++        "SEC-TEST-002"
++      ],
++      "residual_risk": "MITIGATED"
++    },
++    {
++      "security_id": "SEC-THR-003",
++      "source": {
++        "solution_refs": [
++          "API-017"
++        ],
++        "data_flow_refs": [
++          "DF-refund"
++        ]
++      },
++      "disposition": "controlled",
++      "control_refs": [
++        "CTRL-idempotency-replay"
++      ],
++      "security_requirement_refs": [
++        "SEC-REQ-003"
++      ],
++      "verification_refs": [
++        "TEST-SEC-031"
++      ],
++      "residual_risk": "MITIGATED"
++    },
++    {
++      "security_id": "SEC-THR-004",
++      "source": {
++        "architecture_refs": [
++          "EXT-payment-provider"
++        ],
++        "trust_boundary_refs": [
++          "TB-05"
++        ]
++      },
++      "disposition": "pending-authority",
++      "security_requirement_refs": [
++        "SEC-REQ-004"
++      ],
++      "residual_risk": "ACCEPTED-PENDING-AUTHORITY"
++    }
++  ]
++}
+diff --git a/schemas/security-composition.schema.json b/schemas/security-composition.schema.json
+new file mode 100644
+index 0000000..bd611d6
+--- /dev/null
++++ b/schemas/security-composition.schema.json
+@@ -0,0 +1,42 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/security-composition.schema.json",
++  "title": "badf-security-design composition matrix -- one row per material threat/abuse case, binding its provenance, disposition and controls (WP-SEC-B)",
++  "type": "object",
++  "additionalProperties": false,
++  "required": ["schema_version", "threats"],
++  "properties": {
++    "schema_version": {"type": "string", "enum": ["1.0.0"]},
++    "prd_id": {"type": "string", "pattern": "^PRD-[A-Za-z0-9._-]+$"},
++    "architecture_baseline": {"type": "string", "minLength": 1},
++    "solution_baseline": {"type": "string", "minLength": 1},
++    "threats": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "object",
++        "additionalProperties": false,
++        "required": ["security_id", "source", "disposition"],
++        "properties": {
++          "security_id": {"type": "string", "pattern": "^SEC-THR-[0-9]{3,}$"},
++          "source": {
++            "type": "object",
++            "additionalProperties": false,
++            "properties": {
++              "architecture_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
++              "solution_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
++              "requirement_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
++              "trust_boundary_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
++              "data_flow_refs": {"type": "array", "items": {"type": "string", "minLength": 1}}
++            }
++          },
++          "disposition": {"type": "string", "enum": ["controlled", "deferred", "blocked", "pending-authority"]},
++          "control_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
++          "security_requirement_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
++          "verification_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
++          "residual_risk": {"type": "string", "enum": ["UNASSESSED", "MITIGATED", "DEFERRED", "ACCEPTED-PENDING-AUTHORITY"]}
++        }
++      }
++    }
++  }
++}
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 32931e9..40e6036 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -3515,6 +3515,39 @@ def validate_solution_composition(path: Path) -> str:
+     return f"BADF SOLUTION-COMPOSITION PASS: {len(solutions)} composition(s) over {len(reqs)} requirement(s); structural + matrix-internal seams (SOL-C04/05/06)"
+ 
+ 
++def validate_security_composition(path: Path) -> str:
++    """`badf_gate.py security <path>`: the STRUCTURAL controls of a badf-security-design
++    composition matrix (WP-SEC-B). One record in the canonical gate -- not a second
++    validator (SEC-I15), and not a lifecycle result. It checks the matrix is internally
++    coherent: unique threat ids (SEC-C01), every threat resolving to real provenance
++    (SEC-C02 / SEC-I02), and every *controlled* threat actually carrying a control
++    (SEC-C03 / SEC-I03). The residual_risk enum omits a bare `ACCEPTED` (schema), so the
++    skill structurally cannot self-accept residual risk (SEC-I12). The cross-artifact SEAM
++    checks -- bidirectional traceability (SEC-I04), exact-baseline binding (SEC-I01) and
++    the semantic resolution of every ref against the architecture/solution artifacts -- are
++    WP-SEC-C, not here."""
++    rec = load_json(path)
++    check_schema("security-composition", rec)
++    _no_placeholders(rec, "security-composition")
++    threats = rec["threats"]
++    if not threats:
++        raise ValidationError("security-composition: no threats; an empty matrix models nothing")
++    # SEC-C01: a matrix cannot carry two rows under one threat id.
++    _unique_ids(threats, "security_id", "security-composition")
++    provenance_kinds = ("architecture_refs", "solution_refs", "requirement_refs",
++                        "trust_boundary_refs", "data_flow_refs")
++    for t in threats:
++        src = t.get("source") or {}
++        # SEC-C02 (SEC-I02): a threat that resolves to nothing is not a threat.
++        if not any(src.get(k) or [] for k in provenance_kinds):
++            raise ValidationError(f"security-composition: {t['security_id']} binds no provenance source; a material threat resolves to real assets/interfaces/flows/boundaries/requirements (SEC-C02 / SEC-I02)")
++        # SEC-C03 (SEC-I03): a threat dispositioned `controlled` must name a control.
++        if t["disposition"] == "controlled" and not (t.get("control_refs") or []):
++            raise ValidationError(f"security-composition: {t['security_id']} is dispositioned 'controlled' but carries no control_refs; a threat controlled by nothing is not controlled (SEC-C03 / SEC-I03)")
++    controlled = sum(1 for t in threats if t["disposition"] == "controlled")
++    return f"BADF SECURITY-COMPOSITION PASS: {len(threats)} threat(s), {controlled} controlled; structural (SEC-C01/02/03), seams deferred to WP-SEC-C"
++
++
+ # ---- badf-git GIT-C: the read-only baseline inspector (BADF-WP-0069) ----------------
+ def _git_at(root: Path, *args: str) -> str | None:
+     """Like _git, for an arbitrary working tree. Read-only by construction: every
+@@ -4018,6 +4051,8 @@ def main() -> int:
+     assure_parser.add_argument("path", type=Path)
+     sol_parser = subparsers.add_parser("solution", help="validate a solution-composition matrix's structural controls (WP-SOL-B)")
+     sol_parser.add_argument("path", type=Path)
++    sec_parser = subparsers.add_parser("security", help="validate a security-composition matrix's structural controls (WP-SEC-B)")
++    sec_parser.add_argument("path", type=Path)
+     args = parser.parse_args()
+     try:
+         if args.command == "repo":
+@@ -4100,6 +4135,9 @@ def main() -> int:
+         elif args.command == "solution":
+             print(validate_solution_composition(args.path))
+             return 0
++        elif args.command == "security":
++            print(validate_security_composition(args.path))
++            return 0
+         else:
+             args._rendered = validate_dossier(args.path)
+     except ValidationError as exc:
+diff --git a/skills/badf-security-design/references/acceptance.md b/skills/badf-security-design/references/acceptance.md
+index f1bc295..afb58f1 100644
+--- a/skills/badf-security-design/references/acceptance.md
++++ b/skills/badf-security-design/references/acceptance.md
+@@ -11,9 +11,9 @@ contract first, prove it later, in separate WPs. **Do not build every specialist
+ 
+ | WP | Outcome | Status |
+ | :--- | :--- | :--- |
+-| **WP-SEC-A** (this) | root `SKILL.md` + references: G05 mapping, routing, specialist boundaries, architecture/solution-design interfaces, threat/control/risk model, normalization contract, OWASP dispositions, SEC-I01…I15, admission criteria | `DESIGNED` |
+-| WP-SEC-B | G05 security-design schemas + normalized evidence semantics | `IMPLEMENTED` |
+-| WP-SEC-C | deterministic G05 security-design controls inside the canonical `badf_gate.py` (failing-first) | `VALIDATED` |
++| WP-SEC-A | root `SKILL.md` + references: G05 mapping, routing, specialist boundaries, architecture/solution-design interfaces, threat/control/risk model, normalization contract, OWASP dispositions, SEC-I01…I15, admission criteria | `DESIGNED` |
++| **WP-SEC-B** | the `security-composition` matrix schema + the `security` gate command with structural controls (no-empty · SEC-C01 unique · SEC-C02 provenance · SEC-C03 controlled-has-control · SEC-I12 residual-risk-not-accepted by schema); see `traceability.md` | `IMPLEMENTED` |
++| WP-SEC-C | cross-artifact **seam** controls in the canonical `badf_gate.py` (SEC-I04 bidirectional trace, SEC-I01 baseline binding, semantic ref resolution; failing-first) | `VALIDATED` |
+ | WP-SEC-D | historical / representative security-design shadow calibration | `SHADOWED` |
+ | WP-SEC-E | independent admission | `ACTIVE` |
+ 
+diff --git a/skills/badf-security-design/references/traceability.md b/skills/badf-security-design/references/traceability.md
+index 659be57..5e79c57 100644
+--- a/skills/badf-security-design/references/traceability.md
++++ b/skills/badf-security-design/references/traceability.md
+@@ -38,11 +38,32 @@ verification obligation        (SEC-I14: what ASSURANCE must later prove — G08
+ ## Security-composition matrix
+ 
+ The security-design equivalent of the RTM — one row per material threat/abuse case, binding its chain so
+-coverage and coherence are reconstructable in both directions. (No new global ID family is invented at
+-freeze — a plain `security-composition` object is sufficient; a dedicated family waits for proven need in
+-WP-SEC-B.)
++coverage and coherence are reconstructable in both directions.
+ 
+ | Threat / Abuse | Source (arch/solution) | Sec-Req | Control | Verification obligation |
+ | :--- | :--- | :--- | :--- | :--- |
+ | THR-014 | TB-03 · API-017 | SEC-REQ-014 | CTRL-022 | SEC-TEST-031 |
+ | ABUSE-008 | REQ-021 · API-017 | SEC-REQ-014 | CTRL-022 | TEST-SEC-031 |
++
++### Enforcement status
++
++WP-SEC-B gives the matrix a schema (`schemas/security-composition.schema.json`) and STRUCTURAL
++validation in the one canonical gate — `badf_gate.py security <matrix>` — never a second validator
++(SEC-I15). Each `threats[]` row carries `security_id` (`^SEC-THR-[0-9]{3,}$`), a `source` provenance
++object, a `disposition` (`controlled|deferred|blocked|pending-authority`), and optional
++`control_refs`/`security_requirement_refs`/`verification_refs`/`residual_risk`. Controls, each
++mutation-killed:
++
++| Control | Rule (matrix-internal) | Invariant | Status |
++| :--- | :--- | :--- | :--- |
++| — | a non-empty matrix (an empty one models nothing) | — | **enforced** (WP-SEC-B) |
++| SEC-C01 | unique `security_id` | — | **enforced** (WP-SEC-B) |
++| SEC-C02 | every threat binds ≥1 provenance `source` ref | SEC-I02 | **enforced** (WP-SEC-B) |
++| SEC-C03 | a `controlled` threat carries ≥1 `control_refs` | SEC-I03 | **enforced** (WP-SEC-B) |
++| — | `residual_risk` cannot be a bare `ACCEPTED` (enum) | SEC-I12 | **enforced by schema** (WP-SEC-B) |
++
++The **cross-artifact seams** — SEC-I04 bidirectional traceability (a sec-req resolves up *and* down),
++SEC-I01 exact-baseline digest binding, and the *semantic* resolution of every ref against the
++architecture/solution artifacts — **cannot** be enforced until those artifacts and the sec-req/control
++registries exist; they are **deferred to WP-SEC-C**, honestly, not faked. `residual_risk`'s exclusion of
++`ACCEPTED` makes SEC-I12 structural: the skill has no value with which to self-accept risk.
+diff --git a/tests/test_badf_security_composition.py b/tests/test_badf_security_composition.py
+new file mode 100644
+index 0000000..70c4742
+--- /dev/null
++++ b/tests/test_badf_security_composition.py
+@@ -0,0 +1,117 @@
++"""security-composition matrix -- structural controls (BADF-WP-0083 / WP-SEC-B).
++
++`badf_gate.py security <path>` validates a badf-security-design composition matrix's
++STRUCTURAL integrity inside the one canonical gate (not a second validator -- SEC-I15):
++unique threat ids (SEC-C01), every threat resolving to real provenance (SEC-C02 / SEC-I02),
++and every *controlled* threat actually carrying a control (SEC-C03 / SEC-I03). The
++residual_risk enum omits a bare `ACCEPTED`, so the skill structurally cannot self-accept
++residual risk (SEC-I12). The cross-artifact SEAM controls (SEC-I04 bidirectional trace,
++SEC-I01 baseline binding, semantic ref resolution) are WP-SEC-C. Every test mutates a copy
++of the shipped example and runs the CLI.
++"""
++import copy
++import json
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++EXAMPLE = json.loads((gate.ROOT / "examples/security-composition.json").read_text())
++
++
++class SecurityCompositionBase(unittest.TestCase):
++    def run_cli(self, rec):
++        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
++            json.dump(rec, f)
++            p = Path(f.name)
++        try:
++            return subprocess.run([sys.executable, "scripts/badf_gate.py", "security", str(p)],
++                                  cwd=str(gate.ROOT), capture_output=True, text=True)
++        finally:
++            p.unlink()
++
++    def refused(self, rec, needle):
++        r = self.run_cli(rec)
++        self.assertNotEqual(r.returncode, 0, "a defective matrix was admitted: " + r.stdout)
++        self.assertIn(needle, r.stderr, r.stderr)
++
++    def admitted(self, rec):
++        r = self.run_cli(rec)
++        self.assertEqual(r.returncode, 0, r.stderr)
++
++
++class StructuralControlTests(SecurityCompositionBase):
++    def test_the_shipped_example_passes(self):
++        self.admitted(EXAMPLE)
++
++    def test_an_empty_matrix_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["threats"] = []
++        self.refused(rec, "no threats")
++
++    def test_a_duplicate_security_id_is_refused(self):  # SEC-C01
++        rec = copy.deepcopy(EXAMPLE)
++        rec["threats"][1]["security_id"] = rec["threats"][0]["security_id"]
++        self.refused(rec, "duplicate")
++
++    def test_a_threat_with_no_provenance_source_is_refused(self):  # SEC-C02 / SEC-I02
++        rec = copy.deepcopy(EXAMPLE)
++        rec["threats"][0]["source"] = {}
++        self.refused(rec, "binds no provenance source")
++
++    def test_all_empty_provenance_arrays_still_bind_nothing(self):  # SEC-C02 (present-but-empty)
++        rec = copy.deepcopy(EXAMPLE)
++        rec["threats"][0]["source"] = {"architecture_refs": [], "solution_refs": []}
++        self.refused(rec, "binds no provenance source")
++
++    def test_a_controlled_threat_with_no_control_is_refused(self):  # SEC-C03 / SEC-I03
++        rec = copy.deepcopy(EXAMPLE)
++        rec["threats"][0].pop("control_refs", None)
++        self.refused(rec, "no control_refs")
++
++    def test_a_deferred_or_blocked_threat_needs_no_control(self):  # SEC-C03 is disposition-scoped
++        # a non-controlled disposition legitimately carries no control_refs.
++        rec = copy.deepcopy(EXAMPLE)
++        rec["threats"][0]["disposition"] = "deferred"
++        rec["threats"][0].pop("control_refs", None)
++        self.admitted(rec)
++
++
++class SchemaEnforcedTests(SecurityCompositionBase):
++    """Structural provenance/enum is the schema's job, not a code branch."""
++
++    def test_a_malformed_security_id_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["threats"][0]["security_id"] = "THR-1"
++        self.refused(rec, "security_id")
++
++    def test_a_missing_disposition_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        del rec["threats"][0]["disposition"]
++        self.refused(rec, "disposition")
++
++    def test_an_unknown_disposition_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["threats"][0]["disposition"] = "accepted"
++        self.refused(rec, "disposition")
++
++    def test_residual_risk_cannot_be_bare_accepted(self):  # SEC-I12 structural
++        # the skill cannot self-accept residual risk: `ACCEPTED` is not a value the enum offers.
++        rec = copy.deepcopy(EXAMPLE)
++        rec["threats"][0]["residual_risk"] = "ACCEPTED"
++        self.refused(rec, "residual_risk")
++
++
++class RegistryStatusTests(unittest.TestCase):
++    def test_badf_security_design_is_registered_implemented(self):  # WP-SEC-B advanced DESIGNED -> IMPLEMENTED
++        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
++        entry = next(e for e in reg["skills"] if e["name"] == "badf-security-design")
++        self.assertEqual(entry["status"], "IMPLEMENTED")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/tests/test_badf_security_design_contract.py b/tests/test_badf_security_design_contract.py
+index e01350c..96ad07a 100644
+--- a/tests/test_badf_security_design_contract.py
++++ b/tests/test_badf_security_design_contract.py
+@@ -34,12 +34,14 @@ class BadfSecurityDesignContractTests(unittest.TestCase):
+         self.assertEqual(REFS, {p.name for p in REFERENCES.glob("*.md")})
+         # no second gate / runtime (SEC-I15): no standalone validator script...
+         self.assertFalse((ROOT / "scripts" / "badf_security_design.py").exists())
+-        # ...and this skill authors no schema at contract-freeze. (The four G05 evidence schemas
+-        # -- threat-model / privacy-assessment / supply-chain-plan / security-approval -- pre-date
+-        # this skill and belong to the gate; security-design normalizes INTO them. A skill-specific
+-        # security-design/security-composition schema is a WP-SEC-B concern and absent here.)
+-        for schema in ("security-design.schema.json", "security-composition.schema.json"):
+-            self.assertFalse((ROOT / "schemas" / schema).exists(), schema)
++        # ...and no competing second-gate schema. (The four G05 evidence schemas -- threat-model /
++        # privacy-assessment / supply-chain-plan / security-approval -- pre-date this skill and
++        # belong to the gate; security-design normalizes INTO them. WP-SEC-B legitimately adds
++        # schemas/security-composition.schema.json -- validated BY the one canonical gate
++        # (`badf_gate.py security`), not a competing validator -- so that file exists from
++        # IMPLEMENTED on. A `security-design.schema.json` -- a skill-owned design/lifecycle schema --
++        # would be a second gate and must never exist.)
++        self.assertFalse((ROOT / "schemas" / "security-design.schema.json").exists())
+ 
+     def test_root_states_all_invariants_and_the_workflow(self):
+         text = SKILL.read_text(encoding="utf-8")
+diff --git a/work/WP-2026-0081/work-package.json b/work/WP-2026-0081/work-package.json
+index 8f62bbf..5ebb229 100644
+--- a/work/WP-2026-0081/work-package.json
++++ b/work/WP-2026-0081/work-package.json
+@@ -44,11 +44,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "74282a4"
++    "base_revision": "74282a4",
++    "landed_content_tree": "7a27cff59d490b29625b6c772ca8f5e4b9751605",
++    "composition_verified": true,
++    "landed_as": "605f97fe12b419072f7bc9e254d5945e11ffb4db"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-H per GTGM v0.1 section 17, after GIT-G (WP-2026-0080 / 74282a4). Resolves #155 / GOV-0061. Reconciles WP-2026-0080 (composition_verified true). Engineered by BARCHI-2 in a linked worktree under the operator's /loop ('proceed on your call')."
+ }
