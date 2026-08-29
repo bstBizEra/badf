@@ -1,242 +1,91 @@
-# Git Operation and Authority Matrix
+# Git/GitHub Operation Authority Matrix
 
-This reference classifies Git operations for routing and risk discussion. It does **not** assign authority. Canonical capability governance remains `docs/08-mcp-and-tools.md` (`READ`, `WRITE`, `DESTRUCTIVE`, `ADMIN`), the active work package, `badf/tool-registry.json`, `badf/authority-matrix.json`, repository policy and platform controls.
+This matrix classifies operations for the GitHub-native BADF Git model. Classification does not itself grant permission; the active Work Package, authority matrix, repository ruleset and tool registry remain controlling.
 
-## Two-layer classification
+## Operation classes
 
-BADF uses:
+| Class | Name | Typical operations | Default posture |
+| --- | --- | --- | --- |
+| `GIT-O0` | Remote Observe | repository metadata, refs, commits, trees/blobs, compare, PRs, reviews, checks, rulesets | read-only; autonomous within data scope |
+| `GIT-O1` | Remote Workspace Mutation | create WP source branch/ref, create/update scoped files, create blobs/trees/commits, non-force advance WP ref | Work-Package authority required |
+| `GIT-O2` | Remote Topic Rewrite | exceptional rewrite/reconstruction of an already-published WP ref | explicit scope + expected prior SHA; evidence invalidation |
+| `GIT-O3` | Collaboration Mutation | create/update PR, request review, comment/label as authorized | Work-Package/collaboration authority |
+| `GIT-O4` | Protected Integration | merge PR to protected branch, create governed release tag/release | separate integration/release authority |
+| `GIT-O5` | Destructive/Admin | force-update/delete protected ref, move/delete release tag, weaken ruleset, bypass checks | deny by default / higher authority |
 
-1. **Canonical tool operation class** — `READ`, `WRITE`, `DESTRUCTIVE`, `ADMIN`.
-2. **Git-local operation class** — `GIT-O0` through `GIT-O5`, which describes Git-specific risk and evidence expectations.
+## GitHub Remote Workspace operations
 
-The Git-local class may only **narrow** behavior. It cannot downgrade a canonical tool/platform classification.
-
-## Classes
-
-### `GIT-O0 — OBSERVE`
-
-Purpose: establish repository facts without changing Git state.
-
-Examples:
-
-- `git status`
-- `git log`
-- `git diff`
-- `git show`
-- `git rev-parse`
-- `git merge-base`
-- `git cat-file`
-- `git branch --show-current`
-- read-only remote/ref/PR/status observation
-
-Canonical mapping: normally `READ`.
-
-Controls:
-
-- record repository/ref identity when evidence depends on it;
-- avoid commands whose apparent inspection also mutates state/config;
-- sanitize output before storing evidence;
-- a read result can be stale immediately after upstream movement.
-
-### `GIT-O1 — LOCAL_REVERSIBLE`
-
-Purpose: create bounded local source state whose effect is normally recoverable without protected history mutation.
-
-Examples, when separately authorized:
-
-- fetch remote objects/refs;
-- create/switch a work-package branch;
-- add a dedicated worktree;
-- intentionally stage/unstage content;
-- create local commits;
-- restore a known path from a verified source when this does not destroy unknown work;
-- create a recovery branch/ref before repair.
-
-Canonical mapping: usually `WRITE` to local repository state; a fetch can also update remote-tracking refs and is therefore state-changing even though it does not change the remote repository.
-
-Controls:
-
-- baseline before mutation;
-- preserve unrelated work;
-- exact target/source binding;
-- do not infer remote/push/merge permission from local write permission.
-
-### `GIT-O2 — HISTORY_REWRITE_PRIVATE`
-
-Purpose: rewrite the history of an **unmerged, unprotected private/work-package topic** when explicitly permitted and coordinated.
+### GIT-O0 — Observe
 
 Examples:
 
-- `git commit --amend`
-- `git rebase`
-- interactive rebase (`pick/reword/edit/squash/fixup/drop`)
-- `git reset --soft` / `--mixed` on a private branch
-- cherry-pick used to reconstruct/reorder topic history
+- read repository/default branch and permissions;
+- read target/source refs and commits;
+- read tree/blob/file content by exact ref/SHA;
+- compare base/head;
+- read PR metadata, changed files, reviews/threads and checks;
+- read active branch rulesets/protection.
 
-Canonical mapping: at least `WRITE`; can become `DESTRUCTIVE` when it would discard unique/unpreserved state or overwrite shared remote history.
+Evidence: operation, repository, ref/SHA/PR queried, timestamp, returned stable identifiers and outcome.
 
-Hard boundaries:
+### GIT-O1 — Workspace mutation
 
-- never treat this class as permission to rewrite `main` or another protected/shared ref;
-- do not rewrite a branch another actor relies on without explicit coordination;
-- source SHA changes invalidate affected evidence, reviews and composition;
-- preserve dropped/lost commits through reflog/recovery refs when risk exists;
-- remote publication of rewritten history is a separate `GIT-O3` action.
+Examples:
 
-Evidence consequence:
+- create `wp/<WP>-<slug>` from an exact observed base SHA;
+- create a blob/tree/commit within WP scope;
+- create/update a scoped repository file on the WP branch;
+- advance the WP ref non-force to a commit whose parent is the observed prior head.
+
+Guard:
 
 ```text
-HISTORY_REWRITE_PRIVATE → SOURCE_IDENTITY_CHANGED → AFFECTED_EVIDENCE_STALE
+observed_source_head == expected_pre_state
+new_commit.parent == observed_source_head
+ref_update.force == false
 ```
 
-`git range-diff` may help explain how the old/new patch series differ, but the stable binding remains SHA/tree/evidence identity.
+If the ref moved, stop and re-observe. Do not convert the failure into a force update.
 
-### `GIT-O3 — REMOTE_TOPIC_MUTATION`
+### GIT-O2 — Topic rewrite
 
-Purpose: create/update/delete **non-protected topic refs** on an approved remote.
+BADF remote-first flow prefers additive source-branch commits. Rewriting a published topic ref changes identity and invalidates affected checks/reviews/composition. If separately authorized, bind the exact expected prior remote SHA and preserve old/new identities. The safety intent corresponds to `--force-with-lease`; bare force is not normal operation.
 
-Examples, when permitted:
+### GIT-O3 — Collaboration
 
-- push a new WP branch;
-- fast-forward/update a WP branch;
-- update a rewritten WP branch with a guarded lease;
-- delete a merged/abandoned topic branch after reconciliation.
+A PR/comment/review request may communicate and bind evidence but cannot create merge authority. Mutations must target the correct repository and PR after re-observation.
 
-Canonical mapping: `WRITE`; deletion or overwrite can be `DESTRUCTIVE` under canonical tool/platform semantics.
+### GIT-O4 — Protected integration/release
 
-Controls:
+Protected merge must satisfy current rulesets, required checks, current composed evidence, review/challenge requirements and separate authority. Where supported, pass the exact expected PR head SHA. Release/tag operations are a separate authority boundary.
 
-- exact repository/remote/ref verification;
-- current remote observation before overwrite/delete;
-- push only work-package-authorized content;
-- no secrets/prohibited data;
-- observe final remote state after timeout/ambiguous response;
-- `--force-with-lease` is the maximum normal force boundary for a permitted rewritten topic branch; bare `--force` is not a normal BADF workflow;
-- lease safety is not authority and does not make overwriting another actor's work acceptable.
-
-### `GIT-O4 — PROTECTED_INTEGRATION`
-
-Purpose: change protected integration/release refs through an approved platform workflow.
+### GIT-O5 — Destructive/admin
 
 Examples:
 
-- squash merge a PR to protected `main`;
-- create an authorized protected release tag/ref;
-- publish a release record that binds verified `main`.
+- force update `main`;
+- delete/reset protected `main`;
+- move/delete published release tag;
+- lower/disable required checks or rulesets;
+- use bypass/admin privileges to evade BADF controls.
 
-Canonical mapping: `WRITE` and possibly `ADMIN`/reserved-action semantics depending on repository/platform policy. The higher classification always wins.
+These are never implied by normal Work-Package write authority.
 
-Controls:
+## Tool mapping
 
-- separately granted integration/release authority;
-- exact expected source head;
-- current target/base and composition evidence;
-- required checks/reviews/conditions current;
-- repository-approved merge method;
-- no bypass of rulesets/branch protection;
-- post-operation reconciliation.
+A future implementation may map registered GitHub connector/API operations to these classes, for example:
 
-The ability of a connected GitHub tool or token to perform the operation is **capability**, not authorization.
+| GitHub capability | Class |
+| --- | --- |
+| fetch/read repository/ref/commit/tree/file/PR/check/ruleset | `GIT-O0` |
+| create branch; create file/blob/tree/commit; non-force source-ref advance | `GIT-O1` |
+| force source-ref rewrite | `GIT-O2` |
+| create/update PR; request reviewer; scoped PR metadata/comment | `GIT-O3` |
+| merge PR; governed release/tag creation | `GIT-O4` |
+| protected-ref force/delete; tag move/delete; ruleset weakening | `GIT-O5` |
 
-### `GIT-O5 — DESTRUCTIVE`
+The `badf-git` root skill remains declarative and tool-empty while `DESIGNED`; registering a concrete GitHub mutation tool/subskill is a separate governed implementation step.
 
-Purpose: actions that can irreversibly or materially discard/overwrite state, or alter protected history/policy.
+## Explicit exclusions
 
-Examples:
-
-- `git reset --hard` where unique state may be lost;
-- `git clean -f/-d/-x` over unknown/unverified scope;
-- forced movement of `main` or another protected/shared ref;
-- rewriting/deleting release tags or immutable baseline refs;
-- deleting branches/worktrees that contain unique uncommitted evidence/work;
-- bypassing protected integration controls;
-- changing GitHub rulesets/branch protection to make a merge possible.
-
-Canonical mapping: `DESTRUCTIVE` and/or `ADMIN`.
-
-Default: **deny**.
-
-Requirements before any exception:
-
-- explicit work-package scope for the exact target;
-- separately granted destructive/admin authority;
-- authoritative target identity;
-- inventory/preservation of unique state;
-- recovery/rollback procedure;
-- evidence of the before state;
-- no safer authorized alternative.
-
-`badf-git` cannot authorize an exception.
-
-## Common command posture
-
-| Operation | Git class | Notes |
-| --- | --- | --- |
-| `status`, `log`, `diff`, `show`, `rev-parse`, `merge-base` | O0 | read-only observation |
-| `fetch` | O1 | local ref/object mutation; remote read |
-| create/switch WP branch | O1 | local reversible write |
-| `worktree add` | O1 | isolate parallel work |
-| stage/unstage | O1 | inspect staged diff before commit |
-| commit | O1 | source identity changes; evidence binds after commit |
-| amend/rebase/rebase-i | O2 | private only; evidence becomes stale |
-| `reset --soft/--mixed` private | O2 | preserve/check state; evidence stale |
-| push new topic | O3 | remote write |
-| guarded rewrite of topic (`--force-with-lease`) | O3 + O2 consequence | only when explicitly permitted and remote expected state is verified |
-| squash merge protected PR | O4 | exact head/current composition + separate authority |
-| create protected release tag | O4 | release authority + verified main |
-| `revert` landed change | O1 locally then O3/O4 to deliver | repairs forward; still a new governed change |
-| reflog inspection | O0 | local recovery discovery |
-| create recovery branch from reflog | O1 | preserve before cleanup |
-| `rerere` recall | O1 candidate | recalled resolution must be reviewed/tested |
-| `reset --hard`, destructive clean | O5 | deny by default |
-| forced protected ref/tag rewrite | O5 | deny by default / reserved admin action |
-| ruleset/branch-protection change | O5 / ADMIN | outside this skill's authority |
-
-## `rerere` posture
-
-Recommended design posture:
-
-```text
-rerere.enabled = true
-rerere.autoUpdate = false
-```
-
-Reason:
-
-- remembered resolutions can reduce repeated manual conflict work;
-- automatic staging can blur the boundary between **recalled** and **reviewed** resolution;
-- with auto-update disabled, the recalled resolution remains a candidate requiring inspection, staging and verification.
-
-Repository/user configuration is a separate authorized operation; this contract does not change config automatically.
-
-## Stash posture
-
-`git stash` may be a temporary local convenience, but it is not:
-
-- a durable handoff;
-- an evidence store;
-- a work-package record;
-- an authority record;
-- a safe substitute for committing/recovery-branch preservation when state matters.
-
-If state must survive session/agent handoff, preserve it through a named branch/commit/artifact/session record as appropriate.
-
-## Operation evidence
-
-For every material `WRITE`, `DESTRUCTIVE` or `ADMIN` Git action, record at least:
-
-- work-package ID;
-- actor/tool;
-- repository;
-- Git-local and canonical operation class;
-- target ref/path/worktree;
-- before revision/state;
-- after revision/state when known;
-- command/API operation with secrets removed;
-- started/completed time;
-- outcome;
-- returned remote identifier when applicable;
-- evidence invalidated by the operation;
-- next required reconciliation.
-
-See `evidence-contract.md` for the full binding.
+The BADF Git execution substrate does not classify `git worktree add`, `git worktree remove`, local worktree-path management, local index/stash inspection or local reflog recovery as required workflow operations. Native local Git commands may exist outside BADF, but they do not define GitHub Remote Workspace state.

@@ -1,11 +1,8 @@
-"""badf-git contract freeze (BADF-WP-0066; salvage of the superseded PR #122).
+"""badf-git declarative contract tests.
 
-badf-git is the declarative Git contract for BADF delivery work -- a router and
-constraint layer, not a Git authority, merge bot, release authority, or second gate.
-This WP freezes the contract only: SKILL.md + eight reference contracts, registered
-DESIGNED, with no mutation script (scripts/badf_git.py) and no Git authority. These
-tests guard that declarative surface (the salvage kept #122's contract checks and
-dropped its temporary lockfile-probe scaffolding).
+The skill is a router/constraint layer, not Git authority, merge bot, release authority
+or a second gate. The v0.2 contract makes GitHub remote refs/objects the workspace
+substrate and explicitly excludes local git-worktree isolation.
 """
 import hashlib
 import json
@@ -32,7 +29,6 @@ class BadfGitContractTests(unittest.TestCase):
         }
         self.assertTrue(SKILL.is_file())
         self.assertEqual(expected, {p.name for p in REFERENCES.glob("*.md")})
-        # no mutation engine and no second gate -- badf_gate.py stays the sole authority.
         self.assertFalse((ROOT / "scripts" / "badf_git.py").exists())
         self.assertFalse((ROOT / "schemas" / "git.schema.json").exists())
 
@@ -45,31 +41,55 @@ class BadfGitContractTests(unittest.TestCase):
             text,
         )
         self.assertIn(
-            "SYNC → INSPECT → EDIT → STAGE → DIFF → COMMIT → VERIFY → RECONCILE → ↺",
+            "OBSERVE → READ → PATCH → BUILD TREE → CREATE COMMIT → ADVANCE REF → VERIFY → RECONCILE → ↺",
             text,
         )
         self.assertIn("SOURCE_HEAD_GREEN != INTEGRATION_SAFE", text)
         self.assertIn("GIT_CAPABILITY != GIT_AUTHORITY", text)
+        self.assertIn("GITHUB_REMOTE_WORKSPACE != NATIVE_GIT_WORKTREE", text)
 
     def test_state_machine_contains_progression_and_hold_states(self):
         text = (REFERENCES / "git-state-machine.md").read_text(encoding="utf-8")
         required = {
             "GIT_AUTHORITY_BOUND", "GIT_BASELINED", "GIT_ISOLATED", "GIT_CHANGE_ACTIVE",
-            "GIT_LOCALLY_VERIFIED", "GIT_PUBLISHED", "GIT_PR_BOUND", "GIT_COMPOSED",
+            "GIT_SOURCE_VERIFIED", "GIT_PUBLISHED", "GIT_PR_BOUND", "GIT_COMPOSED",
             "GIT_VERIFIED", "GIT_MERGE_AUTHORIZED", "GIT_MERGED", "GIT_RECONCILED",
             "GIT_RELEASED", "GIT_CLEANED", "GIT_LEARNED",
-            "STALE_EVIDENCE", "BLOCKED", "HUMAN_REQUIRED", "RECOVERY_REQUIRED",
+            "STALE_EVIDENCE", "BLOCKED", "HUMAN_REQUIRED", "OUTCOME_UNKNOWN", "RECOVERY_REQUIRED",
         }
         for token in required:
             self.assertIn(token, text)
 
-    def test_branch_contract_is_proposed_not_enforced(self):
+    def test_remote_workspace_replaces_local_worktree_isolation(self):
+        root = SKILL.read_text(encoding="utf-8")
+        branch = (REFERENCES / "branch-pr-contract.md").read_text(encoding="utf-8")
+        evidence = (REFERENCES / "evidence-contract.md").read_text(encoding="utf-8")
+        self.assertIn("GitHub Remote Workspace", root)
+        self.assertIn("github_remote_workspace", branch)
+        for token in ("target_base_sha", "source_head_sha", "source_head_tree", "pr_number"):
+            self.assertIn(token, branch)
+        self.assertNotIn("worktree_path:", evidence)
+        self.assertNotIn("index_state:", evidence)
+        for path in [SKILL, *sorted(REFERENCES.glob("*.md"))]:
+            text = path.read_text(encoding="utf-8")
+            self.assertNotIn("git worktree add", text, path.name)
+            self.assertNotIn("git worktree remove", text, path.name)
+            self.assertNotIn("linked worktree", text.lower(), path.name)
+
+    def test_branch_contract_is_proposed_and_optimistic(self):
         text = (REFERENCES / "branch-pr-contract.md").read_text(encoding="utf-8")
         self.assertIn("wp/<CANONICAL-WORK-PACKAGE-ID>-<short-slug>", text)
         self.assertIn("branch-name enforcement is deferred", text)
-        self.assertIn("--force-with-lease", text)
+        self.assertIn("expected prior remote SHA", text)
         self.assertIn("Bare `--force` is not a normal BADF workflow", text)
         self.assertIn("`git range-diff`", text)
+
+    def test_operation_matrix_is_remote_first(self):
+        text = (REFERENCES / "operation-authority-matrix.md").read_text(encoding="utf-8")
+        for token in ("GIT-O0", "GIT-O1", "GIT-O2", "GIT-O3", "GIT-O4", "GIT-O5"):
+            self.assertIn(token, text)
+        for token in ("create branch", "create a blob/tree/commit", "non-force", "expected prior SHA"):
+            self.assertIn(token, text)
 
     def test_composition_contract_binds_exact_identity(self):
         text = (REFERENCES / "composition-and-staleness.md").read_text(encoding="utf-8")
@@ -80,28 +100,28 @@ class BadfGitContractTests(unittest.TestCase):
         ):
             self.assertIn(token, text)
 
-    def test_recovery_and_release_do_not_rewrite_shared_identity(self):
+    def test_remote_recovery_does_not_rewrite_shared_identity(self):
         recovery = (REFERENCES / "recovery-contract.md").read_text(encoding="utf-8")
         release = (REFERENCES / "release-versioning.md").read_text(encoding="utf-8")
         self.assertIn("git revert", recovery)
-        self.assertIn("git reflog", recovery)
-        self.assertIn("rerere.autoUpdate = false", recovery)
+        self.assertIn("recovery/<WP>-<slug>", recovery)
+        self.assertIn("Local `git reflog` is not a required BADF recovery mechanism", recovery)
         self.assertIn("BADF-BASELINE-X.Y.Z", release)
         self.assertIn("vX.Y.Z", release)
         self.assertIn("commit prefixes", release)
 
-    def test_registry_pin_is_designed_and_tool_empty(self):
+    def test_registry_pin_is_designed_tool_empty_and_v02(self):
         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
         entries = [e for e in registry["skills"] if e.get("name") == "badf-git"]
         self.assertEqual(1, len(entries))
         entry = entries[0]
         self.assertEqual("DESIGNED", entry["status"])
         self.assertEqual([], entry["allowed_tools"])
+        self.assertEqual("0.2.0", entry["version"])
         digest = "sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest()
         self.assertEqual(digest, entry["digest"])
 
     def test_skill_points_to_registry_not_a_hardcoded_status(self):
-        # the drift discipline: the SKILL.md must not hardcode a live lifecycle status.
         text = SKILL.read_text(encoding="utf-8")
         self.assertIn("badf/skill-registry.json", text)
         self.assertNotIn("Status: `DESIGNED`", text)

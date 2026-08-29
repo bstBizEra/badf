@@ -1,270 +1,102 @@
-# Governed Git Cycle
+# BADF Git Cycle and Git Loop
 
-This reference freezes the **BADF Governed Trunk Git Model (GTGM)**. It describes the Git delivery cycle inside BADF's broader engineering loop; it does not create new repository authority.
+The BADF Git Cycle is GitHub-native. GitHub refs and immutable Git objects are the durable workspace; local filesystem worktrees are not part of the control model.
 
-## Model
-
-BADF uses one permanent integration branch (`main`) and short-lived, work-package-bound change branches. Lifecycle state lives in BADF records and evidence, **not** in permanent Git branches such as `develop`, `integration`, `staging`, `alpha`, or `beta`.
-
-The governed outer cycle is:
+## Outer cycle
 
 ```text
-AUTHORITY
-  ↓
-BASELINE
-  ↓
-ISOLATE
-  ↓
-BUILD
-  ↓
-VERIFY
-  ↓
-PR
-  ↓
-COMPOSE
-  ↓
-CHALLENGE
-  ↓
-AUTHORIZE
-  ↓
-SQUASH
-  ↓
-RECONCILE
-  ↓
-RELEASE? ── optional
-  ↓
-CLEAN
-  ↓
-LEARN
+AUTHORITY → BASELINE → ISOLATE → BUILD → VERIFY → PR → COMPOSE → CHALLENGE → AUTHORIZE → SQUASH → RECONCILE → RELEASE → CLEAN → LEARN
 ```
 
-The cycle is not a promise that every stage may mutate. Each stage is still constrained by the work package, tool registration, authority matrix, repository rules and platform controls.
+## 1. AUTHORITY
 
-## Stage contracts
+Resolve the Work Package, demand/Issue, repository, target ref, change class, scope, allowed GitHub operations, acceptance criteria, reviewers, evidence and stop conditions. A connected GitHub tool is capability only.
 
-### 1. AUTHORITY
+## 2. BASELINE
 
-Resolve before mutation:
+Observe from GitHub:
 
-- canonical work-package ID and accountable owner;
-- issue/demand and target BADF gate;
-- repository identity and target ref;
-- change class and data classification;
-- permitted tools, environments and mutations;
-- acceptance criteria and NFRs;
-- required tests, evidence and reviewers;
-- rollback owner/procedure and escalation conditions.
+- repository identity and default branch;
+- active rulesets/protection relevant to the target;
+- target ref, target SHA and target tree;
+- source ref/head/tree if it already exists;
+- commit/compare state needed to establish ancestry/divergence;
+- PR, review-thread and check state if a PR exists;
+- policy/test epoch and observation time.
 
-**Exit condition:** the planned next operation is authorized and target identity is unambiguous.
+Do not require a local checkout, working-tree status, index, stash, reflog or worktree list.
 
-**Hold:** `BLOCKED` or `HUMAN_REQUIRED` when authority is absent, stale, contradictory, or reserved.
+## 3. ISOLATE
 
-### 2. BASELINE
+Create/adopt one GitHub source ref for the authorized Work Package from the exact approved base SHA. The source ref + head/tree is the workspace boundary. Parallel work uses different refs.
 
-Observe before editing. Capture at minimum:
+## 4. BUILD
 
-- repository full identity;
-- current worktree/branch/index status;
-- target ref and current target SHA;
-- source ref and source SHA when already created;
-- merge base when source exists;
-- remote freshness/fetch observation;
-- applicable rules/policy epoch;
-- test-set/toolchain epoch when evidence will depend on it;
-- existing unrelated or unknown local state.
-
-Do not make the checkout clean by deleting, resetting, stashing-away-and-forgetting, or overwriting unknown work.
-
-**Exit condition:** a reproducible baseline exists.
-
-### 3. ISOLATE
-
-Create or select one short-lived branch for the work package. For parallel agents/work packages, prefer a dedicated `git worktree` per independent change.
-
-Isolation rules:
-
-- one worktree cannot silently become shared scratch space for multiple agents;
-- parallel branches must not edit overlapping files unless an integrator has an explicit composition plan;
-- branch names are labels; the canonical work-package record remains the authority source;
-- branch creation does not authorize push, merge or release.
-
-**Exit condition:** work has an isolated source ref/worktree and unrelated state is preserved.
-
-### 4. BUILD
-
-Use the nested Git loop:
+Use the remote-object loop:
 
 ```text
-SYNC → INSPECT → EDIT → STAGE → DIFF → COMMIT → VERIFY → RECONCILE → ↺
+OBSERVE → READ → PATCH → BUILD TREE → CREATE COMMIT → ADVANCE REF → VERIFY → RECONCILE → ↺
 ```
 
-Commit discipline:
+The implementation may use GitHub contents operations or blob/tree/commit/ref operations, but every mutation must bind:
 
-- stage intentionally; `git add -p` or equivalent review is preferred for mixed changes;
-- inspect the staged diff before commit;
-- commits should be coherent enough to review, bisect locally and recover;
-- temporary branch history may be cleaned within the private-history rules, but any rewrite invalidates source-bound evidence;
-- do not use commit-message style as a substitute for work-package identity or authority.
+- expected source head before the operation;
+- intended paths/content;
+- resulting commit/tree;
+- observed source head after the operation.
 
-**Exit condition:** a coherent source revision exists for verification.
+A non-fast-forward or unexpected ref movement stops the loop for reconciliation; it is never permission to force.
 
-### 5. VERIFY
+## 5. VERIFY
 
-Run targeted checks and the repository-required verification. Evidence binds to the source revision that was actually tested.
+Verify the exact source revision on GitHub Actions or another authorized remote runner. Preserve source-head SHA, tree, run/check identities and outcome. Source verification is not integration verification.
 
-A source branch can be locally correct and still be unsafe to integrate. Therefore:
+## 6. PR
 
-```text
-SOURCE_HEAD_GREEN != INTEGRATION_SAFE
-```
+Bind the current source ref/head to a PR against the authorized target. The PR body remains the delivery dossier/traceability surface required by repository policy.
 
-**Exit condition:** required source-level checks have explicit outcomes and evidence.
+## 7. COMPOSE
 
-### 6. PR
+Compute and verify the exact result that the protected merge method would land. BADF currently uses the canonical `scripts/badf_compose.py` mechanism for squash composition; `badf-git` does not create a second validator.
 
-Publish/bind the proposed change through a pull request when remote review is required. The PR must identify:
+## 8. CHALLENGE
 
-- canonical work package;
-- demand/issue;
-- target and source refs;
-- exact source head;
-- scope/non-goals;
-- acceptance criteria;
-- verification evidence;
-- composition status;
-- independent-review requirements;
-- residual risks and explicit holds.
+Run independent review proportional to risk. Reviews bind the exact source/composed identity and become stale when their material input moves.
 
-A PR is a review/integration vehicle, not authority by itself.
+## 9. AUTHORIZE
 
-**Exit condition:** the current proposed source is reviewable and traceable.
+Merge readiness is conjunctive: current authority, current target/source/composition, current required checks, required challenge, resolved conditions/threads and no active blocker.
 
-### 7. COMPOSE
+## 10. SQUASH
 
-Compute the exact expected protected integration result using BADF's canonical composition mechanism. Under the current repository contract the protected merge method is squash.
+Execute only the protected merge method permitted by the active repository ruleset. Bind the merge to the exact expected PR head when supported.
 
-Bind:
+## 11. RECONCILE
 
-- target base SHA;
-- source head SHA;
-- merge base SHA;
-- merge method;
-- expected result tree;
-- ordered-prefix position when multiple changes compose;
-- policy/test epochs.
+Observe the landed protected commit/tree from GitHub, compare it with the authorized expected result and reconcile the Work Package/Issue/PR evidence. A successful API response alone is not completion.
 
-Run required tests against the composed result, not just the branch head.
+## 12. RELEASE
 
-**Exit condition:** current composition evidence supports the intended target and exact source.
+Release/tagging is a separate authority boundary. Release identities are immutable; a corrective release gets a new version/ref.
 
-### 8. CHALLENGE
+## 13. CLEAN
 
-Obtain required independent review. Review scope should cover the affected risk lenses and explicitly state non-coverage.
+Delete/retire the remote topic ref only after the landing and evidence are reconciled and no unique work depends on it. No local worktree cleanup exists in this cycle.
 
-Rules:
+## 14. LEARN
 
-- author evidence is not independent approval;
-- council output is advisory unless policy makes it a gate;
-- findings bind to the reviewed revision/composed result;
-- source movement after review can make findings/approval stale.
+Promote validated lessons about ref races, stale evidence, composition defects, review drift and recovery through BADF learning governance.
 
-**Exit condition:** required review exists for the current evidence identity, or the work is held.
+## Nested Git Loop stop conditions
 
-### 9. AUTHORIZE
+Stop and return an explicit hold when:
 
-Immediately before protected integration, re-check:
+- authority/scope is missing or changed;
+- source ref moved unexpectedly;
+- target movement invalidates current integration evidence;
+- a mutation returns an unknown outcome;
+- a protected ref/tag would be rewritten/deleted;
+- required checks/reviews are stale or failing;
+- repeated repairs exhaust the configured attempt budget.
 
-- current target SHA;
-- exact source head;
-- merge method;
-- required checks;
-- review/approval freshness;
-- expected result tree;
-- policy/ruleset state;
-- unresolved conditions/exceptions.
-
-A previous authorization does not survive material identity drift without explicit recomputation/review.
-
-**Exit condition:** an authorized actor may integrate the exact reviewed/composed change.
-
-### 10. SQUASH
-
-Use only the repository-approved protected integration method. In the current BADF repository that method is squash.
-
-Requirements:
-
-- merge the exact reviewed head;
-- do not bypass required checks or rules;
-- do not treat tool capability as authorization;
-- do not rewrite `main` to repair a failed integration claim.
-
-The protected integration result becomes part of BADF's authoritative Git ledger.
-
-**Exit condition:** the platform reports the landed protected revision or a controlled failure/unknown outcome.
-
-### 11. RECONCILE
-
-After integration, verify the actual landed revision/result against the expected composition and work-package claim.
-
-Reconcile:
-
-- actual protected revision;
-- actual result tree;
-- issue/PR closure state;
-- checks attached to the landed commit as applicable;
-- acceptance criteria;
-- evidence/dossier references;
-- any post-merge drift or unexpected platform behavior.
-
-`MERGED` is not synonymous with `VERIFIED` or `RELEASED`.
-
-**Exit condition:** integration outcome is known and consistent, or a recovery/incident path is opened.
-
-### 12. RELEASE (optional)
-
-When the work package includes a BADF release, bind the release to a verified `main` revision and release packet. See `release-versioning.md`.
-
-Do not rebuild a different artifact and call it the same release. Do not infer release authority from merge authority.
-
-**Exit condition:** immutable release identity/evidence exists, or release remains out of scope.
-
-### 13. CLEAN
-
-Delete only known disposable local/topic state after its retention and recovery requirements are satisfied.
-
-Safe cleanup requires proof that the state is:
-
-- already landed or intentionally abandoned under authority;
-- not the only copy of evidence or recovery data;
-- not holding unknown/uncommitted user work;
-- not needed for an open review, incident or audit.
-
-**Exit condition:** local/topic state is intentionally reconciled without evidence loss.
-
-### 14. LEARN
-
-Record repeated Git failure modes, conflict patterns, composition defects and recovery lessons only after evidence supports a reusable conclusion.
-
-Learning can propose a new test, skill revision, policy change or automation, but each is a separate governed change. A single successful workaround does not automatically become policy.
-
-## Relationship to the BADF engineering loop
-
-GTGM nests inside:
-
-`FRAME → DISCOVER → PLAN → AUTHORIZE → BUILD → VERIFY → CHALLENGE → RECONCILE → DELIVER → OBSERVE → LEARN`
-
-Typical mapping:
-
-| BADF loop | Git cycle contribution |
-| --- | --- |
-| FRAME / DISCOVER | AUTHORITY, BASELINE |
-| PLAN / AUTHORIZE | ISOLATE and permitted operation plan |
-| BUILD | BUILD nested Git loop |
-| VERIFY | VERIFY + COMPOSE |
-| CHALLENGE | CHALLENGE |
-| RECONCILE | AUTHORIZE + pre-merge reconciliation |
-| DELIVER | SQUASH + post-merge RECONCILE + optional RELEASE |
-| OBSERVE | CI/release/runtime observations as applicable |
-| LEARN | CLEAN + LEARN |
-
-The mapping is descriptive. It does not alter lifecycle gate authority.
+Each retry must change an input, hypothesis, candidate implementation or diagnostic. Blind replay of the same remote mutation is prohibited.
