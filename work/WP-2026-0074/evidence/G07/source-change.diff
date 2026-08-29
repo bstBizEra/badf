@@ -1,0 +1,339 @@
+diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
+index eeb01b3..b7b8381 100644
+--- a/.github/workflows/badf-gates.yml
++++ b/.github/workflows/badf-gates.yml
+@@ -65,6 +65,8 @@ jobs:
+           python3 scripts/badf_gate.py assure examples/architecture-assurance-shadow-pyyaml-drift.json
+           python3 scripts/badf_gate.py assure examples/architecture-assurance-shadow-indeterminate.json
+           python3 scripts/badf_gate.py solution examples/solution-composition.json
++          python3 scripts/badf_gate.py solution examples/solution-composition-shadow-refund.json
++          python3 scripts/badf_gate.py solution examples/solution-composition-shadow-reporting.json
+       - name: PR traceability + identity (Work-Package + Closes #N; title + branch carry the same NNNN)
+         # BADF-MAIN-001. Only a PR has a body; a push to main has already been
+         # traced by the PR that produced it. Reports on the PR event only.
+diff --git a/badf/demands/BADF-DEM-0061.json b/badf/demands/BADF-DEM-0061.json
+new file mode 100644
+index 0000000..3339a46
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0061.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0061",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 141,
++    "url": "https://github.com/bstBizEra/badf/issues/141",
++    "exported_at": "2026-08-29T19:32:18Z",
++    "body_digest": "sha256:f3a01b5a466f31124924e3fe2d6cecbd9bf78525dde97445f2e621b0c93b819b"
++  },
++  "title": "GOV-0053: WP-SOL-D \u2014 representative shadow calibration (badf-solution-design -> SHADOWED)",
++  "problem": "## Observed\n\n`badf-solution-design` is `VALIDATED` (WP-SOL-C): the composition matrix's structural and matrix-internal seam controls (SOL-C01/C03 + SOL-C04/05/06) are enforced by the `solution` command with mutation-tested tests. The next admission rung is `SHADOWED` \u2014 running the capability retrospectively and measuring true detections, false positives, and declared non-coverage.\n\n**Honest constraint:** the research and architecture families shadowed on **real historical BADF cases**. `badf-solution-design` has **no real project compositions yet** \u2014 BADF itself has no UX/API/authorization surface. So its shadow is necessarily **representative**, and this WP must say so; a real re-shadow is owed the first time a project actually uses the skill.\n\n## Expected\n\n**WP-SOL-D \u2014 representative shadow calibration \u2192 `SHADOWED`.**\n\n- `skills/badf-solution-design/references/shadow-evidence.md` \u2014 the calibration: run `solution` over representative composition matrices spanning the outcome space, measured for **true positives** (each structural + seam defect refused: empty matrix, duplicate id, binds-nothing, api-no-authz, authz-no-audit, ux-no-a11y), **zero false positives** (clean multi-requirement compositions pass), and **declared non-coverage** (the external-artifact seams SOL-I02/05/07/10/11 are *not* exercised \u2014 they need the specialist adapters). Explicitly labelled **REPRESENTATIVE, not real-project**.\n- 1\u20132 committed representative shadow matrices (e.g. a refund-approval solution, a reporting solution \u2014 all seams satisfied) validated in CI beside the example.\n- Advance the registry `VALIDATED \u2192 SHADOWED`. `APPROVED`/`ACTIVE` remain a later step (operator-authorized).\n- `tests/\u2026`: the shadow matrices pass; the shadow-evidence doc states the representative caveat + the non-coverage; registry `SHADOWED`.\n\n## Evidence\n\n- The WP-SOL-B/C suites already demonstrate the true-positive detections and the clean-pass; this WP assembles them as measured calibration evidence plus fresh representative matrices, mirroring `badf-research` WP-0055 / `badf-architecture` WP-0059.\n- No `lifecycle.json` change; no second validator (SOL-I12); no specialist activation.\n\n## Unknowns\n\nWhether `SHADOWED` should wait for a real project composition instead of a representative one \u2014 recorded honestly so the operator can hold `APPROVED`/`ACTIVE` until a real re-shadow if preferred.\n\ndiscovered-by: BADF-WP-0072 (badf-solution-design landed VALIDATED) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T19:32:18Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-SOL-D advances badf-solution-design VALIDATED->SHADOWED via REPRESENTATIVE shadow calibration (no real project compositions exist yet -- honestly labelled; real re-shadow owed on first real use). Measures TP/FP/non-coverage; external-artifact seams declared non-covered. Operator /loop 'to active' 2026-08-30, DEM-0061/GOV-0053/WP-0074 (0073 poisoned by third actor). Worked as BADF-WP-0074. Reconciles WP-2026-0069 (GIT-C)."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index a2f1753..561dec2 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -208,7 +208,7 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "VALIDATED",
++      "status": "SHADOWED",
+       "digest": "sha256:5d8848ef97cdd21c62cccfa4ff37b30f71823516566638fbee3cf1d60530ea46"
+     },
+     {
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 7e73c3e..93b14c7 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -795,6 +795,29 @@ runs the inspector on the runner's own checkout — detached at `refs/pull/N/mer
+ as the positive control on real infrastructure. Composition identity is GIT-E; branch conformance
+ is GIT-B's check; platform state is GIT-F.
+ 
++## badf-solution-design → SHADOWED — representative calibration (`BADF-WP-0074` / WP-SOL-D, Issue #141 / GOV-0053)
++
++`SHADOWED` is the rung before `APPROVED`/`ACTIVE`, and it means *the controls were run against
++cases and behaved*. `badf-research` and `badf-architecture` shadowed on **real** historical BADF
++records; `badf-solution-design` has **no real project compositions yet** — BADF is a governance
++framework with no UX/API/authorization surface of its own to compose. So this shadow is
++**REPRESENTATIVE**, and the evidence (`references/shadow-evidence.md`) says so in its first
++sentence: a real re-shadow is owed the first time a project actually uses the skill, and the
++operator may hold `APPROVED`/`ACTIVE` until then.
++
++The calibration ran the `solution` command over representative matrices: **all seven defect classes
++refused** (empty matrix, duplicate id, a row binding no artifact, malformed `requirement_ref`,
++api-without-authz SOL-C04, authz-without-audit SOL-C05, ux-without-a11y SOL-C06); **zero false
++positives** on three clean compositions — including the reporting matrix's **data-only row**, the
++false-positive check that proves the seams are *co-occurrence, not blanket* (a row with no
++`api_refs` correctly needs no `authorization_refs`). And it **declares its non-coverage**: the
++external-artifact seams (SOL-I02/05/07/10/11) and the *semantic* resolution of each ref against its
++specialist artifact are not exercised — they need adapters that do not exist. Silence is not
++coverage; the gaps are named, not implied to pass. Two committed shadow matrices
++(`examples/solution-composition-shadow-refund.json`, `-reporting.json`) are validated in CI. No
++`lifecycle.json` change, no new control (the controls are WP-SOL-B/C), no second validator. Registry
++`VALIDATED → SHADOWED`; `APPROVED`/`ACTIVE` remains the operator's admission decision.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/examples/solution-composition-shadow-refund.json b/examples/solution-composition-shadow-refund.json
+new file mode 100644
+index 0000000..f022cc1
+--- /dev/null
++++ b/examples/solution-composition-shadow-refund.json
+@@ -0,0 +1,57 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-SHADOW-REFUND",
++  "solutions": [
++    {
++      "solution_id": "SOL-001",
++      "requirement_ref": "REQ-001",
++      "ux_refs": [
++        "FLOW-approve-refund"
++      ],
++      "api_refs": [
++        "POST /refunds/{id}/approve"
++      ],
++      "authorization_refs": [
++        "ACT-refund-approve"
++      ],
++      "data_refs": [
++        "ENT-Refund",
++        "ENT-RefundApproval"
++      ],
++      "audit_refs": [
++        "AUD-refund-approved"
++      ],
++      "accessibility_refs": [
++        "A11Y-approval-state"
++      ],
++      "test_refs": [
++        "TEST-refund-approve"
++      ]
++    },
++    {
++      "solution_id": "SOL-002",
++      "requirement_ref": "REQ-002",
++      "ux_refs": [
++        "FLOW-refund-denied-recovery"
++      ],
++      "api_refs": [
++        "POST /refunds/{id}/deny"
++      ],
++      "authorization_refs": [
++        "ACT-refund-deny"
++      ],
++      "data_refs": [
++        "ENT-Refund"
++      ],
++      "audit_refs": [
++        "AUD-refund-denied"
++      ],
++      "accessibility_refs": [
++        "A11Y-denied-announce"
++      ],
++      "test_refs": [
++        "TEST-refund-deny"
++      ]
++    }
++  ]
++}
+diff --git a/examples/solution-composition-shadow-reporting.json b/examples/solution-composition-shadow-reporting.json
+new file mode 100644
+index 0000000..a07640c
+--- /dev/null
++++ b/examples/solution-composition-shadow-reporting.json
+@@ -0,0 +1,41 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-SHADOW-REPORTING",
++  "solutions": [
++    {
++      "solution_id": "SOL-001",
++      "requirement_ref": "REQ-010",
++      "ux_refs": [
++        "FLOW-view-report"
++      ],
++      "api_refs": [
++        "GET /reports/{id}"
++      ],
++      "authorization_refs": [
++        "ACT-report-read"
++      ],
++      "data_refs": [
++        "ENT-Report"
++      ],
++      "audit_refs": [
++        "AUD-report-accessed"
++      ],
++      "accessibility_refs": [
++        "A11Y-table-semantics"
++      ],
++      "test_refs": [
++        "TEST-report-view"
++      ]
++    },
++    {
++      "solution_id": "SOL-002",
++      "requirement_ref": "REQ-011",
++      "data_refs": [
++        "ENT-ReportSchedule"
++      ],
++      "test_refs": [
++        "TEST-schedule-migration"
++      ]
++    }
++  ]
++}
+diff --git a/skills/badf-solution-design/references/shadow-evidence.md b/skills/badf-solution-design/references/shadow-evidence.md
+new file mode 100644
+index 0000000..4496cb5
+--- /dev/null
++++ b/skills/badf-solution-design/references/shadow-evidence.md
+@@ -0,0 +1,61 @@
++# Shadow-evidence — badf-solution-design (WP-SOL-D)
++
++The capability's live status is `badf/skill-registry.json` (`SHADOWED` at `BADF-WP-0074`). This records
++the shadow calibration that earned it.
++
++## The honest caveat — this shadow is REPRESENTATIVE, not real-project
++
++`badf-research` (WP-0055) and `badf-architecture` (WP-0059) shadowed on **real historical BADF cases**.
++`badf-solution-design` has **no real project compositions yet** — BADF itself is a governance framework
++with no UX / API / authorization surface to design. So this calibration runs on **representative**
++composition matrices spanning the outcome space, and says so plainly. **A real re-shadow is owed the
++first time a project actually uses the skill**, and the operator may hold `APPROVED`/`ACTIVE` until then.
++
++## Calibration
++
++The `solution` command (structural + matrix-internal seam controls, WP-SOL-B/C) was run over
++representative matrices. Every command below is reproducible.
++
++### True positives — every defect is refused
++
++| Defect (mutated from a clean matrix) | Control | Outcome |
++| :--- | :--- | :--- |
++| empty `solutions` | no-empty-matrix | refused |
++| duplicate `solution_id` | SOL-C01 | refused |
++| a row binding no specialist artifact | SOL-C03 | refused |
++| missing / malformed `requirement_ref` | schema (SOL-I01) | refused |
++| `api_refs` without `authorization_refs` | SOL-C04 / SOL-I04 | refused |
++| `authorization_refs` without `audit_refs` | SOL-C05 / SOL-I06 | refused |
++| `ux_refs` without `accessibility_refs` | SOL-C06 / SOL-I09 | refused |
++
++These are exercised as `tests/test_badf_solution_composition.py` (each mutation-killed).
++
++### Zero false positives — clean compositions pass
++
++| Representative matrix | Shape | Outcome |
++| :--- | :--- | :--- |
++| `examples/solution-composition.json` | 2 rows, all ref kinds | PASS |
++| `examples/solution-composition-shadow-refund.json` | refund approve/deny, all seams satisfied | PASS |
++| `examples/solution-composition-shadow-reporting.json` | report view (all seams) + a **data-only** schedule row | PASS |
++
++The reporting matrix's data-only row is the key false-positive check: the seams are **co-occurrence**,
++not blanket — a row with no `api_refs` correctly needs no `authorization_refs`, and passes.
++
++### Declared non-coverage — what this shadow does NOT exercise
++
++The **external-artifact** seams cannot be exercised without the specialist adapters, which do not exist:
++
++- SOL-I02 (against the architecture baseline), SOL-I05 (default-deny in the authorization model),
++  SOL-I07 (API↔data schemas), SOL-I10 / SOL-I11 (migration / API-compat);
++- the *semantic* resolution of every ref against its specialist artifact (does `ACT-refund-approve`
++  actually exist and grant `refund:approve`?).
++
++Silence is not coverage: these are named here, not implied to pass.
++
++## Result
++
++Over the representative outcome space: **all 7 defect classes detected, zero false positives on 3 clean
++compositions (including the co-occurrence data-only row), non-coverage declared** — no contract gap
++surfaced at the matrix-internal level. `VALIDATED → SHADOWED`. `APPROVED`/`ACTIVE` remain the operator's
++admission decision, and a real-project re-shadow is owed before the skill is trusted on production
++compositions.
+diff --git a/tests/test_badf_solution_composition.py b/tests/test_badf_solution_composition.py
+index e1c114a..0dda616 100644
+--- a/tests/test_badf_solution_composition.py
++++ b/tests/test_badf_solution_composition.py
+@@ -110,11 +110,35 @@ class MatrixInternalSeamTests(SolutionCompositionBase):
+         self.admitted(rec)
+ 
+ 
++class ShadowCalibrationTests(SolutionCompositionBase):
++    """WP-SOL-D: the representative shadow matrices pass, and the shadow-evidence
++    reference labels itself REPRESENTATIVE (not real-project) and declares the
++    external-artifact seams it does NOT cover -- silence is not coverage."""
++
++    SHADOWS = ("solution-composition-shadow-refund.json", "solution-composition-shadow-reporting.json")
++
++    def test_representative_shadow_matrices_pass(self):
++        for name in self.SHADOWS:
++            rec = json.loads((gate.ROOT / "examples" / name).read_text())
++            self.admitted(rec)
++
++    def test_shadow_evidence_declares_representative_caveat(self):
++        doc = (gate.ROOT / "skills/badf-solution-design/references/shadow-evidence.md").read_text()
++        self.assertIn("REPRESENTATIVE", doc)
++        self.assertIn("no real project compositions yet", doc)
++
++    def test_shadow_evidence_declares_noncoverage(self):
++        doc = (gate.ROOT / "skills/badf-solution-design/references/shadow-evidence.md").read_text()
++        self.assertIn("non-coverage", doc.lower())
++        for seam in ("SOL-I02", "SOL-I05", "SOL-I07", "SOL-I10", "SOL-I11"):
++            self.assertIn(seam, doc, f"{seam} not declared as non-covered")
++
++
+ class RegistryStatusTests(unittest.TestCase):
+-    def test_badf_solution_design_is_registered_validated(self):
++    def test_badf_solution_design_is_registered_shadowed(self):  # WP-SOL-D advanced VALIDATED -> SHADOWED
+         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
+         entry = next(e for e in reg["skills"] if e["name"] == "badf-solution-design")
+-        self.assertEqual(entry["status"], "VALIDATED")
++        self.assertEqual(entry["status"], "SHADOWED")
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/tests/test_badf_solution_design_contract.py b/tests/test_badf_solution_design_contract.py
+index 2cc7b94..63b18d4 100644
+--- a/tests/test_badf_solution_design_contract.py
++++ b/tests/test_badf_solution_design_contract.py
+@@ -21,7 +21,7 @@ REFS = {
+     "composition-contract.md", "routing.md", "traceability.md", "ux-contract.md",
+     "authorization-contract.md", "data-contract.md", "api-contract.md",
+     "accessibility-contract.md", "cross-artifact-consistency.md", "acceptance.md",
+-    "external-methodology.md",
++    "external-methodology.md", "shadow-evidence.md",  # WP-SOL-D shadow calibration
+ }
+ 
+ 
+diff --git a/work/WP-2026-0069/work-package.json b/work/WP-2026-0069/work-package.json
+index aac5ea7..ca4ff6c 100644
+--- a/work/WP-2026-0069/work-package.json
++++ b/work/WP-2026-0069/work-package.json
+@@ -45,11 +45,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "9cf4b13"
++    "base_revision": "9cf4b13",
++    "landed_as": "0b2fd527c4e53b7c5b142de11c71438bea6b17b7"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-C per GTGM v0.1 section 17, after GIT-B (WP-2026-0070 / 0343c8e). Resolves #127 / GOV-0048. Reconciles WP-2026-0072 (WP-SOL-C, 9cf4b13, landed while this branch was open; 0070 was reconciled by it) -- branch rebased onto 9cf4b13. Engineered by BARCHI-2 in a linked worktree under the operator's /loop; parallel seat BARCHI-1 on WP-2026-0072."
+ }
