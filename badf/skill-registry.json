@@ -29,6 +29,19 @@
       "digest": "sha256:32c3cfc1d618d484e2f8a01957b5d2ac80575f182ec4c68f6e285bcbf09e8bf3"
     },
     {
+      "name": "badf-requirements",
+      "source": "skills/badf-requirements/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem",
+        "local-shell"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:af7a654f28787acdfa35fee5b4c9cff84df8182cafc480dad5c1dd5955649b52"
+    },
+    {
       "name": "badf-research",
       "source": "skills/badf-research/SKILL.md",
       "owner": "BADF Governance Authority",

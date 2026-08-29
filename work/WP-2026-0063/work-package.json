@@ -1,0 +1,56 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0063",
+  "title": "badf-requirements authoring skill (salvage PR #47 onto the canonical G02 gate) — IMPLEMENTED",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0050",
+  "repository": "bstBizEra/badf",
+  "objective": "Build badf-requirements as a top-level authoring skill (sibling of badf-prd) that decomposes an approved PRD baseline into the four canonical G02 artifacts (requirements, nfr, traceability, definition-of-ready) and validates them with `badf_gate.py dossier` -- never with a validator of its own. Salvage only the authoring layer from the superseded PR #47: the RTM decomposition model, the quantified-NFR discipline, the security-provenance rule, and the authority boundary 'author requirements, never approve G02'. Register the skill IMPLEMENTED. badf_gate.py remains the sole G02 enforcement authority.",
+  "business_value": "The canonical G02 gate (WP-0041) enforces the four requirement artifacts, but nothing authors them -- there was no requirements-decomposition skill, only PR #47's superseded design that duplicated the gate. This gives BADF the missing authoring capability with a clean separation (skill authors, gate verifies, authority decides), preserves #47's genuine requirements-engineering work, and discards its obsolete governance implementation. Landing at IMPLEMENTED (not ACTIVE) keeps the admission ladder honest -- validation with real cases is a separate WP.",
+  "in_scope": [
+    "skills/badf-requirements/SKILL.md -- authoring workflow re-pointed to `badf_gate.py dossier`; declares REQ-I01 (no gate authority) .. REQ-I06 (security provenance); never emits G02 PASS / ELIGIBLE_FOR_G02_REVIEW as its own decision",
+    "skills/badf-requirements/references/requirements-decomposition.md -- the RTM authoring model (OBJ->CAP->EPIC->REQ->NFR->AC->TEST->EVDREQ) with the note that the gate consumes only the canonical subset (capability/epic/test/evidence obligations are authoring intermediates, not first-class gate objects)",
+    "skills/badf-requirements/references/methodology-provenance.md -- salvaged methodology provenance (Spec Kit / softaworks / wshobson), reference-only, no vendored executable",
+    "badf/skill-registry.json: register badf-requirements IMPLEMENTED with a real digest",
+    "tests/test_badf_requirements_skill.py: skill exists + registered IMPLEMENTED; declares REQ-I01 and points to the canonical gate; NO standalone scripts/badf_requirements.py and NO custom RTM schema exist (badf_gate.py is sole G02 authority); names the four canonical artifacts; references exist",
+    "GITHUB_CONTROL_PLANE.md doctrine section; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "scripts/badf_requirements.py, schemas/requirements-rtm.schema.json, templates/requirements-rtm.json, or any duplicate G02 gate logic -- explicitly NOT ported (the gate already enforces G02)",
+    "making capability/epic/test-obligation/evidence-obligation first-class gate objects -- deferred to a later failing-first WP if real project use proves the need (no schema growth by speculation)",
+    "advancing badf-requirements past IMPLEMENTED (VALIDATED needs a separate WP with cases A/B/C)",
+    "closing PR #47 (the external actor's PR -- operator's action) or touching its branch; the old WP-2026-0028 / BADF-DEM-0015 identities",
+    "any change to the G02 gate, its schemas, or its examples"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "skills/badf-requirements/SKILL.md exists, declares REQ-I01 (no gate authority), validates via `badf_gate.py dossier`, and never emits a G02 gate outcome as its own decision",
+    "badf-requirements is registered IMPLEMENTED with a real digest; the two references exist",
+    "no scripts/badf_requirements.py and no schemas/requirements-rtm.schema.json exist (the anti-duplication guard holds); badf_gate.py is unchanged",
+    "tests/test_badf_requirements_skill.py passes; repo integrity clean; the G02 gate + all examples still validate unchanged",
+    "compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_requirements_skill.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "a20df5e"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Adds no gate code -- so no new control and no mutation (mutation is for enforcement branches); the test guards existence + the anti-duplication architecture. Salvages PR #47's authoring layer only, like badf-prd salvaged PR #44. Resolves #115 / GOV-0033; supersedes #47. Reconciles WP-2026-0062."
+}
