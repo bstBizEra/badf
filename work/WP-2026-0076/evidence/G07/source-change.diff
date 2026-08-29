@@ -1,0 +1,581 @@
+diff --git a/badf/demands/BADF-DEM-0063.json b/badf/demands/BADF-DEM-0063.json
+new file mode 100644
+index 0000000..216831a
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0063.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0063",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 144,
++    "url": "https://github.com/bstBizEra/badf/issues/144",
++    "exported_at": "2026-08-29T19:57:45Z",
++    "body_digest": "sha256:891edf7a8e3e976c3ccb9f7ef676742dd7753bf8363e2294102fd372351d856d"
++  },
++  "title": "GOV-0055: BADF-WP-GIT-E — composition identity: a committed `git-composition` record (content-tree bound) that `badf_compose.py` recomputes and compares; composition-verification subskill",
++  "problem": "## Observed\n\n`badf-git`'s core invariant is `SOURCE_HEAD_GREEN != INTEGRATION_SAFE`, and its composition contract (`references/composition-and-staleness.md`) says every integration claim binds `target_ref`, `target_base_sha`, `source_ref`, `source_head_sha`, `merge_base_sha`, `merge_method`, `expected_result_tree`, `policy_epoch`, `test_set_epoch`; `docs/05` mandates the same for composed changes. Measured on `main` after GIT-D: CI's `badf_compose.py` **computes** all of it on every PR — `BADF COMPOSE: base X + candidate Y -> composed Z (tree T)` — and **records none of it**: the tuple lives in a job log. No PR carries a composition claim; nothing compares a claim with what CI recomputes; post-merge nothing compares the landed tree with the expected one. In this program the cost was concrete: three rebases across GIT-B/C/D each silently invalidated composition, detected only by manual re-running (GIT-D now detects *that the target moved*, but nothing binds *what the composed result was expected to be*).\n\nThe obvious record — \"commit the tuple inside the PR\" — is circular: the commit that adds the record changes the PR head and the result tree. BADF already solved that circularity once: the self-dossier binds **content**, diffing `base..HEAD` with `work/<WP>/` and `badf/lockfile.json` excluded, and compose verifies it on the composed tree. GIT-E applies the same construction to composition. GTGM v0.1 §10 (composition is the core invariant), §15 (`composition-verification` subskill), §17 **GIT-E — Composition**.\n\n## Expected\n\n**A composition claim the author commits and CI recomputes.**\n\n1. **`badf_compose.py --record <path>`** (host shape) writes, after composing, a `git-composition` record: `repository`, `target_ref` (`refs/heads/<default>`), `target_base_sha`, `source_ref` (the branch), `merge_base_sha`, `merge_method: squash`, `expected_result_tree` (the composed tree — informational, changes when the record is added), **`expected_content_tree`** (the composed tree with `work/<WP>/` and `badf/lockfile.json` removed — computed index-only in the scratch via `git rm -r --cached` + `git write-tree`; **this is the binding**), `policy_epoch`, `test_set_epoch: null` + non-coverage, `suite_pattern`, `observed_at`. Read-only for the source repository (the scratch is disposable); the record file is the only write and only where asked.\n2. **Compose verifies the claim on the composed tree**, in CI and locally: if `work/<WP>/evidence/G07/composition.json` exists for the work package the message names, then (a) the recorded `target_base_sha` must equal the base being composed onto — else **`BADF COMPOSE FAIL: composition record is stale: recorded for base X, composing onto Y — recompute with --record`** (the rebase failure mode, made a refusal); (b) the recomputed `expected_content_tree` must equal the recorded one — else **`composition record does not match the composed content`** (a content change after the claim); (c) `merge_method` must be `squash` and `target_ref` the default branch. No record → compose behaves exactly as today and prints `composition: no record (pre-GIT-E work package)` — backward compatible; requiring the record is a later decision (GIT-F/J).\n3. **The self-dossier indexes the record** as G07 evidence of a new type `composition` (artifact = the record; digest bound) when it exists; `dossier` accepts it structurally (unknown types are not refused today; HUMAN_REQUIRED dossiers skip per-type rules, which is exactly why the enforcement point is compose).\n4. **`composition-verification` subskill** (GTGM §15): when to compose, what to bind, the author's order of operations — *commit content → `badf_compose.py --record work/<WP>/evidence/G07/composition.json` → `self-dossier` → commit → push* — and the rule: a rebase or any content change **recomputes the record, never edits it**. Registered `IMPLEMENTED`, C1, `allowed_tools: []`; the `badf-git` root stays `DESIGNED`.\n5. **This PR is its own first subject:** it carries a composition record that CI's compose verifies — the positive control on real infrastructure.\n\n## Acceptance criteria\n\n1. `--record` writes a `git-composition` record with every field above; `expected_content_tree` is unaffected by the presence of the record, the lockfile, or anything under `work/<WP>/` (the circularity proof).\n2. Compose with a CURRENT record → PASS, printing `composition: CURRENT (content tree <T7>)`.\n3. Target moved after the record → compose **FAIL** naming both bases and `--record`.\n4. Tracked content changed after the record (outside the exclusions) → compose **FAIL** naming the content-tree mismatch.\n5. Only the record + lockfile + `work/<WP>/` files added after the record → still CURRENT.\n6. `merge_method != squash` or a foreign `target_ref` in the record → compose FAIL; a malformed record (not `record: git-composition`, missing fields) → compose FAIL naming the defect.\n7. No record → compose PASS as today with the `no record` line (backward compatibility guarded by a test on a WP without one).\n8. Two `--record` runs on the same base/candidate are identical modulo `observed_at`; the source repository is untouched (status/reflog/stash/index snapshots).\n9. The self-dossier indexes `composition` evidence when the record exists (and not otherwise); the dossier validates (`HELD`) with it; `dossier` never refuses the extra type.\n10. Each refusal branch **load-bearing** (mutation: base check dropped, content check dropped, merge-method check dropped, malformed accepted, exclusions dropped so the record poisons its own tree).\n11. `composition-verification` registered `IMPLEMENTED` C1 `allowed_tools: []` with a real digest; root stays `DESIGNED`; no new script, no schema change (the record is an artifact, the evidence object uses the existing `composition` slot only if needed), no authority/tool-registry change; `repo` clean; full `unittest discover` + composed-tree compose green in CI.\n12. **This PR's own record verifies on the runner** (`composition: CURRENT` in the compose step).\n\n## Tests (`tests/test_badf_git_composition.py`; compose CLI on scratch clones restricted to a tiny suite pattern, plus in-process checks)\n\n- `test_record_binds_the_composition_tuple`\n- `test_content_tree_excludes_own_work_dir_and_lockfile`\n- `test_current_record_composes_PASS`\n- `test_moved_target_makes_the_record_stale_and_compose_refuses`\n- `test_changed_content_after_record_is_refused`\n- `test_adding_record_lockfile_and_work_dir_keeps_record_current`\n- `test_non_squash_or_foreign_target_ref_is_refused`\n- `test_malformed_record_is_refused`\n- `test_missing_record_is_backward_compatible`\n- `test_record_is_deterministic_and_source_repo_untouched`\n- `test_self_dossier_indexes_composition_evidence_when_present`\n- `test_composition_verification_subskill_registered_and_root_stays_designed`\n\n## Out of scope\n\n- Reviewer-approval staleness, expected-head merge guard, platform/PR state — **GIT-F**; post-merge landed-tree comparison — **GIT-F/G** (reconcile).\n- Ordered multi-change prefix composition (`ordered_prefix_position`) — one change at a time today; declared, not implemented.\n- `test_set_epoch` (BADF defines none); requiring the record for every PR (a later policy decision); the remote-workspace mode (#133).\n- Any change to the merge method, rulesets, or authority.\n\n## Risk / authority / stop conditions\n\n- Change class **C1** (a new evidence artifact and a compose check; no authority change); target gate **G07**, `HUMAN_REQUIRED`.\n- Stop if the content-tree construction cannot be made deterministic, if it would require writing outside `work/<WP>/`, or if scope grows past `badf_compose.py` + the self-dossier indexing + one subskill + tests + doctrine.\n- Lean mode: **enforced** — reuse `badf_compose.py`'s scratch, `self_dossier`'s exclusion rule, `git_baseline` field names, the existing `composition` schema slot.\n\n## Identity\n\n- Ledger **WP-2026-0076** · demand **BADF-DEM-0063** · this issue **GOV-0055** · phase label BADF-WP-GIT-E.\n- Branch `wp/WP-2026-0076-git-composition` in a linked worktree from current `main`; reconciles whatever is `LANDED_UNRECONCILED` at branch time (the land-time rule). Parallel seat BARCHI-1 holds WP-2026-0074 (#141, GOV-0053); `WP-2026-0073` stays poisoned.\n- Sequence: A ✓ B ✓ C ✓ D ✓ → **E (this)** → F → G → H → I → J.\n\nsource: GTGM v0.1 §10, §15, §17 (GIT-E); `composition-and-staleness.md`; `docs/05` · discovered-by: BARCHI-2, three silent composition invalidations across GIT-B/C/D · status: PROPOSED\n\n🧠 **BARCHI-2** — plan posted; engineered under the operator's `/loop your goal on badf-git`.\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T19:57:45Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "BADF-WP-GIT-E composition identity: `badf_compose.py --record` writes a git-composition record bound to the content tree (composed tree minus work/<WP>/ and the lockfile); compose recomputes and compares it on the composed tree; self-dossier indexes it as `composition` evidence; composition-verification subskill. Authority: operator `/loop your goal on badf-git` + 'proceed on your call' (2026-08-29), design order GTGM v0.1 section 17 after GIT-D (WP-2026-0075, f1a0a5c). Worked as BADF-WP-0076."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 08655fd..e7d0522 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -230,6 +230,16 @@
+       "allowed_tools": [],
+       "status": "IMPLEMENTED",
+       "digest": "sha256:941dded6c33ac5793ed56063cb2ff7cf8dcbd25e3c8fa808d70533cff3196268"
++    },
++    {
++      "name": "composition-verification",
++      "source": "skills/badf-git/subskills/composition-verification/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [],
++      "status": "IMPLEMENTED",
++      "digest": "sha256:257649dd0b700fdf9c9f51a2b9edc651793b65154dec7eb8219ba79d77505e74"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 2610b45..06ebc66 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -859,6 +859,32 @@ representative, and the owed real-project re-shadow is filed as a tracked follow
+ the capability is admitted for use, its trust is honestly bounded to a representative shadow, and the
+ debt to re-shadow on real data is tracked rather than lost. Registry `SHADOWED → ACTIVE`.
+ 
++## badf-git GIT-E — the composition claim (`BADF-WP-0076`, Issue #144 / GOV-0055)
++
++`SOURCE_HEAD_GREEN != INTEGRATION_SAFE` is badf-git's core invariant and its contract binds a
++nine-field composition identity — yet `badf_compose.py` computed all of it on every PR (`base X +
++candidate Y -> composed Z (tree T)`) and recorded none of it; three rebases across GIT-B/C/D each
++silently invalidated composition. The obvious record — commit the tuple inside the PR — is
++circular: the commit that adds it moves the head and the result tree. BADF had already solved that
++once, in the self-dossier, by binding **content** with `work/<WP>/` and the lockfile excluded.
++
++**`badf_compose.py --record <path>`** writes a `git-composition` record after composing; its binding
++is **`expected_content_tree`** — the composed tree with `work/<WP>/` and `badf/lockfile.json` removed,
++computed on a temporary index — which is what lets the record, the self-dossier and the lockfile live
++inside the PR they verify. Committed as `work/<WP>/evidence/G07/composition-record.json`, it is
++found by compose on the tree that would land — in CI and locally — and **refused** when the
++recorded base is not the base being composed onto ("stale … recompute with `--record`": the rebase
++failure mode, made a refusal), when the recomputed content tree differs (content changed after the
++claim), when the method is not squash, the target is foreign, the work package differs, or the record
++is malformed. No record prints `composition: no record` and passes as before — requiring one is a
++later policy decision. The self-dossier indexes the record as `composition` evidence when present
++(digest-bound; HUMAN_REQUIRED dossiers skip per-type rules, which is why compose is the enforcement
++point). The `composition-verification` subskill carries the author's order of operations —
++*commit content → `--record` → `self-dossier` → commit → push* — and the rule that a rebase or a
++content change recomputes the record, never edits it. This work package's own PR carried its record
++and CI verified it. Approval staleness and the expected-head merge guard are GIT-F; the landed-tree
++comparison after merge is GIT-F/G.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/scripts/badf_compose.py b/scripts/badf_compose.py
+index d52d669..4937b34 100644
+--- a/scripts/badf_compose.py
++++ b/scripts/badf_compose.py
+@@ -41,6 +41,115 @@ FULL_PATTERN = "test_*.py"
+ sys.path.insert(0, str(Path(__file__).resolve().parent))
+ from badf_gate import WP_LINE, WP_NAMESPACE  # noqa: E402
+ 
++# ---- badf-git GIT-E: the composition claim (BADF-WP-0076) ----------------------------
++# A committed record of what integration is expected to produce. Its binding is the
++# CONTENT TREE -- the composed tree with work/<WP>/ and badf/lockfile.json removed --
++# so the record (and the self-dossier and lockfile that follow it) can live inside the
++# PR they verify without moving the identity they bind. Compose recomputes it on the
++# composed tree and refuses a stale base or a changed content tree. No record is
++# backward compatible: requiring one is a later policy decision.
++RECORD_REL = "evidence/G07/composition-record.json"
++COMPOSITION_REQUIRED = ("schema_version", "observed_at", "repository", "work_package_id", "target_ref", "target_base_sha",
++                        "source_ref", "merge_base_sha", "merge_method", "expected_result_tree", "expected_content_tree",
++                        "policy_epoch", "test_set_epoch", "suite_pattern", "non_coverage")
++
++
++def content_tree(checkout: Path, wp: str, rev: str = "HEAD") -> str:
++    """The tree of <rev> with work/<wp>/ and badf/lockfile.json removed, computed on a
++    temporary index so the checkout's own index is never touched."""
++    with tempfile.TemporaryDirectory(prefix="badf-ctree-") as d:
++        env = {**os.environ, "GIT_INDEX_FILE": str(Path(d) / "index")}
++
++        def run(*a: str) -> subprocess.CompletedProcess:
++            return subprocess.run(["git", "-C", str(checkout), *a], capture_output=True, text=True, env=env)
++
++        r = run("read-tree", rev)
++        if r.returncode:
++            raise RuntimeError(f"cannot read the tree of {rev} in {checkout}: {r.stderr.strip()}")
++        run("rm", "-r", "-q", "--cached", "--ignore-unmatch", "--", f"work/{wp}", "badf/lockfile.json")
++        r = run("write-tree")
++        if r.returncode:
++            raise RuntimeError(f"cannot write the content tree of {rev} in {checkout}: {r.stderr.strip()}")
++        return r.stdout.strip()
++
++
++def _self_name(repo: Path) -> str | None:
++    reg = repo / "badf/repositories.json"
++    if not reg.is_file():
++        return None
++    try:
++        for name, spec in (json.loads(reg.read_text(encoding="utf-8")).get("repositories") or {}).items():
++            if isinstance(spec, dict) and spec.get("resolution") == "SELF":
++                return name
++    except ValueError:
++        return None
++    return None
++
++
++def composition_record(*, repo: Path, candidate: str, wp: str, base: str, cand: str,
++                       tree: str, ctree: str, tests: str) -> dict:
++    from datetime import datetime, timezone
++    name = sh(["git", "rev-parse", "--symbolic-full-name", candidate], repo).stdout.strip()
++    epoch = None
++    life = repo / "badf/lifecycle.json"
++    if life.is_file():
++        try:
++            epoch = json.loads(life.read_text(encoding="utf-8")).get("policy_epoch")
++        except ValueError:
++            epoch = None
++    return {
++        "record": "git-composition",
++        "schema_version": "1.0.0",
++        "observed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
++        "repository": _self_name(repo),
++        "work_package_id": wp,
++        "target_ref": f"refs/heads/{DEFAULT_BRANCH}",
++        "target_base_sha": base,
++        "source_ref": name if name.startswith("refs/") else None,
++        "source_head_sha": cand,
++        "merge_base_sha": sh(["git", "merge-base", base, cand], repo).stdout.strip() or None,
++        "merge_method": "squash",
++        "expected_result_tree": tree,
++        "expected_content_tree": ctree,
++        "policy_epoch": epoch,
++        "test_set_epoch": None,
++        "suite_pattern": tests,
++        "non_coverage": ["test_set_epoch: BADF defines no test-set/toolchain epoch; not recorded rather than invented",
++                         "source_head_sha and expected_result_tree are informational: committing this record moves both; "
++                         "the binding is expected_content_tree (work/<WP>/ and the lockfile excluded)"],
++    }
++
++
++def load_composition_record(path: Path) -> dict:
++    try:
++        rec = json.loads(path.read_text(encoding="utf-8"))
++    except (OSError, ValueError) as exc:
++        raise ValueError(f"{path} is not a git-composition record ({exc.__class__.__name__})")
++    if not isinstance(rec, dict) or rec.get("record") != "git-composition":
++        raise ValueError(f"{path} is not a git-composition record (no `record: git-composition`)")
++    missing = [k for k in COMPOSITION_REQUIRED if k not in rec]
++    if missing:
++        raise ValueError(f"{path} is not a complete git-composition record; missing {missing}")
++    return rec
++
++
++def verify_composition_record(rec: dict, *, wp: str, base: str, ctree: str) -> list[str]:
++    problems = []
++    if rec.get("work_package_id") != wp:
++        problems.append(f"the record binds {rec.get('work_package_id')!r}, not {wp}")
++    if rec.get("target_ref") != f"refs/heads/{DEFAULT_BRANCH}":
++        problems.append(f"foreign target_ref {rec.get('target_ref')!r}; the protected target is refs/heads/{DEFAULT_BRANCH}")
++    if rec.get("merge_method") != "squash":
++        problems.append(f"merge_method {rec.get('merge_method')!r}; the protected method is squash")
++    if rec.get("target_base_sha") != base:
++        problems.append(f"composition record is stale: recorded for base {str(rec.get('target_base_sha'))[:7]}, composing onto "
++                        f"{base[:7]} -- recompute with --record")
++    elif rec.get("expected_content_tree") != ctree:
++        problems.append(f"composition record does not match the composed content (recorded content tree "
++                        f"{str(rec.get('expected_content_tree'))[:7]}, actual {ctree[:7]}) -- the content changed after the claim; "
++                        f"recompute with --record")
++    return problems
++
+ 
+ def sh(cmd: list[str], cwd: Path, env: dict | None = None, input: str | None = None) -> subprocess.CompletedProcess:
+     return subprocess.run(cmd, cwd=str(cwd), capture_output=True, text=True, env=env, input=input)
+@@ -80,7 +189,12 @@ def compose(args: argparse.Namespace) -> int:
+         def g(*a: str, input: str | None = None) -> subprocess.CompletedProcess:
+             return sh(["git", "-C", str(work), *a], work, input=input)
+ 
+-        for cmd in (("init", "-q"), ("remote", "add", "origin", str(repo))):
++        # The scratch needs an identity for EVERY git operation, not only the squash commit:
++        # a non-fast-forward `merge --squash` (base moved AND candidate ahead -- the divergent
++        # case GIT-E's tests compose, which a PR head never is) prepares a merge commit and
++        # dies with `fatal: empty ident name` on a runner that has no git identity (WP-0076).
++        for cmd in (("init", "-q"), ("remote", "add", "origin", str(repo)),
++                    ("config", "user.email", "badf-compose@local"), ("config", "user.name", "badf-compose")):
+             r = g(*cmd)
+             if r.returncode:
+                 return fail(f"git {' '.join(cmd)} failed: {r.stderr.strip()}")
+@@ -122,6 +236,28 @@ def compose(args: argparse.Namespace) -> int:
+         # reconciled, a third fixture-vs-ledger dependence in one session.
+         if not (work / "work" / wp / "work-package.json").is_file():
+             return fail(f"no work package record for {wp} in the composed tree; the message names a work package the candidate does not carry")
++        # GIT-E (BADF-WP-0076): the composition claim. Compute the content tree of the
++        # composed commit; write the record when asked; verify a committed record on the
++        # tree that would land -- a stale base or a changed content tree is a refusal.
++        ctree = content_tree(work, wp, "HEAD")
++        if args.record:
++            record = composition_record(repo=repo, candidate=args.candidate, wp=wp, base=base, cand=cand,
++                                        tree=tree, ctree=ctree, tests=args.tests)
++            args.record.parent.mkdir(parents=True, exist_ok=True)
++            args.record.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
++            print(f"  record: written to {args.record} (content tree {ctree[:7]}, base {base[:7]})")
++        rec_path = work / "work" / wp / RECORD_REL
++        if rec_path.is_file():
++            try:
++                committed = load_composition_record(rec_path)
++            except ValueError as exc:
++                return fail(f"composition record: {exc}")
++            problems = verify_composition_record(committed, wp=wp, base=base, ctree=ctree)
++            if problems:
++                return fail("composition record: " + "; ".join(problems))
++            print(f"  composition: CURRENT (content tree {ctree[:7]}, recorded for base {base[:7]})")
++        else:
++            print("  composition: no record (pre-GIT-E work package; requiring one is a later decision)")
+         landed_body = g("log", "-1", "--format=%B", f"origin/{DEFAULT_BRANCH}").stdout
+         if not WP_LINE.search(landed_body) or f"{m.group(1)}" not in (WP_LINE.search(landed_body).group(1)):
+             return fail("the composed commit on origin/main does not carry the candidate's Work-Package line")
+@@ -193,6 +329,8 @@ def main() -> int:
+     ap.add_argument("--tests", default=FULL_PATTERN, help="unittest discovery pattern (a restriction is printed)")
+     ap.add_argument("--ci-shape", action="store_true", help="no PropTech clone, no local mirror -- as on the runner")
+     ap.add_argument("--keep", action="store_true", help="keep the scratch directory")
++    ap.add_argument("--record", type=Path, help="write the git-composition record (the content-tree-bound composition claim) "
++                    "to this path; commit it as work/<WP>/evidence/G07/composition-record.json and compose again to verify it")
+     args = ap.parse_args()
+     try:
+         return compose(args)
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 7abefeb..0e21b62 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -2909,6 +2909,22 @@ def self_dossier(wp_id: str) -> str:
+         index.append({"type": t, "path": f"work/{wp_id}/evidence/G07/{t}.json"})
+         if outcome == "NOT_APPLICABLE":
+             non_coverage.append({"evidence_type": t, "reason": "no documentation changed in this work package", "declared_by": "badf-self-dossier"})
++    record = ev_dir / "composition-record.json"
++    if record.is_file():
++        # GIT-E (BADF-WP-0076): the composition claim written by `badf_compose.py --record`
++        # is indexed as `composition` evidence when present. Its binding is the content
++        # tree (work/<WP>/ and the lockfile excluded), so indexing it here does not move it;
++        # compose verifies it on the tree that would land.
++        rec = {"schema_version": "1.0.0", "id": f"EVD-{wp_id}-G07-composition", "work_package_id": wp_id, "gate": "G07",
++               "claim": f"the composition claim of {wp_id}: the expected content tree bound to its target base "
++                        f"(recomputed and compared by scripts/badf_compose.py on the composed tree)",
++               "evidence_type": "composition", "producer": {"id": "badf-self-dossier", "type": "controller"},
++               "source_revision": "HEAD", "target": f"{self_repository()}:main",
++               "toolchain": {"name": "badf_compose.py --record", "version": "1"}, "operation": "badf_compose.py --record",
++               "started_at": now, "completed_at": now, "outcome": "PASS",
++               "artifact": f"work/{wp_id}/evidence/G07/composition-record.json", "digest": sha256(record)}
++        (ev_dir / "composition.json").write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
++        index.append({"type": "composition", "path": f"work/{wp_id}/evidence/G07/composition.json"})
+     condition = {"condition_id": "C-1",
+                  "statement": "An independent reviewer distinct from the author has not recorded an approval; BADF runs under a single collaborator (recorded, not hidden -- see GITHUB_CONTROL_PLANE.md).",
+                  "status": "OPEN", "severity": "Major", "blocking_scope": "G09",
+diff --git a/skills/badf-git/subskills/composition-verification/SKILL.md b/skills/badf-git/subskills/composition-verification/SKILL.md
+new file mode 100644
+index 0000000..690d9c2
+--- /dev/null
++++ b/skills/badf-git/subskills/composition-verification/SKILL.md
+@@ -0,0 +1,60 @@
++---
++name: composition-verification
++description: Bind and verify what protected integration is expected to produce -- write the git-composition record with `badf_compose.py --record`, commit it inside the pull request under work/<WP>/evidence/G07/composition-record.json, and let compose recompute and compare it on the tree that would land, refusing a stale base or a changed content tree. Use at badf-git's COMPOSE stage and again after any rebase or content change. Do not use to merge, to bypass the composed-tree gate, or as a source of authority.
++---
++
++# composition-verification
++
++A subskill of `badf-git` (`../../SKILL.md`) for the COMPOSE stage (`../../references/git-cycle.md`)
++and the composition contract (`../../references/composition-and-staleness.md`). Its admission
++status is recorded in `badf/skill-registry.json`; this file defines behaviour and hardcodes no
++lifecycle status.
++
++**The invariant: `SOURCE_HEAD_GREEN != INTEGRATION_SAFE`.** A green source branch proves nothing
++about the tree the squash will produce onto *today's* target. BADF's canonical composition
++mechanism, `scripts/badf_compose.py`, has always computed that tree; before this subskill it
++recorded none of it, and three rebases in one program silently invalidated composition.
++
++## The claim and its binding
++
++`badf_compose.py --record <path>` writes a **git-composition record**: `repository`,
++`work_package_id`, `target_ref`, `target_base_sha`, `source_ref`, `merge_base_sha`,
++`merge_method: squash`, `expected_result_tree`, **`expected_content_tree`**, `policy_epoch`,
++`test_set_epoch` (null -- BADF defines none; declared as non-coverage), `suite_pattern`.
++
++The binding is **`expected_content_tree`**: the composed tree with `work/<WP>/` and
++`badf/lockfile.json` removed, computed on a temporary index. That is what lets the record --
++and the self-dossier and lockfile that follow it -- live *inside* the pull request they verify
++without moving the identity they bind. `source_head_sha` and `expected_result_tree` are
++informational: committing the record moves both.
++
++## The author's order of operations
++
++```text
++1. commit the content                         (the deliverables, outside work/<WP>/)
++2. python3 scripts/badf_compose.py --record work/<WP>/evidence/G07/composition-record.json --message-file <pr-body>
++3. python3 scripts/badf_gate.py self-dossier <WP>        (indexes the record as `composition` evidence)
++4. commit the record, the dossier and the re-signed lockfile
++5. push; CI's compose finds the record on the composed tree and verifies it
++```
++
++A rebase, a moved target, or any content change **recomputes the record (step 2 again) --
++never edits it**. `git-staleness` (the `commit-integrity` subskill) tells you *that* the
++target or source moved; this record binds *what* the composition was expected to produce.
++
++## What compose verifies on the tree that would land
++
++| Finding | Result |
++| --- | --- |
++| recorded `target_base_sha` == the base composed onto, recomputed content tree == `expected_content_tree`, `merge_method` squash, `target_ref` the default branch | `composition: CURRENT` |
++| recorded base differs | **FAIL** -- "composition record is stale … recompute with `--record`" |
++| content tree differs | **FAIL** -- "composition record does not match the composed content" |
++| non-squash method, foreign target, wrong work package, malformed record | **FAIL** naming the defect |
++| no record | `composition: no record` -- backward compatible; requiring one is a later policy decision |
++
++## Boundaries
++
++- Read-only for the source repository; the record file is the only write, and only where asked.
++- Reviewer-approval staleness and the expected-head merge guard are GIT-F; comparing the *landed*
++  tree with the expected one after merge is GIT-F/G; ordered multi-change prefixes are declared,
++  not implemented.
+diff --git a/tests/test_badf_git_composition.py b/tests/test_badf_git_composition.py
+new file mode 100644
+index 0000000..7d2339c
+--- /dev/null
++++ b/tests/test_badf_git_composition.py
+@@ -0,0 +1,205 @@
++"""GIT-E (BADF-WP-0076): the composition claim is a committed, recomputed record.
++
++badf-git's core invariant is SOURCE_HEAD_GREEN != INTEGRATION_SAFE and its contract
++binds a nine-field composition identity -- yet CI computed all of it on every PR and
++recorded none. `badf_compose.py --record` writes a git-composition record whose
++binding is the CONTENT TREE (the composed tree with work/<WP>/ and the lockfile
++removed), so the record can live inside the PR it verifies; compose then finds it
++on the composed tree and refuses a stale base, a changed content tree, a non-squash
++method, a foreign target or a malformed record. No record stays backward compatible.
++
++Composes run the real CLI (scripts/badf_compose.py of this checkout) against scratch
++clones seeded with this checkout's working state, restricted to one tiny test module.
++Every fixture is removed in cleanup.
++"""
++import hashlib
++import json
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++import badf_compose as compose  # noqa: E402
++from tests._scratch import seed_clone  # noqa: E402
++
++WP = "WP-2026-0076"
++TARGET = f"refs/remotes/origin/{gate.DEFAULT_BRANCH}"
++TINY = "test_badf_git_contract.py"
++MESSAGE = f"## What\nx\n\n## Verification\nx\n\nWork-Package: {WP}\nCloses #144\n"
++
++
++def g(repo: Path, *args: str) -> str:
++    return subprocess.run(["git", "-C", str(repo), *args], capture_output=True, text=True, check=True).stdout.strip()
++
++
++def lock_and_commit(repo: Path, msg: str) -> str:
++    subprocess.run([sys.executable, "scripts/badf_gate.py", "lock"], cwd=str(repo), capture_output=True, text=True, check=True)
++    g(repo, "add", "-A"); g(repo, "commit", "-q", "-m", msg)
++    return g(repo, "rev-parse", "HEAD")
++
++
++class _Candidate(unittest.TestCase):
++    """A scratch clone carrying this checkout's state, committed on a WP branch over origin/main."""
++
++    def setUp(self):
++        self.tmp = Path(tempfile.mkdtemp(prefix="badf-git-composition-"))
++        self.addCleanup(shutil.rmtree, self.tmp, True)
++        self.repo = self.tmp / "badf"
++        self.base = seed_clone(self.repo, carry_working_state=True)
++        # The carried work/ may hold THIS checkout's own composition record and G07 dossier
++        # (once WP-0076 has committed them); the scratch never carries tests/, so that record
++        # cannot match the scratch's content tree -- and every test here builds its own claim.
++        shutil.rmtree(self.repo / "work" / WP / "evidence", ignore_errors=True)
++        (self.repo / "work" / WP / "gate-dossier.G07.json").unlink(missing_ok=True)
++        g(self.repo, "checkout", "-q", "-b", f"wp/{WP}-composition")
++        self.head = lock_and_commit(self.repo, f"BADF-WP-0076: candidate\n\nWork-Package: {WP}\n")
++        self.msg = self.tmp / "msg.txt"; self.msg.write_text(MESSAGE, encoding="utf-8")
++        self.record = self.repo / "work" / WP / "evidence/G07/composition-record.json"
++
++    def run_compose(self, *extra: str) -> subprocess.CompletedProcess:
++        return subprocess.run([sys.executable, "scripts/badf_compose.py", "--repo", str(self.repo), "--base", TARGET,
++                               "--candidate", "HEAD", "--message-file", str(self.msg), "--tests", TINY, *extra],
++                              cwd=str(gate.ROOT), capture_output=True, text=True)
++
++    def make_record(self, dest: Path | None = None) -> dict:
++        dest = dest or self.record
++        r = self.run_compose("--record", str(dest))
++        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        self.assertTrue(dest.is_file(), "the record was not written")
++        return json.loads(dest.read_text(encoding="utf-8"))
++
++
++class CompositionRecordTests(_Candidate):
++    def test_record_binds_the_composition_tuple(self):
++        rec = self.make_record()
++        self.assertEqual(rec["record"], "git-composition")
++        for k in ("schema_version", "observed_at", "repository", "target_ref", "target_base_sha", "source_ref", "merge_base_sha",
++                  "merge_method", "expected_result_tree", "expected_content_tree", "policy_epoch", "test_set_epoch",
++                  "suite_pattern", "work_package_id", "non_coverage"):
++            self.assertIn(k, rec, k)
++        self.assertEqual(rec["target_ref"], f"refs/heads/{gate.DEFAULT_BRANCH}")
++        self.assertEqual(rec["target_base_sha"], self.base); self.assertEqual(rec["merge_base_sha"], self.base)
++        self.assertEqual(rec["merge_method"], "squash"); self.assertEqual(rec["work_package_id"], WP)
++        self.assertEqual(rec["source_ref"], f"refs/heads/wp/{WP}-composition")
++        self.assertRegex(rec["expected_content_tree"], r"^[0-9a-f]{40}$"); self.assertRegex(rec["expected_result_tree"], r"^[0-9a-f]{40}$")
++        self.assertNotEqual(rec["expected_content_tree"], rec["expected_result_tree"])
++        self.assertIsNone(rec["test_set_epoch"]); self.assertTrue(any("test_set_epoch" in n for n in rec["non_coverage"]))
++
++    def test_content_tree_excludes_own_work_dir_and_lockfile(self):
++        t0 = compose.content_tree(self.repo, WP)
++        (self.repo / "work" / WP / "evidence").mkdir(parents=True, exist_ok=True)
++        (self.repo / "work" / WP / "evidence/extra.txt").write_text("extra\n", encoding="utf-8")
++        lock_and_commit(self.repo, "own dir + lockfile only")
++        self.assertEqual(compose.content_tree(self.repo, WP), t0, "the WP's own directory and the lockfile must not move the content tree")
++        (self.repo / "README.md").write_text("content changed\n", encoding="utf-8")
++        lock_and_commit(self.repo, "content changed")
++        self.assertNotEqual(compose.content_tree(self.repo, WP), t0)
++
++    def test_current_record_composes_PASS(self):
++        self.make_record(); lock_and_commit(self.repo, "record")
++        r = self.run_compose()
++        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        self.assertIn("composition: CURRENT", r.stdout); self.assertIn("BADF COMPOSE PASS", r.stdout)
++
++    def test_adding_record_lockfile_and_work_dir_keeps_record_current(self):
++        self.make_record()
++        (self.repo / "work" / WP / "evidence/G07").mkdir(parents=True, exist_ok=True)
++        (self.repo / "work" / WP / "evidence/G07/extra.txt").write_text("more evidence\n", encoding="utf-8")
++        lock_and_commit(self.repo, "record + more evidence + lockfile")
++        r = self.run_compose(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr); self.assertIn("composition: CURRENT", r.stdout)
++
++    def test_moved_target_makes_the_record_stale_and_compose_refuses(self):
++        self.make_record(); lock_and_commit(self.repo, "record")
++        g(self.repo, "checkout", "-q", "-b", "upstream", self.base)
++        (self.repo / "docs/00-operating-model.md").write_text("upstream moved\n", encoding="utf-8")
++        moved = lock_and_commit(self.repo, "upstream moved"); g(self.repo, "update-ref", TARGET, moved)
++        g(self.repo, "checkout", "-q", f"wp/{WP}-composition")
++        r = self.run_compose()
++        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
++        self.assertIn("stale", r.stdout.lower()); self.assertIn(self.base[:7], r.stdout); self.assertIn(moved[:7], r.stdout); self.assertIn("--record", r.stdout)
++
++    def test_changed_content_after_record_is_refused(self):
++        self.make_record(); lock_and_commit(self.repo, "record")
++        (self.repo / "README.md").write_text("changed after the claim\n", encoding="utf-8"); lock_and_commit(self.repo, "content after record")
++        r = self.run_compose()
++        self.assertEqual(r.returncode, 1, r.stdout + r.stderr); self.assertIn("content", r.stdout.lower())
++
++    def test_non_squash_or_foreign_target_ref_is_refused(self):
++        # Also a record bound to ANOTHER work package: the binding check needs its own witness
++        # (mutation survivor, WP-0076).
++        for field, value, marker in (("merge_method", "merge", "squash"), ("target_ref", "refs/heads/develop", gate.DEFAULT_BRANCH),
++                                     ("work_package_id", "WP-2026-0001", "WP-2026-0001")):
++            with self.subTest(field=field):
++                rec = self.make_record(); rec[field] = value
++                self.record.write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8"); lock_and_commit(self.repo, f"bad {field}")
++                r = self.run_compose()
++                self.assertEqual(r.returncode, 1, r.stdout + r.stderr); self.assertIn(marker, r.stdout)
++                g(self.repo, "reset", "-q", "--hard", "HEAD~1")
++
++    def test_malformed_record_is_refused(self):
++        # A COMPLETE record of the wrong kind must be refused for THAT reason -- the required-fields
++        # check cannot tell a git-baseline record apart (mutation survivor, WP-0076).
++        wrong = self.make_record(self.tmp / "wrong.json"); wrong["record"] = "git-baseline"
++        self.record.parent.mkdir(parents=True, exist_ok=True)
++        for bad, label in ((json.dumps(wrong), "wrong kind"), ('{"hello": 1}', "not a record")):
++            with self.subTest(label=label):
++                self.record.parent.mkdir(parents=True, exist_ok=True)   # reset --hard prunes the emptied dir
++                self.record.write_text(bad + "\n", encoding="utf-8"); lock_and_commit(self.repo, f"malformed record: {label}")
++                r = self.run_compose()
++                self.assertEqual(r.returncode, 1, r.stdout + r.stderr); self.assertIn("git-composition", r.stdout)
++                g(self.repo, "reset", "-q", "--hard", "HEAD~1")
++
++    def test_missing_record_is_backward_compatible(self):
++        r = self.run_compose()
++        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        self.assertIn("composition: no record", r.stdout); self.assertIn("BADF COMPOSE PASS", r.stdout)
++
++    def test_record_is_deterministic_and_source_repo_untouched(self):
++        before = (g(self.repo, "rev-parse", "HEAD"), g(self.repo, "rev-parse", TARGET), g(self.repo, "status", "--porcelain=v2"),
++                  hashlib.sha256(g(self.repo, "ls-files", "-s").encode()).hexdigest(), len(g(self.repo, "reflog").splitlines()))
++        # The record is the requested write; written OUTSIDE the repo here so that "untouched"
++        # measures git state (HEAD, refs, index, reflog, status), not the file we asked for.
++        a = self.make_record(self.tmp / "a.json"); b = self.make_record(self.tmp / "b.json")
++        self.assertEqual((g(self.repo, "rev-parse", "HEAD"), g(self.repo, "rev-parse", TARGET), g(self.repo, "status", "--porcelain=v2"),
++                          hashlib.sha256(g(self.repo, "ls-files", "-s").encode()).hexdigest(), len(g(self.repo, "reflog").splitlines())),
++                         before, "the only write is the record file itself; git state must not move")
++        a.pop("observed_at"); b.pop("observed_at"); self.assertEqual(a, b)
++
++
++class CompositionEvidenceTests(_Candidate):
++    def test_self_dossier_indexes_composition_evidence_when_present(self):
++        def dossier_types() -> set:
++            r = subprocess.run([sys.executable, "scripts/badf_gate.py", "self-dossier", WP], cwd=str(self.repo), capture_output=True, text=True)
++            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++            d = json.loads((self.repo / "work" / WP / "gate-dossier.G07.json").read_text(encoding="utf-8"))
++            return {e["type"] for e in d["evidence"]}
++        self.assertNotIn("composition", dossier_types())
++        self.make_record()
++        types = dossier_types(); self.assertIn("composition", types)
++        ev = json.loads((self.repo / "work" / WP / "evidence/G07/composition.json").read_text(encoding="utf-8"))
++        self.assertEqual(ev["evidence_type"], "composition"); self.assertEqual(ev["artifact"], f"work/{WP}/evidence/G07/composition-record.json")
++        self.assertEqual(ev["digest"], "sha256:" + hashlib.sha256(self.record.read_bytes()).hexdigest())
++        r = subprocess.run([sys.executable, "scripts/badf_gate.py", "dossier", f"work/{WP}/gate-dossier.G07.json"], cwd=str(self.repo), capture_output=True, text=True)
++        self.assertEqual(r.returncode, 3, r.stdout + r.stderr)   # HELD (HUMAN_REQUIRED), never refused for the extra type
++
++
++class CompositionVerificationSubskillTests(unittest.TestCase):
++    def test_composition_verification_subskill_registered_and_root_stays_designed(self):
++        reg = gate.load_json(gate.ROOT / "badf/skill-registry.json"); by = {s["name"]: s for s in reg["skills"]}
++        self.assertIn("composition-verification", by); entry = by["composition-verification"]
++        self.assertEqual(entry["source"], "skills/badf-git/subskills/composition-verification/SKILL.md")
++        self.assertEqual((entry["status"], entry["risk_class"], entry["allowed_tools"]), ("IMPLEMENTED", "C1", []))
++        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
++        self.assertEqual(by["badf-git"]["status"], "DESIGNED")
++        text = (gate.ROOT / entry["source"]).read_text(encoding="utf-8")
++        self.assertIn("badf/skill-registry.json", text); self.assertNotIn("Status: `", text)
++        for token in ("--record", "expected_content_tree", "SOURCE_HEAD_GREEN != INTEGRATION_SAFE", "composition-record.json", "self-dossier"):
++            self.assertIn(token, text)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0077/work-package.json b/work/WP-2026-0077/work-package.json
+index 0ac1cd9..36c9d1f 100644
+--- a/work/WP-2026-0077/work-package.json
++++ b/work/WP-2026-0077/work-package.json
+@@ -44,11 +44,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR (registry back to SHADOWED)"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "dc6b608"
++    "base_revision": "dc6b608",
++    "landed_as": "1b80d7c9d20e1f39c6287aa033904e6cbff17dc3"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Registry admission SHADOWED->ACTIVE on the operator's explicit decision (AskUserQuestion 2026-08-30 'activate now, accept representative'); grants no authority (SOL-I12); caveat preserved; real re-shadow deferred to #145. No gate control (controls are WP-SOL-B/C) -> no mutation. Built in isolated worktree (badf-wt-sole, GIT-I04) parallel to BARCHI-2's badf-git GIT-E (#144). Ids WP-0077/DEM-0064/GOV-0056. Reconciles WP-2026-0074 (GIT-... no: WP-SOL-D, landed dc6b608). Resolves #146 / GOV-0056."
+ }

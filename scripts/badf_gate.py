@@ -2909,6 +2909,22 @@ def self_dossier(wp_id: str) -> str:
         index.append({"type": t, "path": f"work/{wp_id}/evidence/G07/{t}.json"})
         if outcome == "NOT_APPLICABLE":
             non_coverage.append({"evidence_type": t, "reason": "no documentation changed in this work package", "declared_by": "badf-self-dossier"})
+    record = ev_dir / "composition-record.json"
+    if record.is_file():
+        # GIT-E (BADF-WP-0076): the composition claim written by `badf_compose.py --record`
+        # is indexed as `composition` evidence when present. Its binding is the content
+        # tree (work/<WP>/ and the lockfile excluded), so indexing it here does not move it;
+        # compose verifies it on the tree that would land.
+        rec = {"schema_version": "1.0.0", "id": f"EVD-{wp_id}-G07-composition", "work_package_id": wp_id, "gate": "G07",
+               "claim": f"the composition claim of {wp_id}: the expected content tree bound to its target base "
+                        f"(recomputed and compared by scripts/badf_compose.py on the composed tree)",
+               "evidence_type": "composition", "producer": {"id": "badf-self-dossier", "type": "controller"},
+               "source_revision": "HEAD", "target": f"{self_repository()}:main",
+               "toolchain": {"name": "badf_compose.py --record", "version": "1"}, "operation": "badf_compose.py --record",
+               "started_at": now, "completed_at": now, "outcome": "PASS",
+               "artifact": f"work/{wp_id}/evidence/G07/composition-record.json", "digest": sha256(record)}
+        (ev_dir / "composition.json").write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
+        index.append({"type": "composition", "path": f"work/{wp_id}/evidence/G07/composition.json"})
     condition = {"condition_id": "C-1",
                  "statement": "An independent reviewer distinct from the author has not recorded an approval; BADF runs under a single collaborator (recorded, not hidden -- see GITHUB_CONTROL_PLANE.md).",
                  "status": "OPEN", "severity": "Major", "blocking_scope": "G09",

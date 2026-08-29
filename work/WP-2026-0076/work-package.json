@@ -1,0 +1,55 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0076",
+  "title": "GIT-E composition identity: a committed git-composition record (content-tree bound) that badf_compose.py recomputes and compares; composition-verification subskill",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0063",
+  "repository": "bstBizEra/badf",
+  "objective": "Make the composition claim a committed, machine-verified record. `badf_compose.py --record <path>` writes, after composing, a git-composition record: repository, target_ref, target_base_sha, source_ref, merge_base_sha, merge_method squash, expected_result_tree (informational), expected_content_tree (the composed tree with work/<WP>/ and badf/lockfile.json removed, computed on a temporary index -- the binding, which is what lets the record live inside the PR it verifies), policy_epoch, test_set_epoch null + non-coverage, suite_pattern, observed_at. Compose, in CI and locally, verifies a record found at work/<WP>/evidence/G07/composition-record.json on the composed tree: recorded target_base_sha must equal the base composed onto (else FAIL: stale record, recompute with --record), the recomputed expected_content_tree must equal the recorded one (else FAIL: content changed after the claim), merge_method must be squash and target_ref the default branch, and a malformed record is refused; no record is backward compatible (printed, not refused). The self-dossier indexes the record as `composition` evidence when it exists. The composition-verification subskill carries the author's order of operations and the rule: a rebase or a content change recomputes the record, never edits it.",
+  "business_value": "SOURCE_HEAD_GREEN != INTEGRATION_SAFE is badf-git's core invariant, and the contract binds a nine-field composition identity -- yet CI computed all of it on every PR and recorded none of it; three rebases across GIT-B/C/D each silently invalidated composition. With the record, a moved base or a changed content tree is a compose REFUSAL naming the fix, and every landed change carries the content tree it was verified against -- GTGM v0.1 sections 10, 15 and 17 (GIT-E).",
+  "in_scope": [
+    "badf_compose.py: content_tree() on a temporary index; --record; load/verify of work/<WP>/evidence/G07/composition-record.json on the composed tree; `composition:` line",
+    "badf_gate.py self_dossier: index `composition` evidence (artifact composition-record.json, digest bound) when present",
+    "skills/badf-git/subskills/composition-verification/SKILL.md registered IMPLEMENTED, C1, allowed_tools []; badf-git root stays DESIGNED",
+    "tests/test_badf_git_composition.py (12 tests, failing-first; in-process checks + a few restricted composes on scratch clones)",
+    "GITHUB_CONTROL_PLANE.md doctrine section; own G07 self-dossier carrying its own composition record (the positive control); lockfile re-signed"
+  ],
+  "out_of_scope": [
+    "reviewer-approval staleness, the expected-head merge guard, platform/PR state -- GIT-F; post-merge landed-tree comparison -- GIT-F/G",
+    "ordered multi-change prefix composition (declared, not implemented); test_set_epoch (BADF defines none); requiring the record for every PR (a later policy decision); the remote-workspace mode (#133)",
+    "any change to the merge method, rulesets, authority or tool registry; any new script or schema"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "--record writes the full record; expected_content_tree is unaffected by the record, the lockfile or anything under work/<WP>/ (the circularity proof)",
+    "compose: CURRENT record -> PASS with a `composition: CURRENT` line; moved base -> FAIL naming both bases and --record; changed content -> FAIL naming the content-tree mismatch; non-squash / foreign target_ref / malformed -> FAIL naming the defect; no record -> PASS as today with a `no record` line",
+    "record deterministic modulo observed_at and the source repository untouched; the self-dossier indexes composition evidence iff the record exists and the dossier validates HELD; each refusal branch load-bearing (mutation)",
+    "composition-verification registered IMPLEMENTED C1 allowed_tools [] with a real digest; root stays DESIGNED; repo clean; this PR's own record verifies on the runner; full suite + compose green in CI"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_git_composition.py"
+  ],
+  "evidence": [
+    "failing-first run",
+    "mutation",
+    "compose output incl. composition: CURRENT",
+    "CI runner compose step output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "1b80d7c"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-E per GTGM v0.1 section 17, after GIT-D (WP-2026-0075 / f1a0a5c). Resolves #144 / GOV-0055. Reconciles WP-2026-0077 (badf-solution-design ACTIVE, 1b80d7c, landed while this branch was open; 0074/0075 were reconciled upstream) -- branch rebased onto dc6b608 then 1b80d7c. Engineered by BARCHI-2 in a linked worktree under the operator's /loop ('proceed on your call'); parallel seat BARCHI-1 on WP-2026-0074 (#143)."
+}
