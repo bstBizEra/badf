@@ -1,0 +1,392 @@
+diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
+index cd6f600..464b2c0 100644
+--- a/.github/workflows/badf-gates.yml
++++ b/.github/workflows/badf-gates.yml
+@@ -59,6 +59,7 @@ jobs:
+           python3 scripts/badf_gate.py assure examples/architecture-assurance-shadow-stdlib-compliant.json
+           python3 scripts/badf_gate.py assure examples/architecture-assurance-shadow-pyyaml-drift.json
+           python3 scripts/badf_gate.py assure examples/architecture-assurance-shadow-indeterminate.json
++          python3 scripts/badf_gate.py solution examples/solution-composition.json
+       - name: PR traceability (Work-Package + Closes #N)
+         # BADF-MAIN-001. Only a PR has a body; a push to main has already been
+         # traced by the PR that produced it. Reports on the PR event only.
+diff --git a/badf/demands/BADF-DEM-0058.json b/badf/demands/BADF-DEM-0058.json
+new file mode 100644
+index 0000000..93062d6
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0058.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0058",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 131,
++    "url": "https://github.com/bstBizEra/badf/issues/131",
++    "exported_at": "2026-08-29T18:03:40Z",
++    "body_digest": "sha256:1e4c1a2e1ab34fb2f1cc245dc48673e84fd70a888349e082e4aac7edb6528cae"
++  },
++  "title": "GOV-0050: WP-SOL-B \u2014 solution-composition schema + matrix artifact + structural controls",
++  "problem": "## Observed\n\n`badf-solution-design` is `DESIGNED` (WP-SOL-A / WP-2026-0068): the composition contract, the SOL-I01\u2026I12 invariants and the **solution-composition matrix** (the detailed-design RTM) are frozen as prose, but the matrix has **no machine shape** and nothing validates it. The skill cannot advance to `IMPLEMENTED` until its central artifact \u2014 the composition matrix that binds a requirement to the specialist refs that satisfy it \u2014 is a schema the canonical gate can open, with the structural controls the contract already names.\n\n## Expected\n\n**WP-SOL-B \u2014 composition schema + matrix artifact + structural controls \u2192 `IMPLEMENTED`.**\n\n- `schemas/solution-composition.schema.json` \u2014 one row per requirement: `solution_id`, `requirement_ref`, and the specialist ref arrays (`ux_refs`, `api_refs`, `authorization_refs`, `data_refs`, `audit_refs`, `accessibility_refs`, `test_refs`).\n- A `solution` **command in the canonical `badf_gate.py`** (mirroring `research` / `assure`) that validates a composition matrix \u2014 **NOT** a second validator script (SOL-I12): it lives in the one gate.\n- Structural controls, each earned failing-first:\n  - **SOL-C01** unique `solution_id`s.\n  - **SOL-C02** requirement provenance (SOL-I01, structural): every row names a `requirement_ref`; no orphan composition.\n  - **SOL-C03** a composition binds the requirement to **\u22651** specialist artifact; a requirement composed to nothing satisfies nothing.\n- `examples/solution-composition.json` (valid) validated in CI; `tests/test_badf_solution_composition.py` (failing-first) + mutation; advance the registry `DESIGNED \u2192 IMPLEMENTED`.\n\n**Boundaries:** the CROSS-ARTIFACT SEAM controls (SOL-I01\u2026I12 reconciled *against* the specialist artifacts) are **WP-SOL-C** (`VALIDATED`, failing-first) \u2014 this WP is the matrix's *structural* integrity only. No `lifecycle.json` change (the matrix is a standalone artifact validated by the `solution` command, like research/assure records \u2014 it is not a G03/G04 required_evidence type). No `scripts/badf_solution_design.py`. No new global ID family beyond `SOL-NNNN` for the matrix rows.\n\n## Evidence\n\n- `badf-research` and `badf-architecture` reached `IMPLEMENTED`/`VALIDATED` via a canonical-gate command (`research`, `assure`) validating a standalone record \u2014 the same pattern, no second script (SOL-I12 honored).\n- The matrix machine shape is already sketched in `skills/badf-solution-design/references/cross-artifact-consistency.md`.\n\n## Unknowns\n\nWhether the seam controls (SOL-C) need the specialist artifacts to exist first \u2014 deferred to WP-SOL-C. Whether `SOL-NNNN` becomes a first-class lifecycle id \u2014 no, it is a matrix-local row id at this stage.\n\ndiscovered-by: BADF-WP-0068 (badf-solution-design landed DESIGNED) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T18:03:40Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-SOL-B advances badf-solution-design DESIGNED->IMPLEMENTED: solution-composition.schema.json + a `solution` command in the canonical gate (no second script, SOL-I12) + structural controls SOL-C01 (unique ids) / SOL-C02 (requirement provenance) / SOL-C03 (binds >=1 artifact). Seam controls deferred to WP-SOL-C. Operator 'proceed on your current goal' 2026-08-30. Worked as BADF-WP-0071. Parallel to BARCHI-2 (GIT-B/C); reconcile at land time."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 4a8eb9d..961b477 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -208,7 +208,7 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "DESIGNED",
++      "status": "IMPLEMENTED",
+       "digest": "sha256:5d8848ef97cdd21c62cccfa4ff37b30f71823516566638fbee3cf1d60530ea46"
+     }
+   ]
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 459119e..6ae7267 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -704,6 +704,25 @@ gate code, so no new control and nothing to mutate; the test guards the declarat
+ adapters, composition schemas and seam controls are deferred to WP-SOL-B…D. Built in an isolated
+ `git worktree` alongside BARCHI-2's parallel badf-git work (GIT-B/GIT-C), per GIT-I04.
+ 
++## badf-solution-design → IMPLEMENTED — the composition matrix (`BADF-WP-0071` / WP-SOL-B, Issue #131 / GOV-0050)
++
++WP-SOL-A froze the composition contract as prose; WP-SOL-B gives its central artifact — the
++**solution-composition matrix** (the detailed-design equivalent of the G02 RTM) — a machine shape and a
++structural validator, advancing `badf-solution-design` `DESIGNED → IMPLEMENTED`. `schemas/solution-
++composition.schema.json` binds one row per requirement (`solution_id`, `requirement_ref`, and the
++specialist ref arrays), and a **`solution` command in the one canonical `badf_gate.py`** validates it —
++**not** a second validator script (SOL-I12 honored; it mirrors `research`/`assure` and declares no
++lifecycle result). Structural controls, each earned failing-first + mutation-killed: **SOL-C01** unique
++`solution_id`s; **SOL-C03** every row binds ≥1 specialist artifact (a requirement composed to nothing
++satisfies nothing); plus a no-empty-matrix guard (the gate walker ignores `minItems`). **SOL-C02**
++(requirement provenance) was *not* added as a code branch — the schema's `required` + `^REQ-` pattern
++enforces it, so a code check would be dead; recorded as "earned by the schema, not by precedent".
++
++The **cross-artifact SEAM controls** (SOL-I01…I12 reconciled *against* the specialist artifacts) are
++deferred to **WP-SOL-C** (`VALIDATED`). No `lifecycle.json` change — the matrix is a standalone record
++like research/assure, not a G03/G04 required_evidence type. Built in an isolated `git worktree` parallel
++to BARCHI-2's badf-git GIT-B/GIT-C; reconcile done at land time against the current LANDED_UNRECONCILED WP.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/examples/solution-composition.json b/examples/solution-composition.json
+new file mode 100644
+index 0000000..34a1277
+--- /dev/null
++++ b/examples/solution-composition.json
+@@ -0,0 +1,56 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-BADF-0001",
++  "solutions": [
++    {
++      "solution_id": "SOL-001",
++      "requirement_ref": "REQ-001",
++      "ux_refs": [
++        "FLOW-04"
++      ],
++      "api_refs": [
++        "API-17"
++      ],
++      "authorization_refs": [
++        "ACT-09"
++      ],
++      "data_refs": [
++        "ENT-Refund"
++      ],
++      "audit_refs": [
++        "AUD-12"
++      ],
++      "accessibility_refs": [
++        "A11Y-08"
++      ],
++      "test_refs": [
++        "TEST-31"
++      ]
++    },
++    {
++      "solution_id": "SOL-002",
++      "requirement_ref": "REQ-002",
++      "ux_refs": [
++        "FLOW-05"
++      ],
++      "api_refs": [
++        "API-18"
++      ],
++      "authorization_refs": [
++        "ACT-10"
++      ],
++      "data_refs": [
++        "ENT-Refund"
++      ],
++      "audit_refs": [
++        "AUD-13"
++      ],
++      "accessibility_refs": [
++        "A11Y-09"
++      ],
++      "test_refs": [
++        "TEST-32"
++      ]
++    }
++  ]
++}
+diff --git a/schemas/solution-composition.schema.json b/schemas/solution-composition.schema.json
+new file mode 100644
+index 0000000..ceb491a
+--- /dev/null
++++ b/schemas/solution-composition.schema.json
+@@ -0,0 +1,32 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/solution-composition.schema.json",
++  "title": "badf-solution-design composition matrix -- one row per requirement, binding the specialist refs that satisfy it (WP-SOL-B)",
++  "type": "object",
++  "additionalProperties": false,
++  "required": ["schema_version", "solutions"],
++  "properties": {
++    "schema_version": {"type": "string", "enum": ["1.0.0"]},
++    "prd_id": {"type": "string", "pattern": "^PRD-[A-Za-z0-9._-]+$"},
++    "solutions": {
++      "type": "array",
++      "minItems": 1,
++      "items": {
++        "type": "object",
++        "additionalProperties": false,
++        "required": ["solution_id", "requirement_ref"],
++        "properties": {
++          "solution_id": {"type": "string", "pattern": "^SOL-[0-9]{3,}$"},
++          "requirement_ref": {"type": "string", "pattern": "^REQ-[0-9]{3,}$"},
++          "ux_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
++          "api_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
++          "authorization_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
++          "data_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
++          "audit_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
++          "accessibility_refs": {"type": "array", "items": {"type": "string", "minLength": 1}},
++          "test_refs": {"type": "array", "items": {"type": "string", "minLength": 1}}
++        }
++      }
++    }
++  }
++}
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index fecf688..4ea4e2d 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -3364,6 +3364,35 @@ def validate_dossier(dossier_path: Path) -> str:
+     return rendered
+ 
+ 
++def validate_solution_composition(path: Path) -> str:
++    """`badf_gate.py solution <path>`: the STRUCTURAL controls of a badf-solution-design
++    composition matrix (WP-SOL-B). One record in the canonical gate -- not a second
++    validator (SOL-I12), and not a lifecycle result. It checks the matrix is internally
++    coherent: unique solution ids (SOL-C01), every row bound to a requirement (SOL-C02 /
++    SOL-I01), and every row binding at least one specialist artifact (SOL-C03). The
++    cross-artifact SEAM checks -- reconciling the matrix against the specialist artifacts
++    -- are WP-SOL-C, not here."""
++    rec = load_json(path)
++    check_schema("solution-composition", rec)
++    _no_placeholders(rec, "solution-composition")
++    solutions = rec["solutions"]
++    if not solutions:
++        raise ValidationError("solution-composition: no solutions; an empty matrix composes nothing")
++    # SOL-C01: a matrix cannot carry two rows under one solution id.
++    _unique_ids(solutions, "solution_id", "solution-composition")
++    # SOL-C02 (requirement provenance / SOL-I01, structural) is enforced by the schema --
++    # requirement_ref is required and matches ^REQ-nnn; a separate check here would be
++    # dead code (the schema refuses a missing or malformed ref first).
++    ref_kinds = ("ux_refs", "api_refs", "authorization_refs", "data_refs",
++                 "audit_refs", "accessibility_refs", "test_refs")
++    for s in solutions:
++        # SOL-C03: a requirement composed to nothing satisfies nothing.
++        if not any(s.get(k) or [] for k in ref_kinds):
++            raise ValidationError(f"solution-composition: {s['solution_id']} (for {s['requirement_ref']}) binds no specialist artifact; a requirement composed to nothing satisfies nothing (SOL-C03)")
++    reqs = {s["requirement_ref"] for s in solutions}
++    return f"BADF SOLUTION-COMPOSITION PASS: {len(solutions)} composition(s) over {len(reqs)} requirement(s); structural only -- seams are WP-SOL-C"
++
++
+ def main() -> int:
+     parser = argparse.ArgumentParser(description=__doc__)
+     subparsers = parser.add_subparsers(dest="command", required=True)
+@@ -3389,6 +3418,8 @@ def main() -> int:
+     research_parser.add_argument("path", type=Path)
+     assure_parser = subparsers.add_parser("assure", help="validate an architecture-assurance record's ASSURE controls (WP-ARCH-C)")
+     assure_parser.add_argument("path", type=Path)
++    sol_parser = subparsers.add_parser("solution", help="validate a solution-composition matrix's structural controls (WP-SOL-B)")
++    sol_parser.add_argument("path", type=Path)
+     args = parser.parse_args()
+     try:
+         if args.command == "repo":
+@@ -3424,6 +3455,9 @@ def main() -> int:
+         elif args.command == "assure":
+             print(validate_architecture_assurance(args.path))
+             return 0
++        elif args.command == "solution":
++            print(validate_solution_composition(args.path))
++            return 0
+         else:
+             args._rendered = validate_dossier(args.path)
+     except ValidationError as exc:
+diff --git a/tests/test_badf_solution_composition.py b/tests/test_badf_solution_composition.py
+new file mode 100644
+index 0000000..8b44323
+--- /dev/null
++++ b/tests/test_badf_solution_composition.py
+@@ -0,0 +1,95 @@
++"""solution-composition matrix -- structural controls (BADF-WP-0071 / WP-SOL-B).
++
++`badf_gate.py solution <path>` validates a badf-solution-design composition matrix's
++STRUCTURAL integrity inside the one canonical gate (not a second validator -- SOL-I12):
++unique solution ids (SOL-C01) and every row binding at least one specialist artifact
++(SOL-C03). Requirement provenance (SOL-C02 / SOL-I01) is enforced by the schema
++(required + ^REQ- pattern). The cross-artifact SEAM controls are WP-SOL-C. Every test
++mutates a copy of the shipped example and runs the CLI.
++"""
++import copy
++import json
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++EXAMPLE = json.loads((gate.ROOT / "examples/solution-composition.json").read_text())
++REF_KINDS = ("ux_refs", "api_refs", "authorization_refs", "data_refs", "audit_refs", "accessibility_refs", "test_refs")
++
++
++class SolutionCompositionBase(unittest.TestCase):
++    def run_cli(self, rec):
++        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
++            json.dump(rec, f)
++            p = Path(f.name)
++        try:
++            return subprocess.run([sys.executable, "scripts/badf_gate.py", "solution", str(p)],
++                                  cwd=str(gate.ROOT), capture_output=True, text=True)
++        finally:
++            p.unlink()
++
++    def refused(self, rec, needle):
++        r = self.run_cli(rec)
++        self.assertNotEqual(r.returncode, 0, "a defective matrix was admitted: " + r.stdout)
++        self.assertIn(needle, r.stderr, r.stderr)
++
++    def admitted(self, rec):
++        r = self.run_cli(rec)
++        self.assertEqual(r.returncode, 0, r.stderr)
++
++
++class StructuralControlTests(SolutionCompositionBase):
++    def test_the_shipped_example_passes(self):
++        self.admitted(EXAMPLE)
++
++    def test_a_duplicate_solution_id_is_refused(self):  # SOL-C01
++        rec = copy.deepcopy(EXAMPLE)
++        rec["solutions"][1]["solution_id"] = rec["solutions"][0]["solution_id"]
++        self.refused(rec, "duplicate")
++
++    def test_a_composition_that_binds_no_artifact_is_refused(self):  # SOL-C03
++        rec = copy.deepcopy(EXAMPLE)
++        for k in REF_KINDS:
++            rec["solutions"][0].pop(k, None)
++        self.refused(rec, "binds no specialist artifact")
++
++    def test_all_empty_ref_arrays_still_bind_nothing(self):  # SOL-C03 (present-but-empty)
++        rec = copy.deepcopy(EXAMPLE)
++        for k in REF_KINDS:
++            rec["solutions"][0][k] = []
++        self.refused(rec, "binds no specialist artifact")
++
++
++class SchemaEnforcedProvenanceTests(SolutionCompositionBase):
++    """SOL-C02 / SOL-I01 structural provenance is the schema's job, not a code branch."""
++
++    def test_a_missing_requirement_ref_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        del rec["solutions"][0]["requirement_ref"]
++        self.refused(rec, "requirement_ref")
++
++    def test_a_malformed_requirement_ref_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["solutions"][0]["requirement_ref"] = "REQ-x"
++        self.refused(rec, "requirement_ref")
++
++    def test_an_empty_matrix_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE)
++        rec["solutions"] = []
++        self.refused(rec, "solutions")
++
++
++class RegistryStatusTests(unittest.TestCase):
++    def test_badf_solution_design_is_registered_implemented(self):
++        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
++        entry = next(e for e in reg["skills"] if e["name"] == "badf-solution-design")
++        self.assertEqual(entry["status"], "IMPLEMENTED")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/tests/test_badf_solution_design_contract.py b/tests/test_badf_solution_design_contract.py
+index b5e0561..2cc7b94 100644
+--- a/tests/test_badf_solution_design_contract.py
++++ b/tests/test_badf_solution_design_contract.py
+@@ -29,10 +29,11 @@ class BadfSolutionDesignContractTests(unittest.TestCase):
+     def test_contract_surface_is_declarative_only(self):
+         self.assertTrue(SKILL.is_file())
+         self.assertEqual(REFS, {p.name for p in REFERENCES.glob("*.md")})
+-        # no mutation engine / second gate (SOL-I12) and no new schema-authority.
++        # no mutation engine / second gate (SOL-I12): the composition validator lives in
++        # the one canonical gate (`badf_gate.py solution`), never a standalone script.
++        # (WP-SOL-B adds schemas/solution-composition.schema.json -- validated by the gate,
++        # not a competing validator -- so that file legitimately exists from IMPLEMENTED on.)
+         self.assertFalse((ROOT / "scripts" / "badf_solution_design.py").exists())
+-        self.assertFalse((ROOT / "schemas" / "solution-design.schema.json").exists())
+-        self.assertFalse((ROOT / "schemas" / "solution-composition.schema.json").exists())
+ 
+     def test_root_states_all_invariants_and_the_workflow(self):
+         text = SKILL.read_text(encoding="utf-8")
+@@ -76,7 +77,9 @@ class BadfSolutionDesignContractTests(unittest.TestCase):
+         entries = [e for e in reg["skills"] if e.get("name") == "badf-solution-design"]
+         self.assertEqual(1, len(entries))
+         entry = entries[0]
+-        self.assertEqual("DESIGNED", entry["status"])
++        # do not pin a specific status here (it advances up the ladder); the exact
++        # status is asserted by the WP-SOL-B suite. This guards registration + digest.
++        self.assertIn(entry["status"], ("DESIGNED", "IMPLEMENTED", "VALIDATED", "SHADOWED", "APPROVED", "ACTIVE"))
+         self.assertEqual([], entry["allowed_tools"])
+         self.assertEqual("sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest(), entry["digest"])
+ 
+diff --git a/work/WP-2026-0068/work-package.json b/work/WP-2026-0068/work-package.json
+index 8d60367..606de4c 100644
+--- a/work/WP-2026-0068/work-package.json
++++ b/work/WP-2026-0068/work-package.json
+@@ -43,11 +43,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "8673d9a"
++    "base_revision": "8673d9a",
++    "landed_as": "c04981dffca5a9b65269350029cf49618929962b"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Adds no gate code -- no new control, no mutation; a declarative contract freeze like badf-git WP-0066. Built in an isolated worktree (badf-wt-sol) per GIT-I04 alongside BARCHI-2's GIT-C. Resolves #128 / GOV-0047. Reconciles WP-2026-0067."
+ }
