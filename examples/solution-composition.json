@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-BADF-0001",
+  "solutions": [
+    {
+      "solution_id": "SOL-001",
+      "requirement_ref": "REQ-001",
+      "ux_refs": [
+        "FLOW-04"
+      ],
+      "api_refs": [
+        "API-17"
+      ],
+      "authorization_refs": [
+        "ACT-09"
+      ],
+      "data_refs": [
+        "ENT-Refund"
+      ],
+      "audit_refs": [
+        "AUD-12"
+      ],
+      "accessibility_refs": [
+        "A11Y-08"
+      ],
+      "test_refs": [
+        "TEST-31"
+      ]
+    },
+    {
+      "solution_id": "SOL-002",
+      "requirement_ref": "REQ-002",
+      "ux_refs": [
+        "FLOW-05"
+      ],
+      "api_refs": [
+        "API-18"
+      ],
+      "authorization_refs": [
+        "ACT-10"
+      ],
+      "data_refs": [
+        "ENT-Refund"
+      ],
+      "audit_refs": [
+        "AUD-13"
+      ],
+      "accessibility_refs": [
+        "A11Y-09"
+      ],
+      "test_refs": [
+        "TEST-32"
+      ]
+    }
+  ]
+}

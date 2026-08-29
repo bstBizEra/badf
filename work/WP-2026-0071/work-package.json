@@ -1,0 +1,56 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0071",
+  "title": "WP-SOL-B: solution-composition schema + matrix artifact + structural controls (badf-solution-design -> IMPLEMENTED)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0058",
+  "repository": "bstBizEra/badf",
+  "objective": "Advance badf-solution-design DESIGNED -> IMPLEMENTED by giving its central artifact -- the solution-composition matrix -- a machine shape and a structural validator in the canonical gate. Ship schemas/solution-composition.schema.json (one row per requirement: solution_id, requirement_ref, and the specialist ref arrays), a `solution` command in badf_gate.py that validates a composition matrix (mirroring research/assure -- NOT a second validator script, SOL-I12), and the structural controls SOL-C01 (unique solution ids), SOL-C02 (requirement provenance -- every row names a requirement, SOL-I01 structural), SOL-C03 (a composition binds the requirement to at least one specialist artifact). Ship examples/solution-composition.json validated in CI, failing-first tests + mutation, and advance the registry to IMPLEMENTED.",
+  "business_value": "The composition matrix is the detailed-design equivalent of the G02 RTM -- the artifact that makes cross-artifact coherence checkable. WP-SOL-A froze it as prose; without a schema + validator it cannot bind a requirement to the specialist refs deterministically. This makes the matrix real and structurally enforced (unique ids, requirement provenance, non-empty binding) inside the one canonical gate -- no second validator, no lifecycle change -- so the harder cross-artifact SEAM controls (WP-SOL-C) have a validated substrate to build on.",
+  "in_scope": [
+    "schemas/solution-composition.schema.json",
+    "validate_solution_composition + a `solution` subcommand in scripts/badf_gate.py (mirrors research/assure; returns a PASS string, declares no lifecycle result -- SOL-I12)",
+    "structural controls: SOL-C01 unique solution_ids; SOL-C02 every row names a requirement_ref (SOL-I01); SOL-C03 a row binds >=1 specialist artifact",
+    "examples/solution-composition.json (valid) + CI validation beside research/assure",
+    "tests/test_badf_solution_composition.py (failing-first) + mutation; registry badf-solution-design DESIGNED -> IMPLEMENTED",
+    "GITHUB_CONTROL_PLANE.md doctrine section; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "the cross-artifact SEAM controls (SOL-I01..I12 reconciled against the specialist artifacts) -- WP-SOL-C (VALIDATED, failing-first)",
+    "scripts/badf_solution_design.py or any second validator/gate (SOL-I12); a lifecycle.json change / a new G03/G04 required_evidence type (the matrix is a standalone record like research/assure)",
+    "specialist adapters (ux/rbac/data/api/accessibility); a global SOL-NNNN lifecycle id family; advancing past IMPLEMENTED",
+    "the measured-gate ADR (deferred); BARCHI-2's badf-git GIT-B/GIT-C"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "examples/solution-composition.json validates via `python3 scripts/badf_gate.py solution <path>` (BADF SOLUTION-COMPOSITION PASS)",
+    "a duplicate solution_id, a row with no requirement_ref, and a row that binds no specialist artifact are each refused (SOL-C01/C02/C03)",
+    "badf-solution-design is registered IMPLEMENTED with a real digest; no scripts/badf_solution_design.py exists; lifecycle.json + the G03/G04 rules are unchanged",
+    "each control branch is load-bearing (mutation); repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_solution_composition.py",
+    "tests/test_badf_solution_design_contract.py"
+  ],
+  "evidence": [
+    "mutation",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "c04981d"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Adds a canonical-gate command (not a second script) -- SOL-I12 honored; no lifecycle change. Built in an isolated worktree (badf-wt-sol-b, GIT-I04) parallel to BARCHI-2's badf-git GIT-B/C; reconcile done at land time (0068 or 0070). Resolves #131 / GOV-0050. Reconciles the LANDED_UNRECONCILED WP at land time."
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0058",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 131,
+    "url": "https://github.com/bstBizEra/badf/issues/131",
+    "exported_at": "2026-08-29T18:03:40Z",
+    "body_digest": "sha256:1e4c1a2e1ab34fb2f1cc245dc48673e84fd70a888349e082e4aac7edb6528cae"
+  },
+  "title": "GOV-0050: WP-SOL-B \u2014 solution-composition schema + matrix artifact + structural controls",
+  "problem": "## Observed\n\n`badf-solution-design` is `DESIGNED` (WP-SOL-A / WP-2026-0068): the composition contract, the SOL-I01\u2026I12 invariants and the **solution-composition matrix** (the detailed-design RTM) are frozen as prose, but the matrix has **no machine shape** and nothing validates it. The skill cannot advance to `IMPLEMENTED` until its central artifact \u2014 the composition matrix that binds a requirement to the specialist refs that satisfy it \u2014 is a schema the canonical gate can open, with the structural controls the contract already names.\n\n## Expected\n\n**WP-SOL-B \u2014 composition schema + matrix artifact + structural controls \u2192 `IMPLEMENTED`.**\n\n- `schemas/solution-composition.schema.json` \u2014 one row per requirement: `solution_id`, `requirement_ref`, and the specialist ref arrays (`ux_refs`, `api_refs`, `authorization_refs`, `data_refs`, `audit_refs`, `accessibility_refs`, `test_refs`).\n- A `solution` **command in the canonical `badf_gate.py`** (mirroring `research` / `assure`) that validates a composition matrix \u2014 **NOT** a second validator script (SOL-I12): it lives in the one gate.\n- Structural controls, each earned failing-first:\n  - **SOL-C01** unique `solution_id`s.\n  - **SOL-C02** requirement provenance (SOL-I01, structural): every row names a `requirement_ref`; no orphan composition.\n  - **SOL-C03** a composition binds the requirement to **\u22651** specialist artifact; a requirement composed to nothing satisfies nothing.\n- `examples/solution-composition.json` (valid) validated in CI; `tests/test_badf_solution_composition.py` (failing-first) + mutation; advance the registry `DESIGNED \u2192 IMPLEMENTED`.\n\n**Boundaries:** the CROSS-ARTIFACT SEAM controls (SOL-I01\u2026I12 reconciled *against* the specialist artifacts) are **WP-SOL-C** (`VALIDATED`, failing-first) \u2014 this WP is the matrix's *structural* integrity only. No `lifecycle.json` change (the matrix is a standalone artifact validated by the `solution` command, like research/assure records \u2014 it is not a G03/G04 required_evidence type). No `scripts/badf_solution_design.py`. No new global ID family beyond `SOL-NNNN` for the matrix rows.\n\n## Evidence\n\n- `badf-research` and `badf-architecture` reached `IMPLEMENTED`/`VALIDATED` via a canonical-gate command (`research`, `assure`) validating a standalone record \u2014 the same pattern, no second script (SOL-I12 honored).\n- The matrix machine shape is already sketched in `skills/badf-solution-design/references/cross-artifact-consistency.md`.\n\n## Unknowns\n\nWhether the seam controls (SOL-C) need the specialist artifacts to exist first \u2014 deferred to WP-SOL-C. Whether `SOL-NNNN` becomes a first-class lifecycle id \u2014 no, it is a matrix-local row id at this stage.\n\ndiscovered-by: BADF-WP-0068 (badf-solution-design landed DESIGNED) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-29T18:03:40Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "WP-SOL-B advances badf-solution-design DESIGNED->IMPLEMENTED: solution-composition.schema.json + a `solution` command in the canonical gate (no second script, SOL-I12) + structural controls SOL-C01 (unique ids) / SOL-C02 (requirement provenance) / SOL-C03 (binds >=1 artifact). Seam controls deferred to WP-SOL-C. Operator 'proceed on your current goal' 2026-08-30. Worked as BADF-WP-0071. Parallel to BARCHI-2 (GIT-B/C); reconcile at land time."
+}

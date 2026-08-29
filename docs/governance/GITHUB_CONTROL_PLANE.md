@@ -704,6 +704,25 @@ gate code, so no new control and nothing to mutate; the test guards the declarat
 adapters, composition schemas and seam controls are deferred to WP-SOL-B…D. Built in an isolated
 `git worktree` alongside BARCHI-2's parallel badf-git work (GIT-B/GIT-C), per GIT-I04.
 
+## badf-solution-design → IMPLEMENTED — the composition matrix (`BADF-WP-0071` / WP-SOL-B, Issue #131 / GOV-0050)
+
+WP-SOL-A froze the composition contract as prose; WP-SOL-B gives its central artifact — the
+**solution-composition matrix** (the detailed-design equivalent of the G02 RTM) — a machine shape and a
+structural validator, advancing `badf-solution-design` `DESIGNED → IMPLEMENTED`. `schemas/solution-
+composition.schema.json` binds one row per requirement (`solution_id`, `requirement_ref`, and the
+specialist ref arrays), and a **`solution` command in the one canonical `badf_gate.py`** validates it —
+**not** a second validator script (SOL-I12 honored; it mirrors `research`/`assure` and declares no
+lifecycle result). Structural controls, each earned failing-first + mutation-killed: **SOL-C01** unique
+`solution_id`s; **SOL-C03** every row binds ≥1 specialist artifact (a requirement composed to nothing
+satisfies nothing); plus a no-empty-matrix guard (the gate walker ignores `minItems`). **SOL-C02**
+(requirement provenance) was *not* added as a code branch — the schema's `required` + `^REQ-` pattern
+enforces it, so a code check would be dead; recorded as "earned by the schema, not by precedent".
+
+The **cross-artifact SEAM controls** (SOL-I01…I12 reconciled *against* the specialist artifacts) are
+deferred to **WP-SOL-C** (`VALIDATED`). No `lifecycle.json` change — the matrix is a standalone record
+like research/assure, not a G03/G04 required_evidence type. Built in an isolated `git worktree` parallel
+to BARCHI-2's badf-git GIT-B/GIT-C; reconcile done at land time against the current LANDED_UNRECONCILED WP.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

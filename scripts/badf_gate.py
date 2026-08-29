@@ -3364,6 +3364,35 @@ def validate_dossier(dossier_path: Path) -> str:
     return rendered
 
 
+def validate_solution_composition(path: Path) -> str:
+    """`badf_gate.py solution <path>`: the STRUCTURAL controls of a badf-solution-design
+    composition matrix (WP-SOL-B). One record in the canonical gate -- not a second
+    validator (SOL-I12), and not a lifecycle result. It checks the matrix is internally
+    coherent: unique solution ids (SOL-C01), every row bound to a requirement (SOL-C02 /
+    SOL-I01), and every row binding at least one specialist artifact (SOL-C03). The
+    cross-artifact SEAM checks -- reconciling the matrix against the specialist artifacts
+    -- are WP-SOL-C, not here."""
+    rec = load_json(path)
+    check_schema("solution-composition", rec)
+    _no_placeholders(rec, "solution-composition")
+    solutions = rec["solutions"]
+    if not solutions:
+        raise ValidationError("solution-composition: no solutions; an empty matrix composes nothing")
+    # SOL-C01: a matrix cannot carry two rows under one solution id.
+    _unique_ids(solutions, "solution_id", "solution-composition")
+    # SOL-C02 (requirement provenance / SOL-I01, structural) is enforced by the schema --
+    # requirement_ref is required and matches ^REQ-nnn; a separate check here would be
+    # dead code (the schema refuses a missing or malformed ref first).
+    ref_kinds = ("ux_refs", "api_refs", "authorization_refs", "data_refs",
+                 "audit_refs", "accessibility_refs", "test_refs")
+    for s in solutions:
+        # SOL-C03: a requirement composed to nothing satisfies nothing.
+        if not any(s.get(k) or [] for k in ref_kinds):
+            raise ValidationError(f"solution-composition: {s['solution_id']} (for {s['requirement_ref']}) binds no specialist artifact; a requirement composed to nothing satisfies nothing (SOL-C03)")
+    reqs = {s["requirement_ref"] for s in solutions}
+    return f"BADF SOLUTION-COMPOSITION PASS: {len(solutions)} composition(s) over {len(reqs)} requirement(s); structural only -- seams are WP-SOL-C"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -3389,6 +3418,8 @@ def main() -> int:
     research_parser.add_argument("path", type=Path)
     assure_parser = subparsers.add_parser("assure", help="validate an architecture-assurance record's ASSURE controls (WP-ARCH-C)")
     assure_parser.add_argument("path", type=Path)
+    sol_parser = subparsers.add_parser("solution", help="validate a solution-composition matrix's structural controls (WP-SOL-B)")
+    sol_parser.add_argument("path", type=Path)
     args = parser.parse_args()
     try:
         if args.command == "repo":
@@ -3423,6 +3454,9 @@ def main() -> int:
             return 0
         elif args.command == "assure":
             print(validate_architecture_assurance(args.path))
+            return 0
+        elif args.command == "solution":
+            print(validate_solution_composition(args.path))
             return 0
         else:
             args._rendered = validate_dossier(args.path)
