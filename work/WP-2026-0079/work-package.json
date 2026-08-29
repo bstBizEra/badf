@@ -48,7 +48,7 @@
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "5aaeb62"
+    "base_revision": "2d080e0"
   },
-  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-F per GTGM v0.1 section 17, after GIT-E (WP-2026-0076 / 5aaeb62). Resolves #151 / GOV-0059. Reconciles WP-2026-0076. Engineered by BARCHI-2 in a linked worktree under the operator's /loop ('proceed on your call'); parallel seat BARCHI-1 on WP-2026-0078 (WP-SEC-A)."
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-F per GTGM v0.1 section 17, after GIT-E (WP-2026-0076 / 5aaeb62). Resolves #151 / GOV-0059. Reconciles WP-2026-0076 (re-verified with the new reconcile: composition_verified true) and WP-2026-0078 (WP-SEC-A, 2d080e0, landed while this branch was open; no record -> composition_verified false) -- branch rebased onto 2d080e0. Engineered by BARCHI-2 in a linked worktree under the operator's /loop ('proceed on your call'); parallel seat BARCHI-1 on WP-2026-0078 (WP-SEC-A)."
 }
