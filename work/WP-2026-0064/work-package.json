@@ -44,11 +44,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "1867731"
+    "base_revision": "1867731",
+    "landed_as": "c09d3701a2d2dd9623b98a13809aa2a63df61e76"
   },
-  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Adds no gate code -- no new control, no mutation; validation runs the real canonical gate. Status advance IMPLEMENTED -> VALIDATED is operator-authorized ('proceed one by one'). Resolves #117 / GOV-0034. Reconciles WP-2026-0063."
+  "note": "Reconciled by WP-2026-0065 after the ledger observed the WP-2026-0064 squash landing as c09d370. The landed implementation remains unchanged; this update only closes the in-tree ledger record required before the next work package can open. Resolves #117 / GOV-0034 and preserves the original validation boundary."
 }
