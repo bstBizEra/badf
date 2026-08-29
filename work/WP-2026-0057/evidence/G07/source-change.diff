@@ -1,0 +1,518 @@
+diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
+index dc874c2..cc01141 100644
+--- a/.github/workflows/badf-gates.yml
++++ b/.github/workflows/badf-gates.yml
+@@ -51,6 +51,7 @@ jobs:
+           python3 scripts/badf_gate.py research examples/research-record-shadow-control15.json
+           python3 scripts/badf_gate.py research examples/research-record-shadow-composed-red.json
+           python3 scripts/badf_gate.py research examples/research-record-shadow-ci-parity.json
++          python3 scripts/badf_gate.py assure examples/architecture-assurance.json
+       - name: PR traceability (Work-Package + Closes #N)
+         # BADF-MAIN-001. Only a PR has a body; a push to main has already been
+         # traced by the PR that produced it. Reports on the PR event only.
+diff --git a/badf/demands/BADF-DEM-0044.json b/badf/demands/BADF-DEM-0044.json
+new file mode 100644
+index 0000000..a5ea84f
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0044.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0044",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 104,
++    "url": "https://github.com/bstBizEra/badf/issues/104",
++    "exported_at": "2026-08-29T06:22:14Z",
++    "body_digest": "sha256:0196342aacb9fd50cbd7b0fb34bce2804d2fd99a9b39d35fd0b78456ca6bdf3d"
++  },
++  "title": "GOV-0040: badf-architecture has no ASSURE substrate \u2014 controls 13-18 unenforced (WP-ARCH-C; IMPLEMENTED -> VALIDATED)",
++  "problem": "## Observed\n`badf-architecture` is `IMPLEMENTED` (G04 DESIGN semantics, WP-ARCH-B) but the **ASSURE** substrate \u2014 the read-only side of the frozen contract that checks whether reality conforms to declared architecture \u2014 does not exist. Controls 13\u201318 of the frozen contract are unenforced: there is no `assure` gate command, no architecture-assurance record schema, so nothing stops an assurance run from claiming COMPLIANT with no baseline, serialising an INDETERMINATE ADR result as a pass, self-authorising drift as approved, or omitting its non-coverage.\n\n## Expected\nBuild WP-ARCH-C: a deterministic `assure` gate command and an `architecture-assurance` record schema enforcing controls 13\u201318 (per ARCH-I11, the analysis is the skill's; the gate validates the record):\n- **13** an ASSURE run binds one baseline revision and one observed revision (ARCH-I09).\n- **14** a `COMPLIANT` conclusion requires a bound baseline digest \u2014 `NO BASELINE \u2260 COMPLIANT` (ARCH-I07).\n- **15** an `INDETERMINATE` ADR-compliance result cannot serialise as a `COMPLIANT` pass.\n- **16** a drift finding cannot classify itself as approved evolution \u2014 only independent authority may (ARCH-I08).\n- **17** an ASSURE run declares its non-coverage.\n- **18** every finding is assessed against the single bound baseline (ARCH-I01).\nRead-only; `implementation_authority` is schema-fixed `false` (ARCH-I12). Ship an example validated in CI. This meets the `VALIDATED` criterion, so advance `badf-architecture` `IMPLEMENTED \u2192 VALIDATED`.\n\n## Evidence\n- `ls scripts/*architecture*` \u2192 none (ARCH-I11 preserved: the ASSURE validator is in the canonical gate, not a second script)\n- no `schemas/architecture-assurance.schema.json`; no `assure` subcommand\n\n## Unknowns\nThe structural analysis itself (dependency graph, cycles) is the skill's read-only work, not the gate's (the gate is deterministic and makes no network/exec call); it enforces the assurance record's integrity. `SHADOWED`/`APPROVED`/`ACTIVE` remain the operator's admission decisions.\n\n## Proposed work package\n`BADF-WP-0057` (WP-ARCH-C). `schemas/architecture-assurance.schema.json`; `validate_architecture_assurance` + the `assure` subcommand; controls 13\u201318; `examples/architecture-assurance.json` + CI; tests + mutation; own G07 self-dossier; advance `badf-architecture` to `VALIDATED`. C2.\n\ndiscovered-by: operator sequencing (2026-08-29) + the frozen badf-architecture contract (WP-0043) \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T06:22:14Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-ARCH-C: architecture ASSURE substrate (assure command + controls 13-18) on the frozen contract; advances badf-architecture IMPLEMENTED->VALIDATED. Authority: operator sequencing 'WP-ARCH-C next -> VALIDATED' (2026-08-29). Worked as BADF-WP-0057."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 35a7e2b..b46d979 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -58,8 +58,8 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "IMPLEMENTED",
+-      "digest": "sha256:99f9bbe8111d4346b78b34c235b1ce06ba85ffe5ee9bf6db1d2a841e0486b56f"
++      "status": "VALIDATED",
++      "digest": "sha256:45bfb3345945549411448c9c13a588d02a75e7af7d2787fe5dada5d46eb3f9d6"
+     },
+     {
+       "name": "problem-framing",
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 5caf1b8..41b44f6 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -479,6 +479,22 @@ mutation + `experiments[]`), with a dedicated `experimental-research` subskill *
+ documentation): `RouterDeterminismTests` refuses a reintroduced unnamed hop and asserts every route
+ token resolves to a registered subskill. Closes #83. `badf-research` stays `DESIGNED`.
+ 
++## Architecture ASSURE substrate — `badf-architecture` VALIDATED (`BADF-WP-0057`, Issue #104)
++
++WP-ARCH-C builds the read-only ASSURE side of the frozen `badf-architecture` contract: an
++`architecture-assurance` record schema and an **`assure`** gate command enforcing controls 13–18.
++Per ARCH-I11 the structural analysis (dependency graph, cycles) is the skill's read-only work — the
++deterministic gate makes no network/exec call; it validates the record's integrity. The controls: an
++assurance run **binds one baseline and one observed revision** (13, ARCH-I09); a `COMPLIANT`
++conclusion **requires a baseline digest** — `NO BASELINE ≠ COMPLIANT` (14, ARCH-I07); an
++`INDETERMINATE` ADR result **cannot serialise as a pass** (15); a drift finding **cannot self-classify
++as approved evolution** — only independent authority may (16, ARCH-I08); the run **declares its
++non-coverage** (17); and **every finding is assessed against the single bound baseline** (18,
++ARCH-I01). The record is read-only — `implementation_authority` is schema-fixed `false` (ARCH-I12).
++This meets the `VALIDATED` criterion, so **`badf-architecture` advances `IMPLEMENTED → VALIDATED`**
++(the operator's stated expectation). `SHADOWED`/`APPROVED`/`ACTIVE` remain the operator's admission
++decisions.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/examples/architecture-assurance.json b/examples/architecture-assurance.json
+new file mode 100644
+index 0000000..65ed625
+--- /dev/null
++++ b/examples/architecture-assurance.json
+@@ -0,0 +1,76 @@
++{
++  "schema_version": "1.0.0",
++  "id": "BADF-ARA-0001",
++  "baseline": {
++    "repository": "bstBizEra/badf",
++    "revision": "bc9eb30",
++    "digest": "sha256:82b229e2ca3ed3426ae09ae21621fba75bb0af559d97f99d77f7c574dadb64c4"
++  },
++  "observed": {
++    "repository": "bstBizEra/badf",
++    "revision": "bc9eb30",
++    "observed_at": "2026-08-29T01:00:00Z"
++  },
++  "adr_set": [
++    "ADR-0001"
++  ],
++  "fitness_spec_set": [
++    "FIT-001"
++  ],
++  "adr_compliance": [
++    {
++      "adr": "ADR-0001",
++      "result": "CONFORMANT"
++    }
++  ],
++  "drift": [
++    {
++      "id": "DR-001",
++      "category": "DEPENDENCY_DRIFT",
++      "classification": "EXPECTED_VARIANCE",
++      "affected_elements": [
++        "EL-002"
++      ],
++      "statement": "the composed-tree gate adds a bounded test-pattern dependency, within the declared synchronous chain"
++    }
++  ],
++  "findings": [
++    {
++      "finding_id": "AF-001",
++      "kind": "STRUCTURAL",
++      "severity": "INFO",
++      "baseline_ref": "bc9eb30",
++      "observed_ref": "bc9eb30",
++      "affected_elements": [
++        "EL-001"
++      ],
++      "evidence_locations": [
++        "scripts/badf_gate.py:validate_repo"
++      ],
++      "expected": "the gate CLI stays within the control-plane boundary BND-001",
++      "observed": "the gate CLI imports only stdlib and the local modules within BND-001",
++      "impact": "none; the boundary holds",
++      "failure_scenario": "a cross-boundary import would let the CLI reach the CI surface directly",
++      "recommendation_direction": "keep the stdlib-only boundary",
++      "status": "ACKNOWLEDGED",
++      "non_coverage": [
++        "runtime imports not statically resolvable"
++      ]
++    }
++  ],
++  "conclusion": "COMPLIANT",
++  "non_coverage": [
++    {
++      "surface": "runtime network policy",
++      "reason": "not observed by static analysis"
++    },
++    {
++      "surface": "dynamic plugin loading",
++      "reason": "not statically resolvable"
++    }
++  ],
++  "authority": {
++    "implementation_authority": false
++  },
++  "recorded_at": "2026-08-29T01:10:00Z"
++}
+diff --git a/schemas/architecture-assurance.schema.json b/schemas/architecture-assurance.schema.json
+new file mode 100644
+index 0000000..dc01788
+--- /dev/null
++++ b/schemas/architecture-assurance.schema.json
+@@ -0,0 +1,114 @@
++{
++  "$schema": "http://json-schema.org/draft-07/schema#",
++  "$id": "badf/architecture-assurance.schema.json",
++  "title": "Architecture assurance record (ASSURE mode) -- read-only; grants no authority",
++  "type": "object",
++  "additionalProperties": false,
++  "required": [
++    "schema_version",
++    "id",
++    "baseline",
++    "observed",
++    "adr_set",
++    "fitness_spec_set",
++    "adr_compliance",
++    "drift",
++    "findings",
++    "conclusion",
++    "non_coverage",
++    "authority",
++    "recorded_at"
++  ],
++  "properties": {
++    "schema_version": {"type": "string", "enum": ["1.0.0"]},
++    "id": {"type": "string", "pattern": "^BADF-ARA-[0-9]{4,}$"},
++    "baseline": {
++      "type": "object", "additionalProperties": false,
++      "required": ["repository", "revision", "digest"],
++      "properties": {
++        "repository": {"type": "string", "minLength": 1},
++        "revision": {"type": "string"},
++        "digest": {"type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$"}
++      }
++    },
++    "observed": {
++      "type": "object", "additionalProperties": false,
++      "required": ["repository", "revision", "observed_at"],
++      "properties": {
++        "repository": {"type": "string", "minLength": 1},
++        "revision": {"type": "string"},
++        "observed_at": {"type": "string", "minLength": 1}
++      }
++    },
++    "adr_set": {"type": "array", "items": {"type": "string", "pattern": "^ADR-[0-9]{4,}$"}},
++    "fitness_spec_set": {"type": "array", "items": {"type": "string", "pattern": "^FIT-[0-9]{3,}$"}},
++    "adr_compliance": {
++      "type": "array",
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["adr", "result"],
++        "properties": {
++          "adr": {"type": "string", "pattern": "^ADR-[0-9]{4,}$"},
++          "result": {"type": "string", "enum": ["CONFORMANT", "NONCONFORMANT", "INDETERMINATE", "SUPERSEDED", "NOT_OBSERVABLE"]}
++        }
++      }
++    },
++    "drift": {
++      "type": "array",
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["id", "category", "classification", "statement"],
++        "properties": {
++          "id": {"type": "string", "pattern": "^DR-[0-9]{3,}$"},
++          "category": {"type": "string", "enum": ["ELEMENT_DRIFT", "DEPENDENCY_DRIFT", "BOUNDARY_DRIFT", "TOPOLOGY_DRIFT", "DATA_OWNERSHIP_DRIFT", "INTERFACE_DRIFT", "TRUST_BOUNDARY_DRIFT", "ADR_DRIFT", "NFR_DRIFT", "OPERABILITY_DRIFT"]},
++          "classification": {"type": "string", "enum": ["UNAUTHORIZED_DRIFT", "DOCUMENTATION_LAG", "APPROVED_EVOLUTION_NOT_BASELINED", "EXPECTED_VARIANCE", "UNKNOWN"]},
++          "affected_elements": {"type": "array", "items": {"type": "string", "pattern": "^EL-[0-9]{3,}$"}},
++          "statement": {"type": "string", "minLength": 1}
++        }
++      }
++    },
++    "findings": {
++      "type": "array",
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["finding_id", "kind", "severity", "baseline_ref", "observed_ref", "affected_elements", "evidence_locations", "expected", "observed", "impact", "failure_scenario", "recommendation_direction", "status", "non_coverage"],
++        "properties": {
++          "finding_id": {"type": "string", "pattern": "^AF-[0-9]{3,}$"},
++          "kind": {"type": "string", "enum": ["STRUCTURAL", "DEPENDENCY", "BOUNDARY", "CONTRACT", "SECURITY_BOUNDARY", "DATA", "OPERABILITY", "ADR", "DRIFT"]},
++          "severity": {"type": "string", "enum": ["INFO", "MINOR", "MAJOR", "CRITICAL"]},
++          "baseline_ref": {"type": "string"},
++          "observed_ref": {"type": "string"},
++          "affected_elements": {"type": "array", "items": {"type": "string", "pattern": "^EL-[0-9]{3,}$"}},
++          "evidence_locations": {"type": "array", "items": {"type": "string", "minLength": 1}},
++          "expected": {"type": "string", "minLength": 1},
++          "observed": {"type": "string", "minLength": 1},
++          "impact": {"type": "string", "minLength": 1},
++          "failure_scenario": {"type": "string", "minLength": 1},
++          "recommendation_direction": {"type": "string", "minLength": 1},
++          "status": {"type": "string", "enum": ["OPEN", "ACKNOWLEDGED", "SUPERSEDED"]},
++          "non_coverage": {"type": "array", "items": {"type": "string"}}
++        }
++      }
++    },
++    "conclusion": {"type": "string", "enum": ["COMPLIANT", "NONCOMPLIANT", "INDETERMINATE"]},
++    "non_coverage": {
++      "type": "array",
++      "items": {
++        "type": "object", "additionalProperties": false,
++        "required": ["surface", "reason"],
++        "properties": {
++          "surface": {"type": "string", "minLength": 1},
++          "reason": {"type": "string", "minLength": 1}
++        }
++      }
++    },
++    "authority": {
++      "type": "object", "additionalProperties": false,
++      "required": ["implementation_authority"],
++      "properties": {
++        "implementation_authority": {"type": "boolean", "enum": [false]}
++      }
++    },
++    "recorded_at": {"type": "string", "minLength": 1}
++  }
++}
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 32cb0be..3aae128 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -3034,6 +3034,44 @@ def validate_research_record(path: Path) -> str:
+     return f"BADF RESEARCH PASS: {rec['id']} ({rec['type']}/{rec['depth']}) -- {len(rec['claims'])} claims, disposition {rec['disposition']['state']}; grants no implementation authority"
+ 
+ 
++def validate_architecture_assurance(path: Path) -> str:
++    """`badf_gate.py assure <path>`: the ASSURE controls (13-18) of the frozen
++    badf-architecture contract (WP-ARCH-C). Read-only: an assurance record binds
++    to one baseline and one observed revision, never infers compliance, never
++    self-authorises drift, declares its non-coverage, and grants no authority."""
++    rec = load_json(path)
++    check_schema("architecture-assurance", rec)
++    base_rev = (rec["baseline"]["revision"] or "").strip()
++    obs_rev = (rec["observed"]["revision"] or "").strip()
++    conclusion = rec["conclusion"]
++    # 13: an ASSURE run binds one baseline revision and one observed revision;
++    # assessment against an unpinned, moving state is invalid (ARCH-I09).
++    if not base_rev or not obs_rev:
++        raise ValidationError("architecture assurance has no bound baseline or observed revision; assessment against an unpinned state is invalid (control 13)")
++    # 14: NO BASELINE != COMPLIANT -- a compliance verdict rests on a bound
++    # baseline digest; missing architecture documentation yields observations,
++    # never compliance (ARCH-I07).
++    if conclusion == "COMPLIANT" and not rec["baseline"]["digest"]:
++        raise ValidationError("architecture assurance concludes COMPLIANT with no baseline digest; missing architecture yields observations, never compliance (control 14)")
++    # 15: an INDETERMINATE ADR-compliance result cannot serialise as a COMPLIANT pass.
++    if conclusion == "COMPLIANT" and any(a["result"] == "INDETERMINATE" for a in rec["adr_compliance"]):
++        raise ValidationError("architecture assurance concludes COMPLIANT while an ADR compliance result is INDETERMINATE; INDETERMINATE never converts to PASS (control 15)")
++    # 16: the read-only run identifies drift; it cannot classify drift as approved
++    # evolution -- only independent authority may (ARCH-I08).
++    for d in rec["drift"]:
++        if d["classification"] == "APPROVED_EVOLUTION_NOT_BASELINED":
++            raise ValidationError(f"drift {d['id']} classifies itself as approved evolution, but an ASSURE run identifies drift, it does not authorise it (control 16)")
++    # 17: an ASSURE run declares what it did not inspect.
++    if not rec["non_coverage"]:
++        raise ValidationError("architecture assurance declares no non-coverage; a run that states nothing uninspected is incomplete (control 17)")
++    # 18: single baseline -- every finding is assessed against the one bound
++    # baseline revision; a stale baseline cannot silently pass (ARCH-I01).
++    for f in rec["findings"]:
++        if f["baseline_ref"] != base_rev:
++            raise ValidationError(f"finding {f['finding_id']} baseline_ref {f['baseline_ref']!r} is not the record's single bound baseline {base_rev!r}; one assurance, one baseline (control 18)")
++    return f"BADF ASSURE PASS: {rec['id']} -- baseline {base_rev[:12]} vs observed {obs_rev[:12]}; conclusion {conclusion}; grants no implementation authority"
++
++
+ def validate_dossier(dossier_path: Path) -> str:
+     validate_repo()
+     dossier = load_json(dossier_path.resolve())
+@@ -3157,6 +3195,8 @@ def main() -> int:
+     self_parser.add_argument("work_package")
+     research_parser = subparsers.add_parser("research", help="validate a research record's record/source/claim controls (RSR-002)")
+     research_parser.add_argument("path", type=Path)
++    assure_parser = subparsers.add_parser("assure", help="validate an architecture-assurance record's ASSURE controls (WP-ARCH-C)")
++    assure_parser.add_argument("path", type=Path)
+     args = parser.parse_args()
+     try:
+         if args.command == "repo":
+@@ -3189,6 +3229,9 @@ def main() -> int:
+         elif args.command == "research":
+             print(validate_research_record(args.path))
+             return 0
++        elif args.command == "assure":
++            print(validate_architecture_assurance(args.path))
++            return 0
+         else:
+             args._rendered = validate_dossier(args.path)
+     except ValidationError as exc:
+diff --git a/skills/badf-architecture/SKILL.md b/skills/badf-architecture/SKILL.md
+index 2373b3d..00d7b42 100644
+--- a/skills/badf-architecture/SKILL.md
++++ b/skills/badf-architecture/SKILL.md
+@@ -5,7 +5,7 @@ description: Govern architecture design, architectural decisions, architecture f
+ 
+ # BADF Architecture
+ 
+-Status: `IMPLEMENTED` for G04 DESIGN evidence (contract frozen by `BADF-WP-0043`; the five G04 DESIGN evidence types are enforced in the canonical gate by `BADF-WP-0044`). The ASSURE substrate and full validation are pending (WP-ARCH-C/D). This is an architecture **engineering + assurance** capability, not a diagram skill. Its primary lifecycle gate is **G04 — Architecture, Data and API**; it also feeds G05 (trust boundaries + data flows), G08/G09 verification and post-merge drift review.
++Status: `VALIDATED` (contract frozen by `BADF-WP-0043`; the five G04 DESIGN evidence types enforced by `BADF-WP-0044`; the ASSURE substrate -- controls 13-18 -- enforced by `BADF-WP-0057` / WP-ARCH-C via the `assure` gate command). `SHADOWED` / `APPROVED` / `ACTIVE` remain the operator's admission decisions. This is an architecture **engineering + assurance** capability, not a diagram skill. Its primary lifecycle gate is **G04 — Architecture, Data and API**; it also feeds G05 (trust boundaries + data flows), G08/G09 verification and post-merge drift review.
+ 
+ Fundamental rule — four distinctions that never collapse:
+ 
+diff --git a/skills/badf-architecture/references/acceptance.md b/skills/badf-architecture/references/acceptance.md
+index 42f7c1a..23b1c2b 100644
+--- a/skills/badf-architecture/references/acceptance.md
++++ b/skills/badf-architecture/references/acceptance.md
+@@ -43,6 +43,6 @@ Status: frozen contract v0.1. The capability is `DESIGNED`. Progression follows
+ ## Admission
+ 
+ - `IMPLEMENTED`: the G04 DESIGN evidence semantics (`architecture`, `adr`, `data-model`, `api-contract`, `operability-design`) exist as deterministic gate rules with schemas (WP-ARCH-B).
+-- `VALIDATED`: the controls above pass as gate tests with mutation, and the ASSURE substrate is deterministic where feasible (WP-ARCH-C).
++- `VALIDATED`: **met (`BADF-WP-0057` / WP-ARCH-C).** The ASSURE substrate is deterministic -- controls 13-18 enforced by the `assure` gate command with mutation-tested tests; the `architecture-assurance` record binds one baseline + one observed revision, never infers compliance, never self-authorises drift, and grants no authority. The registry status is advanced to `VALIDATED`.
+ - `SHADOWED`: ASSURE is run retrospectively on historical architecture-impacting PRs without knowing the answer (WP-ARCH-D); measured for true violations, false positives, non-coverage and stability across composed trees.
+ - `APPROVED` / `ACTIVE`: owner and security approval; registry digest pinned. Until then the registry entry stays `DESIGNED`.
+diff --git a/tests/test_badf_architecture_contract.py b/tests/test_badf_architecture_contract.py
+index 5a0cb18..9828a8c 100644
+--- a/tests/test_badf_architecture_contract.py
++++ b/tests/test_badf_architecture_contract.py
+@@ -72,11 +72,11 @@ class InvariantTests(unittest.TestCase):
+ 
+ class RegistryAndAuthorityTests(unittest.TestCase):
+ 
+-    def test_registry_entry_is_implemented_with_a_real_digest(self):
+-        # WP-ARCH-B advanced the capability DESIGNED -> IMPLEMENTED (G04 DESIGN semantics enforced).
++    def test_registry_entry_is_validated_with_a_real_digest(self):
++        # WP-ARCH-C advanced the capability IMPLEMENTED -> VALIDATED (the ASSURE substrate is deterministic; controls 13-18 pass with mutation).
+         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
+         entry = next(e for e in reg["skills"] if e["name"] == "badf-architecture")
+-        self.assertEqual(entry["status"], "IMPLEMENTED")
++        self.assertEqual(entry["status"], "VALIDATED")
+         self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
+ 
+     def test_g04_is_mapped_but_unchanged(self):
+@@ -101,13 +101,15 @@ class ImplementationStatusTests(unittest.TestCase):
+         for t in G04_EVIDENCE:
+             self.assertIn(t, gate.EVIDENCE_RULES, f"{t} is a G04 type but has no per-type rule")
+ 
+-    def test_g04_design_schemas_exist_but_assurance_does_not(self):
++    def test_g04_design_and_assurance_schemas_exist(self):
+         for name in G04_EVIDENCE:
+             self.assertTrue((gate.ROOT / "schemas" / f"{name}.schema.json").is_file(),
+                             f"schemas/{name}.schema.json is missing")
+-        # the ASSURE substrate (WP-ARCH-C) is not built yet
+-        self.assertFalse((gate.ROOT / "schemas" / "architecture-assurance.schema.json").exists(),
+-                         "an architecture-assurance schema exists, but ASSURE is WP-ARCH-C")
++        # the ASSURE substrate (WP-ARCH-C) is now built
++        self.assertTrue((gate.ROOT / "schemas" / "architecture-assurance.schema.json").is_file(),
++                        "the architecture-assurance schema is missing (WP-ARCH-C)")
++        self.assertTrue(hasattr(gate, "validate_architecture_assurance"),
++                        "the assure validator is missing")
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/tests/test_badf_assure.py b/tests/test_badf_assure.py
+new file mode 100644
+index 0000000..993bba1
+--- /dev/null
++++ b/tests/test_badf_assure.py
+@@ -0,0 +1,77 @@
++"""Architecture ASSURE substrate (BADF-WP-0057, WP-ARCH-C).
++
++The `assure` gate command validates an architecture-assurance record against the
++frozen contract's controls 13-18: it binds one baseline and one observed revision
++(13, ARCH-I09), never infers compliance without a baseline (14, ARCH-I07), never
++serialises an INDETERMINATE ADR result as a pass (15), never self-authorises drift
++as approved evolution (16, ARCH-I08), declares its non-coverage (17), and assesses
++every finding against the single bound baseline (18, ARCH-I01). Read-only; grants
++no authority. Every test runs the real CLI on the shipped example, mutated.
++"""
++import copy
++import json
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++EXAMPLE = json.loads((gate.ROOT / "examples/architecture-assurance.json").read_text())
++
++
++class AssureTests(unittest.TestCase):
++    def run_cli(self, rec):
++        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
++            json.dump(rec, f); path = Path(f.name)
++        try:
++            return subprocess.run([sys.executable, "scripts/badf_gate.py", "assure", str(path)],
++                                  cwd=str(gate.ROOT), capture_output=True, text=True)
++        finally:
++            path.unlink()
++
++    def refused(self, rec, needle):
++        r = self.run_cli(rec)
++        self.assertNotEqual(r.returncode, 0, "a defective assurance record passed")
++        self.assertIn(needle, r.stderr, r.stderr)
++
++    def test_shipped_example_passes(self):
++        r = self.run_cli(copy.deepcopy(EXAMPLE))
++        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("ASSURE PASS", r.stdout)
++
++    def test_no_bound_baseline_or_observed_revision_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); rec["baseline"]["revision"] = ""
++        self.refused(rec, "no bound baseline or observed revision")
++
++    def test_compliant_with_no_baseline_digest_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); rec["baseline"]["digest"] = None
++        self.refused(rec, "COMPLIANT with no baseline digest")
++
++    def test_indeterminate_adr_result_blocks_compliant(self):
++        rec = copy.deepcopy(EXAMPLE); rec["adr_compliance"][0]["result"] = "INDETERMINATE"
++        self.refused(rec, "INDETERMINATE never converts to PASS")
++
++    def test_drift_cannot_self_classify_as_approved_evolution(self):
++        rec = copy.deepcopy(EXAMPLE); rec["drift"][0]["classification"] = "APPROVED_EVOLUTION_NOT_BASELINED"
++        self.refused(rec, "classifies itself as approved evolution")
++
++    def test_no_non_coverage_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); rec["non_coverage"] = []
++        self.refused(rec, "declares no non-coverage")
++
++    def test_a_finding_against_a_different_baseline_is_refused(self):
++        rec = copy.deepcopy(EXAMPLE); rec["findings"][0]["baseline_ref"] = "deadbeef"
++        self.refused(rec, "is not the record's single bound baseline")
++
++    def test_indeterminate_conclusion_may_carry_an_indeterminate_adr(self):
++        # control 15 only blocks COMPLIANT; an INDETERMINATE conclusion may report one.
++        rec = copy.deepcopy(EXAMPLE)
++        rec["adr_compliance"][0]["result"] = "INDETERMINATE"; rec["conclusion"] = "INDETERMINATE"
++        r = self.run_cli(rec)
++        self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("ASSURE PASS", r.stdout)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0056/work-package.json b/work/WP-2026-0056/work-package.json
+index df9a2b0..6238b85 100644
+--- a/work/WP-2026-0056/work-package.json
++++ b/work/WP-2026-0056/work-package.json
+@@ -41,11 +41,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "10e7821"
++    "base_revision": "10e7821",
++    "landed_as": "bc9eb30451d8235bdcbb078fbe2faee4b7f75758"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Docs + contract-test only -- earns no gate control (the router is documentation, guarded doc-structurally). Reconciles WP-2026-0055. Closes #83. badf-research stays DESIGNED."
+ }
