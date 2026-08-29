@@ -3416,6 +3416,108 @@ def validate_solution_composition(path: Path) -> str:
     return f"BADF SOLUTION-COMPOSITION PASS: {len(solutions)} composition(s) over {len(reqs)} requirement(s); structural + matrix-internal seams (SOL-C04/05/06)"
 
 
+# ---- badf-git GIT-C: the read-only baseline inspector (BADF-WP-0069) ----------------
+def _git_at(root: Path, *args: str) -> str | None:
+    """Like _git, for an arbitrary working tree. Read-only by construction: every
+    caller passes an observation command; nothing here writes a ref, the index,
+    the worktree, the stash or the reflog, and nothing fetches."""
+    try:
+        return subprocess.run(["git", "-C", str(root), *args], capture_output=True,
+                              text=True, check=True).stdout.strip()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+
+
+def git_baseline(root: Path) -> dict[str, Any]:
+    """`badf_gate.py git-baseline [<path>]`: the GIT_BASELINED record of a working
+    tree -- badf-git's BASELINE stage (references/git-cycle.md section 2) measured,
+    not typed. GIT-O0 OBSERVE: writes nothing, fetches nothing, moves nothing.
+
+    Repository identity; worktree path / branch or detached / linked; index and
+    worktree status as COUNTS ONLY (never a path or a byte of content); the target
+    (origin/<default> as known locally) ref + SHA + tree; the source HEAD ref + SHA
+    + tree; merge base, ahead/behind, ancestry; remote freshness stated honestly
+    (observed without a fetch); the policy epoch. Refuses -- BLOCKED -- outside a
+    git working tree, when origin/<default> does not resolve (no fallback to HEAD,
+    the monotonic resolver's rule), and on an unborn HEAD. The test-set/toolchain
+    epoch the contract mentions does not exist in BADF and is declared as
+    non-coverage rather than invented. Deterministic modulo `observed_at`.
+    """
+    from datetime import datetime, timezone
+    root = Path(root).resolve()
+    top = _git_at(root, "rev-parse", "--show-toplevel")
+    if top is None:
+        raise ValidationError(f"BLOCKED: {root} is not inside a git working tree; there is no repository to baseline")
+    top_path = Path(top)
+    tracking = f"refs/remotes/origin/{DEFAULT_BRANCH}"
+    target = _git_at(root, "rev-parse", "--verify", "-q", f"{tracking}^{{commit}}")
+    if target is None:
+        raise ValidationError(f"BLOCKED: origin/{DEFAULT_BRANCH} ({tracking}) does not resolve in {top}; the target is "
+                              "unknown and this inspector never falls back to HEAD and never fetches")
+    head = _git_at(root, "rev-parse", "--verify", "-q", "HEAD^{commit}")
+    if head is None:
+        raise ValidationError(f"BLOCKED: HEAD is unborn in {top} (no commit is checked out); there is no source state to baseline")
+    branch = _git_at(root, "symbolic-ref", "-q", "HEAD")
+    git_dir = _git_at(root, "rev-parse", "--git-dir") or ".git"
+    common_dir = _git_at(root, "rev-parse", "--git-common-dir") or git_dir
+    linked = (root / git_dir).resolve() != (root / common_dir).resolve()
+    counts = _git_at(root, "rev-list", "--left-right", "--count", f"HEAD...{tracking}") or "0\t0"
+    ahead, behind = (int(x) for x in counts.split())
+    ancestor = subprocess.run(["git", "-C", str(root), "merge-base", "--is-ancestor", "HEAD", target],
+                              capture_output=True).returncode == 0
+    staged = unstaged = untracked = unmerged = 0
+    for line in (_git_at(root, "status", "--porcelain=v2", "--untracked-files=all") or "").splitlines():
+        if line.startswith(("1 ", "2 ")):
+            xy = line.split(" ", 2)[1]
+            staged += xy[0] != "."
+            unstaged += xy[1] != "."
+        elif line.startswith("u "):
+            unmerged += 1
+        elif line.startswith("? "):
+            untracked += 1
+    stash = len([l for l in (_git_at(root, "stash", "list") or "").splitlines() if l.strip()])
+    name = None
+    reg_path = top_path / REPOSITORIES
+    if reg_path.is_file():
+        try:
+            for n, spec in (load_json(reg_path).get("repositories") or {}).items():
+                if isinstance(spec, dict) and spec.get("resolution") == "SELF":
+                    name = n
+        except ValidationError:
+            name = None
+    epoch = None
+    life = top_path / "badf/lifecycle.json"
+    if life.is_file():
+        try:
+            epoch = load_json(life).get("policy_epoch")
+        except ValidationError:
+            epoch = None
+    return {
+        "record": "git-baseline",
+        "schema_version": "1.0.0",
+        "observed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "disposition": "GIT_BASELINED",
+        "repository": {"name": name, "root": top},
+        "worktree": {"path": str(root), "linked": linked,
+                     "head_kind": "branch" if branch else "detached", "branch": branch},
+        "index": {"staged": staged, "unstaged": unstaged, "untracked": untracked, "unmerged": unmerged, "stash": stash},
+        "target_ref": f"refs/heads/{DEFAULT_BRANCH}",
+        "target_sha": target,
+        "target_tree": _git_at(root, "rev-parse", f"{target}^{{tree}}"),
+        "source_ref": branch,
+        "source_head_sha": head,
+        "source_tree": _git_at(root, "rev-parse", "HEAD^{tree}"),
+        "merge_base_sha": _git_at(root, "merge-base", "HEAD", target),
+        "ahead": ahead,
+        "behind": behind,
+        "head_is_ancestor_of_target": ancestor,
+        "remote_freshness": {"tracking_ref": tracking, "sha": target, "observed_without_fetch": True},
+        "policy_epoch": epoch,
+        "non_coverage": ["test_set_epoch: BADF defines no test-set/toolchain epoch (git-cycle.md section 2); "
+                         "not recorded rather than invented"],
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -3424,6 +3526,8 @@ def main() -> int:
     lock_parser.add_argument("--instance", type=Path, default=None, help="re-sign a project instance's badf/lockfile.json instead")
     inst_parser = subparsers.add_parser("instance", help="validate a project instance at <path>; writes nothing")
     inst_parser.add_argument("path", type=Path)
+    gb_parser = subparsers.add_parser("git-baseline", help="render the read-only GIT_BASELINED record of <path> (default: this repository); writes nothing, fetches nothing (badf-git GIT-O0)")
+    gb_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
     charter_parser = subparsers.add_parser("charter", help="bind an instance to the framework's authority floor at its pinned revision")
     charter_parser.add_argument("path", type=Path)
     adv_parser = subparsers.add_parser("advance", help="bind an APPROVED dossier for the instance's next gate; the gate is derived from the chain")
@@ -3456,6 +3560,12 @@ def main() -> int:
         elif args.command == "instance":
             for line in validate_instance(args.path):
                 print(line)
+            return 0
+        elif args.command == "git-baseline":
+            rec = git_baseline(args.path)
+            print(json.dumps(rec, indent=2))
+            print(f"BADF GATE PASS: git-baseline -- GIT_BASELINED {rec['source_head_sha'][:7]} on "
+                  f"{rec['target_sha'][:7]} (ahead {rec['ahead']}, behind {rec['behind']})")
             return 0
         elif args.command == "charter":
             print(write_charter(args.path))
