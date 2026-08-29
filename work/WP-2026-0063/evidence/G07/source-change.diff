@@ -1,0 +1,371 @@
+diff --git a/badf/demands/BADF-DEM-0050.json b/badf/demands/BADF-DEM-0050.json
+new file mode 100644
+index 0000000..a15d1e9
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0050.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0050",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 115,
++    "url": "https://github.com/bstBizEra/badf/issues/115",
++    "exported_at": "2026-08-29T14:27:11Z",
++    "body_digest": "sha256:43ae171d2619eadc6504990218a0a5e6d5c1648473881e2380f48365fd295235"
++  },
++  "title": "GOV-0033: build badf-requirements authoring skill \u2014 salvage PR #47 onto the canonical G02 gate (supersedes #47)",
++  "problem": "## Observed\n\n`main` (`a20df5e`) has **no `skills/badf-requirements/` directory** \u2014 there is no authoring skill for G02 requirement decomposition, even though the canonical G02 gate (`BADF-WP-0041`/PR #71) already enforces the four artifacts (`requirements`, `nfr`, `traceability`, `definition-of-ready`). PR #47 proposed such a skill but is **superseded and non-mergeable**: it duplicated the G02 gate as a standalone `scripts/badf_requirements.py` + a custom `schemas/requirements-rtm.schema.json`, re-used the already-occupied `WP-2026-0028` / `BADF-DEM-0015` identities, and rewrote the lockfile against ancient `main`. Its Actions run fails. Issue #46 (which #47 claimed) is already closed as completed. **#47 must not be repaired or merged in place.**\n\nBut #47's **authoring layer is still valuable**: the RTM decomposition model, the quantified-NFR discipline, the security-provenance rule, and the authority boundary \"author requirements, never approve G02\".\n\n## Expected\n\nBuild **badf-requirements** as a top-level **authoring** skill (sibling of `badf-prd`), salvaging only the authoring layer onto the **canonical** G02 gate \u2014 the same pattern by which `badf-prd` salvaged external methodology from PR #44. Land at **`IMPLEMENTED`**; do **not** advance to VALIDATED/ACTIVE (a separate WP validates it with cases A/B/C).\n\nKeep: `skills/badf-requirements/SKILL.md` + `references/requirements-decomposition.md` + `references/methodology-provenance.md`; register `IMPLEMENTED`; `tests/test_badf_requirements_skill.py`.\n\nDo NOT port: `scripts/badf_requirements.py`, `schemas/requirements-rtm.schema.json`, `templates/requirements-rtm.json`, the old `WP-2026-0028` / `BADF-DEM-0015` / old lockfile, or any duplicate G02 gate logic. **`badf_gate.py` remains the sole G02 enforcement authority.**\n\nThe skill authors toward the canonical artifacts and validates with `python3 scripts/badf_gate.py dossier <g02-dossier>` (like `badf-prd`). It declares the invariants **REQ-I01 (no gate authority)** \u2026 **REQ-I06 (security provenance)**. The rich `OBJ\u2192CAP\u2192EPIC\u2192REQ\u2192NFR\u2192AC\u2192TEST\u2192EVDREQ` chain is retained as the **authoring model**; the gate consumes only its **canonical subset** (capability/epic/test-obligation/evidence-obligation are NOT made first-class gate objects \u2014 no schema growth by speculation; a later failing-first WP adds them only if real project use proves the need).\n\n## Evidence\n\n- Canonical G02 (measured): `requirements` (unique `REQ`, each \u2192 \u22651 objective), `nfr` (quantified target), `traceability` (bidirectional complete RTM), `definition-of-ready` (human sign-off covering the exit criteria). Leaner than #47's graph by design (PR #71 deferred the capability/epic hierarchy).\n- `badf-prd` is the template: an authoring skill, `IMPLEMENTED`, no validator of its own, salvaged provenance in `references/`.\n\n## Unknowns\n\nWhether capability/epic/test-obligation ever need first-class gate enforcement \u2014 deferred to a future failing-first WP, not decided here.\n\ndiscovered-by: BADF-WP-0062 (operator directed the #47 recovery) \u00b7 supersedes: PR #47 \u00b7 status: DISCOVERED\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T14:27:11Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Salvage #47's authoring layer onto the canonical G02 gate. Top-level authoring skill (sibling of badf-prd), IMPLEMENTED only. NO standalone validator/schema (badf_gate.py is the sole G02 authority). Supersedes PR #47 (operator directed, close is operator's action). Worked as BADF-WP-0063."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 35b8844..dffbe74 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -28,6 +28,19 @@
+       "status": "IMPLEMENTED",
+       "digest": "sha256:32c3cfc1d618d484e2f8a01957b5d2ac80575f182ec4c68f6e285bcbf09e8bf3"
+     },
++    {
++      "name": "badf-requirements",
++      "source": "skills/badf-requirements/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [
++        "local-filesystem",
++        "local-shell"
++      ],
++      "status": "IMPLEMENTED",
++      "digest": "sha256:af7a654f28787acdfa35fee5b4c9cff84df8182cafc480dad5c1dd5955649b52"
++    },
+     {
+       "name": "badf-research",
+       "source": "skills/badf-research/SKILL.md",
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index e5406fb..70d7f33 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -586,6 +586,30 @@ This is the **P1 gate lifted by operator request**, not by precedent: the deferr
+ only once the operator selected the research track, and its control was earned by two failing-first
+ probes, not added because the P0 subskills each landed with one.
+ 
++## badf-requirements — salvage over repair (`BADF-WP-0063`, Issue #115 / GOV-0033, supersedes PR #47)
++
++PR #47 proposed a G02 requirements skill but duplicated the gate: a standalone
++`scripts/badf_requirements.py` + a custom `requirements-rtm.schema.json`, re-using the already-occupied
++`WP-2026-0028` / `BADF-DEM-0015` identities and a lockfile rewritten against ancient `main`. G02 was
++**already solved** by `BADF-WP-0041` (PR #71), which enforces `requirements`/`nfr`/`traceability`/
++`definition-of-ready` directly in the canonical gate and deliberately rejected a second validator. So
++#47 is **superseded, not repaired**: closing it and rebasing would mean reconstructing it. The recovery
++is **salvage over repair** — the same move `badf-prd` made with PR #44: keep the authoring layer, discard
++the obsolete implementation.
++
++`badf-requirements` is built fresh from current `main` as a top-level **authoring** skill (registered
++`IMPLEMENTED`): it decomposes an approved PRD baseline into the four canonical G02 artifacts and
++validates them with `badf_gate.py dossier` — **it has no validator of its own**. Its invariants run
++`REQ-I01` (no gate authority) … `REQ-I06` (security provenance). The rich `OBJ→CAP→EPIC→REQ→NFR→AC→
++TEST→EVDREQ` chain is preserved as the *authoring model*; the gate consumes only its lean canonical
++subset (`OBJ←REQ→NFR`, `REQ↔AC`, human readiness), and `CAP`/`EPIC`/`TEST`/`EVDREQ` stay authoring
++intermediates — first-class enforcement waits for a failing-first WP, not speculation. Test guards
++lock the architecture: no `scripts/badf_requirements.py`, no custom RTM schema, `badf_gate.py` the sole
++G02 authority. It adds **no gate code**, so there is no new control and nothing to mutate; the test
++proves existence and the anti-duplication boundary. It lands `IMPLEMENTED` — `VALIDATED` is a separate
++WP (cases: valid PRD → clean artifacts; orphan/qualitative → rework; a G05-born security requirement →
++provenance preserved). **Separation: the skill authors, the gate verifies, an authority decides.**
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/skills/badf-requirements/SKILL.md b/skills/badf-requirements/SKILL.md
+new file mode 100644
+index 0000000..b5bac28
+--- /dev/null
++++ b/skills/badf-requirements/SKILL.md
+@@ -0,0 +1,67 @@
++---
++name: badf-requirements
++description: Decompose an approved PRD baseline into the four canonical BADF Gate G02 evidence artifacts — requirements, quantified NFRs, a bidirectional traceability matrix (RTM), and a definition-of-ready packet. Use when converting product objectives into testable, traceable requirements for a G02 decision. Do not use to approve G02, replace PRD authority, design architecture, create implementation work packages, or decide any gate.
++---
++
++# BADF Requirements
++
++This skill authors the four G02 evidence artifacts for an independent BADF `G02` decision. It has
++**no gate authority** and **no validator of its own**: the canonical gate opens the artifacts
++(`docs/01-lifecycle-gates.md`, *G02 evidence contract*; `BADF-WP-0041`). It owns the RTM *contract*,
++not the G02 *authority* — it authors, the gate verifies, an authority decides.
++
++## Invariants
++
++```text
++REQ-I01 — No Gate Authority
++  badf-requirements may create, normalize, decompose and repair G02 evidence.
++  It MUST NOT: emit a G02 PASS or an "eligible-for-review" verdict; advance
++  lifecycle state; approve Definition of Ready; impersonate product_owner;
++  modify gate policy; or weaken G02 acceptance criteria.
++
++REQ-I02 — PRD Traceability
++  Every material requirement traces to an approved G01 objective, or to an
++  explicitly declared external requirement source.
++
++REQ-I03 — Testability
++  Every priority requirement is testable and carries downstream acceptance and
++  test obligations.
++
++REQ-I04 — Quantified NFRs
++  A qualitative NFR ("fast", "secure", "scalable", "highly available") is
++  incomplete until a measurable threshold exists (metric, operator, target, unit,
++  method).
++
++REQ-I05 — Bidirectional RTM
++  PRD objective <-> requirement <-> acceptance criterion must remain
++  reconstructable in both directions; no orphan requirement, no uncovered
++  criterion, no dangling id.
++
++REQ-I06 — Security Provenance
++  A security/privacy/compliance requirement introduced after G01 retains its
++  originating threat, privacy, compliance or policy provenance.
++```
++
++## Preconditions
++
++1. Read repository `AGENTS.md`, `docs/00-operating-model.md`, `docs/01-lifecycle-gates.md`, `docs/05-evidence-and-provenance.md`, and `docs/07-skills-governance.md`.
++2. Resolve the active work package and confirm requirement decomposition is in scope, with `G02` as the gate.
++3. Require a versioned upstream PRD baseline carrying `G01` disposition and approval evidence. Treat it as an input claim; never manufacture or upgrade G01 authority.
++4. If the PRD baseline is absent, stale, contradictory, or not approved, stop and report the missing upstream condition.
++
++## Workflow
++
++`FRAME → INGEST → CLARIFY → DECOMPOSE → QUANTIFY → TRACE → CHALLENGE → VALIDATE → EVIDENCE → DELIVER`
++
++1. **FRAME** — bind the task to work package, `G02`, source revision, PRD baseline, change/data class, and the authority boundary.
++2. **INGEST** — enumerate every approved PRD objective (`OBJ-…`) and its immutable baseline reference.
++3. **CLARIFY** — surface ambiguity in functional scope, interaction, technical constraints, business value, acceptance, dependencies, and security/compliance sources. Do not invent answers.
++4. **DECOMPOSE** — author the `requirements` artifact: unique `REQ-…`, each with a statement, priority, `testable`, and `objective_refs` to ≥1 objective (REQ-I02). Use `references/requirements-decomposition.md` for the authoring model.
++5. **QUANTIFY** — author the `nfr` artifact: every quality/constraint obligation gets a measurable target (REQ-I04).
++6. **TRACE** — author the `traceability` artifact: the bidirectional RTM (`requirement_to_objective`, `criterion_to_requirement`) — complete, no orphan requirement, no uncovered acceptance criterion (REQ-I05). Security/compliance requirements carry their provenance (REQ-I06).
++7. **CHALLENGE** — record unresolved decisions and review findings; blockers stay explicit. Silence is not completeness.
++8. **VALIDATE** — assemble the G02 dossier with the four evidence records and run `python3 scripts/badf_gate.py dossier <dossier>`. Exit 0 is the only pass; a refusal names the defect. **There is no `badf-requirements` validator** — the canonical gate is the sole G02 authority.
++9. **EVIDENCE** — the `definition-of-ready` packet is a **human** sign-off whose checklist covers every one of G02's own exit criteria; the requirements author must not produce it (REQ-I01).
++10. **DELIVER** — report the gate's verdict and the unresolved items. Never emit a G02 outcome, a "ready" score, or an approval as this skill's own decision.
++
++Read `references/requirements-decomposition.md` for the RTM authoring model (and which of its nodes the gate consumes today) and `references/methodology-provenance.md` for adapted external methodology. This skill is `IMPLEMENTED`; its status lives in `badf/skill-registry.json`.
+diff --git a/skills/badf-requirements/references/methodology-provenance.md b/skills/badf-requirements/references/methodology-provenance.md
+new file mode 100644
+index 0000000..cc93650
+--- /dev/null
++++ b/skills/badf-requirements/references/methodology-provenance.md
+@@ -0,0 +1,34 @@
++# External methodology provenance
++
++Status: **REFERENCE / ADAPT ONLY — no external executable vendored.**
++
++Adapted from the requirements-engineering methodology surveyed in the superseded PR #47, salvaged
++here as the authoring layer while #47's obsolete gate implementation (a standalone validator and a
++custom RTM schema) was discarded. These are methodology references only: they grant no tool access, no
++execution permission, no gate authority, and no runtime dependency.
++
++## GitHub Spec Kit — `github/spec-kit`
++
++Sequencing ideas BADF adapts: define/specify before implementation; separate clarification from
++specification; use checklists to test requirement quality; run cross-artifact consistency/coverage
++analysis before implementation. BADF does **not** delegate its RTM contract, evidence model, lifecycle
++gate, or authority decisions to Spec Kit.
++
++## softaworks requirements-clarity — `softaworks/agent-toolkit`
++
++Clarification lenses BADF adapts: functional scope and boundaries; interaction and success/failure
++scenarios; technical constraints; business value and success metrics; acceptance criteria and
++ambiguity; systematic clarification rather than assumption. BADF does **not** adopt its numeric clarity
++score as gate evidence — G02 readiness is the gate's bidirectional RTM plus explicit judgment findings.
++
++## wshobson security-requirement-extraction — `wshobson/agents`
++
++Security concepts BADF adapts: threat/business context → an actionable, specific, testable security
++requirement; requirements carry threat/compliance traceability; acceptance criteria and security test
++cases are part of the requirement chain. BADF adds the deterministic discipline of **REQ-I06**: a
++security/privacy/compliance requirement retains its originating provenance.
++
++## Admission posture
++
++Any future vendoring or direct execution of these sources requires a separate external-skill admission
++work package under `docs/07-skills-governance.md`. This skill adapts sequencing and lenses only.
+diff --git a/skills/badf-requirements/references/requirements-decomposition.md b/skills/badf-requirements/references/requirements-decomposition.md
+new file mode 100644
+index 0000000..6a2e5d7
+--- /dev/null
++++ b/skills/badf-requirements/references/requirements-decomposition.md
+@@ -0,0 +1,56 @@
++# Requirements decomposition — the RTM authoring model
++
++Status: **SKILL REFERENCE — authoring model, not a gate schema.**
++
++This is how `badf-requirements` *authors* a Requirements Traceability Matrix. It is a thinking model,
++not a second gate contract. The **canonical G02 gate** (`badf_gate.py`, `BADF-WP-0041`) is the sole
++authority on what is *enforced*; this reference names both, and is explicit about the gap.
++
++## The authoring chain
++
++Decompose an approved PRD baseline down this spine, and never collapse product intent into
++implementation tasks:
++
++```text
++OBJ → CAP → EPIC → REQ → AC → TEST → EVDREQ      (delivery spine)
++              REQ → NFR → AC → TEST → EVDREQ      (quantified NFR overlay)
++              SRC → REQ                            (security/compliance provenance)
++```
++
++| Prefix | Node | Purpose |
++| --- | --- | --- |
++| `OBJ-` | PRD objective | approved upstream outcome |
++| `CAP-` | Capability | a product/system ability an objective needs |
++| `EPIC-` | Epic | a coherent delivery slice of a capability |
++| `REQ-` | Requirement | an atomic functional / data / security / compliance obligation |
++| `NFR-` | Non-functional requirement | a quantified quality/constraint obligation |
++| `AC-` | Acceptance criterion | an observable pass/fail condition |
++| `TEST-` | Test obligation | a verification that must eventually run |
++| `EVDREQ-` | Evidence requirement | proof that must exist for a test claim |
++| `SRC-` | Security/compliance source | a threat, compliance, privacy or abuse-case driver |
++
++Ids are stable identities; statements evolve only through a new RTM version with supersession.
++Requirement-to-requirement sequencing belongs in `dependencies`, never in a traceability edge.
++
++## What the gate consumes today (the canonical subset)
++
++**The G02 gate enforces only the lean subset of this model** — deliberately (PR #71 deferred the
++capability/epic hierarchy). Author toward these four artifacts; the gate opens each one:
++
++| Artifact | Canonical rule the gate enforces |
++| --- | --- |
++| `requirements` | unique `REQ-…`, each with a statement, priority, `testable`, and `objective_refs` to ≥1 objective |
++| `nfr` | each `NFR-…` carries a real, quantified target value |
++| `traceability` | the bidirectional RTM — `requirement_to_objective` + `criterion_to_requirement`, complete: no orphan requirement, no uncovered acceptance criterion, no dangling id |
++| `definition-of-ready` | a **human** sign-off whose checklist covers every one of G02's own `exit_criteria` |
++
++So the gate's live graph is `OBJ ← REQ → NFR`, `REQ ↔ AC`, plus the human readiness sign-off.
++
++## The gap, held honestly
++
++`CAP`, `EPIC`, `TEST`, and `EVDREQ` are **authoring intermediates**, not first-class gate objects
++today. Use them to reason your way from an objective to a testable requirement; do not expect the gate
++to enforce them, and **do not add a schema for them here**. If real project use proves that
++capability/epic (or test/evidence obligations) need machine enforcement, that is a **separate
++failing-first work package** against the canonical gate — not schema growth by speculation, and never
++a second validator beside `badf_gate.py`.
+diff --git a/tests/test_badf_requirements_skill.py b/tests/test_badf_requirements_skill.py
+new file mode 100644
+index 0000000..0e8a0f2
+--- /dev/null
++++ b/tests/test_badf_requirements_skill.py
+@@ -0,0 +1,75 @@
++"""badf-requirements authoring skill (BADF-WP-0063; salvage of the superseded PR #47).
++
++badf-requirements decomposes an approved PRD baseline into the four canonical G02
++artifacts and validates them with `badf_gate.py dossier` -- it has no validator of
++its own. PR #47's obsolete design (a standalone scripts/badf_requirements.py + a
++custom RTM schema that duplicated the gate) is explicitly NOT salvaged: the guards
++below lock that architecture out. The skill authors artifacts; the canonical gate
++verifies them; a human authority decides G02. It lands IMPLEMENTED.
++"""
++import hashlib
++import json
++import sys
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++SKILL_DIR = gate.ROOT / "skills/badf-requirements"
++SKILL = SKILL_DIR / "SKILL.md"
++
++
++class SkillExistsTests(unittest.TestCase):
++    def test_the_skill_and_its_two_references_exist(self):
++        self.assertTrue(SKILL.is_file(), "skills/badf-requirements/SKILL.md is missing")
++        for ref in ("requirements-decomposition.md", "methodology-provenance.md"):
++            self.assertTrue((SKILL_DIR / "references" / ref).is_file(), f"references/{ref} is missing")
++
++    def test_registered_implemented_with_a_real_digest(self):
++        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
++        entry = next(e for e in reg["skills"] if e["name"] == "badf-requirements")
++        self.assertEqual(entry["status"], "IMPLEMENTED")
++        self.assertEqual(entry["source"], "skills/badf-requirements/SKILL.md")
++        want = "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest()
++        self.assertEqual(entry["digest"], want)
++
++
++class AuthorityBoundaryTests(unittest.TestCase):
++    def setUp(self):
++        self.text = SKILL.read_text(encoding="utf-8")
++
++    def test_declares_no_gate_authority(self):
++        self.assertIn("REQ-I01", self.text)
++        self.assertRegex(self.text, r"no gate authority|never (emit|approve).*G02|MUST NOT")
++
++    def test_validates_through_the_canonical_gate_not_a_validator_of_its_own(self):
++        self.assertIn("badf_gate.py dossier", self.text)
++        self.assertNotIn("badf_requirements.py", self.text)
++
++    def test_names_the_four_canonical_g02_artifacts(self):
++        for art in ("requirements", "nfr", "traceability", "definition-of-ready"):
++            self.assertIn(art, self.text)
++
++
++class AntiDuplicationGuards(unittest.TestCase):
++    """PR #47's obsolete implementation must never be salvaged with the authoring layer."""
++
++    def test_no_standalone_requirements_validator(self):
++        self.assertFalse((gate.ROOT / "scripts/badf_requirements.py").exists(),
++                         "a standalone requirements validator duplicates the canonical G02 gate")
++
++    def test_no_custom_rtm_schema_or_template(self):
++        self.assertFalse((gate.ROOT / "schemas/requirements-rtm.schema.json").exists(),
++                         "a custom RTM schema duplicates the canonical G02 artifacts")
++        self.assertFalse((gate.ROOT / "templates/requirements-rtm.json").exists(),
++                         "a custom RTM template duplicates the canonical G02 artifacts")
++
++    def test_the_gate_remains_the_sole_g02_authority(self):
++        # no second module claims to render a G02 verdict.
++        self.assertEqual(sorted(p.name for p in (gate.ROOT / "scripts").glob("*requirements*")), [],
++                         "a competing requirements module exists beside the gate")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0062/work-package.json b/work/WP-2026-0062/work-package.json
+index 7138230..9062e95 100644
+--- a/work/WP-2026-0062/work-package.json
++++ b/work/WP-2026-0062/work-package.json
+@@ -2,7 +2,7 @@
+   "$schema": "../../schemas/work-package.schema.json",
+   "schema_version": "1.0.0",
+   "id": "WP-2026-0062",
+-  "title": "experimental-research (P1, R08) + control 28 — an empirical run carries a real experiment bound to a held hypothesis",
++  "title": "experimental-research (P1, R08) + control 28 \u2014 an empirical run carries a real experiment bound to a held hypothesis",
+   "owner": "human_sponsor",
+   "demand": "BADF-DEM-0049",
+   "repository": "bstBizEra/badf",
+@@ -46,11 +46,12 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "467406f"
++    "base_revision": "467406f",
++    "landed_as": "a20df5ed8453d6e86093d5be1c022e94e7aa4d67"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Extends the frozen research contract (extend-only): control 27 -> 28, 10th subskill at IMPLEMENTED, family stays ACTIVE. P1 gate lifted by operator selection 2026-08-29. Resolves #113 / GOV-0032. Reconciles WP-2026-0061."
+ }
