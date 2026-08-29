@@ -1,0 +1,37 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 695a263..614b13c 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -842,6 +842,32 @@ coverage; the gaps are named, not implied to pass. Two committed shadow matrices
+ `lifecycle.json` change, no new control (the controls are WP-SOL-B/C), no second validator. Registry
+ `VALIDATED → SHADOWED`; `APPROVED`/`ACTIVE` remains the operator's admission decision.
+ 
++## badf-git GIT-E — the composition claim (`BADF-WP-0076`, Issue #144 / GOV-0055)
++
++`SOURCE_HEAD_GREEN != INTEGRATION_SAFE` is badf-git's core invariant and its contract binds a
++nine-field composition identity — yet `badf_compose.py` computed all of it on every PR (`base X +
++candidate Y -> composed Z (tree T)`) and recorded none of it; three rebases across GIT-B/C/D each
++silently invalidated composition. The obvious record — commit the tuple inside the PR — is
++circular: the commit that adds it moves the head and the result tree. BADF had already solved that
++once, in the self-dossier, by binding **content** with `work/<WP>/` and the lockfile excluded.
++
++**`badf_compose.py --record <path>`** writes a `git-composition` record after composing; its binding
++is **`expected_content_tree`** — the composed tree with `work/<WP>/` and `badf/lockfile.json` removed,
++computed on a temporary index — which is what lets the record, the self-dossier and the lockfile live
++inside the PR they verify. Committed as `work/<WP>/evidence/G07/composition-record.json`, it is
++found by compose on the tree that would land — in CI and locally — and **refused** when the
++recorded base is not the base being composed onto ("stale … recompute with `--record`": the rebase
++failure mode, made a refusal), when the recomputed content tree differs (content changed after the
++claim), when the method is not squash, the target is foreign, the work package differs, or the record
++is malformed. No record prints `composition: no record` and passes as before — requiring one is a
++later policy decision. The self-dossier indexes the record as `composition` evidence when present
++(digest-bound; HUMAN_REQUIRED dossiers skip per-type rules, which is why compose is the enforcement
++point). The `composition-verification` subskill carries the author's order of operations —
++*commit content → `--record` → `self-dossier` → commit → push* — and the rule that a rebase or a
++content change recomputes the record, never edits it. This work package's own PR carried its record
++and CI verified it. Approval staleness and the expected-head merge guard are GIT-F; the landed-tree
++comparison after merge is GIT-F/G.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

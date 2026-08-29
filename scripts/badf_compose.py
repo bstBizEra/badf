@@ -41,6 +41,115 @@ FULL_PATTERN = "test_*.py"
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from badf_gate import WP_LINE, WP_NAMESPACE  # noqa: E402
 
+# ---- badf-git GIT-E: the composition claim (BADF-WP-0076) ----------------------------
+# A committed record of what integration is expected to produce. Its binding is the
+# CONTENT TREE -- the composed tree with work/<WP>/ and badf/lockfile.json removed --
+# so the record (and the self-dossier and lockfile that follow it) can live inside the
+# PR they verify without moving the identity they bind. Compose recomputes it on the
+# composed tree and refuses a stale base or a changed content tree. No record is
+# backward compatible: requiring one is a later policy decision.
+RECORD_REL = "evidence/G07/composition-record.json"
+COMPOSITION_REQUIRED = ("schema_version", "observed_at", "repository", "work_package_id", "target_ref", "target_base_sha",
+                        "source_ref", "merge_base_sha", "merge_method", "expected_result_tree", "expected_content_tree",
+                        "policy_epoch", "test_set_epoch", "suite_pattern", "non_coverage")
+
+
+def content_tree(checkout: Path, wp: str, rev: str = "HEAD") -> str:
+    """The tree of <rev> with work/<wp>/ and badf/lockfile.json removed, computed on a
+    temporary index so the checkout's own index is never touched."""
+    with tempfile.TemporaryDirectory(prefix="badf-ctree-") as d:
+        env = {**os.environ, "GIT_INDEX_FILE": str(Path(d) / "index")}
+
+        def run(*a: str) -> subprocess.CompletedProcess:
+            return subprocess.run(["git", "-C", str(checkout), *a], capture_output=True, text=True, env=env)
+
+        r = run("read-tree", rev)
+        if r.returncode:
+            raise RuntimeError(f"cannot read the tree of {rev} in {checkout}: {r.stderr.strip()}")
+        run("rm", "-r", "-q", "--cached", "--ignore-unmatch", "--", f"work/{wp}", "badf/lockfile.json")
+        r = run("write-tree")
+        if r.returncode:
+            raise RuntimeError(f"cannot write the content tree of {rev} in {checkout}: {r.stderr.strip()}")
+        return r.stdout.strip()
+
+
+def _self_name(repo: Path) -> str | None:
+    reg = repo / "badf/repositories.json"
+    if not reg.is_file():
+        return None
+    try:
+        for name, spec in (json.loads(reg.read_text(encoding="utf-8")).get("repositories") or {}).items():
+            if isinstance(spec, dict) and spec.get("resolution") == "SELF":
+                return name
+    except ValueError:
+        return None
+    return None
+
+
+def composition_record(*, repo: Path, candidate: str, wp: str, base: str, cand: str,
+                       tree: str, ctree: str, tests: str) -> dict:
+    from datetime import datetime, timezone
+    name = sh(["git", "rev-parse", "--symbolic-full-name", candidate], repo).stdout.strip()
+    epoch = None
+    life = repo / "badf/lifecycle.json"
+    if life.is_file():
+        try:
+            epoch = json.loads(life.read_text(encoding="utf-8")).get("policy_epoch")
+        except ValueError:
+            epoch = None
+    return {
+        "record": "git-composition",
+        "schema_version": "1.0.0",
+        "observed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "repository": _self_name(repo),
+        "work_package_id": wp,
+        "target_ref": f"refs/heads/{DEFAULT_BRANCH}",
+        "target_base_sha": base,
+        "source_ref": name if name.startswith("refs/") else None,
+        "source_head_sha": cand,
+        "merge_base_sha": sh(["git", "merge-base", base, cand], repo).stdout.strip() or None,
+        "merge_method": "squash",
+        "expected_result_tree": tree,
+        "expected_content_tree": ctree,
+        "policy_epoch": epoch,
+        "test_set_epoch": None,
+        "suite_pattern": tests,
+        "non_coverage": ["test_set_epoch: BADF defines no test-set/toolchain epoch; not recorded rather than invented",
+                         "source_head_sha and expected_result_tree are informational: committing this record moves both; "
+                         "the binding is expected_content_tree (work/<WP>/ and the lockfile excluded)"],
+    }
+
+
+def load_composition_record(path: Path) -> dict:
+    try:
+        rec = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise ValueError(f"{path} is not a git-composition record ({exc.__class__.__name__})")
+    if not isinstance(rec, dict) or rec.get("record") != "git-composition":
+        raise ValueError(f"{path} is not a git-composition record (no `record: git-composition`)")
+    missing = [k for k in COMPOSITION_REQUIRED if k not in rec]
+    if missing:
+        raise ValueError(f"{path} is not a complete git-composition record; missing {missing}")
+    return rec
+
+
+def verify_composition_record(rec: dict, *, wp: str, base: str, ctree: str) -> list[str]:
+    problems = []
+    if rec.get("work_package_id") != wp:
+        problems.append(f"the record binds {rec.get('work_package_id')!r}, not {wp}")
+    if rec.get("target_ref") != f"refs/heads/{DEFAULT_BRANCH}":
+        problems.append(f"foreign target_ref {rec.get('target_ref')!r}; the protected target is refs/heads/{DEFAULT_BRANCH}")
+    if rec.get("merge_method") != "squash":
+        problems.append(f"merge_method {rec.get('merge_method')!r}; the protected method is squash")
+    if rec.get("target_base_sha") != base:
+        problems.append(f"composition record is stale: recorded for base {str(rec.get('target_base_sha'))[:7]}, composing onto "
+                        f"{base[:7]} -- recompute with --record")
+    elif rec.get("expected_content_tree") != ctree:
+        problems.append(f"composition record does not match the composed content (recorded content tree "
+                        f"{str(rec.get('expected_content_tree'))[:7]}, actual {ctree[:7]}) -- the content changed after the claim; "
+                        f"recompute with --record")
+    return problems
+
 
 def sh(cmd: list[str], cwd: Path, env: dict | None = None, input: str | None = None) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, cwd=str(cwd), capture_output=True, text=True, env=env, input=input)
@@ -122,6 +231,28 @@ def compose(args: argparse.Namespace) -> int:
         # reconciled, a third fixture-vs-ledger dependence in one session.
         if not (work / "work" / wp / "work-package.json").is_file():
             return fail(f"no work package record for {wp} in the composed tree; the message names a work package the candidate does not carry")
+        # GIT-E (BADF-WP-0076): the composition claim. Compute the content tree of the
+        # composed commit; write the record when asked; verify a committed record on the
+        # tree that would land -- a stale base or a changed content tree is a refusal.
+        ctree = content_tree(work, wp, "HEAD")
+        if args.record:
+            record = composition_record(repo=repo, candidate=args.candidate, wp=wp, base=base, cand=cand,
+                                        tree=tree, ctree=ctree, tests=args.tests)
+            args.record.parent.mkdir(parents=True, exist_ok=True)
+            args.record.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+            print(f"  record: written to {args.record} (content tree {ctree[:7]}, base {base[:7]})")
+        rec_path = work / "work" / wp / RECORD_REL
+        if rec_path.is_file():
+            try:
+                committed = load_composition_record(rec_path)
+            except ValueError as exc:
+                return fail(f"composition record: {exc}")
+            problems = verify_composition_record(committed, wp=wp, base=base, ctree=ctree)
+            if problems:
+                return fail("composition record: " + "; ".join(problems))
+            print(f"  composition: CURRENT (content tree {ctree[:7]}, recorded for base {base[:7]})")
+        else:
+            print("  composition: no record (pre-GIT-E work package; requiring one is a later decision)")
         landed_body = g("log", "-1", "--format=%B", f"origin/{DEFAULT_BRANCH}").stdout
         if not WP_LINE.search(landed_body) or f"{m.group(1)}" not in (WP_LINE.search(landed_body).group(1)):
             return fail("the composed commit on origin/main does not carry the candidate's Work-Package line")
@@ -193,6 +324,8 @@ def main() -> int:
     ap.add_argument("--tests", default=FULL_PATTERN, help="unittest discovery pattern (a restriction is printed)")
     ap.add_argument("--ci-shape", action="store_true", help="no PropTech clone, no local mirror -- as on the runner")
     ap.add_argument("--keep", action="store_true", help="keep the scratch directory")
+    ap.add_argument("--record", type=Path, help="write the git-composition record (the content-tree-bound composition claim) "
+                    "to this path; commit it as work/<WP>/evidence/G07/composition-record.json and compose again to verify it")
     args = ap.parse_args()
     try:
         return compose(args)
