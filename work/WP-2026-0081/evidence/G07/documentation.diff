@@ -1,0 +1,38 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index f5579aa..6c02139 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -965,6 +965,33 @@ recovery work package** with `git revert`, composed against current `main`, head
+ post-merge reconcile; `main` is never rewritten. The runner renders its own record every run
+ (`EVIDENCE_ONLY` on a clean, detached checkout). Release-ref recovery is GIT-H.
+ 
++## badf-git GIT-H — a release ref is a checked binding (`BADF-WP-0081`, Issue #155 / GOV-0061)
++
++The release contract says `TAG_EXISTS != RELEASE_AUTHORIZED`, that release refs are created only
++from `main` and are immutable, and that the version comes from an explicit record — never a branch
++name, a PR title, a commit prefix, or a tag anyone can create. Measured after GIT-G: one release-class
++ref existed, the annotated, **unsigned** `BADF-BASELINE-1.0.0` → `3f6119b`, which every G00–G02
++example evidence file names as its `source_revision`; no `vX.Y.Z`, no GitHub release, no version
++source of truth, no tag ruleset, and **no tag logic in the gate** — a moved baseline tag would have
++silently re-governed every example.
++
++**`badf_gate.py git-release-check <tag>`** (read-only) refuses a missing or lightweight tag, a tag off
++`main`'s first-parent history, a tag with no release record (`TAG_EXISTS != RELEASE_AUTHORIZED`), a
++record for a different revision (the tag *moved*), a version or result tree that differs, and a
++provenance statement the tag object contradicts — else `RELEASE_BOUND`. **`git-release-record
++<version>`** writes `badf/releases/<version>.json` — the contract's release binding — as a
++`HUMAN_REQUIRED` request: it binds an existing tag's own commit or, absent a tag, HEAD; only
++first-parent commits of `main` qualify; version reuse against different content is refused; **it
++never runs `git tag`** — the release authority creates the tag, then the check proves the pair. `repo`
++gains `verify_release_refs`: every recorded release ref that exists locally must still point at its
++recorded revision (an absent tag is tolerated — a shallow clone is not a breach); `badf/releases/` is
++lockfile-covered. The historical baseline is recorded through the tool with its provenance limitation
++stated (annotated, unsigned), not rewritten. The `release-versioning` subskill carries the SemVer
++decision as the release authority's checklist and the record → tag → check sequence. Whether BADF cuts
++its first `vX.Y.Z` is a release-authority decision this WP enables and does not take. The runner
++checks the baseline every run. Signing, tag rulesets, SBOM/attestation are the platform's and
++G10–G13's.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

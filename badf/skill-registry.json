@@ -270,6 +270,16 @@
       "allowed_tools": [],
       "status": "IMPLEMENTED",
       "digest": "sha256:7d0dbbbcf8e81f507423541e07265fa78bdbc6c04468c189953a73a80156599d"
+    },
+    {
+      "name": "release-versioning",
+      "source": "skills/badf-git/subskills/release-versioning/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:cd4853d7c20c235ab6448568cb367bf019b02a03cf8d5db72595ff75766962b3"
     }
   ]
 }

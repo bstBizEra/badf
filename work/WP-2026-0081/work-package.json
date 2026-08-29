@@ -1,0 +1,54 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0081",
+  "title": "GIT-H release: `git-release-check` verifies a release ref is annotated, on main, unmoved and record-bound; `git-release-record` writes the binding, never a tag; recorded release refs pinned by `repo`; release-versioning subskill",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0068",
+  "repository": "bstBizEra/badf",
+  "objective": "Make a release ref a checked binding while creating one stays a human act. `badf_gate.py git-release-check <tag> [<path>]` (read-only) verifies: the tag exists and is annotated; its commit is on main's first-parent history (release-from-main); a release record badf/releases/<tag>.json exists and binds this exact source_revision and source_result_tree (a different revision = the tag moved: refused; no record = TAG_EXISTS != RELEASE_AUTHORIZED: BLOCKED); the record's version equals the tag; the provenance statement (annotated/signed) matches. `badf_gate.py git-release-record <version> [<path>]` writes badf/releases/<version>.json (version, tag_ref, source_ref, source_revision, source_result_tree, content_tree, policy_epoch, provenance when the tag exists, release_authority and disposition HUMAN_REQUIRED) only at a first-parent commit of origin/<default>, refusing version reuse against a different revision and unsupported version forms; it never runs git tag. `repo` gains an immutability guard: every recorded release tag that exists locally must point at its recorded revision. The historical BADF-BASELINE-1.0.0 -> 3f6119b (annotated, unsigned; the source_revision of every G00-G02 example) is recorded with its provenance limitation stated. The release-versioning subskill carries the SemVer decision contract as the release authority's checklist and the record -> tag -> check sequence; cutting the first vX.Y.Z stays a release-authority decision.",
+  "business_value": "The contract says TAG_EXISTS != RELEASE_AUTHORIZED and that release refs are immutable, yet the repository has one unsigned baseline tag that every example dossier depends on, no version source of truth, no tag ruleset and no tag logic in the gate: a moved tag would silently re-govern every example. With the record and the guard, a release ref means what the ledger says it means -- GTGM v0.1 sections 14, 15 and 17 (GIT-H).",
+  "in_scope": [
+    "badf_gate.py: git_release_check / git_release_record + `git-release-check` / `git-release-record` subcommands; verify_release_refs() called by validate_repo; badf/releases/ covered by the lockfile",
+    "badf/releases/BADF-BASELINE-1.0.0.json: the historical baseline recorded (annotated, unsigned, 3f6119b)",
+    "skills/badf-git/subskills/release-versioning/SKILL.md registered IMPLEMENTED, C1, allowed_tools []; badf-git root stays DESIGNED",
+    ".github/workflows/badf-gates.yml: `git-release-check BADF-BASELINE-1.0.0` on the runner (fetch-depth 0 fetches tags)",
+    "tests/test_badf_git_release.py (11 tests, failing-first, scratch clones with local annotated tags); GITHUB_CONTROL_PLANE.md doctrine section; own composition record + G07 self-dossier; lockfile re-signed"
+  ],
+  "out_of_scope": [
+    "creating, moving, deleting or signing any tag; creating a GitHub release; tag rulesets or signature enforcement (platform policy, a later decision)",
+    "cutting the first vX.Y.Z (release-authority decision); SBOM/attestation/deployment records (G10-G13 measured gates); a version bump ledger or CHANGELOG; the remote-workspace mode (#133)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "git-release-check BADF-BASELINE-1.0.0 -> RELEASE_BOUND with source_revision 3f6119b and provenance.signed false, locally and on the runner; a lightweight tag, a tag off main's first-parent, a tag without a record (TAG_EXISTS != RELEASE_AUTHORIZED), a moved tag (record revision differs) and a record whose version differs from the tag are each refused",
+    "git-release-record v0.1.0 at a first-parent main commit writes the full binding as HUMAN_REQUIRED and creates no tag; off main, version reuse against a different revision and unsupported version forms are refused",
+    "repo refuses a recorded release tag that points elsewhere and tolerates a recorded tag absent locally (reported); git-release-check is read-only and deterministic modulo observed_at; each refusal and guard branch load-bearing (mutation)",
+    "release-versioning registered IMPLEMENTED C1 allowed_tools [] with a real digest; root stays DESIGNED; no new script/schema/ruleset/authority change; repo clean; compose green; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_git_release.py"
+  ],
+  "evidence": [
+    "failing-first run",
+    "mutation",
+    "compose output incl. composition: CURRENT",
+    "CI runner git-release-check step output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "74282a4"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-H per GTGM v0.1 section 17, after GIT-G (WP-2026-0080 / 74282a4). Resolves #155 / GOV-0061. Reconciles WP-2026-0080 (composition_verified true). Engineered by BARCHI-2 in a linked worktree under the operator's /loop ('proceed on your call')."
+}

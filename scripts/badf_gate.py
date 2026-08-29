@@ -76,6 +76,7 @@ INTEGRITY_PATHS = [
     "badf/tool-registry.json",
     "badf/decisions/*.json",
     "badf/demands/*.json",
+    "badf/releases/*.json",
     "badf/repositories.json",
     # Foreign work packages: the evidence ARTIFACTS are digest-bound already,
     # but the dossier and evidence .json files were not -- a re-pointed digest
@@ -896,6 +897,7 @@ def validate_repo() -> None:
 
     verify_integrity()
     verify_registry_digests()
+    verify_release_refs()
     verify_demand_learnings()
     verify_monotonic_authority()
     verify_work_ledger()
@@ -3829,6 +3831,153 @@ def git_recovery(root: Path, *, preserve: str | None = None, wp: str | None = No
     }
 
 
+# ---- badf-git GIT-H: release refs are checked bindings (BADF-WP-0081) ------------------
+RELEASE_VERSION = re.compile(r"^(v[0-9]+\.[0-9]+\.[0-9]+|BADF-BASELINE-[0-9]+\.[0-9]+\.[0-9]+)$")
+RELEASE_REQUIRED = ("schema_version", "observed_at", "version", "tag_ref", "source_ref", "source_revision",
+                    "source_result_tree", "policy_epoch", "provenance", "release_authority", "disposition", "non_coverage")
+RELEASES_DIR = "badf/releases"
+
+
+def _tag_provenance(root: Path, tag: str) -> dict[str, Any] | None:
+    """What the tag object itself says: None when the tag does not exist; annotated
+    False for a lightweight tag (no tagger identity at all)."""
+    if _git_at(root, "rev-parse", "--verify", "-q", f"refs/tags/{tag}") is None:
+        return None
+    kind = _git_at(root, "cat-file", "-t", f"refs/tags/{tag}")
+    if kind != "tag":
+        return {"annotated": False, "signed": False, "tagger": None}
+    body = _git_at(root, "cat-file", "tag", f"refs/tags/{tag}") or ""
+    tagger = None
+    for line in body.splitlines():
+        if line.startswith("tagger "):
+            parts = line[len("tagger "):].rsplit(" ", 2)   # name <email> <ts> <tz>
+            tagger = parts[0] if len(parts) == 3 else line[len("tagger "):]
+            break
+    return {"annotated": True, "signed": "-----BEGIN" in body, "tagger": tagger}
+
+
+def _on_first_parent(root: Path, sha: str) -> bool:
+    return sha in set((_git_at(root, "rev-list", "--first-parent", f"refs/remotes/origin/{DEFAULT_BRANCH}") or "").split())
+
+
+def parse_release_record(text: str, label: str) -> dict[str, Any]:
+    try:
+        rec = json.loads(text)
+    except ValueError:
+        raise ValidationError(f"{label} is not a git-release record (not JSON)")
+    if not isinstance(rec, dict) or rec.get("record") != "git-release":
+        raise ValidationError(f"{label} is not a git-release record (no `record: git-release`)")
+    missing = [k for k in RELEASE_REQUIRED if k not in rec]
+    if missing:
+        raise ValidationError(f"{label} is not a complete git-release record; missing {missing}")
+    return rec
+
+
+def git_release_check(root: Path, tag: str) -> dict[str, Any]:
+    """`badf_gate.py git-release-check <tag> [<path>]`: a release-class ref is a checked
+    binding. Read-only. Refuses (BLOCKED) a missing or lightweight tag, a tag whose commit is
+    not on main's first-parent history (release-from-main), a tag with no release record
+    (TAG_EXISTS != RELEASE_AUTHORIZED), a record for a different revision (the tag moved --
+    an immutability breach), a version that differs from the tag, a result tree that differs,
+    or a provenance statement the tag object contradicts."""
+    from datetime import datetime, timezone
+    baseline = git_baseline(root)
+    root = Path(baseline["worktree"]["path"]); top = Path(baseline["repository"]["root"])
+    prov = _tag_provenance(root, tag)
+    if prov is None:
+        raise ValidationError(f"BLOCKED: refs/tags/{tag} does not exist in {top}")
+    if not prov["annotated"]:
+        raise ValidationError(f"BLOCKED: refs/tags/{tag} is a lightweight tag; a release ref must be annotated (a tagger identity is part of the binding)")
+    commit = _git_at(root, "rev-parse", f"refs/tags/{tag}^{{commit}}")
+    if not _on_first_parent(root, commit):
+        raise ValidationError(f"BLOCKED: refs/tags/{tag} -> {commit[:12]} is not on the first-parent history of origin/{DEFAULT_BRANCH}; release refs are created only from main")
+    rec_path = top / RELEASES_DIR / f"{tag}.json"
+    if not rec_path.is_file():
+        raise ValidationError(f"BLOCKED: refs/tags/{tag} has no release record at {RELEASES_DIR}/{tag}.json -- TAG_EXISTS != RELEASE_AUTHORIZED")
+    rec = parse_release_record(rec_path.read_text(encoding="utf-8"), f"{RELEASES_DIR}/{tag}.json")
+    if rec["version"] != tag:
+        raise ValidationError(f"BLOCKED: {RELEASES_DIR}/{tag}.json records version {rec['version']!r}, not {tag}")
+    if rec["source_revision"] != commit:
+        raise ValidationError(f"BLOCKED: refs/tags/{tag} has moved: recorded at {str(rec['source_revision'])[:7]}, now at {commit[:7]} -- a published release ref is immutable; "
+                              "corrections are a new version or an explicit supersession, never a moved tag")
+    tree = _git_at(root, "rev-parse", f"{commit}^{{tree}}")
+    if rec["source_result_tree"] != tree:
+        raise ValidationError(f"BLOCKED: {RELEASES_DIR}/{tag}.json records result tree {str(rec['source_result_tree'])[:7]}, the tag's commit has {tree[:7]}")
+    recorded = rec.get("provenance") or {}
+    if recorded.get("annotated") is not True or bool(recorded.get("signed")) != prov["signed"]:
+        raise ValidationError(f"BLOCKED: {RELEASES_DIR}/{tag}.json's provenance {recorded} contradicts the tag object "
+                              f"(annotated {prov['annotated']}, signed {prov['signed']}); record the limitation, do not rewrite it")
+    return {
+        "record": "git-release-check", "schema_version": "1.0.0",
+        "observed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "disposition": "RELEASE_BOUND", "version": tag, "tag_ref": f"refs/tags/{tag}",
+        "source_ref": f"refs/heads/{DEFAULT_BRANCH}", "source_revision": commit, "source_result_tree": tree,
+        "provenance": prov, "record_path": f"{RELEASES_DIR}/{tag}.json", "release_authority": rec.get("release_authority"),
+        "non_coverage": ["tag signature verification is not performed (recorded as provenance.signed only)",
+                         "artifact/SBOM/attestation identity (docs/11 release packet) is not bound here -- G10/G11 evidence"],
+    }
+
+
+def git_release_record(root: Path, version: str) -> dict[str, Any]:
+    """`badf_gate.py git-release-record <version> [<path>]`: write badf/releases/<version>.json
+    -- the contract's release binding -- as a HUMAN_REQUIRED request. Binds an EXISTING
+    tag's commit (recording a historical or freshly created ref) or, when no tag exists yet,
+    HEAD (a request for one). Only first-parent commits of origin/<default> qualify
+    (release-from-main). Never runs `git tag`; refuses version reuse against a different
+    revision and unsupported version forms."""
+    from datetime import datetime, timezone
+    if not RELEASE_VERSION.match(version):
+        raise ValidationError(f"BLOCKED: {version!r} is not a release version; use vX.Y.Z (forward releases) or BADF-BASELINE-X.Y.Z (historical baselines)")
+    baseline = git_baseline(root)
+    root = Path(baseline["worktree"]["path"]); top = Path(baseline["repository"]["root"])
+    prov = _tag_provenance(root, version)
+    commit = _git_at(root, "rev-parse", f"refs/tags/{version}^{{commit}}") if prov else baseline["source_head_sha"]
+    if not _on_first_parent(root, commit):
+        raise ValidationError(f"BLOCKED: {commit[:12]} is not on the first-parent history of origin/{DEFAULT_BRANCH}; release refs are created only from main")
+    rec_path = top / RELEASES_DIR / f"{version}.json"
+    if rec_path.is_file():
+        existing = parse_release_record(rec_path.read_text(encoding="utf-8"), f"{RELEASES_DIR}/{version}.json")
+        if existing.get("source_revision") != commit:
+            raise ValidationError(f"BLOCKED: version {version} is already recorded for {str(existing.get('source_revision'))[:7]}; a version is never reused for different content -- choose a new version or record a supersession")
+    epoch = None
+    life = top / "badf/lifecycle.json"
+    if life.is_file():
+        epoch = load_json(life).get("policy_epoch")
+    rec = {
+        "record": "git-release", "schema_version": "1.0.0",
+        "observed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "version": version, "tag_ref": f"refs/tags/{version}", "source_ref": f"refs/heads/{DEFAULT_BRANCH}",
+        "source_revision": commit, "source_result_tree": _git_at(root, "rev-parse", f"{commit}^{{tree}}"),
+        "policy_epoch": epoch, "provenance": prov,
+        "release_authority": "HUMAN_REQUIRED", "disposition": "HUMAN_REQUIRED",
+        "non_coverage": ["the tag is created by the release authority (git tag -a / gh release), never by this tool",
+                         "artifact/SBOM/attestation identity (docs/11) is G10/G11 evidence, not bound here",
+                         *(["provenance limitation: the tag is unsigned; recorded, not rewritten"] if prov and not prov["signed"] else []),
+                         *(["no tag exists yet: this record is a request; git-release-check verifies the pair once the tag is created"] if not prov else [])],
+    }
+    rec_path.parent.mkdir(parents=True, exist_ok=True)
+    rec_path.write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
+    return rec
+
+
+def verify_release_refs() -> None:
+    """Every recorded release ref that exists locally still points at its recorded
+    revision (BADF-WP-0081): a moved release tag is an immutability breach and refuses
+    the repository contract. A recorded tag absent locally is tolerated (a shallow clone
+    is not a breach)."""
+    for path in sorted((ROOT / RELEASES_DIR).glob("*.json")):
+        rec = parse_release_record(path.read_text(encoding="utf-8"), path.relative_to(ROOT).as_posix())
+        version = rec["version"]
+        if path.stem != version:
+            raise ValidationError(f"{path.relative_to(ROOT).as_posix()} records version {version!r}; the file must be named {version}.json")
+        now = _git("rev-parse", "--verify", "-q", f"refs/tags/{version}^{{commit}}")
+        if now is None:
+            continue
+        if now != rec["source_revision"]:
+            raise ValidationError(f"release ref refs/tags/{version} has moved: recorded at {str(rec['source_revision'])[:7]}, now at {now[:7]}; "
+                                  "a published release ref is immutable -- restore it, or record a supersession under a new version")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -3846,6 +3995,10 @@ def main() -> int:
     gr_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
     gr_parser.add_argument("--preserve", metavar="LABEL", help="create refs/recovery/<WP>/<LABEL> at HEAD (+ -worktree snapshot of a dirty tree)")
     gr_parser.add_argument("--wp", help="work package id that namespaces the recovery refs (required with --preserve)")
+    rc_parser = subparsers.add_parser("git-release-check", help="verify a release ref: annotated, on main first-parent, record-bound, unmoved (badf-git GIT-H; read-only)")
+    rc_parser.add_argument("tag"); rc_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
+    rr_parser = subparsers.add_parser("git-release-record", help="write badf/releases/<version>.json as a HUMAN_REQUIRED release binding; binds an existing tag or HEAD; never creates a tag")
+    rr_parser.add_argument("version"); rr_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
     charter_parser = subparsers.add_parser("charter", help="bind an instance to the framework's authority floor at its pinned revision")
     charter_parser.add_argument("path", type=Path)
     adv_parser = subparsers.add_parser("advance", help="bind an APPROVED dossier for the instance's next gate; the gate is derived from the chain")
@@ -3910,6 +4063,18 @@ def main() -> int:
                 print(f"BADF GATE PASS: {summary}")
                 return 0
             print(f"BADF GATE HELD: {summary}; preserve before any destructive step")
+            return 3
+        elif args.command == "git-release-check":
+            rec = git_release_check(args.path, args.tag)
+            print(json.dumps(rec, indent=2))
+            print(f"BADF GATE PASS: git-release-check -- RELEASE_BOUND {rec['version']} -> {rec['source_revision'][:7]} "
+                  f"(tree {rec['source_result_tree'][:7]}; annotated, signed={rec['provenance']['signed']})")
+            return 0
+        elif args.command == "git-release-record":
+            rec = git_release_record(args.path, args.version)
+            print(json.dumps(rec, indent=2))
+            print(f"BADF GATE HELD: git-release-record -- {rec['version']} bound to {rec['source_revision'][:7]} as HUMAN_REQUIRED; "
+                  f"the release authority creates the tag, then git-release-check verifies the pair")
             return 3
         elif args.command == "charter":
             print(write_charter(args.path))
