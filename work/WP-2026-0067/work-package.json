@@ -44,11 +44,12 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "b1e0f5a"
+    "base_revision": "b1e0f5a",
+    "landed_as": "8673d9a3292d304968c4c8bc15b9a6cd4d64b031"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Reuses the G01-G05 substrate -- no new validator module. G06 min change class is C1, so the example dossier carries the two base roles (engineering_owner + independent_reviewer). Shipped via the operator's /loop self-paced gate march. Resolves #125 / GOV-0046. Reconciles WP-2026-0066."
 }

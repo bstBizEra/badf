@@ -1,0 +1,33 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 20d51ff..459119e 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -682,6 +682,28 @@ non-empty `stop_conditions` (*rollback and stop conditions executable*). G06's m
+ independent_reviewer). Ships a **G05→G06** pair-acceptance (the full G00→G06 advance chain). Same lean
+ substrate as G01–G05 — no new module. Shipped through the operator's `/loop` self-paced gate march.
+ 
++## badf-solution-design — composition contract freeze (`BADF-WP-0068` / WP-SOL-A, Issue #128 / GOV-0047)
++
++BADF had specialist *design* surfaces (G03 UX, G04 architecture/data/API) but nothing that **composed**
++their detailed contracts into one coherent solution — five individually-valid designs can compose a broken
++one (UX asserts an action authorization denies; an API with no data state behind it; a failure conveyed
++only by color). `badf-solution-design` is that composition/orchestration layer, registered `DESIGNED`: a
++**thin router + constraint contract**, not a sixth architecture skill, a new gate, a second validator, or
++a document mega-skill. `badf-architecture` (ACTIVE) stays the structural spine and G04 authority;
++solution-design **details** interfaces and raises `ARCHITECTURE_CHANGE_REQUIRED` rather than inventing a
++boundary (SOL-I02).
++
++`SKILL.md` + eleven references freeze the `FRAME→…→PACKAGE` workflow, the `SOL-I01…I12` cross-artifact
++invariants (requirement provenance; UX↔API; API↔authorization; **default-deny SOL-I05 `NO MATCH = DENY`**;
++authorization↔audit; API↔data; UX↔error; accessibility-binds-behavior; migration safety; API compatibility;
++**SOL-I12 no second gate**), the solution-composition matrix (the detailed-design RTM), the
++`authorization-design` framing (principal·resource·action·scope·… with RBAC as one model), and the API
++DESIGN/ASSURE split. **No `scripts/badf_solution_design.py`, no new schema, no `lifecycle.json` change** —
++it composes into the **existing** G03/G04 evidence; `badf_gate.py` stays the sole gate authority. Adds no
++gate code, so no new control and nothing to mutate; the test guards the declarative surface. Specialist
++adapters, composition schemas and seam controls are deferred to WP-SOL-B…D. Built in an isolated
++`git worktree` alongside BARCHI-2's parallel badf-git work (GIT-B/GIT-C), per GIT-I04.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
