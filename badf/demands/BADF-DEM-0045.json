@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0045",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 106,
+    "url": "https://github.com/bstBizEra/badf/issues/106",
+    "exported_at": "2026-08-29T07:13:18Z",
+    "body_digest": "sha256:ab90dab37c80f566fd2d634de5743f56e78a955d711229faf6ec0e331af0b450"
+  },
+  "title": "GOV-0041: finish badf-research \u2014 advance the family DESIGNED -> ACTIVE (IMPLEMENTED/VALIDATED/SHADOWED met, owner approved)",
+  "problem": "## Observed\n`badf-research` is held at `DESIGNED`, but every admission-ladder criterion below `ACTIVE` is now objectively met and unblocked by the operator's explicit approval:\n- **IMPLEMENTED** \u2014 all nine P0 subskills exist as concise `SKILL.md` files (registered `IMPLEMENTED`).\n- **VALIDATED** \u2014 all 26 controls are enforced in the gate and pass with mutation.\n- **SHADOWED** \u2014 three gate-valid shadow records over real historical BADF cases (`BADF-WP-0055`), measured faithful, no contract gap.\nThe only remaining gate is `APPROVED`/`ACTIVE`: owner + security approval with the registry digest pinned \u2014 which the operator has now given (\"finish badf-research\").\n\n## Expected\nAdvance the **family root** `badf-research` `DESIGNED \u2192 ACTIVE`, and record the reasoning: the capability is live for autonomous research use, its nine subskills are its `IMPLEMENTED` machinery (a two-tier model: family = capability admission, subskill = implementation status), and it **still grants no implementation authority** (RSR-I01, schema-fixed) even when ACTIVE \u2014 research produces evidence; `badf-delivery` governs what authorised actors do with it. Update the root `SKILL.md` status line, the registry (re-digest), the acceptance ladder, and the contract test.\n\n## Evidence\n- registry: `badf-research` DESIGNED; 9 subskills IMPLEMENTED; 26 controls enforced (acceptance.md)\n- SHADOWED evidence: `skills/badf-research/references/shadow-evidence.md` (WP-0055)\n- authority: `implementation_authority` schema-fixed `false` (RSR-I01) \u2014 activation cannot grant execution authority\n\n## Unknowns\nNone. `APPROVED` and `ACTIVE` are a single ladder step in this single-collaborator repo (the owner is also the security reviewer, as the acceptance docs note). The subskills stay `IMPLEMENTED` as the active family's components.\n\n## Proposed work package\n`BADF-WP-0058`. Advance `badf-research` `DESIGNED \u2192 ACTIVE`: SKILL.md status, registry re-digest, acceptance ladder, contract test; own G07 self-dossier. C2. No gate control or schema change.\n\ndiscovered-by: operator directive \"finish badf-research\" (2026-08-29) \u00b7 status: DISCOVERED\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-29T07:13:18Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Finish badf-research: advance family DESIGNED->ACTIVE (IMPLEMENTED/VALIDATED/SHADOWED met + owner approval). Grants no authority even ACTIVE (RSR-I01). Authority: operator 'finish badf-research' (2026-08-29). Worked as BADF-WP-0058."
+}
