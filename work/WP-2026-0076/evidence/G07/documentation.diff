@@ -1,10 +1,10 @@
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 695a263..614b13c 100644
+index 2610b45..06ebc66 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -842,6 +842,32 @@ coverage; the gaps are named, not implied to pass. Two committed shadow matrices
- `lifecycle.json` change, no new control (the controls are WP-SOL-B/C), no second validator. Registry
- `VALIDATED → SHADOWED`; `APPROVED`/`ACTIVE` remains the operator's admission decision.
+@@ -859,6 +859,32 @@ representative, and the owed real-project re-shadow is filed as a tracked follow
+ the capability is admitted for use, its trust is honestly bounded to a representative shadow, and the
+ debt to re-shadow on real data is tracked rather than lost. Registry `SHADOWED → ACTIVE`.
  
 +## badf-git GIT-E — the composition claim (`BADF-WP-0076`, Issue #144 / GOV-0055)
 +

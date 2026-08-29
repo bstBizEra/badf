@@ -27,7 +27,7 @@ index 0000000..216831a
 +  "note": "BADF-WP-GIT-E composition identity: `badf_compose.py --record` writes a git-composition record bound to the content tree (composed tree minus work/<WP>/ and the lockfile); compose recomputes and compares it on the composed tree; self-dossier indexes it as `composition` evidence; composition-verification subskill. Authority: operator `/loop your goal on badf-git` + 'proceed on your call' (2026-08-29), design order GTGM v0.1 section 17 after GIT-D (WP-2026-0075, f1a0a5c). Worked as BADF-WP-0076."
 +}
 diff --git a/badf/skill-registry.json b/badf/skill-registry.json
-index 6c65907..3788c7a 100644
+index 08655fd..e7d0522 100644
 --- a/badf/skill-registry.json
 +++ b/badf/skill-registry.json
 @@ -230,6 +230,16 @@
@@ -48,12 +48,12 @@ index 6c65907..3788c7a 100644
    ]
  }
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 695a263..614b13c 100644
+index 2610b45..06ebc66 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -842,6 +842,32 @@ coverage; the gaps are named, not implied to pass. Two committed shadow matrices
- `lifecycle.json` change, no new control (the controls are WP-SOL-B/C), no second validator. Registry
- `VALIDATED → SHADOWED`; `APPROVED`/`ACTIVE` remains the operator's admission decision.
+@@ -859,6 +859,32 @@ representative, and the owed real-project re-shadow is filed as a tracked follow
+ the capability is admitted for use, its trust is honestly bounded to a representative shadow, and the
+ debt to re-shadow on real data is tracked rather than lost. Registry `SHADOWED → ACTIVE`.
  
 +## badf-git GIT-E — the composition claim (`BADF-WP-0076`, Issue #144 / GOV-0055)
 +
@@ -546,22 +546,22 @@ index 0000000..7d2339c
 +
 +if __name__ == "__main__":
 +    unittest.main()
-diff --git a/work/WP-2026-0074/work-package.json b/work/WP-2026-0074/work-package.json
-index 85a956c..f045f8a 100644
---- a/work/WP-2026-0074/work-package.json
-+++ b/work/WP-2026-0074/work-package.json
+diff --git a/work/WP-2026-0077/work-package.json b/work/WP-2026-0077/work-package.json
+index 0ac1cd9..36c9d1f 100644
+--- a/work/WP-2026-0077/work-package.json
++++ b/work/WP-2026-0077/work-package.json
 @@ -44,11 +44,12 @@
      "reversible": true,
-     "method": "revert the squash commit via PR"
+     "method": "revert the squash commit via PR (registry back to SHADOWED)"
    },
 -  "status": "IN_PROGRESS",
 +  "status": "CLOSED",
    "external_target": {
      "repository": "bstBizEra/badf",
      "branch": "main",
--    "base_revision": "f1a0a5c"
-+    "base_revision": "f1a0a5c",
-+    "landed_as": "dc6b608ebea7aee2097b050883f0a0fe9ce9ed6c"
+-    "base_revision": "dc6b608"
++    "base_revision": "dc6b608",
++    "landed_as": "1b80d7c9d20e1f39c6287aa033904e6cbff17dc3"
    },
-   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Shadow evidence + status advance; no new gate control (the controls are WP-SOL-B/C), so no mutation. Built in an isolated worktree (badf-wt-sold, GIT-I04) parallel to BARCHI-2's badf-git GIT-D (#140). Ids WP-0074/DEM-0061/GOV-0053 (0073 poisoned by third actor, avoided). Reconciles WP-2026-0075 (GIT-D, landed f1a0a5c; WP-0069 already reconciled on main by GIT-D). Shipped via operator /loop 'badf-solution-design to active'. Resolves #141 / GOV-0053."
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Registry admission SHADOWED->ACTIVE on the operator's explicit decision (AskUserQuestion 2026-08-30 'activate now, accept representative'); grants no authority (SOL-I12); caveat preserved; real re-shadow deferred to #145. No gate control (controls are WP-SOL-B/C) -> no mutation. Built in isolated worktree (badf-wt-sole, GIT-I04) parallel to BARCHI-2's badf-git GIT-E (#144). Ids WP-0077/DEM-0064/GOV-0056. Reconciles WP-2026-0074 (GIT-... no: WP-SOL-D, landed dc6b608). Resolves #146 / GOV-0056."
  }
