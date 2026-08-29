@@ -220,6 +220,16 @@
       "allowed_tools": [],
       "status": "IMPLEMENTED",
       "digest": "sha256:decd6f8bbdc450a824e48b14e1196a99b4498ade470a8501afc40123a8f33772"
+    },
+    {
+      "name": "commit-integrity",
+      "source": "skills/badf-git/subskills/commit-integrity/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:941dded6c33ac5793ed56063cb2ff7cf8dcbd25e3c8fa808d70533cff3196268"
     }
   ]
 }

@@ -35,6 +35,13 @@ jobs:
         # writes nothing, fetches nothing; on a pull_request the checkout is the detached
         # refs/pull/N/merge ref, so head_kind must render `detached` here, not a branch.
         run: python3 scripts/badf_gate.py git-baseline
+      - name: Git staleness (read-only; the runner's own baseline renders CURRENT)
+        # BADF-WP-0075 (badf-git GIT-D): parse + compare on real infrastructure. A baseline
+        # captured a moment ago must render CURRENT against the same, untouched checkout;
+        # the redirect captures the PASS line too, which the loader tolerates.
+        run: |
+          python3 scripts/badf_gate.py git-baseline > "$RUNNER_TEMP/git-baseline.json"
+          python3 scripts/badf_gate.py git-staleness "$RUNNER_TEMP/git-baseline.json"
       # QA finding m1: fail-fast hid every violation after the first. Negative
       # control 1 went red at step 4 and steps 5-6 were skipped, so the
       # authority refusal was never exercised and the operator saw one problem

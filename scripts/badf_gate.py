@@ -3518,6 +3518,106 @@ def git_baseline(root: Path) -> dict[str, Any]:
     }
 
 
+# ---- badf-git GIT-D: staleness against a stored baseline (BADF-WP-0075) --------------
+_BASELINE_REQUIRED = ("schema_version", "observed_at", "repository", "source_head_sha", "target_sha",
+                      "merge_base_sha", "index", "policy_epoch")
+
+
+def load_git_baseline_record(path: Path) -> dict[str, Any]:
+    """A git-baseline record as `git-baseline` printed it -- tolerating the trailing
+    `BADF GATE PASS` line that a stdout redirect captures. Refuses anything that is
+    not a complete git-baseline record: a verdict must never be computed against a
+    file that merely looks like one."""
+    try:
+        text = Path(path).read_text(encoding="utf-8")
+    except OSError as exc:
+        raise ValidationError(f"BLOCKED: cannot read the baseline record {path}: {exc}")
+    lines = text.rstrip("\n").splitlines()
+    if lines and lines[-1].startswith("BADF GATE "):
+        lines = lines[:-1]
+    try:
+        rec = json.loads("\n".join(lines))
+    except ValueError:
+        raise ValidationError(f"BLOCKED: {path} is not a git-baseline record (not JSON)")
+    if not isinstance(rec, dict) or rec.get("record") != "git-baseline":
+        raise ValidationError(f"BLOCKED: {path} is not a git-baseline record (no `record: git-baseline`)")
+    missing = [k for k in _BASELINE_REQUIRED if k not in rec]
+    if missing:
+        raise ValidationError(f"BLOCKED: {path} is not a complete git-baseline record; missing {missing}")
+    if not isinstance(rec.get("repository"), dict) or not rec["repository"].get("root") or not isinstance(rec.get("index"), dict):
+        raise ValidationError(f"BLOCKED: {path} is not a complete git-baseline record (repository.root / index)")
+    return rec
+
+
+def git_staleness(record: dict[str, Any], root: Path) -> dict[str, Any]:
+    """`badf_gate.py git-staleness <baseline-record.json> [<path>]`: staleness as a
+    measured verdict (GIT-I05). Re-observes the tree through git_baseline() and
+    compares it with the stored record:
+
+      CURRENT          same source head, target SHA and policy epoch          (exit 0)
+      SOURCE_ADVANCED  source moved; the recorded head is an ancestor          (HELD 3)
+      STALE_EVIDENCE   the recorded head is NOT an ancestor (a rewrite), or   (HELD 3)
+                       the policy epoch changed
+      TARGET_MOVED     target moved, source unchanged                          (HELD 3)
+
+    Combined cases report every flag and render the strictest disposition. Index
+    and worktree count deltas are informational only: a dirty tree is not a
+    rewrite. The rewrite *type* is not deterministically inferable from two SHAs
+    and is not guessed. A baseline binds a checkout: a record from another root
+    is refused. Read-only, like git_baseline.
+    """
+    from datetime import datetime, timezone
+    now = git_baseline(root)
+    if Path(record["repository"]["root"]).resolve() != Path(now["repository"]["root"]).resolve():
+        raise ValidationError(f"BLOCKED: the baseline record binds checkout {record['repository']['root']}, not "
+                              f"{now['repository']['root']}; a baseline binds a checkout -- take a new one here")
+    old_head, new_head = record["source_head_sha"], now["source_head_sha"]
+    old_target, new_target = record["target_sha"], now["target_sha"]
+    old_mb, new_mb = record.get("merge_base_sha"), now.get("merge_base_sha")
+    source_changed = old_head != new_head
+    reachable = subprocess.run(["git", "-C", str(root), "cat-file", "-e", f"{old_head}^{{commit}}"],
+                               capture_output=True).returncode == 0
+    ancestor = reachable and subprocess.run(["git", "-C", str(root), "merge-base", "--is-ancestor", old_head, new_head],
+                                            capture_output=True).returncode == 0
+    source_rewritten = source_changed and not ancestor
+    target_changed = old_target != new_target
+    merge_base_changed = old_mb != new_mb
+    epoch_changed = record.get("policy_epoch") != now.get("policy_epoch")
+    index_delta = {k: int(now["index"].get(k, 0)) - int(record["index"].get(k, 0))
+                   for k in ("staged", "unstaged", "untracked", "unmerged", "stash")}
+    if source_rewritten or epoch_changed:
+        disposition, invalidated = "STALE_EVIDENCE", ["source-bound evidence", "composition", "review"]
+    elif source_changed:
+        disposition, invalidated = "SOURCE_ADVANCED", ["composition", "review"]
+    elif target_changed:
+        disposition, invalidated = "TARGET_MOVED", ["composition"]
+    else:
+        disposition, invalidated = "CURRENT", []
+    return {
+        "record": "git-staleness",
+        "schema_version": "1.0.0",
+        "observed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "disposition": disposition,
+        "baseline_observed_at": record["observed_at"],
+        "repository": now["repository"],
+        "old_source_head": old_head, "new_source_head": new_head,
+        "old_target_sha": old_target, "new_target_sha": new_target,
+        "old_merge_base": old_mb, "new_merge_base": new_mb,
+        "old_policy_epoch": record.get("policy_epoch"), "new_policy_epoch": now.get("policy_epoch"),
+        "source_changed": source_changed,
+        "source_rewritten": source_rewritten,
+        "old_head_still_reachable": reachable,
+        "target_changed": target_changed,
+        "merge_base_changed": merge_base_changed,
+        "epoch_changed": epoch_changed,
+        "kind": "history_rewrite" if source_rewritten else None,
+        "invalidated": invalidated,
+        "index_delta": index_delta,
+        "non_coverage": ["rewrite type (amend / rebase / reset / cherry-pick) is not deterministically inferable from two "
+                         "revisions and is not guessed", *now.get("non_coverage", [])],
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -3528,6 +3628,9 @@ def main() -> int:
     inst_parser.add_argument("path", type=Path)
     gb_parser = subparsers.add_parser("git-baseline", help="render the read-only GIT_BASELINED record of <path> (default: this repository); writes nothing, fetches nothing (badf-git GIT-O0)")
     gb_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
+    gs_parser = subparsers.add_parser("git-staleness", help="compare a stored git-baseline record with <path> now: CURRENT (0) / SOURCE_ADVANCED, STALE_EVIDENCE, TARGET_MOVED (HELD 3); read-only (badf-git GIT-I05)")
+    gs_parser.add_argument("record", type=Path, help="a git-baseline record (stdout of `git-baseline`, PASS line tolerated)")
+    gs_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
     charter_parser = subparsers.add_parser("charter", help="bind an instance to the framework's authority floor at its pinned revision")
     charter_parser.add_argument("path", type=Path)
     adv_parser = subparsers.add_parser("advance", help="bind an APPROVED dossier for the instance's next gate; the gate is derived from the chain")
@@ -3567,6 +3670,16 @@ def main() -> int:
             print(f"BADF GATE PASS: git-baseline -- GIT_BASELINED {rec['source_head_sha'][:7]} on "
                   f"{rec['target_sha'][:7]} (ahead {rec['ahead']}, behind {rec['behind']})")
             return 0
+        elif args.command == "git-staleness":
+            v = git_staleness(load_git_baseline_record(args.record), args.path)
+            print(json.dumps(v, indent=2))
+            summary = (f"git-staleness -- {v['disposition']} source {v['old_source_head'][:7]} -> {v['new_source_head'][:7]}, "
+                       f"target {v['old_target_sha'][:7]} -> {v['new_target_sha'][:7]}")
+            if v["disposition"] == "CURRENT":
+                print(f"BADF GATE PASS: {summary}")
+                return 0
+            print(f"BADF GATE HELD: {summary}; recovery is recomputation, not relabelling")
+            return 3
         elif args.command == "charter":
             print(write_charter(args.path))
             return 0
