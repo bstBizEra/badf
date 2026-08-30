@@ -1,0 +1,57 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0110",
+  "title": "WP-VER close-out: the G08 ladder's institutional learning, and the five demands it discharges",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0097",
+  "repository": "bstBizEra/badf",
+  "objective": "Close out the badf-engineering-verification program (VER-A..E, e1423ad -> d292801, now ACTIVE) by recording its one substantive institutional learning and discharging its five demands against it. The learning -- docs/learnings/a-guard-that-cannot-fail-is-not-a-guard.md -- names the defect class behind every defect the program shipped or nearly shipped: a check pointed at a PROXY for its property (a comment character, a seat name in any body, a dict key, a line, a status field, a pipeline's last exit code) rather than at the property itself, so the proxy can occur without the property holding and vice versa. Instances are recorded across ALL FOUR seats unqualified, because the class is a property of the work and not of one agent's care. BADF-REV's generalization and its two mitigations (assert the property directly; give every guard a positive control that has been seen to fail -- a guard never observed red is not evidence) are credited to them. BADF-DEM-0087/0090/0092/0093/0095 flip AUTHORIZED -> RESOLVED referencing that file. The VER-E doctrine section gains the #217 link, discharging the carried intent recorded in #217's body.",
+  "business_value": "A ladder that produced five landed rungs and six distinct near-misses teaches one thing worth keeping, and BADF's own doctrine says a concluded demand must state it or explicitly state that there is none. Discharging five demands with a real learning -- rather than the bulk NONE_DECLARED refused on #220 -- is the template for how the other 81 should eventually be discharged: at each demand's natural moment, with something actually learned.",
+  "in_scope": [
+    "docs/learnings/a-guard-that-cannot-fail-is-not-a-guard.md (new; extend-only directory)",
+    "badf/demands/BADF-DEM-0087|0090|0092|0093|0095.json: AUTHORIZED -> RESOLVED, each referencing the learning file",
+    "docs/governance/GITHUB_CONTROL_PLANE.md: number #217 into the VER-E admission section's first non-coverage bullet (carried intent discharged)",
+    "badf/demands/BADF-DEM-0097.json; work/WP-2026-0110 record + composition record + typed G07 self-dossier; lockfile re-signed; reconcile the land-time-current WP"
+  ],
+  "out_of_scope": [
+    "#220: the other 81 AUTHORIZED demands and the derived-transition fix (Tier B, own WP, three conditions bound in writing on that issue)",
+    "#210 / #211 / #216 / #218; the deferred re-shadow #217 itself",
+    "any change to scripts/, schemas/, badf/lifecycle.json, .github/ or any skill's SKILL.md"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the learning file exists, names the defect class and its two mitigations, and records instances across all four seats including the author's own",
+    "the five demands are RESOLVED and each carries learning: docs/learnings/a-guard-that-cannot-fail-is-not-a-guard.md; badf_gate.py repo PASSES",
+    "failing-first is recorded: flipping the five terminal WITHOUT the learning field makes repo refuse ('BADF-DEM-0087 is RESOLVED but declares no learning') -- the positive control verify_demand_learnings has never had",
+    "the VER-E doctrine section names #217 as the discharge path",
+    "no diff in scripts/, schemas/, badf/lifecycle.json, .github/ or any SKILL.md; existing suites green; CI green on the composed tree; QA + REV"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "no new module: verify_demand_learnings already exists and is exercised on the real records (observed red, then green)",
+    "tests/test_badf_engineering_verification_contract.py (9, unchanged)",
+    "tests/test_badf_verification_shadow.py (7, unchanged)"
+  ],
+  "evidence": [
+    "failing-first: repo refusal on the five terminal-without-learning records",
+    "green run after the learning field is added",
+    "compose output incl. composition record",
+    "G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR; the demands return to AUTHORIZED and the learning file is removed"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "d292801"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Close-out of the badf-engineering-verification program under the #195 A->E authorization; the ladder itself is complete and ACTIVE at d292801. Resolves #221 / GOV-0096. BARCHI-1's #213 is landing first by agreement, so this rebases onto it and reconciles the then-current WP. QA + REV by BADF-QA (bst-sa-5b) and BADF-REV (bst-sa-f0); BADF-REV has asked for a scoped delta check on the doctrine file. Engineered by BARCHI-3 under /loop."
+}

@@ -17,6 +17,7 @@
   },
   "recorded_at": "2026-08-30T19:06:59Z",
   "provenance": "EXPORTED_FROM_SOURCE",
-  "status": "AUTHORIZED",
-  "note": "WP-VER-D: shadow the G08 controls -- WP-2026-0010 UNTOUCHED (additive proof measured); five RECONSTRUCTED single-reviewer records of BARCHI-1's real verdict arc (#196 Request-Changes->Approved with the synthetic-id MAJOR finding; #201/#202/#205), each verify-accepted and tamper-refused; 12 representative dossiers (10 injected defects refused, every control owning >=1; 2 clean admitted); metrics + non-coverage named (one reviewer seat; prose reconstruction; representative fixtures); registry VALIDATED->SHADOWED. Encoded reviewer's honesty conditions adopted; COI disclosed, BARCHI-2 co-reviews the encoding class. Ladder-internal. VER-E = operator admission on this evidence, not pre-granted."
+  "status": "RESOLVED",
+  "note": "WP-VER-D: shadow the G08 controls -- WP-2026-0010 UNTOUCHED (additive proof measured); five RECONSTRUCTED single-reviewer records of BARCHI-1's real verdict arc (#196 Request-Changes->Approved with the synthetic-id MAJOR finding; #201/#202/#205), each verify-accepted and tamper-refused; 12 representative dossiers (10 injected defects refused, every control owning >=1; 2 clean admitted); metrics + non-coverage named (one reviewer seat; prose reconstruction; representative fixtures); registry VALIDATED->SHADOWED. Encoded reviewer's honesty conditions adopted; COI disclosed, BARCHI-2 co-reviews the encoding class. Ladder-internal. VER-E = operator admission on this evidence, not pre-granted.",
+  "learning": "docs/learnings/a-guard-that-cannot-fail-is-not-a-guard.md"
 }

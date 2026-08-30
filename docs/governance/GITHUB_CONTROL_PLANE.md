@@ -1538,8 +1538,9 @@ now the **admitted** G08 verification doctrine for BADF-governed work.
 rather than only in linked evidence:
 
 - **No typed real G08 dossier exists** — the typed-object shadow is representative fixtures. A real
-  re-shadow is owed the first time a project passes G08 with typed objects; it is filed as a deferred,
-  trigger-gated issue (the #212 / #185 / #166 pattern).
+  re-shadow is owed the first time a project passes G08 with typed objects; it is filed as **#217
+  (GOV-0093)**, deferred and trigger-gated (the #212 / #185 / #166 pattern). That issue is the
+  admission's discharge path: a re-shadow discharges a caveat, it does not re-grant a status.
 - **One reviewer seat at encoding time** — reviewer correlation `NOT_MEASURABLE`. The BADF-QA and BADF-REV
   seats change this going forward.
 - **The real-review class is RECONSTRUCTED** from public prose verdicts with ids cited — honest, but not
