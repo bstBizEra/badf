@@ -1,0 +1,181 @@
+diff --git a/badf/demands/BADF-DEM-0096.json b/badf/demands/BADF-DEM-0096.json
+new file mode 100644
+index 0000000..b372149
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0096.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0096",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 219,
++    "url": "https://github.com/bstBizEra/badf/issues/219",
++    "exported_at": "2026-08-30T20:26:10Z",
++    "body_digest": "sha256:e06c1a43eaf2850c3a1faa48586a1f6afbea8dfe30dab4a17b8d3f0dabcfc3f4"
++  },
++  "title": "GOV-0095: badf-build's frozen contract names a family that does not exist (SKILL.md:31 'badf-verification' → badf-engineering-verification); + the guard, executed as the first real controller run",
++  "problem": "🧠 **ARCHI (BARCHI-2)** — plan for WP-2026-0109: `badf-build`'s frozen contract names a family that does not exist\n\n## Stage-Gate\n- **Stage:** 0 monitor → 1 intake: a measured defect in a shipped artifact; the fix is one line plus the guard that keeps the class out.\n- **Decision:** Continue — the defect is on `main` in an `ACTIVE` family's contract.\n- **Over-engineering risk:** a repo-wide family-name linter for every skill. Refused: the guard is scoped to `skills/badf-build/**`, the surface this work package owns. Other families can adopt it if their own review finds the class.\n- **Glossary stage(s):** 7 build (contract accuracy of the build family); nothing later pulled in.\n\n## Observed (measured on `main` `8de88d5`)\n`skills/badf-build/SKILL.md:31`, inside the frozen **Boundary** block, reads:\n\n```text\nbadf-verification (G08)    independently verifies the result\n```\n\n`badf-verification` **is not a family in `badf/skill-registry.json`**. The family that verifies at G08 is `badf-engineering-verification` (BARCHI-3's, `SHADOWED` as of `8de88d5`). Every other family the surface names (`badf-build`, `badf-git`, `badf-implementation-plan`) resolves; this one does not. BARCHI-3 flagged it at their VER-A freeze and left it for this surface's owner rather than editing another seat's contract — correctly.\n\nWhy it matters beyond tidiness: the Boundary block is the part of the contract a build controller reads to know **who verifies its work**. A name that resolves to nothing is a dangling authority reference in an `ACTIVE` family.\n\n## Acceptance criteria (WP-2026-0109 / BADF-DEM-0096)\n- `skills/badf-build/SKILL.md`: the Boundary block names `badf-engineering-verification` (G08). No other contract text changes — the twelve stages, BLD-I01…I18 and the fourteen references stay byte-identical.\n- `badf/skill-registry.json`: `badf-build`'s `digest` re-pinned to the new `sha256(SKILL.md)`; `status` `ACTIVE`, `allowed_tools: []`, `risk_class` C1, `source` unchanged. (A skill edited without its registry re-pinned is refused by `repo` — BADF-WP-0032.)\n- `tests/test_badf_build_activation.py`: the frozen-digest literal moves to the new value **and the test's meaning is preserved** — it still asserts `digest == sha256(SKILL.md)`, so a silent edit is still caught.\n- **The guard against the class (failing-first):** a test that every `badf-*` family name appearing anywhere in `skills/badf-build/**` resolves in the registry. Red before the fix, green after.\n- No change to `badf_gate.py`, schemas, the workflow, the references' content, or any other family's files.\n\n## Method — the first real controller run\n`badf-build` is `ACTIVE` (`bbec762`), so this work package is executed **through its own workflow**: `CLAIM → PREFLIGHT → ISOLATE → BASELINE → SLICE → TEST-FIRST → IMPLEMENT → LOCAL VERIFY → SELF-REVIEW → RECONCILE → PACKAGE → HANDOFF`, with the Work Package declaring `expected_surfaces`, `test_obligations` (unit, red required), `execution_budget` and `stop_conditions`, and one slice **delegated** under a narrowed contract.\n\nThat is not extra scope — it is how work is done now. Its by-product is the evidence the BLD-D shadow could not produce: C3 scope containment against a *really declared* surface, C4 red-before-green against a *really declared* obligation, C7 a *real* delegation subset, C6 a declared budget with attempts recorded honestly. #212 (the deferred real-conditions re-shadow) can cite this run as its first real case; discharging #212 itself remains its own later work package.\n\n## Tests\n- `test_every_family_named_in_the_surface_resolves_in_the_registry` (failing-first: `badf-verification` unresolved) · existing activation, contract and shadow pins green.\n\n## Out of scope\n- Any other family's files; the deferred re-shadow (#212); a repo-wide linter.\n\n**Version tier:** patch (defect fix + guard). **Lean mode:** advisory. Review: BADF-QA + BADF-REV (the surface is an `ACTIVE` family's frozen contract).\n\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T20:26:10Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "badf-build's frozen Boundary block named `badf-verification (G08)`, which resolves to nothing in the registry; the G08 family is badf-engineering-verification. One contract line + registry digest re-pin + the frozen-digest literal + a failing-first guard that every badf-* name in skills/badf-build/** resolves. Executed through badf-build's own workflow -- the first real controller run."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index fd919ea..3151649 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -299,7 +299,7 @@
+       "risk_class": "C1",
+       "allowed_tools": [],
+       "status": "ACTIVE",
+-      "digest": "sha256:6cc3266ecde8bf6ed14fc3b5ae3b1de38a42154242d9b7517ca6f0cdb38bf0f3"
++      "digest": "sha256:927fad724957a13407c3de752c0e9ef5a3a99bbb7b58f344653aa827bf9d5330"
+     },
+     {
+       "name": "badf-engineering-verification",
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index b1921bc..45c9c9c 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1559,6 +1559,34 @@ independently reviewed by BADF-QA and BADF-REV, both of whom issued Request Chan
+ **Doctrine, unchanged by the admission:** no findings does not mean correctness; passing tests do not mean
+ coverage; source-head success does not mean composed-result safety; G08 does not replace G09. The gate
+ evaluates the evidence and `quality_authority` decides whether G08 advances.
++## badf-build's Boundary named a family that does not exist — and the first controller run (`BADF-WP-0109`, Issue #219 / GOV-0095)
++
++`skills/badf-build/SKILL.md`'s frozen **Boundary** block named `badf-verification (G08)` as the family
++that independently verifies a build. No such family is in `badf/skill-registry.json`; the one that
++verifies at G08 is `badf-engineering-verification`. Every other family the surface names resolved. In a
++block a build controller reads to learn **who checks its work**, that is a dangling authority reference —
++found by BARCHI-3 at their VER-A freeze and left for this surface's owner rather than edited across the
++seat boundary. The fix is one name (the block re-aligns by whitespace; no description changes), the
++registry digest re-pinned in the same change, and the activation test's pinned literal moved with it —
++its meaning preserved, since it still ties the pin to `sha256(SKILL.md)`. The **guard** is what keeps the
++class out: every `badf-*` token appearing anywhere under `skills/badf-build/**` must resolve in the
++registry, red before this fix and green after.
++
++**This work package is also the first ever executed *through* `badf-build`'s own workflow** — the family
++went `ACTIVE` at `bbec762` having never governed a build. It declared `expected_surfaces` (7 files),
++one unit `test_obligation` with a red phase required, an `execution_budget` of 3 attempts and six
++`stop_conditions`, and it **delegated one slice** — the guard test — to a subagent whose contract was a
++strict subset: `allowed_paths: ["tests/test_badf_build_contract.py"]`, the integration verbs prohibited,
++2 attempts. The delegate stayed inside it (verified by the controller, not taken on report) and did not
++touch the defect it was writing a guard against, so the red phase was real.
++
++So the controls the BLD-D shadow could only prove on scratch fixtures met real conditions here: **C3**
++compared a really-declared surface against the actual diff, **C4** required and got an observed red,
++**C6** recorded a genuine `RETRY` (the first attempt at moving the pinned digest silently matched
++nothing — there is no `FREEZE_DIGEST` constant, the literal is inline — and the activation test caught
++it; 2 attempts of 3), and **C7** judged a real delegation. The build ledger records
++`START · BASELINE · RED · RETRY · GREEN · VERIFY · HANDOFF`. #212 (the deferred real-conditions
++re-shadow) now has its first real case; discharging #212 remains its own work package.
+ 
+ ## Discovery ≠ scope expansion
+ 
+diff --git a/skills/badf-build/SKILL.md b/skills/badf-build/SKILL.md
+index dc5d8e3..3b3b19f 100644
+--- a/skills/badf-build/SKILL.md
++++ b/skills/badf-build/SKILL.md
+@@ -26,12 +26,12 @@ AUTHOR REVIEW ≠ INDEPENDENT ASSURANCE
+ ## Boundary
+ 
+ ```text
+-badf-implementation-plan   decides HOW authorized work is decomposed
+-badf-build                 performs the authorized mutation
+-badf-verification (G08)    independently verifies the result
+-badf-git                   governs repository topology / integration
+-BADF gate                  evaluates evidence
+-Authority                  permits lifecycle transition
++badf-implementation-plan             decides HOW authorized work is decomposed
++badf-build                           performs the authorized mutation
++badf-engineering-verification (G08)  independently verifies the result
++badf-git                             governs repository topology / integration
++BADF gate                            evaluates evidence
++Authority                            permits lifecycle transition
+ ```
+ 
+ ```text
+diff --git a/tests/test_badf_build_activation.py b/tests/test_badf_build_activation.py
+index fba2ead..78a7e2a 100644
+--- a/tests/test_badf_build_activation.py
++++ b/tests/test_badf_build_activation.py
+@@ -28,7 +28,11 @@ class ActivationTests(unittest.TestCase):
+         g = registry()["badf-build"]
+         self.assertEqual(g["status"], "ACTIVE")
+         self.assertEqual(g["digest"], "sha256:" + hashlib.sha256((gate.ROOT / g["source"]).read_bytes()).hexdigest(), "activation must not touch SKILL.md")
+-        self.assertEqual(g["digest"], "sha256:6cc3266ecde8bf6ed14fc3b5ae3b1de38a42154242d9b7517ca6f0cdb38bf0f3")
++        # The pinned contract digest. It moved once, under WP-2026-0109 (#219), when the Boundary
++        # block was corrected to name badf-engineering-verification and the registry was re-pinned
++        # in the same change; the assertion above still ties it to sha256(SKILL.md), so a silent
++        # edit is still caught.
++        self.assertEqual(g["digest"], "sha256:927fad724957a13407c3de752c0e9ef5a3a99bbb7b58f344653aa827bf9d5330")
+ 
+     def test_activation_grants_no_authority(self):
+         g = registry()["badf-build"]
+diff --git a/tests/test_badf_build_contract.py b/tests/test_badf_build_contract.py
+index 44290e0..885cb56 100644
+--- a/tests/test_badf_build_contract.py
++++ b/tests/test_badf_build_contract.py
+@@ -9,6 +9,7 @@ schema, no lifecycle change. These tests guard that declarative surface.
+ """
+ import hashlib
+ import json
++import re
+ import unittest
+ from pathlib import Path
+ 
+@@ -106,6 +107,27 @@ class BadfBuildContractTests(unittest.TestCase):
+                       "self-review as independent G08 assurance"):
+             self.assertIn(token, ext, token)
+ 
++    # WP-2026-0109 / #219 -- badf-build's Boundary block named `badf-verification (G08)`, absent from the registry.
++    def test_every_family_named_in_the_surface_resolves_in_the_registry(self):
++        # Non-family badf-* tokens. Keep this set minimal: every entry is a hole in the guard.
++        #   "badf-sa" -- slug of the sibling BST-SA organism repo, never a skill family. Defensive
++        #                only: it does not currently appear anywhere under skills/badf-build/.
++        NON_FAMILY = {"badf-sa"}
++        known = {e.get("name") for e in json.loads(REGISTRY.read_text(encoding="utf-8"))["skills"]}
++        found = {}
++        for path in sorted((ROOT / "skills" / "badf-build").rglob("*.md")):
++            for raw in re.findall(r"badf-[a-z0-9-]+", path.read_text(encoding="utf-8")):
++                # "badf-git," / "badf-build." never enter the match (the class excludes punctuation);
++                # a trailing hyphen can, and a path "badf-build/references/x.md" already stops at "/".
++                token = raw.rstrip("-")
++                if token in NON_FAMILY:
++                    continue
++                found.setdefault(token, set()).add(str(path.relative_to(ROOT)))
++        unresolved = {t: sorted(f) for t, f in found.items() if t not in known}
++        self.assertEqual({}, unresolved, "badf-* families named in the badf-build surface but absent from "
++                         + f"{REGISTRY.relative_to(ROOT)}: "
++                         + "; ".join(f"{t} named in {', '.join(files)}" for t, files in sorted(unresolved.items())))
++
+ 
+ if __name__ == "__main__":
+     unittest.main()
+diff --git a/work/WP-2026-0108/work-package.json b/work/WP-2026-0108/work-package.json
+index a81ad70..1d50f01 100644
+--- a/work/WP-2026-0108/work-package.json
++++ b/work/WP-2026-0108/work-package.json
+@@ -49,11 +49,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR; the registry returns to SHADOWED and the controls keep enforcing"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "8de88d5"
++    "base_revision": "8de88d5",
++    "landed_content_tree": "6b2999b8167508596ad48fb2878edbf1562177e4",
++    "composition_verified": true,
++    "landed_as": "d292801646bfe3cb237f153c53baf20208c57229"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-VER-E of the badf-engineering-verification program -- the final rung. The A->E authorization on #195 explicitly did NOT pre-grant this admission; the operator was asked on #214 with the HOLD alternative stated and decided ACTIVATE. Resolves #214 / GOV-0092. QA + REV by BADF-QA (bst-sa-5b) and BADF-REV (bst-sa-f0). Engineered by BARCHI-3 under /loop."
+ }
