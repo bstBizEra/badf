@@ -84,6 +84,7 @@
     "badf/demands/BADF-DEM-0073.json": "sha256:a20e0fd3ba6ded2bc453defee921e85d6c19c9b24a8574414a31a7a3c664976a",
     "badf/demands/BADF-DEM-0074.json": "sha256:062c5269aa0736f87df26d3743d4e5c66069f16250a640217498363fa287d25b",
     "badf/demands/BADF-DEM-0075.json": "sha256:f1fd4ed365363bf1dd4d1ffee5315be211cd12e4de5fd84a6b64995dc61dcf98",
+    "badf/demands/BADF-DEM-0076.json": "sha256:aa60dc7646a74eeae81930fedabf0ec9ea346b596afe905eef9685dfbe3ba45f",
     "badf/demands/BADF-DEM-0077.json": "sha256:f4e6d68ac9c047ebdd9c326ace08c08b8b5d76868df3580a594607b262932aec",
     "badf/lifecycle.json": "sha256:9f5218c5ca7e94feafd62acec4d90b55ea39f52c21d7639b1984dc3676cb55f3",
     "badf/mcp-registry.json": "sha256:cf93976e41ccd3bc8f8e918da96e42ffac10bce601d0c859f2639aedbb3fc85e",
@@ -329,7 +330,7 @@
     "templates/product-approval.json": "sha256:fa8bb514a72bdc7e3f738d5a657266fd91808b38a652fafdd65c61d42400a346",
     "templates/research-record.json": "sha256:8b4db40fb44b7196dce73f03689ec3d9d2f58621f88f233aa19909d9cd069331",
     "templates/session.md": "sha256:0bf239c6cf55f9050673c21e39176ccd37b9e46f625e78dde6dde0cead6620dc",
-    "templates/work-package.json": "sha256:f06b529fee6d041d202a1ca4ebf06ce9ebe0b5a21b7deef914381b76747c426f",
+    "templates/work-package.json": "sha256:ec4343057cfc31e5f1a4d9d919d13651ea77d65da1d5ce7afea49ef886582aa8",
     "tests/_scratch.py": "sha256:4c8583304b7140a6c91820b5cbde48ef1b78a73882d14fbd72b6644dc7267390",
     "tests/test_badf_advance.py": "sha256:a3bab9213fa797da898c997fe33f2ee36f59c1fea8cec68a86e53cc88edf1efa",
     "tests/test_badf_architecture_contract.py": "sha256:0d5e5bb320d746d97eb74971d8549808dd9cee4a93ea4652d8a87917d2023004",
@@ -385,6 +386,7 @@
     "tests/test_badf_solution_design_contract.py": "sha256:615827deddeb3d3bb2f6873bae5ab08d36b1fa6ebb4ab8bc67641428938376f6",
     "tests/test_badf_traceability.py": "sha256:3a11bd9206f3122c6c50fe17334b2a3bff1abf658bbaedf3e0e90baf60686cb0",
     "tests/test_badf_two_plane.py": "sha256:0751878b052263b49a9505f4296d77b1317370f60dd72f57bf38bdf54e2833c2",
+    "tests/test_badf_work_package_template.py": "sha256:2223ed5b5b3896821195b529fea3f4e7627d4fbb82902e8b6bb2f85876c79289",
     "work/WP-2026-0001/work-package.json": "sha256:7a9c320020fe9d79a85e08543200ec30b979578668e8b0a2202ed8d93bdc0328",
     "work/WP-2026-0010/evidence/G07/G07/build.json": "sha256:3bf12bf422b4d750c9c4f47c8aa553a6a7bb26e77881847c6a511d663f10e62a",
     "work/WP-2026-0010/evidence/G07/G07/build.txt": "sha256:d8ce169d0a120df3ec1c0c9dc0b215f3704305ec4e03b33dec04b8686e2a8105",
@@ -993,6 +995,7 @@
     "work/WP-2026-0088/evidence/G07/unit-test.txt": "sha256:3ebfe5e512dfeda144788ffffd16868b94226c8875f266fe231350792fa89fbc",
     "work/WP-2026-0088/gate-dossier.G07.json": "sha256:d54dae4fd09112897a57a8116512c0bcd5ff1554d419c24d57649329f03cc34a",
     "work/WP-2026-0088/work-package.json": "sha256:19dcacfd6aac365552e26c9a4ee07b8089a79ea117cb7e67b47e9e08a776b626",
+    "work/WP-2026-0089/work-package.json": "sha256:1e95f19d1366d80e2808424acc1b2ea50912a58fbdc3b00ded96353541b795f0",
     "work/WP-2026-0090/evidence/G07/build.json": "sha256:6210eeeb9ca56e41bdaa13ad1851de53c2f1e7f12e0867e504104ae1f40a1e68",
     "work/WP-2026-0090/evidence/G07/build.txt": "sha256:72b8c609edaf2f1bb7f9d4fdefee6a3aa089239b7dc6dac61b5a144e8cf39a57",
     "work/WP-2026-0090/evidence/G07/composition-record.json": "sha256:39e311f2e8c94d9b87028457716c96c0c79f5eb52054c6ff92c4536588ae73fa",
@@ -1004,7 +1007,7 @@
     "work/WP-2026-0090/evidence/G07/unit-test.json": "sha256:d0d72c62ed36bd96176f67f7c4b084992a15920af9c4ac1f2ffb530448936208",
     "work/WP-2026-0090/evidence/G07/unit-test.txt": "sha256:3ebfe5e512dfeda144788ffffd16868b94226c8875f266fe231350792fa89fbc",
     "work/WP-2026-0090/gate-dossier.G07.json": "sha256:f56fae2bc0c8f6d9d7aa297f85aad09269c12bce4962284cfdfbab478edcde6f",
-    "work/WP-2026-0090/work-package.json": "sha256:0b170cc8069e255315b7322137791217886a513eea853bd2953b8c2bd2e1537d"
+    "work/WP-2026-0090/work-package.json": "sha256:598ae8f6648e4de3bcbc1ef3a2bf42a0ecfd7b8cc29422a6be6c5017bf4ac5b6"
   },
   "schema_version": "1.0.0"
 }
