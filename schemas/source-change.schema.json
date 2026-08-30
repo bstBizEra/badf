@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://badf.bizera.local/schemas/source-change.schema.json",
+  "title": "BADF G07 evidence: source-change (typed binding, BLD-B / BADF-WP-0098)",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "work_package_id",
+    "gate",
+    "claim",
+    "evidence_type",
+    "producer",
+    "source_revision",
+    "target",
+    "toolchain",
+    "operation",
+    "started_at",
+    "completed_at",
+    "outcome",
+    "artifact",
+    "digest",
+    "binding"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^EVD-[A-Za-z0-9._-]+$"
+    },
+    "work_package_id": {
+      "type": "string",
+      "pattern": "^WP-[A-Za-z0-9._-]+$"
+    },
+    "gate": {
+      "type": "string",
+      "pattern": "^G(0[0-9]|1[0-4])$"
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_type": {
+      "enum": [
+        "source-change"
+      ]
+    },
+    "producer": {
+      "type": "object",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "enum": [
+            "human",
+            "agent",
+            "service",
+            "controller"
+          ]
+        }
+      }
+    },
+    "source_revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target": {
+      "type": "string",
+      "minLength": 1
+    },
+    "toolchain": {
+      "type": "object",
+      "required": [
+        "name",
+        "version"
+      ]
+    },
+    "operation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "outcome": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "BLOCKED",
+        "NOT_RUN",
+        "NOT_APPLICABLE"
+      ]
+    },
+    "artifact": {
+      "type": "string",
+      "minLength": 1
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "composition": {
+      "type": "object"
+    },
+    "sanitization": {
+      "type": "string"
+    },
+    "binding": {
+      "type": "object",
+      "required": [
+        "base_sha",
+        "head_sha",
+        "content_tree",
+        "changed_paths",
+        "change_digest",
+        "expected_surfaces",
+        "unexpected_paths"
+      ],
+      "properties": {
+        "base_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "head_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "content_tree": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "changed_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "change_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "expected_surfaces": {
+          "type": "object",
+          "required": [
+            "declared",
+            "files"
+          ],
+          "properties": {
+            "declared": {
+              "type": "boolean"
+            },
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "unexpected_paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

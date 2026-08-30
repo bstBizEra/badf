@@ -37,8 +37,8 @@ class BadfBuildContractTests(unittest.TestCase):
         self.assertTrue(SKILL.is_file())
         self.assertEqual(REFS, {p.name for p in REFERENCES.glob("*.md")})
         self.assertFalse((ROOT / "scripts" / "badf_build.py").exists())  # BLD-I18: no second gate
-        for pat in ("build*.json", "source-change*.json", "unit-test*.json", "documentation*.json"):
-            self.assertEqual([], list((ROOT / "schemas").glob(pat)), f"{pat}: G07 evidence schemas are BLD-B, not the freeze")
+        for name in ("source-change", "build", "unit-test", "documentation"):  # BLD-B (WP-2026-0098): the typed G07 schemas exist from IMPLEMENTED on
+            self.assertTrue((ROOT / "schemas" / f"{name}.schema.json").is_file(), name)
 
     def test_root_states_all_invariants_and_the_workflow(self):
         text = SKILL.read_text(encoding="utf-8")
@@ -88,11 +88,11 @@ class BadfBuildContractTests(unittest.TestCase):
             self.assertIn(token, text, token)
         self.assertIn("not automatically", read("self-review.md").lower())
 
-    def test_registry_pin_is_designed_and_tool_empty(self):
+    def test_registry_pin_is_implemented_and_tool_empty(self):
         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
         entries = [e for e in registry["skills"] if e.get("name") == "badf-build"]
         self.assertEqual(1, len(entries)); entry = entries[0]
-        self.assertEqual("DESIGNED", entry["status"]); self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])
+        self.assertEqual("IMPLEMENTED", entry["status"]); self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])  # BLD-B
         self.assertEqual("skills/badf-build/SKILL.md", entry["source"])
         self.assertEqual("sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest(), entry["digest"])
 

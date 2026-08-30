@@ -12,6 +12,8 @@ import json
 import re
 import sys
 import tempfile
+import fnmatch
+import platform
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -1516,6 +1518,65 @@ def check_rollback_plan(artifact: Path, dossier: dict[str, Any], evidence: dict[
         raise ValidationError("rollback-plan: no stop_conditions; a rollback plan states when to stop (G06: stop conditions executable)")
 
 
+
+# ---- badf-build BLD-B (BADF-WP-0098, #191): typed G07 evidence bindings ----
+# The self-dossier is the canonical producer of G07 evidence for BADF's own work (BLD-I18);
+# these helpers make its four objects EXACT (BLD-I16) and judgeable (BLD-I04/I07/I09).
+
+def _surface_match(path: str, pattern: str) -> bool:
+    """Does a changed path fall inside one declared expected-surface pattern?
+    `dir/**` is a prefix; other globs are fnmatch (where `*` may cross `/`)."""
+    if pattern.endswith("/**"):
+        return path.startswith(pattern[:-2])
+    return path == pattern or fnmatch.fnmatchcase(path, pattern.replace("**", "*"))
+
+
+def _parse_unittest_log(text: str) -> tuple[str, int, int]:
+    """(result, tests_run, failures) from a unittest transcript: `Ran N tests` and OK/FAILED."""
+    m = re.search(r"^Ran (\d+) tests?", text, re.M)
+    ran = int(m.group(1)) if m else 0
+    fm = re.search(r"^FAILED \((.*)\)", text, re.M)
+    if fm:
+        counts = [int(x) for x in re.findall(r"=(\d+)", fm.group(1))]
+        return "FAIL", ran, (sum(counts) if counts else 1)
+    if re.search(r"^OK", text, re.M):
+        return "PASS", ran, 0
+    return "NOT_RUN", ran, 0
+
+
+def _diff_paths(text: str) -> list[str]:
+    return sorted({m.group(1) for m in re.finditer(r"^diff --git a/(\S+) b/", text, re.M)})
+
+
+def check_g07_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    """EVIDENCE_RULES entry for the four G07 types: a typed `binding`, when present, must
+    conform to schemas/<type>.schema.json AND agree with the artifact it binds -- the gate
+    opens the artifact; a binding is not evidence of itself. Generic objects (no binding)
+    stay admissible: the typed form is additive (BLD-B)."""
+    if "binding" not in evidence:
+        return
+    kind = evidence["evidence_type"]
+    check_schema(kind, evidence)
+    b = evidence["binding"]
+    label = f"evidence {evidence.get('id', kind)}"
+    if kind == "source-change":
+        paths = _diff_paths(artifact.read_text(encoding="utf-8", errors="replace"))
+        if sorted(b["changed_paths"]) != paths:
+            raise ValidationError(f"{label}: binding.changed_paths {sorted(b['changed_paths'])} do not equal the paths in the diff artifact {paths}")
+        if b["change_digest"] != evidence["digest"]:
+            raise ValidationError(f"{label}: binding.change_digest does not equal the artifact digest")
+    elif kind == "unit-test" and b["result"] != "NOT_RUN":
+        result, ran, failures = _parse_unittest_log(artifact.read_text(encoding="utf-8", errors="replace"))
+        if (result, ran, failures) != (b["result"], b["tests_run"], b["failures"]):
+            raise ValidationError(f"{label}: binding ({b['result']}, {b['tests_run']}, {b['failures']}) does not equal the log ({result}, {ran}, {failures})")
+    elif kind == "build":
+        m = re.search(r"-> exit (\d+)", artifact.read_text(encoding="utf-8", errors="replace"))
+        if not m:
+            raise ValidationError(f"{label}: the build artifact carries no `-> exit N` line, so binding.exit_code {b['exit_code']} cannot be verified against it (BLD-I16: build evidence is exact, never best-effort)")
+        if int(m.group(1)) != b["exit_code"]:
+            raise ValidationError(f"{label}: binding.exit_code {b['exit_code']} does not equal the recorded exit {m.group(1)}")
+
+
 EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_criteria, "product-approval": check_product_approval,
                   "requirements": check_requirements, "nfr": check_nfr, "traceability": check_traceability,
                   "definition-of-ready": check_definition_of_ready,
@@ -1527,6 +1588,8 @@ EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_crit
                   "supply-chain-plan": check_supply_chain_plan, "security-approval": check_security_approval,
                   "work-breakdown": check_work_breakdown, "test-plan": check_test_plan,
                   "release-plan": check_release_plan, "rollback-plan": check_rollback_plan}
+
+EVIDENCE_RULES.update({t: check_g07_binding for t in ("source-change", "build", "unit-test", "documentation")})
 
 
 def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -> None:
@@ -2994,6 +3057,64 @@ def _diff_bytes(*args: str) -> bytes:
     return r.stdout
 
 
+
+# ---- badf-build BLD-B: the build ledger (recovery and evidence, never authority) ----
+BUILD_LEDGER = "build/progress.jsonl"
+
+
+def _event_hash(event: dict[str, Any]) -> str:
+    body = {k: v for k, v in event.items() if k != "event_hash"}
+    return "sha256:" + hashlib.sha256(json.dumps(body, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
+def append_build_event(wp_id: str, step: str, outcome: str, note: str) -> dict[str, Any]:
+    """Append one hash-chained run-ledger event to work/<WP>/build/progress.jsonl.
+    Nothing reads the ledger for a verdict; it exists so a resumed or compacted
+    session cannot redispatch finished work and so the build's transitions are evidence."""
+    path = ROOT / "work" / wp_id / BUILD_LEDGER
+    path.parent.mkdir(parents=True, exist_ok=True)
+    prev_hash, seq = GENESIS_HASH, 1
+    if path.is_file():
+        lines = [l for l in path.read_text(encoding="utf-8").splitlines() if l.strip()]
+        if lines:
+            last = json.loads(lines[-1]); prev_hash = last["event_hash"]; seq = int(last["sequence"]) + 1
+    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    event = {"event_id": f"EVT-{wp_id}-{seq:04d}", "workflow_id": wp_id, "sequence": seq, "step": step, "outcome": outcome,
+             "actor": {"id": "badf-self-dossier", "type": "controller"}, "recorded_at": now, "note": note,
+             "previous_event_hash": prev_hash}
+    event["event_hash"] = _event_hash(event)
+    with path.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(event, sort_keys=True) + "\n")
+    return event
+
+
+def verify_build_ledger(wp_id: str) -> str:
+    """`badf_gate.py build-ledger <WP>`: read-only chain verification of the build ledger.
+    Exit 0 when every event's hash recomputes and links to its predecessor; 1 otherwise.
+    The dossier verdict never consults this."""
+    m = WP_ID_FORMS.match(wp_id.strip())
+    if not m:
+        raise ValidationError(f"{wp_id!r} is not a work package id")
+    wp_id = f"{WP_NAMESPACE}{m.group(1)}"
+    path = ROOT / "work" / wp_id / BUILD_LEDGER
+    if not path.is_file():
+        raise ValidationError(f"{wp_id} has no build ledger at work/{wp_id}/{BUILD_LEDGER}")
+    prev, count = GENESIS_HASH, 0
+    for n, line in enumerate((l for l in path.read_text(encoding="utf-8").splitlines() if l.strip()), 1):
+        event = json.loads(line)
+        for k in ("event_id", "workflow_id", "sequence", "step", "outcome", "actor", "recorded_at", "previous_event_hash", "event_hash"):
+            if k not in event:
+                raise ValidationError(f"build ledger chain broken at line {n}: missing {k}")
+        if event["workflow_id"] != wp_id or int(event["sequence"]) != n:
+            raise ValidationError(f"build ledger chain broken at line {n}: sequence/workflow mismatch")
+        if event["previous_event_hash"] != prev:
+            raise ValidationError(f"build ledger chain broken at line {n}: previous_event_hash does not link")
+        if event["event_hash"] != _event_hash(event):
+            raise ValidationError(f"build ledger chain broken at line {n}: event_hash does not recompute (tampered)")
+        prev = event["event_hash"]; count = n
+    return f"BADF BUILD-LEDGER PASS: {wp_id} {count} events, chain intact (recovery/evidence only; no verdict is derived from it)"
+
+
 def self_dossier(wp_id: str) -> str:
     """`badf_gate.py self-dossier <WP>`: assemble a G07 gate dossier for one of
     BADF's OWN work packages, from measured evidence, as a HUMAN_REQUIRED
@@ -3026,31 +3147,90 @@ def self_dossier(wp_id: str) -> str:
     py = subprocess.run([sys.executable, "-m", "py_compile", "scripts/badf_gate.py", "scripts/badf_compose.py"],
                         cwd=ROOT, capture_output=True, text=True)
     build_txt = f"python -m py_compile scripts/badf_gate.py scripts/badf_compose.py -> exit {py.returncode}\n{py.stderr}"
+    # ---- BLD-B typed bindings (BADF-WP-0098): exactness lives here, not in source_revision ----
+    base_full = _git("rev-parse", base) or base
+    head_full = _git("rev-parse", "HEAD") or "HEAD"
+    names = sorted((_git("diff", "--name-only", f"{base}..HEAD", *exclude) or "").split())
+    ctree = content_tree(ROOT, wp_id, "HEAD")
+    surfaces = wp.get("expected_surfaces") or {}
+    patterns = [str(x) for x in (surfaces.get("files") or [])]
+    declared = bool(patterns)
+    unexpected = [n for n in names if declared and not any(_surface_match(n, pat) for pat in patterns)]
+    build_cmd = f"{sys.executable} -m py_compile scripts/badf_gate.py scripts/badf_compose.py"
+    build_binding = {"command": build_cmd, "cwd": ".", "environment": {"python": platform.python_version(), "platform": platform.platform()},
+                     "exit_code": py.returncode, "artifacts": [{"ref": r, "digest": sha256(ROOT / r)} for r in ("scripts/badf_gate.py", "scripts/badf_compose.py")],
+                     "non_coverage": []}
+    modules = [str(x).split()[0] for x in (wp.get("tests") or []) if str(x).strip()]
+    log_path = ev_dir / "unit-test.log"; ff_path = ev_dir / "failing-first.txt"
+    fresh_run = "scripts/badf_compose.py (the composed-tree gate) re-runs the suite on the tree that would land; CI is the fresh, authoritative run (BLD-I09)"
+    if log_path.is_file():
+        log_text = log_path.read_text(encoding="utf-8", errors="replace")
+        ut_result, ut_ran, ut_failures = _parse_unittest_log(log_text)
+        if ut_result == "FAIL":
+            raise ValidationError(f"{wp_id}: the author's unit-test log {log_path.name} reports FAILED ({ut_failures}); fix the tests before assembling -- a request must not bind a failing run (BLD-I09)")
+        if ut_result == "NOT_RUN":
+            raise ValidationError(f"{wp_id}: {log_path.name} carries no `Ran N tests` / OK transcript; bind a real unittest log")
+        first = log_text.strip().splitlines()[0] if log_text.strip() else ""
+        ut_command = first if first.startswith(("python", "uv ")) else f"{sys.executable} -m unittest " + " ".join(modules)
+        ut_outcome, ut_artifact_data, ut_artifact_name = "PASS", None, "unit-test.log"
+    else:
+        ut_result, ut_ran, ut_failures, ut_command = "NOT_RUN", 0, 0, "deferred-to-compose"
+        ut_outcome, ut_artifact_name = "NOT_RUN", "unit-test.txt"
+        ut_artifact_data = (b"Unit tests are executed by the composed-tree gate (scripts/badf_compose.py) on the tree that would land. "
+                            b"This dossier is a REQUEST; its test evidence is the PR's BADF COMPOSE PASS transcript, not a run by this tool.\n")
+    red_obs = ff_path.is_file()
+    obligations = [{"id": f"TEST-{i + 1:03d}", "seam": {"type": "module", "ref": m},
+                    "red": ({"observed": True, "ref": f"work/{wp_id}/evidence/G07/failing-first.txt", "digest": sha256(ff_path)} if red_obs else {"observed": False}),
+                    "green": ({"observed": True, "ref": f"work/{wp_id}/evidence/G07/unit-test.log", "digest": sha256(log_path)} if log_path.is_file() else {"observed": False})}
+                   for i, m in enumerate(modules)]
+    unit_binding = {"obligations": obligations, "command": ut_command, "result": ut_result, "tests_run": ut_ran, "failures": ut_failures,
+                    "coverage_scope": modules, "fresh_run": fresh_run}
+    doc_changed = [n for n in names if n.startswith("docs/") or n in ("README.md", "AGENTS.md")]
+    contract_changed = any(n.startswith("schemas/") or n in ("badf/lifecycle.json", "badf/skill-registry.json") for n in names)
+    behavior_changed = any(n.startswith("scripts/") for n in names)
+    doc_binding = {"changed": doc_changed, "contract_changed": contract_changed, "behavior_changed": behavior_changed,
+                   "required_updates": (["docs/ (behavior changed under scripts/ with no documentation change)"] if behavior_changed and not doc_changed else []),
+                   "not_updated_with_reason": str(wp.get("documentation_note") or ("no documentation changed in this work package" if not doc_changed else "documentation changed with the work package"))}
+    source_binding_partial = {"base_sha": base_full, "head_sha": head_full, "content_tree": ctree, "changed_paths": names,
+                              "expected_surfaces": {"declared": declared, "files": patterns}, "unexpected_paths": unexpected}
+    build_dir = wp_dir / "build"; build_dir.mkdir(parents=True, exist_ok=True)
+    (build_dir / "session.json").write_text(json.dumps({"work_package_id": wp_id, "producer": "badf-self-dossier", "started_at": now,
+                                                        "base_sha": base_full, "head_sha": head_full, "content_tree": ctree}, indent=2) + "\n", encoding="utf-8")
+    append_build_event(wp_id, "START", "OK", "self-dossier assembly started")
+    append_build_event(wp_id, "BASELINE", "OK", f"base {base_full[:12]} head {head_full[:12]} content tree {ctree[:12]}")
 
     artifacts = {
-        "source-change": (change, "git diff", "PASS", f"the change {wp_id} makes to this repository, outside its own directory and the lockfile"),
-        "build": (build_txt.encode(), "py_compile", "PASS" if py.returncode == 0 else "FAIL", "the modules compile"),
-        "unit-test": (b"Unit tests are executed by the composed-tree gate (scripts/badf_compose.py) on the tree that would land. "
-                      b"This dossier is a REQUEST; its test evidence is the PR's BADF COMPOSE PASS transcript, not a run by this tool.\n",
-                      "deferred-to-compose", "NOT_RUN", "unit tests run in the composed-tree gate, not here"),
-        "documentation": (docs if docs else b"", "git diff", "PASS" if docs else "NOT_APPLICABLE", "the documentation this change carries"),
+        "source-change": (change, "git diff", "PASS", f"the change {wp_id} makes to this repository, outside its own directory and the lockfile", "source-change.diff", None),
+        "build": (build_txt.encode(), "py_compile", "PASS" if py.returncode == 0 else "FAIL", "the modules compile", "build.txt", build_binding),
+        "unit-test": (ut_artifact_data, ut_command if ut_result != "NOT_RUN" else "deferred-to-compose", ut_outcome,
+                      ("the author's unit-test run, bound; the composed-tree gate is the fresh run" if ut_result != "NOT_RUN" else "unit tests run in the composed-tree gate, not here"),
+                      ut_artifact_name, unit_binding),
+        "documentation": (docs if docs else b"", "git diff", "PASS" if docs else "NOT_APPLICABLE", "the documentation this change carries", "documentation.diff", doc_binding),
     }
     index, non_coverage = [], []
     for t in SELF_G07_EVIDENCE:
-        data, op, outcome, claim = artifacts[t]
-        art = ev_dir / f"{t}.{'diff' if op == 'git diff' else 'txt'}"
-        art.write_bytes(data)
+        data, op, outcome, claim, art_name, binding = artifacts[t]
+        art = ev_dir / art_name
+        if data is not None:
+            art.write_bytes(data)
         rel_art = f"work/{wp_id}/evidence/G07/{art.name}"
         rec = {"schema_version": "1.0.0", "id": f"EVD-{wp_id}-G07-{t}", "work_package_id": wp_id, "gate": "G07",
                "claim": claim, "evidence_type": t, "producer": {"id": "badf-self-dossier", "type": "controller"},
                "source_revision": "HEAD", "target": f"{self_repository()}:main",
-               "toolchain": {"name": op, "version": "1"}, "operation": op,
+               "toolchain": {"name": op if len(op) < 40 else "unittest", "version": "1"}, "operation": op,
                "started_at": now, "completed_at": now, "outcome": outcome,
                "artifact": rel_art, "digest": sha256(art)}
+        if t == "source-change":
+            binding = dict(source_binding_partial, change_digest=rec["digest"])
+        rec["binding"] = binding
+        check_schema(t, rec)   # production-time conformance: the producer refuses to write a malformed binding
         (ev_dir / f"{t}.json").write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
         index.append({"type": t, "path": f"work/{wp_id}/evidence/G07/{t}.json"})
         if outcome == "NOT_APPLICABLE":
             non_coverage.append({"evidence_type": t, "reason": "no documentation changed in this work package", "declared_by": "badf-self-dossier"})
+    if not declared:
+        non_coverage.append({"evidence_type": "source-change", "reason": "expected_surfaces not declared on the work package; surface containment is not measurable (BLD-I04)", "declared_by": "badf-self-dossier"})
+    append_build_event(wp_id, "VERIFY", "OK" if ut_result == "PASS" else ut_result, f"unit-test {ut_result}: ran {ut_ran}, failures {ut_failures}; build exit {py.returncode}")
     record = ev_dir / "composition-record.json"
     if record.is_file():
         # GIT-E (BADF-WP-0076): the composition claim written by `badf_compose.py --record`
@@ -3073,19 +3253,29 @@ def self_dossier(wp_id: str) -> str:
                  "owner": "engineering_owner",
                  "closure_predicate": "a distinct human independent_reviewer records an approval, or the deviation is accepted in a decision record",
                  "closure_authority": "quality_authority"}
+    conditions = [condition]
+    held_extra = ""
+    if unexpected:
+        conditions.append({"condition_id": "C-2",
+                           "statement": f"BLD-I04 scope containment: {len(unexpected)} changed path(s) fall outside the declared expected_surfaces: {', '.join(unexpected)}",
+                           "status": "OPEN", "severity": "Major", "blocking_scope": "G07", "owner": "engineering_owner",
+                           "closure_predicate": "planning amends expected_surfaces to admit the paths, or the change is reverted to the declared surface",
+                           "closure_authority": "quality_authority"})
+        held_extra = f" Unexpected paths outside expected_surfaces: {', '.join(unexpected)} (BLD-I04) -- refused or re-authorized, never absorbed."
     dossier = {
         "schema_version": "1.0.0", "id": f"DOS-{wp_id}-G07-v1", "work_package_id": wp_id, "gate": "G07",
         "policy_epoch": load_json(ROOT / "badf/lifecycle.json")["policy_epoch"],
         "source_revision": "HEAD", "target": f"{self_repository()}:main",
         "change_class": expect_str(wp.get("change_class"), f"{wp_id}.change_class"),
         "author": "badf-self-dossier", "author_type": "controller",
-        "evidence": index, "approvals": [], "conditions": [condition], "non_coverage": non_coverage,
+        "evidence": index, "approvals": [], "conditions": conditions, "non_coverage": non_coverage,
         "exceptions": [], "risks": [], "council": None,
         "disposition": "HUMAN_REQUIRED", "created_at": now,
         "held_because": f"BADF's own work package {wp_id} at G07: evidence prepared and digest-bound; the independent-reviewer "
-                        f"condition C-1 is open under a single collaborator; a human merges. The tool binds evidence, it does not approve.",
+                        f"condition C-1 is open under a single collaborator; a human merges. The tool binds evidence, it does not approve." + held_extra,
     }
     (wp_dir / "gate-dossier.G07.json").write_text(json.dumps(dossier, indent=2) + "\n", encoding="utf-8")
+    append_build_event(wp_id, "HANDOFF", "OK", "G07 dossier assembled, disposition HUMAN_REQUIRED")
     write_lockfile()
     return (f"BADF SELF-DOSSIER: {wp_id} G07 assembled, disposition HUMAN_REQUIRED; "
             f"source-change {len(change)} bytes bound to {base[:7]}..HEAD; a human merges. "
@@ -3526,6 +3716,8 @@ def validate_dossier(dossier_path: Path) -> str:
             artifact = safe_repo_path(ev["artifact"], f"evidence {ev_path} artifact")
             if ev["digest"] != sha256(artifact):
                 raise ValidationError(f"evidence {ev_path} artifact digest mismatch")
+            if "binding" in ev:
+                check_schema(ev["evidence_type"], ev)   # BLD-B: a request cannot carry a malformed typed binding
         return rendered
     for evidence_type, path_value in indexed.items():
         validate_evidence(safe_repo_path(path_value, "evidence path"), dossier, evidence_type)
@@ -4111,6 +4303,9 @@ def main() -> int:
     init_parser.add_argument("intent", type=Path)
     rec_parser = subparsers.add_parser("reconcile", help="write a landed work package's corroborated landing from the ledger; refuses otherwise")
     rec_parser.add_argument("work_package")
+    bl_parser = subparsers.add_parser("build-ledger", help="verify the hash-chained build ledger of one of BADF's own work packages (read-only; exit 0 intact, 1 broken)")
+    bl_parser.add_argument("wp_id")
+
     self_parser = subparsers.add_parser("self-dossier", help="assemble a G07 dossier for one of BADF's own work packages from measured evidence (HUMAN_REQUIRED)")
     self_parser.add_argument("work_package")
     research_parser = subparsers.add_parser("research", help="validate a research record's record/source/claim controls (RSR-002)")
@@ -4193,6 +4388,9 @@ def main() -> int:
             return 0
         elif args.command == "self-dossier":
             print(self_dossier(args.work_package))
+        elif args.command == "build-ledger":
+            print(verify_build_ledger(args.wp_id))
+
             return 0
         elif args.command == "research":
             print(validate_research_record(args.path))
