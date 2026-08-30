@@ -1,0 +1,790 @@
+diff --git a/badf/demands/BADF-DEM-0078.json b/badf/demands/BADF-DEM-0078.json
+new file mode 100644
+index 0000000..0cad367
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0078.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0078",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 177,
++    "url": "https://github.com/bstBizEra/badf/issues/177",
++    "exported_at": "2026-08-30T11:28:16Z",
++    "body_digest": "sha256:eaf2b14ab59378b6ffc0a699110a70ac5d2c1cf24d9cf89100ca0ae360a08405"
++  },
++  "title": "GOV-0073: WP-IMP-A \u2014 freeze badf-implementation-plan (G06 planning composition/router; DESIGNED; WP != task != issue != branch)",
++  "problem": "## Observed\n\nBADF has an enforced G06 gate (WP-0067: work-breakdown/test-plan/release-plan/rollback-plan + acyclic dep graph) and the WP template now conforms (WP-IMP-0). Missing: the skill that turns approved G01-G05 design into a governed Work Package DAG and normalizes it into those four existing G06 artifacts.\n\n## Expected\n\n**WP-IMP-A -- freeze badf-implementation-plan, DESIGNED.** SKILL.md + 16 references (g06-contract, work-package-contract, decomposition, vertical-slicing, dependency-graph, composition-order, authority-and-risk, test-planning, evidence-planning, execution-budget, stop-conditions, release-planning, rollback-planning, issue-projection, acceptance, external-methodology) + IMP-I01..I17. Doctrine: Task != Work Package != GitHub Issue != Branch; Implementation Plan != Authority. Composes G06's EXISTING four artifacts (no fifth gate artifact, no lifecycle change); authority DERIVED from change_class C0-C3 (no A0/A2 system); DECLARES execution topology, badf-git REALIZES it; no scripts/badf_implementation_plan.py, no schema, no execution engine; does not duplicate G01-G05. OWASP-style dispositions for Spec Kit / Superpowers / Matt Pocock to-tickets: ADAPT not authority. Register DESIGNED.\n\n## Evidence\n\n- G06 gate + 4 artifact schemas already exist (WP-0067). Mirrors the badf-solution-design / badf-security-design DESIGNED-first admission ladder.\n\n## Unknowns\n\nHow the new typed WP fields (WP-IMP-B) are enforced given #171 (walker doesn't type-check) -- resolved: code controls in the gate, not type-trust (WP-IMP-C).\n\ndiscovered-by: operator badf-implementation-plan design directive 2026-08-30 \u00b7 status: DISCOVERED\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T11:28:16Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-IMP-A freezes badf-implementation-plan (G06 planning composition/router, DESIGNED) per the operator design directive 2026-08-30. Composes G06's existing 4 artifacts; authority derived from change_class; declares-topology/badf-git-realizes; no script/schema/lifecycle/execution. IMP-I01..I17. DEM-0078/GOV-0073/WP-0091. Reconciles WP-2026-0089 (WP-IMP-0). Ladder next: WP-IMP-B schema extension (code controls per #171) -> C controls -> D shadow -> E admission."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 306f82d..b6fd63c 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -280,6 +280,16 @@
+       "allowed_tools": [],
+       "status": "IMPLEMENTED",
+       "digest": "sha256:cd4853d7c20c235ab6448568cb367bf019b02a03cf8d5db72595ff75766962b3"
++    },
++    {
++      "name": "badf-implementation-plan",
++      "source": "skills/badf-implementation-plan/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [],
++      "status": "DESIGNED",
++      "digest": "sha256:b4cb8255f8fb75015f069f10ade5dd5b058d9ff8364a06f7e74de35b81be9a9f"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index b35adc7..881ac3e 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1130,6 +1130,30 @@ the non-coverage list is kept in full. The note also corrects a count that had p
+ the family has **six** subskills (GIT-C…H), not seven. The generator is not a repo tool — the shadow
+ test recomputes every case from the object store on every run, in CI and in the composed world.
+ 
++## badf-implementation-plan — G06 planning contract freeze (`BADF-WP-0091` / WP-IMP-A, Issue #177 / GOV-0073)
++
++BADF had an enforced **G06 gate** (WP-0067: `work-breakdown`/`test-plan`/`release-plan`/`rollback-plan`
++with an acyclic dependency graph) and, since WP-IMP-0, a WP template that conforms to its schema — but no
++capability to turn an approved G01–G05 design into those artifacts. `badf-implementation-plan` is that
++capability, frozen `DESIGNED`: a thin planning composition/router that decomposes approved design into a
++**governed Work Package DAG** and normalizes it into the **existing** four G06 artifacts. SKILL.md + 16
++references + `IMP-I01…IMP-I17`.
++
++The doctrine it freezes is `Task ≠ Work Package ≠ GitHub Issue ≠ Branch` and `Implementation Plan ≠
++Authority` — a Work Package is the *bounded execution contract* (scope · acceptance · authority · risk ·
++dependencies · expected surfaces · tests · evidence · budget · rollback · stop conditions); a task is an
++execution step inside it; an Issue is a tracking projection whose state grants no authority (IMP-I14).
++Four boundaries carry it: **(1) composes G06's existing four artifacts, adds no fifth gate artifact** and
++changes no `lifecycle.json`; **(2) authority is derived from `change_class` (C0–C3) and the matrix, never
++a new A0/A2 system** (IMP-I07); **(3) it declares execution topology while `badf-git` realizes it**
++(IMP-I15); **(4) no execution engine, no `scripts/badf_implementation_plan.py`, no schema** at freeze
++(IMP-I17), and it does not duplicate G01–G05 (IMP-I02). Spec Kit, Superpowers and Matt Pocock's
++`to-tickets` are adapted (plan→WP, tracer-bullet vertical slices, expand-migrate-contract, TDD, worktrees)
++but never adopted as authority — external capability can shape a plan, never expand authority. The
++ladder WP-IMP-A…E mirrors solution-design / security-design; per **#171** the typed planning fields
++WP-IMP-B adds will be enforced by **code controls**, not by trusting the schema walker's type field.
++Registry `DESIGNED`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/skills/badf-implementation-plan/SKILL.md b/skills/badf-implementation-plan/SKILL.md
+new file mode 100644
+index 0000000..4cbecdb
+--- /dev/null
++++ b/skills/badf-implementation-plan/SKILL.md
+@@ -0,0 +1,133 @@
++---
++name: badf-implementation-plan
++description: Compose an approved BADF design (G01–G05) into a governed Work Package DAG — bounded, authorized, independently verifiable execution units — and normalize the plan into the existing G06 evidence (work-breakdown, test-plan, release-plan, rollback-plan). Use when approved requirements/architecture/solution/security must become executable work. Do not use to execute the work, run a scanner, decide a gate, grant authority, add a fifth G06 artifact, realize Git topology, or turn a task/issue/branch into authority.
++---
++
++# BADF Implementation Plan
++
++`badf-implementation-plan` is the **planning composition and orchestration layer** for G06. It turns an
++approved design into a **governed Work Package DAG** — the point where BADF stops thinking in "tasks" and
++starts producing bounded, governable execution units — and normalizes that plan into the **existing** G06
++evidence. It is a router and constraint contract, **not** an execution engine, a second gate, a Git
++realizer, or a source of authority.
++
++Its live status is `badf/skill-registry.json`; this file defines the contract, not the status, and never
++hardcodes a lifecycle status that can drift from the registry.
++
++## Canonical principle
++
++```text
++A specification states what is required.
++Architecture, solution and security design define what may be built.
++An implementation plan determines how the approved design is decomposed into deliverable units.
++A task is an execution step.  A ticket is a tracking projection.
++A Governed Work Package is the bounded unit of authorized work.
++The BADF gate validates the plan.  Only valid authority permits execution.
++```
++
++## The doctrine this skill freezes
++
++```text
++Task              ≠ Work Package
++GitHub Issue      ≠ Work Package
++Branch            ≠ Work Package
++Implementation Plan ≠ Authority
++
++Governed Work Package = the bounded execution contract
++  (scope · acceptance · authority · risk · dependencies · expected surfaces ·
++   tests · evidence · budget · rollback · stop conditions)
++```
++
++A task is implementation detail *inside* a Work Package. A GitHub Issue is a **projection** for tracking
++and collaboration — opening or closing it never grants or revokes authority (IMP-I14).
++
++## Boundaries
++
++- **Composes G06's existing four artifacts; adds no fifth.** `badf-implementation-plan` authors and
++  reconciles `work-breakdown`, `test-plan`, `release-plan` and `rollback-plan`; the canonical
++  `badf_gate.py` validates them and `engineering_owner` dispositions the G06 dossier. No new gate, no
++  `lifecycle.json` change.
++- **Authority is derived, never chosen.** Required authority comes from the existing `change_class`
++  (C0–C3) and the authority matrix — the plan **cannot reduce** it (IMP-I07). There is **no** parallel
++  A0/A1/A2 authority-class system.
++- **Declares execution topology; does not realize it.** The plan **declares** isolation / branch-class /
++  workspace policy; **`badf-git`** realizes worktree creation, branch identity, baseline, staleness,
++  composition and landing (§10). Planning and Git governance stay separate.
++- **No execution engine, no second validator.** No `scripts/badf_implementation_plan.py`; deterministic
++  G06 semantics live in the canonical gate (IMP-I17). The skill plans; it does not execute the work it
++  planned (IMP-I15).
++- **Does not duplicate G01–G05.** Requirements/UX/architecture/solution/security are consumed as exact
++  baselines, not rediscovered (IMP-I02).
++
++## Invariants (IMP-I01 … IMP-I17)
++
++```text
++IMP-I01  No naked task         every executable planning unit resolves to exactly one Governed Work Package
++IMP-I02  Exact upstream baseline  every WP binds the exact requirements/design/security inputs it implements
++IMP-I03  Acceptance coverage    every WP has measurable acceptance; every planned requirement is covered or explicitly deferred
++IMP-I04  Vertical slice default a WP delivers an independently verifiable outcome; horizontal decomposition needs explicit rationale
++IMP-I05  Dependency DAG         blocking dependencies are valid, resolve, and are acyclic
++IMP-I06  Composition explicit   landing/composition order is represented separately from execution blockers
++IMP-I07  Authority derived      the plan cannot reduce the authority required by change class, reserved actions, target env or upstream
++IMP-I08  Expected surface bounded  files/services/interfaces/data expected to change are declared
++IMP-I09  Test binding           every acceptance claim has a verification obligation
++IMP-I10  Evidence binding       every material claim identifies the evidence required to prove it
++IMP-I11  Budget mandatory       autonomous execution has bounded attempts and time/cost
++IMP-I12  Stop contract mandatory  authority, safety, integrity and budget stop conditions are explicit
++IMP-I13  Rollback/recovery      each WP declares reversibility or explains its irreversibility and its recovery mechanism
++IMP-I14  Tracker ≠ authority    GitHub Issue state cannot grant mutation or lifecycle authority
++IMP-I15  Planning ≠ execution   badf-implementation-plan cannot execute its own WPs merely because it created them
++IMP-I16  Stale baseline blocks  a WP planned against superseded material input cannot silently become READY
++IMP-I17  No second gate         no scripts/badf_implementation_plan.py; deterministic G06 semantics live in the canonical gate
++```
++
++See `references/work-package-contract.md` for the Governed Work Package shape and
++`references/dependency-graph.md` for the DAG and the execution frontier.
++
++## The default topology, and its exceptions
++
++```text
++DEFAULT              vertical tracer-bullet WP (an independently verifiable slice)
++EXCEPTION  wide mechanical refactor   → expand / migrate / contract WP sequence
++EXCEPTION  irreducible migration      → explicitly ordered integration sequence
++EXCEPTION  material uncertainty       → badf-research before implementation
++```
++
++Horizontal decomposition is allowed only with explicit rationale (IMP-I04); see
++`references/vertical-slicing.md`.
++
++## Lifecycle placement
++
++`badf-implementation-plan` composes into the **existing G06** (**Implementation planning**, owner
++`engineering_owner`, min `C1`) — it adds **no** gate and changes **no** `lifecycle.json`:
++
++```text
++G01–G05 approved design → badf-implementation-plan → { work-breakdown ; test-plan ; release-plan ; rollback-plan }
++                                                     engineering_owner dispositions the G06 dossier
++```
++
++## Workflow
++
++`FRAME → INGEST → CLASSIFY → DECOMPOSE → SLICE → GRAPH → GOVERN → PROJECT → PACKAGE`
++
++1. **FRAME** — scope the plan and its authority boundary; it is planning, not execution.
++2. **INGEST** — the approved G01–G05 baselines; bind their exact digests (IMP-I02).
++3. **CLASSIFY** — per-unit `change_class`, risk factors, target environment; derive the authority
++   requirement from the matrix (IMP-I07).
++4. **DECOMPOSE** — approved design → candidate deliverable units; every unit becomes exactly one
++   Governed Work Package (IMP-I01), never a naked task.
++5. **SLICE** — vertical tracer-bullet by default; wide refactors take expand/migrate/contract; material
++   uncertainty routes to `badf-research` (IMP-I04).
++6. **GRAPH** — the Work Package DAG: `blocked_by` / `composition_after` / `requires_artifact` /
++   `conflicts_with` edges, acyclic (IMP-I05/I06); derive the **execution frontier** (READY WPs whose
++   blockers are CLOSED, baselines current, authority present).
++7. **GOVERN** — each WP carries scope, acceptance, expected surfaces, tests, evidence, **budget** and
++   **stop conditions** (IMP-I03/08/09/10/11/12); rollback or a declared recovery mechanism (IMP-I13).
++8. **PROJECT** — emit the GitHub-issue projection: a tracking view, never authority (IMP-I14).
++9. **PACKAGE** — normalize into the four **existing** G06 artifacts; the canonical gate validates them and
++   `engineering_owner` dispositions the dossier. Never emit a gate outcome, and never execute the plan.
++
++Read `references/acceptance.md` for the admission controls and the WP-IMP-A…E ladder, and
++`references/external-methodology.md` for the Spec Kit / Superpowers / Matt Pocock `to-tickets`
++dispositions (reference-only). This skill has **no authority of its own**: it composes and constrains;
++the canonical gate validates and authority decides.
+diff --git a/skills/badf-implementation-plan/references/acceptance.md b/skills/badf-implementation-plan/references/acceptance.md
+new file mode 100644
+index 0000000..ddec161
+--- /dev/null
++++ b/skills/badf-implementation-plan/references/acceptance.md
+@@ -0,0 +1,33 @@
++# Acceptance and admission
++
++The capability's **live status is `badf/skill-registry.json`** — this document defines the contract, not
++the status, so it never hardcodes a status line that can drift from the registry. Progression follows
++`docs/07-skills-governance.md`.
++
++## Controlled admission ladder
++
++The same pattern that carried `badf-research`, `badf-architecture`, `badf-solution-design` and
++`badf-security-design` — freeze the contract first, prove it later, in separate WPs.
++
++| WP | Outcome | Status |
++| :--- | :--- | :--- |
++| **WP-IMP-A** (this) | root `SKILL.md` + references: WP≠task doctrine, G06 mapping, the Governed WP contract, decomposition/slicing, dependency DAG + frontier, authority-derived, test/evidence/budget/stop planning, release/rollback, issue-projection, IMP-I01…I17, external-methodology | `DESIGNED` |
++| WP-IMP-B | backward-compatible WP-schema extension (optional governed planning fields) + the enriched `work-breakdown` DAG | `IMPLEMENTED` |
++| WP-IMP-C | deterministic G06 controls in `badf_gate.py` (authority derivation, coverage, budget/stop, execution frontier) — **code controls**, per #171 | `VALIDATED` |
++| WP-IMP-D | GitHub issue projection + `badf-git` execution-topology integration + representative planning shadow | `SHADOWED` |
++| WP-IMP-E | operator admission → registry activation | `ACTIVE` |
++
++## WP-IMP-A boundaries (no scope creep)
++
++- **No runtime, no second validator** — no `scripts/badf_implementation_plan.py` (IMP-I17).
++- **No schema, no lifecycle change** — composes the **existing** G06 artifacts; the WP-schema extension is
++  WP-IMP-B, backward-compatible so historical WPs stay valid.
++- **No execution** — the skill plans; it does not execute its own WPs (IMP-I15).
++- **Authority derived, not invented** — from `change_class` + the matrix (IMP-I07); no A0/A2 system.
++- **Declares topology; `badf-git` realizes it.**
++
++## Admission
++
++- `DESIGNED`: the contract exists as this `SKILL.md` + references and is registered. **Met (WP-IMP-A).**
++- `IMPLEMENTED` … `ACTIVE`: earned by the later WPs above, each through the full loop; a planning field
++  becomes a deterministic control only when a failing-first probe warrants it, never by precedent.
+diff --git a/skills/badf-implementation-plan/references/authority-and-risk.md b/skills/badf-implementation-plan/references/authority-and-risk.md
+new file mode 100644
+index 0000000..d2af028
+--- /dev/null
++++ b/skills/badf-implementation-plan/references/authority-and-risk.md
+@@ -0,0 +1,21 @@
++# Authority and risk
++
++**Authority is derived, never chosen.** BADF already has `change_class` (C0–C3) and an authority matrix
++that maps class → required roles. The plan **cannot reduce** the authority required by change class,
++reserved actions, target environment or upstream constraints (IMP-I07).
++
++```text
++risk/change classification  →  authority matrix  →  required authority
++   (NOT: agent chooses an authority class)
++```
++
++```yaml
++change_class: C2
++authority_requirement:
++  derived_from: C2
++  required_roles: [product_owner, engineering_owner, quality_authority, service_owner]
++risk_factors: [contract_change, customer_visible]
++```
++
++**Do not introduce an A0/A1/A2 authority-class system** — it would duplicate and could contradict
++`change_class`. The single source is the change class and the matrix.
+diff --git a/skills/badf-implementation-plan/references/composition-order.md b/skills/badf-implementation-plan/references/composition-order.md
+new file mode 100644
+index 0000000..56ae2ed
+--- /dev/null
++++ b/skills/badf-implementation-plan/references/composition-order.md
+@@ -0,0 +1,14 @@
++# Composition order
++
++**Landing/composition order is represented separately from execution blockers** (IMP-I06). Two WPs may be
++implemented independently (no `blocked_by`) yet must land in a specific order (`composition_after`) — e.g.
++a schema migration lands before the code that depends on it.
++
++```text
++blocked_by         gates when work may BEGIN
++composition_after  gates when work may LAND
++```
++
++Collapsing the two loses information: a plan that only has `blocked_by` cannot express "build in parallel,
++land in sequence", which is exactly what safe integration needs. The composed-tree landing is realized by
++`badf-git` / `badf_compose.py`; the plan only **declares** the order.
+diff --git a/skills/badf-implementation-plan/references/decomposition.md b/skills/badf-implementation-plan/references/decomposition.md
+new file mode 100644
+index 0000000..41e227f
+--- /dev/null
++++ b/skills/badf-implementation-plan/references/decomposition.md
+@@ -0,0 +1,23 @@
++# Decomposition
++
++Approved design → candidate deliverable units → **exactly one Governed Work Package per unit** (IMP-I01).
++No naked task escapes into execution: if it is executable, it is a WP.
++
++```text
++G01–G05 approved design
++        ↓  DECOMPOSE
++candidate deliverable units
++        ↓  one WP each (IMP-I01)
++Governed Work Packages
++        ↓  GRAPH
++the Work Package DAG
++```
++
++## Rules
++
++- **Every WP binds its exact upstream baselines** (IMP-I02) — it implements a specific
++  requirement/architecture/solution/security digest, not "the design" in general.
++- **Every planned requirement is covered or explicitly deferred** (IMP-I03) — coverage is reconstructable
++  from the `work-breakdown` + `test-plan`.
++- **Material uncertainty is not decomposed into a WP** — it routes to `badf-research` first, then the
++  answer feeds decomposition.
+diff --git a/skills/badf-implementation-plan/references/dependency-graph.md b/skills/badf-implementation-plan/references/dependency-graph.md
+new file mode 100644
+index 0000000..a28f1c4
+--- /dev/null
++++ b/skills/badf-implementation-plan/references/dependency-graph.md
+@@ -0,0 +1,27 @@
++# Dependency graph and execution frontier
++
++The central artifact is a **graph**, not a task list. Each node is a Governed Work Package; edges are
++typed and must not be collapsed:
++
++| Edge | Meaning |
++| :--- | :--- |
++| `blocked_by` | execution cannot begin until the other WP is CLOSED |
++| `composition_after` | may be implemented independently, but must **land** after another WP |
++| `requires_artifact` | consumes another WP's produced contract |
++| `conflicts_with` | cannot execute concurrently safely |
++
++The blocking dependencies are valid, resolve, and are **acyclic** (IMP-I05) — the existing
++`check_work_breakdown` already enforces the acyclic check on `work-breakdown`.
++
++## The execution frontier
++
++```text
++EXECUTION FRONTIER = all WPs where
++    blockers are CLOSED
++  AND baselines remain current      (IMP-I16 — a stale baseline blocks)
++  AND required authority exists     (IMP-I07)
++  AND budget + stop conditions declared  (IMP-I11/I12)
++```
++
++`READY` is derived from the frontier, never asserted; a GitHub Issue being "ready-for-agent" does not make
++a WP executable (IMP-I14).
+diff --git a/skills/badf-implementation-plan/references/evidence-planning.md b/skills/badf-implementation-plan/references/evidence-planning.md
+new file mode 100644
+index 0000000..8be926c
+--- /dev/null
++++ b/skills/badf-implementation-plan/references/evidence-planning.md
+@@ -0,0 +1,13 @@
++# Evidence planning
++
++Every **material claim** identifies the evidence required to prove it (IMP-I10). A WP's
++`evidence_obligations` name the artifacts the Engineering Loop must produce — the same evidence types the
++G07 self-dossier already assembles:
++
++```yaml
++evidence_obligations: [source-change, build, unit-test, documentation]
++```
++
++The plan does not produce the evidence (that is execution); it **declares which evidence is owed** so the
++gate can check it exists and an authority can weigh it. A claim with no evidence obligation is an
++assertion, not a governable outcome.
+diff --git a/skills/badf-implementation-plan/references/execution-budget.md b/skills/badf-implementation-plan/references/execution-budget.md
+new file mode 100644
+index 0000000..f2693d1
+--- /dev/null
++++ b/skills/badf-implementation-plan/references/execution-budget.md
+@@ -0,0 +1,15 @@
++# Execution budget
++
++Autonomous execution is **bounded** (IMP-I11). Each WP carries an explicit budget so an agent knows where
++the boundary is for *this* work, not merely that a global budget doctrine exists:
++
++```yaml
++execution_budget:
++  max_attempts: 3
++  max_elapsed_minutes: 120
++  max_cost: <bounded-policy-value>
++```
++
++This converts BADF's global Engineering-Loop doctrine (max attempts; time/cost budget; root-cause mode
++after repeated similar failures) into a **per-WP executable constraint**. A WP with no budget cannot be
++handed to an autonomous executor — the stop point is undefined.
+diff --git a/skills/badf-implementation-plan/references/external-methodology.md b/skills/badf-implementation-plan/references/external-methodology.md
+new file mode 100644
+index 0000000..6610b69
+--- /dev/null
++++ b/skills/badf-implementation-plan/references/external-methodology.md
+@@ -0,0 +1,24 @@
++# External methodology provenance
++
++Status: **REFERENCE / ADAPT ONLY — no external executable vendored, no external tool granted authority.**
++
++`badf-implementation-plan` adapts external planning methodologies into BADF's governed-WP contract. The
++external projects are references, not BADF authority.
++
++## Dispositions
++
++| Source | BADF ADAPTs | BADF does NOT adopt |
++| :--- | :--- | :--- |
++| GitHub **Spec Kit** (`specify/plan/tasks/taskstoissues/implement/converge`) | plan → decomposition → tracker projection; cross-artifact analysis; convergence thinking | tasks as authoritative execution units; duplicating G01–G05 (specify/plan) |
++| **obra/Superpowers** (`writing-plans`, worktrees) | zero-context implementation plans; exact implementation surfaces; independently testable work; TDD; isolated worktrees; review handoff | 2–5-minute steps as the **Work Package** granularity (those are execution steps *inside* a WP); automatic mutation authority |
++| **mattpocock/skills/`to-tickets`** | tracer-bullet vertical slices; the blocker graph; the execution frontier; fresh-context sizing; **expand → migrate → contract** for wide refactors | the tracker ticket itself as execution authority |
++
++## Posture
++
++```text
++plan → task/ticket = tracking projection      (NOT: ticket = authority)
++Plan → Governed Work Package = the bounded execution contract
++```
++
++External capability can shape a plan; it can never expand authority. Any future vendoring or direct
++execution requires a separate external-skill admission WP under `docs/07-skills-governance.md`.
+diff --git a/skills/badf-implementation-plan/references/g06-contract.md b/skills/badf-implementation-plan/references/g06-contract.md
+new file mode 100644
+index 0000000..401ef59
+--- /dev/null
++++ b/skills/badf-implementation-plan/references/g06-contract.md
+@@ -0,0 +1,20 @@
++# G06 contract
++
++`badf-implementation-plan` composes into the **existing G06** — **Implementation planning**, owner
++`engineering_owner`, min `C1` — and changes **no** `lifecycle.json`. G06's required evidence, unchanged:
++
++| Artifact | What it carries |
++| :--- | :--- |
++| `work-breakdown` | the Governed Work Package DAG (nodes + dependency edges, acyclic) |
++| `test-plan` | acceptance → WP → test → evidence, per level |
++| `release-plan` | candidate grouping, landing order, environment sequence |
++| `rollback-plan` | trigger, scope, procedure, reversibility, stop conditions |
++
++The gate already validates these (WP-0067: `check_work_breakdown` enforces schema, non-empty, unique ids,
++resolvable dependencies and an **acyclic** graph). `badf-implementation-plan` **authors and reconciles**
++the four; the canonical gate validates them and `engineering_owner` dispositions the dossier.
++
++## No fifth artifact
++
++There is **no** "implementation-plan" gate artifact. Adding one would duplicate what the four already
++carry. The plan is the *composition* of the four, not a new evidence type (IMP-I17).
+diff --git a/skills/badf-implementation-plan/references/issue-projection.md b/skills/badf-implementation-plan/references/issue-projection.md
+new file mode 100644
+index 0000000..b8d3bc3
+--- /dev/null
++++ b/skills/badf-implementation-plan/references/issue-projection.md
+@@ -0,0 +1,24 @@
++# Issue projection
++
++```text
++work/WP-2026-NNNN/work-package.json   = the canonical execution contract
++GitHub Issue #NNN                      = a tracking / collaboration projection
++```
++
++A GitHub Issue displays the WP (objective, acceptance, blocked-by, risk, expected surface), but its state
++**cannot grant or revoke authority** (IMP-I14):
++
++```text
++Issue "ready-for-agent"   does NOT imply   WP legally executable
++```
++
++```text
++EXECUTABLE = WP status READY
++  AND dependencies satisfied
++  AND baseline current
++  AND authority valid
++  AND budget declared
++  AND stop conditions declared
++```
++
++Opening or closing an Issue is a tracking act, not a lifecycle or mutation authorization.
+diff --git a/skills/badf-implementation-plan/references/release-planning.md b/skills/badf-implementation-plan/references/release-planning.md
+new file mode 100644
+index 0000000..69f6ce1
+--- /dev/null
++++ b/skills/badf-implementation-plan/references/release-planning.md
+@@ -0,0 +1,17 @@
++# Release planning
++
++The `release-plan` defines how the executed WPs reach an environment:
++
++```text
++candidate grouping        which WPs land together
++landing order             composition_after, realized by badf-git
++migration order           schema/data migrations before dependents
++feature flags             where a landed change stays dark until enabled
++environment sequence      dev → … (per the org's promotion policy)
++release unit              the atomic thing that ships
++observability checkpoints what is watched after landing
++```
++
++The plan **declares** the release shape; `badf-git` realizes the landing and composition, and only a valid
++**release authority** (for high-impact releases) permits the release itself. A merged commit is not a
++release; a release tag is not a deployment (the Git-plane doctrine).
+diff --git a/skills/badf-implementation-plan/references/rollback-planning.md b/skills/badf-implementation-plan/references/rollback-planning.md
+new file mode 100644
+index 0000000..8cdbce0
+--- /dev/null
++++ b/skills/badf-implementation-plan/references/rollback-planning.md
+@@ -0,0 +1,17 @@
++# Rollback planning
++
++Each WP declares reversibility, or explains its irreversibility and the recovery mechanism that replaces
++rollback (IMP-I13). The `rollback-plan` artifact carries, per release unit:
++
++```text
++trigger              what condition initiates rollback
++scope                what is reverted
++procedure            the executable steps
++owner                who is accountable
++data implications    state/data effects
++migration reversal   how a schema/data migration is undone (or why it cannot be)
++stop condition       when to stop and escalate instead of continuing
++proof                that the rollback remains executable
++```
++
++An irreversible WP is not forbidden — but it must say so and name what recovery replaces rollback.
+diff --git a/skills/badf-implementation-plan/references/stop-conditions.md b/skills/badf-implementation-plan/references/stop-conditions.md
+new file mode 100644
+index 0000000..f7255f7
+--- /dev/null
++++ b/skills/badf-implementation-plan/references/stop-conditions.md
+@@ -0,0 +1,19 @@
++# Stop conditions
++
++Each WP declares the conditions under which execution **halts immediately** (IMP-I12) — authority, safety,
++integrity and budget:
++
++```yaml
++stop_conditions:
++  - AUTHORITY_CONFLICT
++  - BASELINE_STALE
++  - CREDENTIAL_EXPOSURE
++  - UNEXPECTED_DESTRUCTIVE_SCOPE
++  - POLICY_BYPASS
++  - EVIDENCE_CORRUPTION
++  - BUDGET_EXHAUSTED
++```
++
++These are the global BADF Engineering-Loop stops made **per-WP and machine-checkable**. `BASELINE_STALE`
++ties to IMP-I16: a WP planned against a superseded input stops rather than silently proceeding. Without an
++explicit stop contract, an autonomous agent knows a stop rule exists but not where the boundary is here.
+diff --git a/skills/badf-implementation-plan/references/test-planning.md b/skills/badf-implementation-plan/references/test-planning.md
+new file mode 100644
+index 0000000..6ffbc1a
+--- /dev/null
++++ b/skills/badf-implementation-plan/references/test-planning.md
+@@ -0,0 +1,19 @@
++# Test planning
++
++Every acceptance claim has a **verification obligation** (IMP-I09). The `test-plan` aggregates the per-WP
++obligations into the chain:
++
++```text
++AC → WP → test → evidence
++```
++
++across levels: `unit`, `contract`, `integration`, `security`, `migration`, `performance`, `composed-tree`.
++
++```yaml
++test_obligations:
++  - id: TEST-031, claim: AC-021, level: integration
++  - id: TEST-032, claim: AC-022, level: unit
++```
++
++A WP whose acceptance criterion has no test obligation is an incomplete plan — "green" cannot be defined,
++so the WP cannot be safely executed.
+diff --git a/skills/badf-implementation-plan/references/vertical-slicing.md b/skills/badf-implementation-plan/references/vertical-slicing.md
+new file mode 100644
+index 0000000..d9dae37
+--- /dev/null
++++ b/skills/badf-implementation-plan/references/vertical-slicing.md
+@@ -0,0 +1,18 @@
++# Vertical slicing
++
++The **default** unit is a vertical **tracer-bullet** slice — an independently verifiable outcome that
++cuts through the stack — not a horizontal layer (IMP-I04). Horizontal decomposition is allowed only with
++explicit rationale recorded on the WP.
++
++## The topology and its exceptions
++
++```text
++DEFAULT              vertical tracer-bullet WP
++EXCEPTION  wide mechanical refactor   → EXPAND → MIGRATE (batches) → CONTRACT
++EXCEPTION  irreducible migration      → explicitly ordered integration sequence
++EXCEPTION  material uncertainty       → badf-research before implementation
++```
++
++The **expand / migrate / contract** sequence (adopted from Matt Pocock's `to-tickets`) exists so a wide
++change is not forced into an artificial vertical slice: add the new path (expand), move call-sites in
++reviewable batches (migrate), remove the old path (contract) — each a WP, ordered by `composition_after`.
+diff --git a/skills/badf-implementation-plan/references/work-package-contract.md b/skills/badf-implementation-plan/references/work-package-contract.md
+new file mode 100644
+index 0000000..79be92d
+--- /dev/null
++++ b/skills/badf-implementation-plan/references/work-package-contract.md
+@@ -0,0 +1,42 @@
++# The Governed Work Package contract
++
++A Work Package is BADF's **bounded execution contract** — it *grants bounded execution authority*. Its
++canonical form (the fields WP-IMP-B adds to the schema as optional governed properties, then WP-IMP-C
++enforces with code controls):
++
++```yaml
++id: WP-2026-NNNN
++demand: BADF-DEM-NNNN
++objective: one measurable delivery outcome
++
++source_baselines:            # IMP-I02: exact upstream inputs
++  requirements: <digest/ref>
++  architecture: <digest/ref>
++  solution: <digest/ref>
++  security: <digest/ref>
++
++scope: { in: [...], out: [...] }
++expected_surfaces:           # IMP-I08: what may change
++  files: [...]; services: [...]; interfaces: [...]; data: [...]
++acceptance: { criteria: [AC-...] }   # IMP-I03
++
++change_class: C2             # authority DERIVED from this (IMP-I07), never chosen
++authority_requirement:
++  derived_from: C2
++  required_roles: [...]      # from the authority matrix
++risk_factors: [...]
++
++dependencies:                # IMP-I05/I06
++  blocked_by: [WP-...]
++  composition_after: [WP-...]
++
++test_obligations: [{ id: TEST-..., claim: AC-..., level: unit }]   # IMP-I09
++evidence_obligations: [source-change, build, unit-test, documentation]  # IMP-I10
++
++execution_budget: { max_attempts: 3, max_elapsed_minutes: 120, max_cost: <policy> }  # IMP-I11
++stop_conditions: [AUTHORITY_CONFLICT, BASELINE_STALE, CREDENTIAL_EXPOSURE, ...]        # IMP-I12
++rollback: { reversible: true, method: revert via governed PR }                        # IMP-I13
++```
++
++**Task ≠ Work Package.** A task is an execution step *inside* a WP. A WP is independently reviewable,
++verifiable, and (where possible) reversible, with bounded authority and bounded blast radius.
+diff --git a/tests/test_badf_implementation_plan_contract.py b/tests/test_badf_implementation_plan_contract.py
+new file mode 100644
+index 0000000..e5b8cfe
+--- /dev/null
++++ b/tests/test_badf_implementation_plan_contract.py
+@@ -0,0 +1,99 @@
++"""badf-implementation-plan contract freeze (BADF-WP-0091 / WP-IMP-A).
++
++badf-implementation-plan is the G06 planning composition/router: it turns an approved G01-G05
++design into a governed Work Package DAG and normalizes it into the EXISTING G06 evidence
++(work-breakdown / test-plan / release-plan / rollback-plan). It is a router and constraint
++contract -- NOT an execution engine, a second gate, a Git realizer, or a source of authority.
++This WP freezes the contract only: SKILL.md + 16 references, registered DESIGNED, with no
++runtime, no second validator, no schema, and no lifecycle change. These tests guard that surface.
++"""
++import hashlib
++import json
++import unittest
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[1]
++SKILL = ROOT / "skills" / "badf-implementation-plan" / "SKILL.md"
++REFERENCES = ROOT / "skills" / "badf-implementation-plan" / "references"
++REGISTRY = ROOT / "badf" / "skill-registry.json"
++
++REFS = {
++    "g06-contract.md", "work-package-contract.md", "decomposition.md", "vertical-slicing.md",
++    "dependency-graph.md", "composition-order.md", "authority-and-risk.md", "test-planning.md",
++    "evidence-planning.md", "execution-budget.md", "stop-conditions.md", "release-planning.md",
++    "rollback-planning.md", "issue-projection.md", "acceptance.md", "external-methodology.md",
++}
++
++
++class BadfImplementationPlanContractTests(unittest.TestCase):
++    def test_contract_surface_is_declarative_only(self):
++        self.assertTrue(SKILL.is_file())
++        self.assertEqual(REFS, {p.name for p in REFERENCES.glob("*.md")})
++        # no second gate / runtime (IMP-I17): no standalone validator, no skill-owned schema.
++        self.assertFalse((ROOT / "scripts" / "badf_implementation_plan.py").exists())
++        self.assertFalse((ROOT / "schemas" / "implementation-plan.schema.json").exists())
++
++    def test_root_states_all_invariants_and_the_workflow(self):
++        text = SKILL.read_text(encoding="utf-8")
++        for n in range(1, 18):
++            self.assertIn(f"IMP-I{n:02d}", text)
++        self.assertIn(
++            "FRAME → INGEST → CLASSIFY → DECOMPOSE → SLICE → GRAPH → GOVERN → PROJECT → PACKAGE",
++            text,
++        )
++        # the WP != task != issue != branch doctrine, and plan != authority
++        for token in ("Task", "Work Package", "GitHub Issue", "Branch"):
++            self.assertIn(token, text)
++        self.assertRegex(text, r"Implementation Plan\s*[≠!=]+\s*Authority|Implementation Plan ≠ Authority")
++
++    def test_composes_existing_g06_no_new_artifact(self):
++        lifecycle = json.loads((ROOT / "badf" / "lifecycle.json").read_text())
++        gate_names = {g["id"]: g.get("name", "") for g in lifecycle["gates"]}
++        g06 = next(g for g in lifecycle["gates"] if g["id"] == "G06")
++        # G06 is unchanged: the four existing artifacts, engineering_owner.
++        self.assertEqual(
++            set(g06["required_evidence"]),
++            {"work-breakdown", "test-plan", "release-plan", "rollback-plan"},
++        )
++        self.assertEqual(g06.get("owner_role"), "engineering_owner")
++        # no NEW gate named for implementation-plan beyond the existing G06.
++        self.assertNotIn("implementation-plan", " ".join(gate_names.values()).lower())
++
++    def test_authority_is_derived_from_change_class(self):
++        text = (REFERENCES / "authority-and-risk.md").read_text(encoding="utf-8")
++        self.assertIn("change_class", text)
++        self.assertIn("authority matrix", text)
++        # the plan cannot invent a parallel authority-class system.
++        self.assertRegex(text, r"A0/A1/A2|A0/A2")
++        self.assertRegex(text, r"[Dd]erived")
++
++    def test_declares_topology_git_realizes(self):
++        # planning declares execution topology; badf-git realizes it.
++        skill = SKILL.read_text(encoding="utf-8")
++        self.assertIn("badf-git", skill)
++        self.assertRegex(skill, r"realize")
++
++    def test_external_methodology_is_adapt_not_authority(self):
++        text = (REFERENCES / "external-methodology.md").read_text(encoding="utf-8")
++        self.assertIn("ADAPT", text)
++        for src in ("Spec Kit", "Superpowers", "to-tickets"):
++            self.assertIn(src, text)
++        self.assertRegex(text, r"never expand authority|NOT.*authority|not.*authority")
++
++    def test_registry_pin_is_designed_and_tool_empty(self):
++        reg = json.loads(REGISTRY.read_text(encoding="utf-8"))
++        entries = [e for e in reg["skills"] if e.get("name") == "badf-implementation-plan"]
++        self.assertEqual(1, len(entries))
++        entry = entries[0]
++        self.assertIn(entry["status"], ("DESIGNED", "IMPLEMENTED", "VALIDATED", "SHADOWED", "APPROVED", "ACTIVE"))
++        self.assertEqual([], entry["allowed_tools"])
++        self.assertEqual("sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest(), entry["digest"])
++
++    def test_skill_points_to_registry_not_a_hardcoded_status(self):
++        text = SKILL.read_text(encoding="utf-8")
++        self.assertIn("badf/skill-registry.json", text)
++        self.assertNotIn("Status: `DESIGNED`", text)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0089/work-package.json b/work/WP-2026-0089/work-package.json
+index ebc5ccb..f244742 100644
+--- a/work/WP-2026-0089/work-package.json
++++ b/work/WP-2026-0089/work-package.json
+@@ -38,11 +38,13 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "c1840a7"
++    "base_revision": "c1840a7",
++    "composition_verified": false,
++    "landed_as": "914309bedb34eb1c1c9922dac85e1fe75c7d8d86"
+   },
+   "note": "Lands IN_PROGRESS by design; next WP reconciles it. Conformance repair + regression guard; no schema change -> no gate-code change -> no mutation. Isolated worktree (badf-wt-imp0, GIT-I04). Ids WP-0089/DEM-0076/GOV-0070. Reconciles WP-2026-0090 (badf-git re-shadow, landed c1840a7, composition_verified: true; WP-0087 already reconciled on main via #176). First unit of the badf-implementation-plan/G06 capability (operator design 2026-08-30). Resolves #170."
+ }
