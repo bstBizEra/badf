@@ -19,6 +19,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import uuid
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
@@ -51,8 +52,9 @@ class _Candidate(unittest.TestCase):
         self.repo = self.tmp / "badf"
         self.base = seed_clone(self.repo, carry_working_state=True)
         # The carried work/ may hold THIS checkout's own composition record and G07 dossier
-        # (once WP-0076 has committed them); the scratch never carries tests/, so that record
-        # cannot match the scratch's content tree -- and every test here builds its own claim.
+        # (once WP-0076 has committed them); the scratch carries tests/ (WP-0088) but not every
+        # top-level input (.github/, scripts/badf_compose.py, ...), so that record cannot match the
+        # scratch's content tree -- and every test here builds its own claim.
         shutil.rmtree(self.repo / "work" / WP / "evidence", ignore_errors=True)
         (self.repo / "work" / WP / "gate-dossier.G07.json").unlink(missing_ok=True)
         g(self.repo, "checkout", "-q", "-b", f"wp/{WP}-composition")
@@ -203,3 +205,61 @@ class CompositionVerificationSubskillTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CarriedTestsTests(unittest.TestCase):
+    """WP-0088 (#160): the composed world judges a candidate with the candidate's own tests/.
+
+    A probe guard is written into THIS checkout's tests/ (untracked, removed on cleanup) before the
+    scratch is seeded. If seed_clone carries tests/, the probe runs inside the composed world and its
+    verdict decides the compose; if it does not, the composed world runs the base's tests and the probe
+    is never seen ("Ran 0 tests"). Red before the carry line, green after.
+    """
+
+    def setUp(self):
+        self.tag = uuid.uuid4().hex[:8]
+        self.probe = gate.ROOT / "tests" / f"probe_{self.tag}_guard.py"
+        self.guarded = f"docs/probe-{self.tag}.md"
+        self.probe.write_text(
+            "import unittest\nfrom pathlib import Path\n\n\nclass ProbeGuard(unittest.TestCase):\n"
+            "    def test_probe_guard(self):\n        root = Path(__file__).resolve().parents[1]\n"
+            f"        self.assertTrue((root / {self.guarded!r}).is_file(), 'guarded file missing')\n",
+            encoding="utf-8")
+        self.addCleanup(self.probe.unlink, True)
+        self.tmp = Path(tempfile.mkdtemp(prefix="badf-git-carried-"))
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+        self.repo = self.tmp / "badf"
+        self.base = seed_clone(self.repo, carry_working_state=True)
+        shutil.rmtree(self.repo / "work" / WP / "evidence", ignore_errors=True)
+        (self.repo / "work" / WP / "gate-dossier.G07.json").unlink(missing_ok=True)
+        g(self.repo, "checkout", "-q", "-b", f"wp/{WP}-carried")
+        self.msg = self.tmp / "msg.txt"; self.msg.write_text(MESSAGE, encoding="utf-8")
+
+    def compose_with_probe(self) -> subprocess.CompletedProcess:
+        return subprocess.run([sys.executable, "scripts/badf_compose.py", "--repo", str(self.repo), "--base", TARGET,
+                               "--candidate", "HEAD", "--message-file", str(self.msg), "--tests", self.probe.name],
+                              cwd=str(gate.ROOT), capture_output=True, text=True)
+
+    def test_seed_clone_carries_tests_dir(self):
+        src = {p.relative_to(gate.ROOT / "tests"): p.read_bytes() for p in (gate.ROOT / "tests").rglob("*.py")
+               if "__pycache__" not in p.parts}
+        self.assertIn(Path(self.probe.name), src)
+        for rel, data in src.items():
+            carried = self.repo / "tests" / rel
+            self.assertTrue(carried.is_file(), f"tests/{rel} not carried into the scratch")
+            self.assertEqual(carried.read_bytes(), data, f"tests/{rel} differs from the checkout")
+
+    def test_composed_world_runs_the_candidates_guard(self):
+        (self.repo / self.guarded).write_text("probe\n", encoding="utf-8")
+        lock_and_commit(self.repo, f"BADF-WP-0076: candidate satisfies its own guard\n\nWork-Package: {WP}\n")
+        r = self.compose_with_probe()
+        self.assertIn("Ran 1 test", r.stdout, "the candidate's guard did not run in the composed world:\n" + r.stdout + r.stderr)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+    def test_composed_world_still_refuses_a_guard_regression(self):
+        lock_and_commit(self.repo, f"BADF-WP-0076: candidate drops what its guard requires\n\nWork-Package: {WP}\n")
+        r = self.compose_with_probe()
+        self.assertIn("Ran 1 test", r.stdout, "the candidate's guard did not run in the composed world:\n" + r.stdout + r.stderr)
+        self.assertNotEqual(r.returncode, 0, "the composed world admitted a candidate its own guard refuses")
+        self.assertIn("test_probe_guard", r.stdout + r.stderr)
+
