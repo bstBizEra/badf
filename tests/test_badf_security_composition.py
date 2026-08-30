@@ -106,11 +106,44 @@ class SchemaEnforcedTests(SecurityCompositionBase):
         self.refused(rec, "residual_risk")
 
 
+class MatrixInternalSeamTests(SecurityCompositionBase):
+    """WP-SEC-C: the composition is coherent across concerns at the level the matrix alone can
+    decide. The full external-artifact/semantic seams reconcile against artifacts that do not
+    exist yet -- deferred. The example carries verification obligations and a coherent
+    pending-authority row, so it satisfies every seam."""
+
+    def test_a_controlled_threat_with_no_verification_is_refused(self):  # SEC-C04 / SEC-I04
+        rec = copy.deepcopy(EXAMPLE)
+        rec["threats"][0].pop("verification_refs", None)
+        self.refused(rec, "no verification_refs")
+
+    def test_a_non_controlled_threat_needs_no_verification(self):  # SEC-C04 is disposition-scoped
+        # a threat submitted to authority (not yet controlled) legitimately carries no verification.
+        rec = copy.deepcopy(EXAMPLE)
+        rec["threats"][0]["disposition"] = "deferred"
+        rec["threats"][0].pop("control_refs", None)
+        rec["threats"][0].pop("verification_refs", None)
+        self.admitted(rec)
+
+    def test_accepted_pending_authority_requires_pending_authority_disposition(self):  # SEC-C05
+        rec = copy.deepcopy(EXAMPLE)
+        # threats[0] is 'controlled'; claiming ACCEPTED-PENDING-AUTHORITY there is incoherent.
+        rec["threats"][0]["residual_risk"] = "ACCEPTED-PENDING-AUTHORITY"
+        self.refused(rec, "not 'pending-authority'")
+
+    def test_pending_authority_without_accepted_pending_is_allowed(self):  # SEC-C05 is one-directional
+        # a pending-authority threat need not have declared its residual risk yet.
+        rec = copy.deepcopy(EXAMPLE)
+        # threats[3] is the pending-authority row; drop its residual_risk -> still admitted.
+        rec["threats"][3].pop("residual_risk", None)
+        self.admitted(rec)
+
+
 class RegistryStatusTests(unittest.TestCase):
-    def test_badf_security_design_is_registered_implemented(self):  # WP-SEC-B advanced DESIGNED -> IMPLEMENTED
+    def test_badf_security_design_is_registered_validated(self):  # WP-SEC-C advanced IMPLEMENTED -> VALIDATED
         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
         entry = next(e for e in reg["skills"] if e["name"] == "badf-security-design")
-        self.assertEqual(entry["status"], "IMPLEMENTED")
+        self.assertEqual(entry["status"], "VALIDATED")
 
 
 if __name__ == "__main__":

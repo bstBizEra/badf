@@ -60,10 +60,15 @@ mutation-killed:
 | SEC-C01 | unique `security_id` | — | **enforced** (WP-SEC-B) |
 | SEC-C02 | every threat binds ≥1 provenance `source` ref | SEC-I02 | **enforced** (WP-SEC-B) |
 | SEC-C03 | a `controlled` threat carries ≥1 `control_refs` | SEC-I03 | **enforced** (WP-SEC-B) |
+| SEC-C04 | a `controlled` threat carries ≥1 `verification_refs` | SEC-I04 (downstream) | **enforced** (WP-SEC-C) |
+| SEC-C05 | `residual_risk` = `ACCEPTED-PENDING-AUTHORITY` ⟹ `disposition` = `pending-authority` | SEC-I12 / SEC-I03 | **enforced** (WP-SEC-C) |
 | — | `residual_risk` cannot be a bare `ACCEPTED` (enum) | SEC-I12 | **enforced by schema** (WP-SEC-B) |
 
-The **cross-artifact seams** — SEC-I04 bidirectional traceability (a sec-req resolves up *and* down),
-SEC-I01 exact-baseline digest binding, and the *semantic* resolution of every ref against the
-architecture/solution artifacts — **cannot** be enforced until those artifacts and the sec-req/control
-registries exist; they are **deferred to WP-SEC-C**, honestly, not faked. `residual_risk`'s exclusion of
-`ACCEPTED` makes SEC-I12 structural: the skill has no value with which to self-accept risk.
+WP-SEC-C adds the **matrix-internal** cross-artifact seams — the coherence a composition can be judged on
+from the matrix alone: a control that is asserted but never verified (SEC-C04), and a residual-risk claim
+that bypasses the authority disposition (SEC-C05). The **external-artifact** seams — the FULL SEC-I04
+bidirectional traceability (a sec-req resolving *up* to a threat/requirement/NFR against a real sec-req
+registry), SEC-I01 exact-baseline digest binding, and the *semantic* resolution of every ref against the
+architecture/solution artifacts — **cannot** be enforced until those artifacts and registries exist; they
+are **deferred**, honestly, not faked. `residual_risk`'s exclusion of a bare `ACCEPTED` makes SEC-I12
+structural: the skill has no value with which to self-accept risk.

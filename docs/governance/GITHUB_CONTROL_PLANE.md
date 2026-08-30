@@ -1011,6 +1011,22 @@ traceability, SEC-I01 exact-baseline binding, and the semantic resolution of eve
 architecture/solution artifacts — are **deferred to WP-SEC-C** (failing-first), exactly as the solution
 seams were deferred from WP-SOL-B to WP-SOL-C. Registry `DESIGNED → IMPLEMENTED`.
 
+## badf-security-design → VALIDATED — the matrix-internal seams (`BADF-WP-0084` / WP-SEC-C, Issue #162 / GOV-0065)
+
+WP-SEC-B enforced the structural controls; WP-SEC-C enforces the **cross-artifact seams** the matrix can
+decide alone, mirroring WP-SOL-C. Two controls, each mutation-killed: **SEC-C04** (SEC-I04, downstream
+traceability) — a `controlled` threat carries ≥1 `verification_refs`, because a control that is asserted
+but never verified is an incomplete chain; a security conclusion traces *downstream* to a verification
+obligation. **SEC-C05** (SEC-I12 / SEC-I03, disposition ↔ residual-risk coherence) — `residual_risk =
+ACCEPTED-PENDING-AUTHORITY` requires `disposition = pending-authority`, so a threat cannot claim its
+residual risk is pending authority-acceptance unless it was actually dispositioned to authority. Both are
+disposition-scoped and one-directional by design (a `deferred`/`blocked` threat needs no verification; a
+`pending-authority` threat need not have declared its residual risk yet). The **external-artifact** seams
+— the FULL SEC-I04 bidirectional traceability against a real sec-req registry, SEC-I01 exact-baseline
+digest binding, and the semantic resolution of every ref against the architecture/solution artifacts —
+stay **deferred**, honestly, until those artifacts exist. No new invariant, no `lifecycle.json` change, no
+second validator (SEC-I15). Registry `IMPLEMENTED → VALIDATED`.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
