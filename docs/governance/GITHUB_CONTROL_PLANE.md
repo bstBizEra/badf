@@ -1385,6 +1385,45 @@ typed unit-test evidence. No change to `check_schema`, `badf_compose.py`, the CI
 `lifecycle.json`. `badf-build` advances `IMPLEMENTED → VALIDATED`; the shadow on BADF's own G07
 history (BLD-D) and the operator's admission (BLD-E) remain.
 
+## badf-engineering-verification → IMPLEMENTED — typed G08 evidence, the verification record, `verify` (`BADF-WP-0103` / WP-VER-B, Issue #200 / GOV-0086)
+
+VER-A froze the two-plane contract; this rung makes its shapes checkable without adding an executor, a
+runner or a second gate. Four typed schemas specialize `evidence.schema.json` for `independent-review`,
+`integration-test`, `contract-test` and `composed-tree-test` with a **closed `binding`** — the BLD-B
+pattern, additive: `check_g08_binding` (now the `EVIDENCE_RULES` entry for the four G08 types) validates a
+binding only when one is present and opens the artifact to corroborate it, so a generic object stays
+admissible and `work/WP-2026-0010`'s historical G08 dossier is untouched. What the rule refuses: a typed
+review that is a bare PASS — no findings and no non-coverage without naming the contract that permits a
+comprehensive-coverage claim (VER-I10/I11) — or whose verdict `APPROVE` contradicts its own OPEN blocking
+findings; a typed observation whose `producer.type` is `agent` (VER-I08: a claimed result is not an
+observation); a contract result that does not serialise onto the evidence `outcome`
+(`CONFORMANT → PASS`, `NONCONFORMANT → FAIL`, `INDETERMINATE → BLOCKED`, `NOT_APPLICABLE → NOT_APPLICABLE`;
+VER-I14); integration counts or exit codes that disagree with the transcript the gate reads; a composed
+observation that is not `CURRENT`, did not reproduce (`equal`, recorded == recomputed content tree), or
+whose tree does not appear in the artifact (VER-I01/I15). Schema-level independence: `same_execution`,
+`prior_findings_visible`, `author_reasoning_visible` and `cross_pass_communication_before_ballot` admit
+only `false`; `target_digest_equal` only `true`.
+
+**The verification record.** `schemas/verification-record.schema.json` carries what a G08 review IS:
+the sealed target, the lenses routed, the persisted ballots, the independence block, the findings (the
+architecture-assurance finding item reused — `VF-NNN`, kind, severity, locations, expected / observed /
+impact / failure scenario — plus `lens`, `reported_by`, `also_reported_by`, `requirement_refs`,
+`evidence_refs`), the synthesis ledger (`withdrawn` with a reason and a `by`; `downgraded` with a
+`decision_ref`), the evidence index, the verification matrix (claim → change → review → integration →
+contract → composed → `VERIFIED | PARTIAL | UNVERIFIED`), non-coverage, and `authority.verification_authority:
+false`. `badf_gate.py verify <path>` mirrors `assure` / `solution` / `security` and refuses: a ballot whose
+sealed digest is not the council's (VER-I05); a duplicate reviewer identity or run (VER-I19); the author's
+run balloting (VER-I04); a balloted finding neither carried nor withdrawn with a reason — synthesis cannot
+erase (VER-I12); a finding no persisted ballot reported (VER-I06); a matrix ref that does not resolve; a
+`VERIFIED` row with an OPEN MAJOR/CRITICAL finding against it or without a composed-tree observation
+(VER-I15); an empty non-coverage (VER-I11). It prints "grants no verification authority" and grants none.
+
+**Ladder.** VER-C judges these typed objects against the Work Package and the composition record at
+dossier level (target and staleness binding, quorum by change class, runtime credit, per-artifact
+non-coverage, finding preservation across the dossier) — lean disabled; VER-D shadows on the G08 material
+BADF has; VER-E is the operator's admission on that evidence. A verification ledger writer stays declared,
+not built, until a runtime exists to write it.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

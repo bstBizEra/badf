@@ -1,0 +1,61 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0103",
+  "title": "WP-VER-B: typed G08 evidence + the verification record + badf_gate.py verify (badf-engineering-verification -> IMPLEMENTED)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0090",
+  "repository": "bstBizEra/badf",
+  "objective": "Make the VER-A shapes checkable: four typed schemas specialize evidence.schema.json for independent-review, integration-test, contract-test and composed-tree-test with a closed binding (the BLD-B pattern, additive -- generic objects stay admissible, WP-2026-0010's historical dossier untouched); check_g08_binding in EVIDENCE_RULES refuses a typed review that is a bare PASS or whose verdict contradicts its own open blocking findings (VER-I10/I11), an observation produced by an agent (VER-I08), a contract result that does not serialise onto the evidence outcome (INDETERMINATE -> BLOCKED, never PASS; VER-I14), integration counts/exit codes that disagree with the transcript, and a composed observation that is not CURRENT, did not reproduce, or whose tree is absent from the artifact (VER-I01/I15). schemas/verification-record.schema.json carries ballots, the independence block (schema-enforced falses), findings reusing the architecture-assurance item, the synthesis ledger, the evidence index, the verification matrix and authority.verification_authority=false; validate_verification_record + `badf_gate.py verify` mirror assure/solution/security and refuse a foreign sealed digest (VER-I05), a duplicate reviewer/run (VER-I19), an author ballot (VER-I04), an erased finding (VER-I12), an un-balloted finding (VER-I06), unresolved matrix refs, a VERIFIED row with an open MAJOR/CRITICAL finding or without a composed observation (VER-I15), and empty non-coverage (VER-I11). No executor, no runner, no ledger writer, no lifecycle/compose/CI change.",
+  "business_value": "A G08 review that is a bare PASS from an agent is indistinguishable from one that challenged the change; typed bindings and a verification record make the difference machine-visible -- to the gate now, to VER-C's controls next, and to VER-D's shadow.",
+  "in_scope": [
+    "schemas/independent-review.schema.json, integration-test.schema.json, contract-test.schema.json, composed-tree-test.schema.json (evidence core required; closed binding)",
+    "schemas/verification-record.schema.json (closed; ballots, independence, findings = assurance item + lens/reporters/refs, synthesis, evidence_index, matrix, non_coverage, authority)",
+    "scripts/badf_gate.py: check_g08_binding registered in EVIDENCE_RULES for the four G08 types (binding-present-only; artifact-opening); validate_verification_record + `verify` subcommand",
+    "tests/test_badf_verification_evidence.py (15, failing-first); tests/test_badf_engineering_verification_contract.py rung-B flips (typed schemas exist; rule present; IMPLEMENTED)",
+    "badf/skill-registry.json: badf-engineering-verification DESIGNED -> IMPLEMENTED (SKILL.md untouched, digest unchanged); lockfile re-signed",
+    "GITHUB_CONTROL_PLANE.md doctrine section; badf/demands/BADF-DEM-0090.json; own composition record + typed G07 self-dossier; reconcile the land-time-current WP"
+  ],
+  "out_of_scope": [
+    "deterministic controls that judge typed G08 objects against the Work Package and the composition record at dossier level (VER-C); shadow (VER-D); admission (VER-E)",
+    "a reviewer executor, a test runner, or a verification ledger writer (declared; no runtime exists to write it)",
+    "any change to lifecycle.json, badf_compose.py, the CI workflow, self_dossier's G07 production, or any badf-build / badf-git file",
+    "badf-security-assurance"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the four typed G08 schemas require the evidence core, pin evidence_type and close the binding; verification-record is closed, reuses the assurance finding item and admits only verification_authority=false",
+    "check_g08_binding is the EVIDENCE_RULES entry for the four G08 types; WP-2026-0010's generic objects pass through untouched; a bare-PASS review, an agent-produced observation, an unmapped contract result, a disagreeing integration log, and a non-reproduced or stale composition are refused",
+    "validate_verification_record / `verify` accept a coherent record and refuse foreign sealed digests, duplicate reviewers, author ballots, erased findings, unresolved matrix refs, VERIFIED rows with open blocking findings or without a composed observation, and empty non-coverage",
+    "registry IMPLEMENTED with the SKILL.md digest unchanged; lifecycle.json untouched",
+    "tests/test_badf_verification_evidence.py failing-first (3F+12E) then green (15); each control mutation-killed; existing g08_verification / contract / schema suites green; CI green on the composed tree; QA + REV by BARCHI-1 (shared surface)"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_verification_evidence.py (15)",
+    "tests/test_badf_engineering_verification_contract.py (9, rung-B flips)",
+    "tests/test_badf_g08_verification.py (unchanged, must stay green)"
+  ],
+  "evidence": [
+    "failing-first run (15 red: 3 failures, 12 errors)",
+    "green run (15)",
+    "mutation: each gate control disabled one at a time -> its test red; registry tampered -> red",
+    "compose output incl. composition record",
+    "G07 self-dossier with typed bindings"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "e1423ad"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-VER-B of the badf-engineering-verification program (#195 A->E authorization; approval recorded on #200). Shared surface (badf_gate.py + schemas) -> QA + REV by BARCHI-1. Resolves #200 / GOV-0086. Engineered by BARCHI-3 under /loop. Reconciles the land-time-current WP at landing."
+}
