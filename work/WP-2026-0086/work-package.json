@@ -1,0 +1,54 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0086",
+  "title": "WP-SEC-E: admit badf-security-design SHADOWED -> ACTIVE (operator admission; representative shadow accepted)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0073",
+  "repository": "bstBizEra/badf",
+  "objective": "Record the operator's admission decision advancing badf-security-design SHADOWED -> ACTIVE. The operator's standing /loop directive 'proceed next steps until badf-security-design is active' (2026-08-30) is the decision to activate on the REPRESENTATIVE shadow (WP-SEC-D), accepting the representative-vs-real risk, with the real re-shadow tracked as a deferred follow-up (#166). Governed registry advance mirroring badf-solution-design WP-SOL-E: ACTIVE grants NO new authority (SEC-I15 -- badf_gate.py stays sole authority; SEC-I13 -- security-approval stays security_authority's), no lifecycle change, no new control, no second validator. The representative caveat is preserved, not erased. Completes the WP-SEC-A..E ladder.",
+  "business_value": "ACTIVE is the admission the operator's /loop asked for. Doing it as a governed WP -- with the admission recorded, the caveat preserved in-repo, and the owed real re-shadow filed as #166 -- keeps the admission ladder truthful: the capability is admitted for use, its trust honestly bounded to a representative shadow, the debt tracked rather than lost.",
+  "in_scope": [
+    "badf/skill-registry.json: badf-security-design SHADOWED -> ACTIVE (digest unchanged; SKILL.md untouched)",
+    "skills/badf-security-design/references/acceptance.md: ladder rung ACTIVE, citing the operator admission + deferred re-shadow #166 (registry remains source of truth)",
+    "GITHUB_CONTROL_PLANE.md doctrine section recording the admission, its operator authorization, and the deferred re-shadow #166",
+    "tests/test_badf_security_composition.py: registry pin SHADOWED -> ACTIVE",
+    "own G07 self-dossier; reconcile WP-2026-0085"
+  ],
+  "out_of_scope": [
+    "the real-project re-shadow (deferred to #166; trigger = first real security matrix)",
+    "any new control, lifecycle.json change, second validator (SEC-I15), new authority, or security-approval",
+    "erasing/softening the representative caveat in shadow-evidence.md (it stays, pointing at #166)",
+    "the external-artifact seams; the badf-git program (BARCHI-2); security ASSURANCE (G08/G09)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "badf-security-design registered ACTIVE; digest = sha256(SKILL.md); SKILL.md unchanged; lifecycle.json unchanged; no scripts/badf_security_design.py",
+    "shadow-evidence.md still labels the shadow REPRESENTATIVE and references the deferred re-shadow (#166)",
+    "acceptance.md ladder shows ACTIVE via operator admission, pointing at the registry as source of truth",
+    "tests pass; repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_security_composition.py",
+    "tests/test_badf_security_design_contract.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR (registry back to SHADOWED)"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "5b6cd52"
+  },
+  "note": "Lands IN_PROGRESS by design; next WP reconciles it. Registry admission SHADOWED->ACTIVE on the operator's standing /loop 'until active' directive (2026-08-30); grants no authority (SEC-I15/I13); caveat preserved; real re-shadow deferred to #166. No new control -> no mutation. Isolated worktree (badf-wt-sece, GIT-I04). Ids WP-0086/DEM-0073/GOV-0067. Reconciles WP-2026-0085 (composition_verified: false). Completes WP-SEC-A..E. Resolves #167 / GOV-0067."
+}
