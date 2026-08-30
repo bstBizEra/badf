@@ -17,6 +17,7 @@
   },
   "recorded_at": "2026-08-30T20:13:23Z",
   "provenance": "EXPORTED_FROM_SOURCE",
-  "status": "AUTHORIZED",
-  "note": "WP-VER-E: admit badf-engineering-verification SHADOWED -> ACTIVE. Operator decision ACTIVATE recorded on #214, taken on the VER-D shadow evidence with the HOLD alternative and the four declared gaps (no typed real G08 dossier; one reviewer seat at encoding time; RECONSTRUCTED prose review class; declared-not-shipped scratch-clone validate_dossier path) stated in the issue body. Registry status flip only: digest unchanged, allowed_tools [], risk_class C1, no authority granted (VER-I18/I20). No gate, schema or lifecycle change. Real-conditions re-shadow deferred to its own trigger-gated issue (the #212/#185/#166 pattern)."
+  "status": "RESOLVED",
+  "note": "WP-VER-E: admit badf-engineering-verification SHADOWED -> ACTIVE. Operator decision ACTIVATE recorded on #214, taken on the VER-D shadow evidence with the HOLD alternative and the four declared gaps (no typed real G08 dossier; one reviewer seat at encoding time; RECONSTRUCTED prose review class; declared-not-shipped scratch-clone validate_dossier path) stated in the issue body. Registry status flip only: digest unchanged, allowed_tools [], risk_class C1, no authority granted (VER-I18/I20). No gate, schema or lifecycle change. Real-conditions re-shadow deferred to its own trigger-gated issue (the #212/#185/#166 pattern).",
+  "learning": "docs/learnings/a-guard-that-cannot-fail-is-not-a-guard.md"
 }

@@ -17,6 +17,7 @@
   },
   "recorded_at": "2026-08-30T16:32:45Z",
   "provenance": "EXPORTED_FROM_SOURCE",
-  "status": "AUTHORIZED",
-  "note": "WP-VER-A: freeze the badf-engineering-verification capability contract (G08 two-plane verification: Reviewer plane proposes, Verifier plane observes; VER-I01..I20; nine-stage workflow; sixteen references; registry DESIGNED C1 allowed_tools []; no scripts/badf_engineering_verification.py, no schema, no lifecycle change, no gate change). Operator design directive 2026-08-30; approval + A->E authorization recorded on #195 (VER-E admission NOT taken in advance)."
+  "status": "RESOLVED",
+  "note": "WP-VER-A: freeze the badf-engineering-verification capability contract (G08 two-plane verification: Reviewer plane proposes, Verifier plane observes; VER-I01..I20; nine-stage workflow; sixteen references; registry DESIGNED C1 allowed_tools []; no scripts/badf_engineering_verification.py, no schema, no lifecycle change, no gate change). Operator design directive 2026-08-30; approval + A->E authorization recorded on #195 (VER-E admission NOT taken in advance).",
+  "learning": "docs/learnings/a-guard-that-cannot-fail-is-not-a-guard.md"
 }

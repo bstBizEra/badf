@@ -42,11 +42,14 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "f5a575d"
+    "base_revision": "f5a575d",
+    "landed_content_tree": "b4d84854582900735718837925934cdbc441f396",
+    "composition_verified": true,
+    "landed_as": "66c92f846f05bcea90ba0bcc8de1f8784a3bdd6e"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Defect in MY landed test, found by BARCHI-3 (blocked by it on #224) and independently measured by BADF-REV, who sharpened it: the CLOSED_DEMAND branch was unreachable, the mirror of tonight's assertions that could not fail. No delegation on this one -- the fix is a single test method and splitting it would be delegation theatre, so C7 has nothing to judge here and that is stated rather than manufactured. Resolves #225 / GOV-0097. RENUMBERED from WP-2026-0110 / BADF-DEM-0097, which collided with the unlanded #224 (BARCHI-3): I misread my own id sweep -- it printed 0110 as in use on a remote head -- and skipped the ask. #224 keeps the original ids because they are already embedded in its bound dossier, record, ledger and lockfile; this work package was fresh and cheaper to move. Reconciles WP-2026-0107 (VAL-A).",
   "expected_surfaces": {

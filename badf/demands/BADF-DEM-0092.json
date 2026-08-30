@@ -17,6 +17,7 @@
   },
   "recorded_at": "2026-08-30T18:20:06Z",
   "provenance": "EXPORTED_FROM_SOURCE",
-  "status": "AUTHORIZED",
-  "note": "WP-VER-C: seven deterministic G08 controls (exact target, one composed identity, independence/quorum by change class, runtime credit when declared, per-artifact non-coverage, review blockers resolved, composed-result authority) as one pure check_g08_dossier wired into validate_dossier for G08 PASS-class dossiers; optional verification_obligations WP field; badf-engineering-verification IMPLEMENTED -> VALIDATED, SKILL.md digest unchanged. Approval under the #195 A->E authorization recorded on #204; ids confirmed by BARCHI-1/2 at filing; shared surface -> non-authoring QA + REV; lean disabled."
+  "status": "RESOLVED",
+  "note": "WP-VER-C: seven deterministic G08 controls (exact target, one composed identity, independence/quorum by change class, runtime credit when declared, per-artifact non-coverage, review blockers resolved, composed-result authority) as one pure check_g08_dossier wired into validate_dossier for G08 PASS-class dossiers; optional verification_obligations WP field; badf-engineering-verification IMPLEMENTED -> VALIDATED, SKILL.md digest unchanged. Approval under the #195 A->E authorization recorded on #204; ids confirmed by BARCHI-1/2 at filing; shared surface -> non-authoring QA + REV; lean disabled.",
+  "learning": "docs/learnings/a-guard-that-cannot-fail-is-not-a-guard.md"
 }

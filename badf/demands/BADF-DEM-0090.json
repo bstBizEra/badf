@@ -17,6 +17,7 @@
   },
   "recorded_at": "2026-08-30T17:32:48Z",
   "provenance": "EXPORTED_FROM_SOURCE",
-  "status": "AUTHORIZED",
-  "note": "WP-VER-B: typed G08 evidence (independent-review/integration-test/contract-test/composed-tree-test; closed bindings, additive), the verification-record schema (ballots, independence, findings reusing the assurance item, synthesis, matrix), check_g08_binding in EVIDENCE_RULES, validate_verification_record + `verify` subcommand; badf-engineering-verification DESIGNED -> IMPLEMENTED, SKILL.md digest unchanged. Approval under the #195 A->E authorization recorded on #200; ids re-measured and confirmed by BARCHI-1/2 at filing; shared surface -> BARCHI-1 QA + REV."
+  "status": "RESOLVED",
+  "note": "WP-VER-B: typed G08 evidence (independent-review/integration-test/contract-test/composed-tree-test; closed bindings, additive), the verification-record schema (ballots, independence, findings reusing the assurance item, synthesis, matrix), check_g08_binding in EVIDENCE_RULES, validate_verification_record + `verify` subcommand; badf-engineering-verification DESIGNED -> IMPLEMENTED, SKILL.md digest unchanged. Approval under the #195 A->E authorization recorded on #200; ids re-measured and confirmed by BARCHI-1/2 at filing; shared surface -> BARCHI-1 QA + REV.",
+  "learning": "docs/learnings/a-guard-that-cannot-fail-is-not-a-guard.md"
 }
