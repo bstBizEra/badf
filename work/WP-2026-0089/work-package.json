@@ -1,0 +1,48 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0089",
+  "title": "WP-IMP-0: repair Work Package template/schema drift (prerequisite for badf-implementation-plan)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0076",
+  "repository": "bstBizEra/badf",
+  "objective": "Repair the governance defect where templates/work-package.json does not conform to schemas/work-package.schema.json (missing demand; uppercase data_classification; object permissions; wrong rollback shape). Rewrite the template to conform to the CURRENT schema and add tests/test_badf_work_package_template.py as a regression guard so the drift cannot recur. NO schema change -- the schema is correct; only the template lagged. This is the prerequisite (WP-IMP-0) for the badf-implementation-plan (G06) capability per the operator design 2026-08-30.",
+  "business_value": "The Work Package is BADF's bounded execution contract; its template is the skeleton every new WP starts from. A template that fails its own schema silently teaches drift. Conforming it + guarding it with a test fixes the foundation the whole G06 implementation-planning capability rests on, before any richer planning fields are added.",
+  "in_scope": [
+    "templates/work-package.json: conform to schemas/work-package.schema.json (add demand; data_classification internal; permissions array; rollback {reversible,method}; drop ungoverned escalation/reviewers/non_functional_requirements; minimal valid skeleton + external_target)",
+    "tests/test_badf_work_package_template.py: regression guard -- template validates via check_schema + carries demand + lowercase classification + array permissions + rollback {reversible,method}"
+  ],
+  "out_of_scope": [
+    "the backward-compatible schema EXTENSION with new planning fields (dependencies/source_baselines/expected_surfaces/authority_requirement/execution_budget/stop_conditions/composition) -- that is WP-IMP-B",
+    "the badf-implementation-plan skill (WP-IMP-A onward); any schemas/work-package.schema.json change; the badf-git program (BARCHI-2)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "templates/work-package.json validates against work-package.schema.json via check_schema",
+    "the regression test refuses each of the four drift regressions (missing demand / uppercase classification / object permissions / wrong rollback)",
+    "no schemas/work-package.schema.json change; no registry change; repo integrity clean",
+    "tests pass; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_work_package_template.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "c1840a7"
+  },
+  "note": "Lands IN_PROGRESS by design; next WP reconciles it. Conformance repair + regression guard; no schema change -> no gate-code change -> no mutation. Isolated worktree (badf-wt-imp0, GIT-I04). Ids WP-0089/DEM-0076/GOV-0070. Reconciles WP-2026-0090 (badf-git re-shadow, landed c1840a7, composition_verified: true; WP-0087 already reconciled on main via #176). First unit of the badf-implementation-plan/G06 capability (operator design 2026-08-30). Resolves #170."
+}

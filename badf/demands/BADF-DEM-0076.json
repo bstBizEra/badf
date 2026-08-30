@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0076",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 170,
+    "url": "https://github.com/bstBizEra/badf/issues/170",
+    "exported_at": "2026-08-30T07:57:30Z",
+    "body_digest": "sha256:bd4c1bf9666a1fae724414c6c771e11d6006f99651d78e1d55499a1300970bcb"
+  },
+  "title": "GOV-0070: WP-IMP-0 \u2014 repair Work Package template/schema drift (prerequisite for badf-implementation-plan / G06)",
+  "problem": "## Observed\n\ntemplates/work-package.json does NOT conform to schemas/work-package.schema.json (measured on main 78eab75): missing demand (required); data_classification \"INTERNAL\" (schema enum is lowercase public/internal/confidential/restricted); permissions is an object (schema type array); rollback {trigger,procedure,owner} (schema requires {reversible,method}). Plus ungoverned fields escalation/reviewers/non_functional_requirements. Nothing tests the template against the schema, so it drifted.\n\n## Expected\n\n**WP-IMP-0 -- repair the drift.** Rewrite templates/work-package.json to conform (add demand, lowercase internal, array permissions, {reversible,method} rollback; drop ungoverned decorative fields; minimal valid skeleton). Add tests/test_badf_work_package_template.py as a regression guard (template validates via check_schema + carries the four previously-wrong fields). NO schema change (the schema is correct; the template lagged). The new planning fields (dependencies/source_baselines/execution_budget/stop_conditions/...) are a BACKWARD-COMPATIBLE schema extension in WP-IMP-B, not here. Prerequisite for badf-implementation-plan (G06).\n\n## Evidence\n\n- Schema required set includes demand + data_classification(enum) + permissions(array) + rollback(reversible,method); template violates all four. Real WPs (WP-0082) already conform.\n\n## Unknowns\n\nNone -- pure conformance repair + regression guard.\n\ndiscovered-by: operator badf-implementation-plan design directive 2026-08-30 (section 12) \u00b7 status: DISCOVERED\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-30T07:57:30Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "WP-IMP-0 repairs the WP template/schema drift (prerequisite governance defect for the badf-implementation-plan/G06 capability, per operator design 2026-08-30 section 12). Conforms templates/work-package.json to the current schema + adds a regression-guard test. NO schema change (backward-compat schema extension is WP-IMP-B). DEM-0076/GOV-0070/WP-0089. Reconciles WP-2026-0082 (composition_verified: true)."
+}

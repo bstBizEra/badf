@@ -1,0 +1,168 @@
+diff --git a/badf/demands/BADF-DEM-0076.json b/badf/demands/BADF-DEM-0076.json
+new file mode 100644
+index 0000000..1e966d4
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0076.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0076",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 170,
++    "url": "https://github.com/bstBizEra/badf/issues/170",
++    "exported_at": "2026-08-30T07:57:30Z",
++    "body_digest": "sha256:bd4c1bf9666a1fae724414c6c771e11d6006f99651d78e1d55499a1300970bcb"
++  },
++  "title": "GOV-0070: WP-IMP-0 \u2014 repair Work Package template/schema drift (prerequisite for badf-implementation-plan / G06)",
++  "problem": "## Observed\n\ntemplates/work-package.json does NOT conform to schemas/work-package.schema.json (measured on main 78eab75): missing demand (required); data_classification \"INTERNAL\" (schema enum is lowercase public/internal/confidential/restricted); permissions is an object (schema type array); rollback {trigger,procedure,owner} (schema requires {reversible,method}). Plus ungoverned fields escalation/reviewers/non_functional_requirements. Nothing tests the template against the schema, so it drifted.\n\n## Expected\n\n**WP-IMP-0 -- repair the drift.** Rewrite templates/work-package.json to conform (add demand, lowercase internal, array permissions, {reversible,method} rollback; drop ungoverned decorative fields; minimal valid skeleton). Add tests/test_badf_work_package_template.py as a regression guard (template validates via check_schema + carries the four previously-wrong fields). NO schema change (the schema is correct; the template lagged). The new planning fields (dependencies/source_baselines/execution_budget/stop_conditions/...) are a BACKWARD-COMPATIBLE schema extension in WP-IMP-B, not here. Prerequisite for badf-implementation-plan (G06).\n\n## Evidence\n\n- Schema required set includes demand + data_classification(enum) + permissions(array) + rollback(reversible,method); template violates all four. Real WPs (WP-0082) already conform.\n\n## Unknowns\n\nNone -- pure conformance repair + regression guard.\n\ndiscovered-by: operator badf-implementation-plan design directive 2026-08-30 (section 12) \u00b7 status: DISCOVERED\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T07:57:30Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-IMP-0 repairs the WP template/schema drift (prerequisite governance defect for the badf-implementation-plan/G06 capability, per operator design 2026-08-30 section 12). Conforms templates/work-package.json to the current schema + adds a regression-guard test. NO schema change (backward-compat schema extension is WP-IMP-B). DEM-0076/GOV-0070/WP-0089. Reconciles WP-2026-0082 (composition_verified: true)."
++}
+diff --git a/templates/work-package.json b/templates/work-package.json
+index 3b9f9f8..7b53745 100644
+--- a/templates/work-package.json
++++ b/templates/work-package.json
+@@ -4,22 +4,27 @@
+   "id": "WP-YYYY-NNNN",
+   "title": "Concise delivery outcome",
+   "owner": "named accountable owner",
+-  "objective": "Measurable result",
++  "demand": "BADF-DEM-0000",
++  "repository": "owner/repo",
++  "objective": "One measurable delivery outcome",
+   "business_value": "Value proposition and KPI",
+   "in_scope": [],
+   "out_of_scope": [],
+-  "dependencies": [],
+   "target_gate": "G00",
+   "change_class": "C1",
+-  "data_classification": "INTERNAL",
++  "data_classification": "internal",
+   "acceptance_criteria": [],
+-  "non_functional_requirements": [],
+-  "permissions": {"tools": [], "environments": [], "mutations": []},
++  "permissions": [],
+   "tests": [],
+   "evidence": [],
+-  "reviewers": [],
+-  "rollback": {"trigger": "", "procedure": "", "owner": ""},
+-  "escalation": {"owner": "", "conditions": []},
+-  "status": "DRAFT"
++  "rollback": {
++    "reversible": true,
++    "method": "revert the squash commit via PR"
++  },
++  "status": "DRAFT",
++  "external_target": {
++    "repository": "owner/repo",
++    "branch": "main",
++    "base_revision": ""
++  }
+ }
+-
+diff --git a/tests/test_badf_work_package_template.py b/tests/test_badf_work_package_template.py
+new file mode 100644
+index 0000000..1b0c067
+--- /dev/null
++++ b/tests/test_badf_work_package_template.py
+@@ -0,0 +1,71 @@
++"""Work Package template conforms to its schema (BADF-WP-0089 / WP-IMP-0).
++
++`templates/work-package.json` is the skeleton every new Work Package starts from, so it must
++validate against `schemas/work-package.schema.json`. It had drifted -- missing `demand`, an
++uppercase `data_classification`, `permissions` as an object, and a `{trigger,procedure,owner}`
++rollback -- and nothing tested it, so the drift went unnoticed. These tests are the regression
++guard: the shipped template validates via the canonical gate's `check_schema`, and each of the
++four drift regressions is refused. This is the prerequisite (WP-IMP-0) for the
++badf-implementation-plan (G06) capability; it changes no schema.
++"""
++import copy
++import json
++import sys
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++TEMPLATE = json.loads((gate.ROOT / "templates/work-package.json").read_text())
++
++
++class WorkPackageTemplateTests(unittest.TestCase):
++    def test_template_conforms_to_schema(self):
++        # the whole point: the skeleton validates against the current schema.
++        gate.check_schema("work-package", TEMPLATE)
++
++    def test_template_carries_demand(self):
++        self.assertIn("demand", TEMPLATE)
++        self.assertRegex(TEMPLATE["demand"], r"^BADF-DEM-[0-9]{4,}$")
++
++    def test_template_data_classification_is_lowercase_enum(self):
++        self.assertIn(TEMPLATE["data_classification"],
++                      ("public", "internal", "confidential", "restricted"))
++
++    def test_template_permissions_is_an_array(self):
++        self.assertIsInstance(TEMPLATE["permissions"], list)
++
++    def test_template_rollback_has_reversible_and_method(self):
++        self.assertEqual({"reversible", "method"}, set(TEMPLATE["rollback"]))
++
++    # --- regression guards: each of the four historical drifts is refused by the schema ---
++
++    def test_missing_demand_would_be_refused(self):
++        bad = copy.deepcopy(TEMPLATE)
++        del bad["demand"]
++        with self.assertRaises(gate.ValidationError):
++            gate.check_schema("work-package", bad)
++
++    def test_uppercase_data_classification_would_be_refused(self):
++        bad = copy.deepcopy(TEMPLATE)
++        bad["data_classification"] = "INTERNAL"
++        with self.assertRaises(gate.ValidationError):
++            gate.check_schema("work-package", bad)
++
++    # NB: the schema walker enforces required/enum/pattern/additionalProperties but NOT a
++    # non-object type mismatch -- a `type: array` field given an object is not refused (the
++    # walker only iterates items when the value is already a list). So permissions-as-object
++    # is caught here by the positive `test_template_permissions_is_an_array` assertion, not by
++    # check_schema. (Strengthening the walker to type-check is a gate change, out of scope for
++    # this template repair; noted for WP-IMP-B, whose new typed fields would want it.)
++
++    def test_legacy_rollback_shape_would_be_refused(self):
++        bad = copy.deepcopy(TEMPLATE)
++        bad["rollback"] = {"trigger": "", "procedure": "", "owner": ""}
++        with self.assertRaises(gate.ValidationError):
++            gate.check_schema("work-package", bad)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0090/work-package.json b/work/WP-2026-0090/work-package.json
+index 9d4f5fa..965a725 100644
+--- a/work/WP-2026-0090/work-package.json
++++ b/work/WP-2026-0090/work-package.json
+@@ -47,11 +47,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "fc9e727"
++    "base_revision": "fc9e727",
++    "landed_content_tree": "4b02b7fe95581a454ff00b7afc8370795283f36c",
++    "composition_verified": true,
++    "landed_as": "c1840a7ff0148954d2e5a2604fe5204a6fc15896"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Evidence-refresh WP (examples + tests + docs; empty gate diff). Resolves #175 / GOV-0072 -- the last loose end of the badf-git program under the operator's 'complete the below' directive. Reconciles WP-2026-0087 (composition_verified true). Engineered by BARCHI-2; QA/REV by BARCHI-1 requested."
+ }
