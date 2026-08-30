@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0073",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 167,
+    "url": "https://github.com/bstBizEra/badf/issues/167",
+    "exported_at": "2026-08-30T00:40:53Z",
+    "body_digest": "sha256:b6f72ba4ff216620189b71b92cf008f69f28821b1b4c68318853655009c72b4c"
+  },
+  "title": "GOV-0067: WP-SEC-E \u2014 admit badf-security-design SHADOWED -> ACTIVE (representative shadow accepted; re-shadow deferred #166)",
+  "problem": "## Observed\n\nbadf-security-design is SHADOWED (WP-SEC-D / #165) on a REPRESENTATIVE shadow. The final admission rung is ACTIVE, a human admission gate (self-approval prohibited).\n\n## Expected\n\n**WP-SEC-E \u2014 admit SHADOWED -> ACTIVE.** The operator's standing /loop directive 'proceed next steps until badf-security-design is active' (2026-08-30) is the admission decision to activate on the representative shadow, with the real re-shadow tracked as a deferred follow-up (#166). Registry SHADOWED -> ACTIVE; representative caveat preserved (shadow-evidence.md still points at #166); ACTIVE grants NO new authority (SEC-I15/I13, the gate stays sole authority, security-approval stays security_authority's); no new control, no lifecycle change, no second validator. Mirrors badf-solution-design WP-SOL-E.\n\n## Evidence\n\n- Operator admission via /loop 'until active' 2026-08-30.\n- shadow-evidence.md (WP-SEC-D) is the calibration backing admission; #166 tracks the owed real re-shadow.\n\n## Unknowns\n\nNone that block admission \u2014 the representative-vs-real risk is explicitly accepted by the operator's 'until active' directive and bounded by #166.\n\ndiscovered-by: BADF-WP-0085 (badf-security-design landed SHADOWED) \u00b7 status: DISCOVERED\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-30T00:40:53Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "WP-SEC-E admits badf-security-design SHADOWED->ACTIVE on the operator's standing /loop 'until active' directive (2026-08-30). Grants no new authority (SEC-I15/I13). Preserves the representative caveat; real re-shadow deferred to #166. DEM-0073/GOV-0067/WP-0086. Reconciles WP-2026-0085. Completes the WP-SEC-A..E ladder (DESIGNED->ACTIVE)."
+}

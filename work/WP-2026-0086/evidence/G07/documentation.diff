@@ -1,0 +1,30 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 4a0b099..a63affe 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1046,6 +1046,25 @@ matrices (`examples/security-composition-shadow-api.json`, `-data.json`) are val
+ `lifecycle.json` change, no new control, no second validator. Registry `VALIDATED → SHADOWED`;
+ `APPROVED`/`ACTIVE` remain the operator's admission decision.
+ 
++## badf-security-design → ACTIVE — operator admission on a representative shadow (`BADF-WP-0086` / WP-SEC-E, Issue #167 / GOV-0067)
++
++`SHADOWED → ACTIVE` is a **human admission gate** — self-approval is prohibited, so no agent crosses it.
++The operator's standing directive — `/loop … proceed next steps until badf-security-design is active`
++(2026-08-30) — is the admission decision to **activate on the representative shadow**, rather than hold
++`ACTIVE` indefinitely for a real security-composition matrix that BADF — a governance framework with no
++threat surface of its own — may not produce soon. This WP records that decision as a governed registry
++advance, mirroring `badf-solution-design` WP-SOL-E: `ACTIVE` **grants the skill no new authority**
++(SEC-I15 — `badf_gate.py` stays the sole gate authority; SEC-I13 — `security-approval` stays
++`security_authority`'s), and there is no `lifecycle.json` change, no new control, no second validator.
++
++The admission does **not erase the caveat**: `references/shadow-evidence.md` still labels the shadow
++representative, and the owed real-project re-shadow is filed as a tracked follow-up (**#166**,
++`DISCOVERED`, trigger = the first real security-composition matrix). So the ladder stays truthful — the
++capability is admitted for use, its trust honestly bounded to a representative shadow, the debt to
++re-shadow on real data tracked rather than lost. This **completes the WP-SEC-A…E ladder**
++(`DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED → ACTIVE`), the second capability after
++`badf-solution-design` to traverse it end to end. Registry `SHADOWED → ACTIVE`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
