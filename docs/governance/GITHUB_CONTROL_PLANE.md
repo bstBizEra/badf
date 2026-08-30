@@ -1499,6 +1499,31 @@ executed a Work Package through the workflow. `ACTIVE` therefore means "admitted
 builds, with four controls proven only on scratch", and not more; the first real project — or the first
 build executed under the contract — is the deferred re-shadow's trigger.
 
+## badf-engineering-verification → SHADOWED — the G08 controls on the material BADF has (`BADF-WP-0106` / WP-VER-D, Issue #207 / GOV-0089)
+
+Three case classes, one record (`examples/verification-shadow-evidence.json`), every case recomputed from
+the repository on every run by `tests/test_badf_verification_shadow.py` — and the honest first sentence
+states what is real, what is reconstructed and what is representative. **`historical-generic-dossier`:**
+WP-2026-0010 — the only real G08 dossier, four binding-less agent-produced objects — replays UNTOUCHED
+through `check_g08_binding` and `check_g08_dossier` (the additive proof, now measured, not just asserted).
+**`real-review-encoded` (5):** BARCHI-1's real verdict arc — #196 **Request Changes** (the synthetic-id
+collision, a genuine OPEN `MAJOR` finding) → **Approved** on the fix head with the finding `RESOLVED` and
+the `WP-2026-9999` sentinel as resolution evidence, then #201 / #202 / #205 — encoded under the encoded
+reviewer's own honesty conditions: one ballot per record, the real comment id as `reviewer_run_id`, sealed
+digest labeled RECONSTRUCTED, no council claimed, non-coverage carried verbatim, matrix rows `PARTIAL`
+(no composed observation can be reconstructed from prose). `badf_gate.py verify` accepts all five and
+refuses tampering — the digest changed, the #196 finding erased (VER-I12), `VERIFIED` without a composed
+ref (VER-I15). **`representative-typed-dossier` (12):** ten injected defects each refused by the control
+that owns it — every control C1–C7 owns at least one refusal — and two clean dossiers admitted (0 false
+refusals). Metrics measured and named; **reviewer correlation is NOT MEASURABLE with one reviewer seat**
+— a non-coverage the future BADF-QA / BADF-REV seats exist to close.
+
+**COI, disclosed:** the encoded reviewer is also the seat's usual reviewer; BARCHI-2 (not encoded)
+co-reviews the encoding class for fidelity. Registry `VALIDATED → SHADOWED` (digest unchanged); no gate,
+schema or lifecycle change (ladder-internal). **Admission (`VER-E`) is the operator's decision on this
+evidence, asked on its own issue — never pre-granted**; the real typed re-shadow trigger (first project
+G08 with typed objects) is filed as a deferred issue at close-out, mirroring #185 / #166.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

@@ -1,0 +1,116 @@
+{
+  "schema_version": "1.0.0",
+  "id": "VR-WP-2026-0099-PR196-APPROVED",
+  "work_package_id": "WP-2026-0099",
+  "gate": "G08",
+  "target": {
+    "source_revision": "23866e7a616740f63a346cf19ac278b891c5fddb",
+    "target_base_sha": "e1423ad43b63491292c983435fae4bff11185cde",
+    "expected_content_tree": "ec92ce19c1abfb41f6cd0c7a093292765f3915a1",
+    "sealed_input_digest": "sha256:d095980ab15ca2e07b76fb4b581db8eef0c6ef57e38e05254471b66000903c8f"
+  },
+  "change_class": "C2",
+  "lenses_routed": [
+    "correctness",
+    "quality/test"
+  ],
+  "ballots": [
+    {
+      "ballot_id": "BALLOT-5470235706",
+      "reviewer": "BARCHI-1",
+      "principal_type": "agent",
+      "reviewer_run_id": "5470235706",
+      "sealed_input_digest": "sha256:d095980ab15ca2e07b76fb4b581db8eef0c6ef57e38e05254471b66000903c8f",
+      "verdict": "APPROVE",
+      "finding_ids": [
+        "VF-001"
+      ],
+      "non_coverage": [
+        {
+          "surface": "encoding",
+          "reason": "RECONSTRUCTED from PR #196 comment 5470235706; the reviewer posted a prose verdict, not this record"
+        }
+      ]
+    }
+  ],
+  "independence": {
+    "reviewer_run_id": "5470235706",
+    "author_run_id": "barchi-2-build-session",
+    "same_execution": false,
+    "sealed_input_digest": "sha256:d095980ab15ca2e07b76fb4b581db8eef0c6ef57e38e05254471b66000903c8f",
+    "prior_findings_visible": false,
+    "author_reasoning_visible": false,
+    "cross_pass_communication_before_ballot": false,
+    "target_digest_equal": true,
+    "conflicts_of_interest": []
+  },
+  "findings": [
+    {
+      "finding_id": "VF-001",
+      "kind": "DEFECT",
+      "severity": "MAJOR",
+      "baseline_ref": "GOV-0085: synthetic test ids must be unallocatable",
+      "observed_ref": "23866e7a616740f63a346cf19ac278b891c5fddb",
+      "affected_elements": [],
+      "evidence_locations": [
+        "tests/test_badf_compose.py",
+        "tests/test_badf_reconcile.py"
+      ],
+      "expected": "tests use an id the sequential ledger can never allocate as their never-exists fixture",
+      "observed": "tests used WP-2026-0099 as a never-exists id and the ledger counter reached it, so the fixtures collided with a real work package",
+      "impact": "false test outcomes on any branch carrying WP-2026-0099; CI red on the reviewed head",
+      "failure_scenario": "the counter allocates the sentinel id; the never-exists assertions now name an existing work package and the suite judges the wrong world",
+      "recommendation_direction": "repoint both fixtures to the unallocatable sentinel WP-2026-9999",
+      "status": "RESOLVED",
+      "non_coverage": [],
+      "lens": "correctness",
+      "reported_by": [
+        "BALLOT-5470235706"
+      ],
+      "also_reported_by": [],
+      "requirement_refs": [
+        "GOV-0085"
+      ],
+      "evidence_refs": [
+        "the WP-2026-9999 sentinel adopted on the fix head 23866e7 (both fixtures repointed)",
+        "check-run 99293746699 (success)"
+      ]
+    }
+  ],
+  "synthesis": {
+    "withdrawn": [],
+    "downgraded": []
+  },
+  "evidence_index": [],
+  "matrix": [
+    {
+      "claim_ref": "BLD-C: seven deterministic G07 controls",
+      "change_ref": "23866e7a616740f63a346cf19ac278b891c5fddb",
+      "review_refs": [
+        "BALLOT-5470235706"
+      ],
+      "integration_refs": [],
+      "contract_refs": [],
+      "composed_refs": [],
+      "result": "PARTIAL"
+    }
+  ],
+  "non_coverage": [
+    {
+      "surface": "encoding provenance",
+      "reason": "RECONSTRUCTED from PR #196 comment 5470235706 (head 23866e7, fix head; finding resolved); real comment id and check-run 99293746699 cited"
+    },
+    {
+      "surface": "council quorum",
+      "reason": "single-reviewer verdict, exactly as posted; no council was convened (pre-BADF-QA/REV arrangement, deviation recorded)"
+    },
+    {
+      "surface": "composed observation",
+      "reason": "no composed-tree observation encoded from prose; matrix rows PARTIAL by construction"
+    }
+  ],
+  "authority": {
+    "verification_authority": false
+  },
+  "recorded_at": "2026-08-30T19:05:31Z"
+}

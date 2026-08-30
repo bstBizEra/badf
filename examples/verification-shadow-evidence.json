@@ -1,0 +1,218 @@
+{
+  "record": "verification-shadow",
+  "schema_version": "1.0.0",
+  "work_package_id": "WP-2026-0106",
+  "repository": "bstBizEra/badf",
+  "measured_on": "5b428f7d6f50312a753296fe2cca26b39d94e7a6",
+  "measured_at": "2026-08-30T19:05:31Z",
+  "corpus": {
+    "historical_g08_dossiers": 1,
+    "real_review_verdicts_encoded": 5,
+    "representative_typed_dossiers": 14
+  },
+  "cases": [
+    {
+      "case_class": "historical-generic-dossier",
+      "subject": "WP-2026-0010",
+      "outcome": "UNTOUCHED",
+      "provenance": {
+        "dossier": "work/WP-2026-0010/gate-dossier.G08.json",
+        "note": "four binding-less agent-produced objects; check_g08_binding pass-through, check_g08_dossier silent"
+      }
+    },
+    {
+      "case_class": "real-review-encoded",
+      "subject": "pr196-request-changes",
+      "outcome": "VERIFY_PASS",
+      "provenance": {
+        "pr": 196,
+        "comment_id": "5469987101",
+        "head": "2c93d605e2069840d725ff49dc675c0936e7fb19",
+        "check_run": "99286794583"
+      }
+    },
+    {
+      "case_class": "real-review-encoded",
+      "subject": "pr196-approved",
+      "outcome": "VERIFY_PASS",
+      "provenance": {
+        "pr": 196,
+        "comment_id": "5470235706",
+        "head": "23866e7a616740f63a346cf19ac278b891c5fddb",
+        "check_run": "99293746699"
+      }
+    },
+    {
+      "case_class": "real-review-encoded",
+      "subject": "pr201",
+      "outcome": "VERIFY_PASS",
+      "provenance": {
+        "pr": 201,
+        "comment_id": "5470380581",
+        "head": "9937ed2c4f4972a258cefe2a3fb2e4288e2c67c3",
+        "check_run": "99296847838"
+      }
+    },
+    {
+      "case_class": "real-review-encoded",
+      "subject": "pr202",
+      "outcome": "VERIFY_PASS",
+      "provenance": {
+        "pr": 202,
+        "comment_id": "5470510051",
+        "head": "af43e496f1ba2136e9b6079c3e30a46096c7bac8",
+        "check_run": "99300701682"
+      }
+    },
+    {
+      "case_class": "real-review-encoded",
+      "subject": "pr205",
+      "outcome": "VERIFY_PASS",
+      "provenance": {
+        "pr": 205,
+        "comment_id": "5470622958",
+        "head": "901c16481bc1bde8236d339782f16a3ea6ffbfb3",
+        "check_run": "99303348306"
+      }
+    },
+    {
+      "case_class": "representative-typed-dossier",
+      "subject": "clean-c1",
+      "outcome": "ADMITTED",
+      "provenance": {
+        "fixture": "tests/test_badf_verification_shadow.py::build_case"
+      }
+    },
+    {
+      "case_class": "representative-typed-dossier",
+      "subject": "clean-c2-council",
+      "outcome": "ADMITTED",
+      "provenance": {
+        "fixture": "tests/test_badf_verification_shadow.py::build_case"
+      }
+    },
+    {
+      "case_class": "representative-typed-dossier",
+      "subject": "divergent-tree-with-record",
+      "outcome": "REFUSED(C1)",
+      "provenance": {
+        "fixture": "tests/test_badf_verification_shadow.py::build_case"
+      }
+    },
+    {
+      "case_class": "representative-typed-dossier",
+      "subject": "divergent-tree-no-record",
+      "outcome": "REFUSED(C2)",
+      "provenance": {
+        "fixture": "tests/test_badf_verification_shadow.py::build_case"
+      }
+    },
+    {
+      "case_class": "representative-typed-dossier",
+      "subject": "author-as-reviewer-uncarried",
+      "outcome": "REFUSED(C3)",
+      "provenance": {
+        "fixture": "tests/test_badf_verification_shadow.py::build_case"
+      }
+    },
+    {
+      "case_class": "representative-typed-dossier",
+      "subject": "c2-one-ballot",
+      "outcome": "REFUSED(C3)",
+      "provenance": {
+        "fixture": "tests/test_badf_verification_shadow.py::build_case"
+      }
+    },
+    {
+      "case_class": "representative-typed-dossier",
+      "subject": "c2-missing-lens",
+      "outcome": "REFUSED(C3)",
+      "provenance": {
+        "fixture": "tests/test_badf_verification_shadow.py::build_case"
+      }
+    },
+    {
+      "case_class": "representative-typed-dossier",
+      "subject": "untyped-agent-under-runtime-required",
+      "outcome": "REFUSED(C4)",
+      "provenance": {
+        "fixture": "tests/test_badf_verification_shadow.py::build_case"
+      }
+    },
+    {
+      "case_class": "representative-typed-dossier",
+      "subject": "empty-non-coverage",
+      "outcome": "REFUSED(C5)",
+      "provenance": {
+        "fixture": "tests/test_badf_verification_shadow.py::build_case"
+      }
+    },
+    {
+      "case_class": "representative-typed-dossier",
+      "subject": "open-major-passed-over",
+      "outcome": "REFUSED(C6)",
+      "provenance": {
+        "fixture": "tests/test_badf_verification_shadow.py::build_case"
+      }
+    },
+    {
+      "case_class": "representative-typed-dossier",
+      "subject": "open-major-unmapped-pwc",
+      "outcome": "REFUSED(C6)",
+      "provenance": {
+        "fixture": "tests/test_badf_verification_shadow.py::build_case"
+      }
+    },
+    {
+      "case_class": "representative-typed-dossier",
+      "subject": "composed-declared-not-applicable",
+      "outcome": "REFUSED(C7)",
+      "provenance": {
+        "fixture": "tests/test_badf_verification_shadow.py::build_case"
+      }
+    },
+    {
+      "case_class": "representative-typed-dossier",
+      "subject": "bare-pass-review",
+      "outcome": "REFUSED(VER-I10)",
+      "provenance": {
+        "fixture": "tests/test_badf_verification_shadow.py::build_case",
+        "level": "binding (check_g08_binding)"
+      }
+    },
+    {
+      "case_class": "representative-typed-dossier",
+      "subject": "indeterminate-contract-as-pass",
+      "outcome": "REFUSED(VER-I14)",
+      "provenance": {
+        "fixture": "tests/test_badf_verification_shadow.py::build_case",
+        "level": "binding (check_g08_binding)"
+      }
+    }
+  ],
+  "runner_citations": [
+    "check-run 99286794583 (PR #196, head 2c93d60)",
+    "check-run 99293746699 (PR #196, head 23866e7)",
+    "check-run 99296847838 (PR #201, head 9937ed2)",
+    "check-run 99300701682 (PR #202, head af43e49)",
+    "check-run 99303348306 (PR #205, head 901c164)"
+  ],
+  "metrics": {
+    "injected_defects_refused": 12,
+    "clean_dossiers_admitted": 2,
+    "false_refusals": 0,
+    "missed_defects": 0,
+    "encoded_reviews_verified": 5,
+    "duplicate_finding_rate": 0,
+    "severity_drift": "NONE -- approvals encode no findings (probes are not defects, VER-I03; deviation from the #207 INFO-findings wording declared in each record)",
+    "reviewer_correlation": "NOT_MEASURABLE_ONE_SEAT"
+  },
+  "non_coverage": [
+    "no typed real G08 dossier exists on main -- the typed-object shadow is representative, and a real re-shadow is owed the first time a project passes G08 with typed objects",
+    "one reviewer seat -- reviewer correlation not measurable",
+    "the real-review class is RECONSTRUCTED from prose verdict comments (ids cited), not observed records",
+    "representative injected defects are synthetic fixtures, not production history",
+    "the #201/#202/#205 approvals encode findings: [] -- the reviewer's probes are not encoded as pseudo-findings (VER-I03); deviation from the #207 plan wording declared",
+    "dossier-level representative cases recompute through the PURE check_g08_dossier (plus two binding-level cases through check_g08_binding); the per-fixture scratch-clone validate_dossier path promised in the #207 wording is NOT shipped -- validate_dossier end-to-end is exercised by the historical WP-2026-0010 case and by CI's composed run of the rung's own dossier; deviation declared"
+  ]
+}

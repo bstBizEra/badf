@@ -1,0 +1,115 @@
+{
+  "schema_version": "1.0.0",
+  "id": "VR-WP-2026-0099-PR196-REQUEST-CHANGES",
+  "work_package_id": "WP-2026-0099",
+  "gate": "G08",
+  "target": {
+    "source_revision": "2c93d605e2069840d725ff49dc675c0936e7fb19",
+    "target_base_sha": "6814a244b3ac7850ef2165f39e24cd685261cba8",
+    "expected_content_tree": "be12ef93e2cf4c5efe0e89be5c85e093126cd25e",
+    "sealed_input_digest": "sha256:73bdd5b19bbcee6b654ae4cd738cf224131214236da10c07938e504f1502682c"
+  },
+  "change_class": "C2",
+  "lenses_routed": [
+    "correctness",
+    "quality/test"
+  ],
+  "ballots": [
+    {
+      "ballot_id": "BALLOT-5469987101",
+      "reviewer": "BARCHI-1",
+      "principal_type": "agent",
+      "reviewer_run_id": "5469987101",
+      "sealed_input_digest": "sha256:73bdd5b19bbcee6b654ae4cd738cf224131214236da10c07938e504f1502682c",
+      "verdict": "REJECT",
+      "finding_ids": [
+        "VF-001"
+      ],
+      "non_coverage": [
+        {
+          "surface": "encoding",
+          "reason": "RECONSTRUCTED from PR #196 comment 5469987101; the reviewer posted a prose verdict, not this record"
+        }
+      ]
+    }
+  ],
+  "independence": {
+    "reviewer_run_id": "5469987101",
+    "author_run_id": "barchi-2-build-session",
+    "same_execution": false,
+    "sealed_input_digest": "sha256:73bdd5b19bbcee6b654ae4cd738cf224131214236da10c07938e504f1502682c",
+    "prior_findings_visible": false,
+    "author_reasoning_visible": false,
+    "cross_pass_communication_before_ballot": false,
+    "target_digest_equal": true,
+    "conflicts_of_interest": []
+  },
+  "findings": [
+    {
+      "finding_id": "VF-001",
+      "kind": "DEFECT",
+      "severity": "MAJOR",
+      "baseline_ref": "GOV-0085: synthetic test ids must be unallocatable",
+      "observed_ref": "2c93d605e2069840d725ff49dc675c0936e7fb19",
+      "affected_elements": [],
+      "evidence_locations": [
+        "tests/test_badf_compose.py",
+        "tests/test_badf_reconcile.py"
+      ],
+      "expected": "tests use an id the sequential ledger can never allocate as their never-exists fixture",
+      "observed": "tests used WP-2026-0099 as a never-exists id and the ledger counter reached it, so the fixtures collided with a real work package",
+      "impact": "false test outcomes on any branch carrying WP-2026-0099; CI red on the reviewed head",
+      "failure_scenario": "the counter allocates the sentinel id; the never-exists assertions now name an existing work package and the suite judges the wrong world",
+      "recommendation_direction": "repoint both fixtures to the unallocatable sentinel WP-2026-9999",
+      "status": "OPEN",
+      "non_coverage": [],
+      "lens": "correctness",
+      "reported_by": [
+        "BALLOT-5469987101"
+      ],
+      "also_reported_by": [],
+      "requirement_refs": [
+        "GOV-0085"
+      ],
+      "evidence_refs": [
+        "check-run 99286794583 (failure)"
+      ]
+    }
+  ],
+  "synthesis": {
+    "withdrawn": [],
+    "downgraded": []
+  },
+  "evidence_index": [],
+  "matrix": [
+    {
+      "claim_ref": "BLD-C: seven deterministic G07 controls",
+      "change_ref": "2c93d605e2069840d725ff49dc675c0936e7fb19",
+      "review_refs": [
+        "BALLOT-5469987101"
+      ],
+      "integration_refs": [],
+      "contract_refs": [],
+      "composed_refs": [],
+      "result": "PARTIAL"
+    }
+  ],
+  "non_coverage": [
+    {
+      "surface": "encoding provenance",
+      "reason": "RECONSTRUCTED from PR #196 comment 5469987101 (head 2c93d60, CI red; one anchored defect); real comment id and check-run 99286794583 cited; target binds the RC head's OWN content tree be12ef9 (recomputed with the gate's content_tree; independently measured by BADF-REV F4) and the base main stood at when the verdict posted (6814a24)"
+    },
+    {
+      "surface": "council quorum",
+      "reason": "single-reviewer verdict, exactly as posted; no council was convened (pre-BADF-QA/REV arrangement, deviation recorded)"
+    },
+    {
+      "surface": "composed observation",
+      "reason": "no composed-tree observation encoded from prose; matrix rows PARTIAL by construction"
+    }
+  ],
+  "authority": {
+    "verification_authority": false
+  },
+  "recorded_at": "2026-08-30T19:05:31Z"
+}

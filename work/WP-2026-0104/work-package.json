@@ -45,11 +45,14 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "5b428f7"
+    "base_revision": "5b428f7",
+    "landed_content_tree": "98b397e1d79d36bd6ea36e79397a1726f95c80d5",
+    "composition_verified": true,
+    "landed_as": "bbec7622d72edcd084c718896297a9a63759752c"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-BLD-E of the badf-build program -- the operator's admission (pre-authorized on #188, recorded on #203). Governance-only WP (registry status + test pins + doctrine; empty gate diff). Resolves #203 / GOV-0087. Reconciles WP-2026-0105 (VER-C; composition_verified true). Lean mode disabled (authority-adjacent admission)."
 }

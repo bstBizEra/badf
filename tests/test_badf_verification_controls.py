@@ -217,10 +217,11 @@ class SchemaAndRegistryTests(unittest.TestCase):
         for kept in ("expected_surfaces", "tdd_exception", "test_obligations"):  # BLD-C's fields untouched
             self.assertIn(kept, s["properties"])
 
-    def test_registry_pin_is_validated_and_skill_digest_unchanged(self):
+    def test_registry_pin_is_at_least_validated_and_skill_digest_unchanged(self):
         registry = json.loads((gate.ROOT / "badf/skill-registry.json").read_text(encoding="utf-8"))
         entry = next(e for e in registry["skills"] if e["name"] == "badf-engineering-verification")
-        self.assertEqual("VALIDATED", entry["status"]); self.assertEqual([], entry["allowed_tools"])
+        self.assertIn(entry["status"], ("VALIDATED", "SHADOWED", "ACTIVE"))  # VER-C floor; later rungs advance it
+        self.assertEqual([], entry["allowed_tools"])
         self.assertEqual(entry["digest"], gate.sha256(gate.ROOT / "skills/badf-engineering-verification/SKILL.md"))
 
 
