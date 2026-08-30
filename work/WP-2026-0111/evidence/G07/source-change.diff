@@ -1,0 +1,128 @@
+diff --git a/badf/demands/BADF-DEM-0098.json b/badf/demands/BADF-DEM-0098.json
+new file mode 100644
+index 0000000..2a25446
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0098.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0098",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 225,
++    "url": "https://github.com/bstBizEra/badf/issues/225",
++    "exported_at": "2026-08-30T21:56:20Z",
++    "body_digest": "sha256:bc952d358b4ec5f4417f50ef757513b97e6642abfab857e8cf727f8d2d89d94e"
++  },
++  "title": "GOV-0097: the build shadow's authority case recomputes a different property than it records (live demand status vs the measured snapshot) — 1 failure today, 67 under #220",
++  "problem": "🧠 **ARCHI (BARCHI-2)** — the shadow's authority case recomputes a *different property* than it records\n\n## Stage-Gate\n- **Stage:** 1 intake — a latent defect in a landed test, found by another seat when its work first triggered the condition.\n- **Decision:** Continue — it blocks BARCHI-3's close-out today and arms a 67-case failure under #220.\n- **Over-engineering risk:** rewriting the shadow record to make the test green. **Refused** — the record is a measurement of the past and stays as measured; the test is what is wrong.\n- **Glossary stage(s):** 7 build.\n\n## Observed (reported by BARCHI-3, reproduced here)\n`tests/test_badf_build_shadow.py::test_every_authority_case_replays_from_the_demand_record` reads each demand from the **live working tree** and asserts the record's stored `status` equals it. But the stored value is a **snapshot of a mutable field**, taken at the record's `measured_on` (`8f3d805`). The moment a demand legitimately reaches a terminal state, the equality breaks:\n\n```\nwp='WP-2026-0100': ('AUTHORIZED','human','AUTHORIZED_HUMAN') != ('RESOLVED','human','CLOSED_DEMAND')\n```\n\nBARCHI-3 discharged `BADF-DEM-0087` in their close-out; nothing is wrong with that transition, and nothing is wrong with the record. **My test is wrong.**\n\n**It is the only case class in the module that does this.** `request-digest-bound`, `typed-binding-recomputed` and `fresh-verification-replayed` all recompute at a pinned revision (`show(c[\"landed_as\"], …)`); the authority case reads the present. So it measures *\"is this demand currently AUTHORIZED\"* when the record claims *\"was this demand human-authorized as measured\"* — the same proxy-vs-property class as tonight's other four findings.\n\n**Scale:** all 67 `authority-replayed` cases store `AUTHORIZED`. Under #220 (derived terminality), every finished demand stops sitting `AUTHORIZED` and **all 67 fail at once**. Today's single collision is the leading edge.\n\n## Acceptance criteria (WP-2026-0110 / BADF-DEM-0097)\n- The authority case recomputes the demand **at the record's `measured_on`**, reproducing exactly what the generator read; the assertion stays an exact triple comparison — **not** loosened to \"AUTHORIZED or any terminal state\" (that would keep it green by proving less).\n- Demand absent at `measured_on` still recomputes symmetrically (`ABSENT` → `NOT_AUTHORIZED`), as the generator does.\n- **Failing-first is demonstrated, not asserted:** with a demand flipped to a terminal state, the test is red before the fix and green after; the probe is restored byte-identically.\n- `examples/build-shadow-evidence.json` is **not** re-measured or edited. No other test, gate or family surface changes.\n\n## Tests\n- `test_every_authority_case_replays_from_the_demand_record` (fixed) · the other six shadow cases and the contract/activation pins unchanged and green.\n\n## Out of scope\n- #220's derived-terminality work itself (this fix makes the shadow survive it, which is the point); re-measuring the record; other families' surfaces.\n\n**Version tier:** patch. **Lean mode:** advisory. Review: BADF-QA + BADF-REV. Executed through the `badf-build` workflow.\n\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T21:56:20Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "The build shadow's authority case compared a stored snapshot of a mutable field against its live value, so its CLOSED_DEMAND branch was unreachable and any legitimate demand transition reddened it (1 case today via #224; all 67 under #220). Fix: recompute at the record's measured_on, exactly as the generator did, plus a durable live check that the authorizing principal is still human. The record is not re-measured."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 6a534b9..773f404 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1618,6 +1618,30 @@ producers, never authority. Ladder-internal at this rung (SKILL + 17 references,
+ WP-VAL-B (typed G09 evidence contracts) and WP-VAL-C (canonical deterministic controls) are
+ shared-surface and go to BADF-QA + BADF-REV. Authored by BARCHI-1 as Senior ARCH & ENGIN. Registry
+ `badf-release-validation: DESIGNED`.
++## A guard that could not pass — the build shadow's authority case (`BADF-WP-0110`, Issue #225 / GOV-0097)
++
++`tests/test_badf_build_shadow.py`'s `authority-replayed` case compared the record's stored demand
++`status` — a **snapshot of a mutable field**, taken at the record's `measured_on` — against the **live**
++demand file. So it measured *"is this demand currently `AUTHORIZED`"* while the record claims *"was this
++demand human-authorized as measured"*. The consequence was sharper than a loose comparison: the
++`CLOSED_DEMAND` branch was **unreachable**. Element 0 is frozen at `AUTHORIZED`, so a legitimately
++discharged demand could never satisfy the tuple the branch existed to accommodate — the mirror image of
++an assertion that can never fail, and the only one of the evening's instances that CI caught rather than
++a seat. One case reddened when `BADF-DEM-0087` was discharged (#224); **all 67 would have** when #220's
++derived terminality lands, which was a hard sequencing dependency now removed.
++
++The fix recomputes the demand **at the record's `measured_on`**, exactly what the generator read: the
++comparison stays *exact* rather than being loosened to "`AUTHORIZED` or any terminal state", which would
++have kept the light green by proving less — a demand that reached terminal *wrongly* would have passed.
++It also restores the module's own convention: the sibling case classes all recompute at a pinned
++revision via `show(c["landed_as"], …)`; this one had skipped it. One durable live assertion remains,
++chosen because no legitimate lifecycle transition can break it: a demand recorded as human-authorized
++must still record a human principal.
++
++**The record was not re-measured.** `examples/build-shadow-evidence.json` is byte-identical. Editing a
++frozen measurement so that today's tests pass would falsify the measurement — the standing rule when a
++shadow and the present disagree is that the *test* is wrong, or the present is, and never that the past
++should be rewritten. #220's derived-terminality work must not reach for that green either.
+ 
+ ## Discovery ≠ scope expansion
+ 
+diff --git a/tests/test_badf_build_shadow.py b/tests/test_badf_build_shadow.py
+index 8c110ca..e1734f1 100644
+--- a/tests/test_badf_build_shadow.py
++++ b/tests/test_badf_build_shadow.py
+@@ -56,13 +56,36 @@ class BuildShadowTests(unittest.TestCase):
+                 self.assertEqual((c["verdict"], c["mismatches"]), ("BOUND" if not bad else "MISMATCH", bad))
+ 
+     def test_every_authority_case_replays_from_the_demand_record(self):
++        """The record is a MEASUREMENT OF THE PAST: each case stores the demand's status as it stood at
++        `measured_on`. Reading the LIVE demand measured a different property -- "is it currently
++        AUTHORIZED" -- which made the CLOSED_DEMAND branch below UNREACHABLE: element 0 is frozen at
++        AUTHORIZED, so a legitimately discharged demand could never satisfy the tuple. One case reddened
++        the moment BADF-DEM-0087 was discharged (#224), and all 67 would have under #220's derived
++        terminality. Every sibling case class here already recomputes at a pinned revision; this one had
++        skipped that convention. Fixed under WP-2026-0110 / #225 -- exact comparison kept, recomputed at
++        the revision the record was measured on, so no future lifecycle transition can falsify it."""
++        measured_on = load_shadow()["measured_on"]
+         seen = cases("authority-replayed"); self.assertGreaterEqual(len(seen), 66)
+         for c in seen:
+             with self.subTest(wp=c["wp"]):
+-                dem = json.loads((gate.ROOT / "badf/demands" / f"{c['demand']}.json").read_text(encoding="utf-8"))
+-                ht = (dem.get("authorized_by") or {}).get("principal_type")
+-                expected = "AUTHORIZED_HUMAN" if (dem.get("status") == "AUTHORIZED" and ht == "human") else ("CLOSED_DEMAND" if dem.get("status") == "RESOLVED" and ht == "human" else "NOT_AUTHORIZED")
+-                self.assertEqual((c["status"], c["principal_type"], c["verdict"]), (dem.get("status"), ht, expected))
++                blob = show(measured_on, f"badf/demands/{c['demand']}.json")
++                dem = json.loads(blob) if blob is not None else {}
++                st = dem.get("status", "ABSENT"); ht = (dem.get("authorized_by") or {}).get("principal_type")
++                expected = ("AUTHORIZED_HUMAN" if (st == "AUTHORIZED" and ht == "human")
++                            else ("CLOSED_DEMAND" if st == "RESOLVED" and ht == "human" else "NOT_AUTHORIZED"))
++                self.assertEqual((c["status"], c["principal_type"], c["verdict"]), (st, ht, expected))
++                # The one durable check against the LIVE record: a lifecycle transition may legitimately
++                # move `status`, but the principal that authorized a demand never stops being a human.
++                live = gate.ROOT / "badf/demands" / f"{c['demand']}.json"
++                if c["principal_type"] == "human":
++                    # `if live.is_file()` here would make this check SILENTLY VACUOUS when a demand
++                    # record is absent -- BADF-REV's M2 probe on #226 showed the module reporting OK
++                    # with the file deleted, the hole closed only by `repo`'s lockfile drift check
++                    # elsewhere. A landed work package's authority anchor must stay on the ledger, so
++                    # absence is asserted against rather than skipped.
++                    self.assertTrue(live.is_file(), f"{c['demand']} authorized a landed work package and must remain on the ledger")
++                    self.assertEqual("human", (json.loads(live.read_text(encoding="utf-8")).get("authorized_by") or {}).get("principal_type"),
++                                     f"{c['demand']} no longer records a human authorizing principal")
+ 
+     def test_typed_bindings_recompute_from_the_object_store(self):
+         seen = cases("typed-binding-recomputed"); self.assertGreaterEqual(len(seen), 2)
+diff --git a/work/WP-2026-0107/work-package.json b/work/WP-2026-0107/work-package.json
+index 1319500..16fd4fa 100644
+--- a/work/WP-2026-0107/work-package.json
++++ b/work/WP-2026-0107/work-package.json
+@@ -42,11 +42,13 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR (registry entry + skill removed)"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "ce3c458"
++    "base_revision": "ce3c458",
++    "composition_verified": false,
++    "landed_as": "f5a575de594b11bb20e3df6e6c35ea025640012c"
+   },
+   "note": "Ladder-internal DESIGNED contract freeze (SKILL + references, no gate/schema/lifecycle) -> no BADF-QA/BADF-REV review required at A; WP-VAL-B (typed G09 evidence schemas) and WP-VAL-C (deterministic gate controls) are shared-surface -> QA+REV by BADF-QA/BADF-REV. Authored by BARCHI-1 as Senior ARCH & ENGIN. Ids WP-0107/DEM-0094/GOV-0090. Rebased three times as the base moved under an open PR: bbec762 -> 8de88d5 (VER-D) -> d292801 (VER-E, a deliberate yield so an operator-authorized admission would not queue behind a contract freeze) -> ce3c458 (WP-0109). Reconciles WP-2026-0109; WP-2026-0104, 0106 and 0108 were already reconciled upstream. Each rebase costs a G07 regeneration because source-change.diff is base-bound. Delivery ladder WP-VAL-A(DESIGNED)->B(IMPLEMENTED)->C(VALIDATED)->D(SHADOWED)->E(quality_authority/operator admission ACTIVE)."
+ }
