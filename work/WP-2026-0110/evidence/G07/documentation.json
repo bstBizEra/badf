@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0110-G07-documentation",
+  "work_package_id": "WP-2026-0110",
+  "gate": "G07",
+  "claim": "the documentation this change carries",
+  "evidence_type": "documentation",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-08-30T23:19:21Z",
+  "completed_at": "2026-08-30T23:19:21Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0110/evidence/G07/documentation.diff",
+  "digest": "sha256:56a55036793d6187895c8e22b37c77e5b905cd2d9571927d5b810b0547e06702",
+  "binding": {
+    "changed": [
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "docs/learnings/a-guard-that-cannot-fail-is-not-a-guard.md"
+    ],
+    "contract_changed": true,
+    "behavior_changed": false,
+    "required_updates": [],
+    "not_updated_with_reason": "documentation changed with the work package"
+  }
+}

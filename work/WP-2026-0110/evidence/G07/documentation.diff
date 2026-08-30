@@ -1,0 +1,223 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index b1921bc..985574e 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1538,8 +1538,9 @@ now the **admitted** G08 verification doctrine for BADF-governed work.
+ rather than only in linked evidence:
+ 
+ - **No typed real G08 dossier exists** — the typed-object shadow is representative fixtures. A real
+-  re-shadow is owed the first time a project passes G08 with typed objects; it is filed as a deferred,
+-  trigger-gated issue (the #212 / #185 / #166 pattern).
++  re-shadow is owed the first time a project passes G08 with typed objects; it is filed as **#217
++  (GOV-0093)**, deferred and trigger-gated (the #212 / #185 / #166 pattern). That issue is the
++  admission's discharge path: a re-shadow discharges a caveat, it does not re-grant a status.
+ - **One reviewer seat at encoding time** — reviewer correlation `NOT_MEASURABLE`. The BADF-QA and BADF-REV
+   seats change this going forward.
+ - **The real-review class is RECONSTRUCTED** from public prose verdicts with ids cited — honest, but not
+@@ -1559,6 +1560,89 @@ independently reviewed by BADF-QA and BADF-REV, both of whom issued Request Chan
+ **Doctrine, unchanged by the admission:** no findings does not mean correctness; passing tests do not mean
+ coverage; source-head success does not mean composed-result safety; G08 does not replace G09. The gate
+ evaluates the evidence and `quality_authority` decides whether G08 advances.
++## badf-build's Boundary named a family that does not exist — and the first controller run (`BADF-WP-0109`, Issue #219 / GOV-0095)
++
++`skills/badf-build/SKILL.md`'s frozen **Boundary** block named `badf-verification (G08)` as the family
++that independently verifies a build. No such family is in `badf/skill-registry.json`; the one that
++verifies at G08 is `badf-engineering-verification`. Every other family the surface names resolved. In a
++block a build controller reads to learn **who checks its work**, that is a dangling authority reference —
++found by BARCHI-3 at their VER-A freeze and left for this surface's owner rather than edited across the
++seat boundary. The fix is one name (the block re-aligns by whitespace; no description changes), the
++registry digest re-pinned in the same change, and the activation test's pinned literal moved with it —
++its meaning preserved, since it still ties the pin to `sha256(SKILL.md)`. The **guard** is what keeps the
++class out: every `badf-*` token appearing anywhere under `skills/badf-build/**` must resolve in the
++registry, red before this fix and green after.
++
++**This work package is also the first ever executed *through* `badf-build`'s own workflow** — the family
++went `ACTIVE` at `bbec762` having never governed a build. It declared `expected_surfaces` (7 files),
++one unit `test_obligation` with a red phase required, an `execution_budget` of 3 attempts and six
++`stop_conditions`, and it **delegated one slice** — the guard test — to a subagent whose contract was a
++strict subset: `allowed_paths: ["tests/test_badf_build_contract.py"]`, the integration verbs prohibited,
++2 attempts. The delegate stayed inside it (verified by the controller, not taken on report) and did not
++touch the defect it was writing a guard against, so the red phase was real.
++
++So the controls the BLD-D shadow could only prove on scratch fixtures met real conditions here: **C3**
++compared a really-declared surface against the actual diff, **C4** required and got an observed red,
++**C6** recorded a genuine `RETRY` (the first attempt at moving the pinned digest silently matched
++nothing — there is no `FREEZE_DIGEST` constant, the literal is inline — and the activation test caught
++it; 2 attempts of 3), and **C7** judged a real delegation. The build ledger records
++`START · BASELINE · RED · RETRY · GREEN · VERIFY · HANDOFF`. #212 (the deferred real-conditions
++re-shadow) now has its first real case; discharging #212 remains its own work package.
++
++## badf-release-validation — G09 independent pre-release validation router freeze (`BADF-WP-0107` / WP-VAL-A, Issue #209 / GOV-0090)
++
++`badf-release-validation` is frozen (DESIGNED) as the **G09 independent pre-release validation
++orchestrator** — a risk-routed evidence federation that takes the exact G08-verified candidate and
++attempts to disqualify it across four **independent** validation classes (quality · security ·
++performance · resilience), normalizing the observed evidence into the four G09 evidence types the
++lifecycle already names (`quality-validation` · `security-validation` · `performance-test` ·
++`resilience-test`). It **composes** those existing types — it adds **no fifth `release-validation`
++type, no `scripts/badf_release_validation.py`, no schema, no `lifecycle.json` change** (VAL-I20: the
++deterministic G09 semantics arrive inside the canonical `badf_gate.py` at WP-VAL-C, never a competing
++validator).
++
++The boundary it defends: G09 is `quality_authority`-owned and establishes **pre-release validation
++evidence only** — it does **not** issue UAT, release readiness, go/no-go, deployment or production
++claims; **G10** (`release_authority`) owns release readiness and stays untouched. Frozen invariants
++**VAL-I01…VAL-I20**: exact-candidate binding (I01, `MIXED_CANDIDATE_EVIDENCE → REFUSE`), risk-derived
++routing not "run all QA" (I02), class independence (I03) and no class substitution (I13, one runtime
++result cannot fill several evidence slots), runtime observation with an oracle **outside** the agent
++(I04) with agent output draft-until-bound (I05), thresholds pre-existing outcomes (I06,
++`measurement ≠ PASS`), environment provenance + declared deviation (I07/I08, `staging PASS ≠ production
++proven`), security-validation ≠ risk acceptance (I09), resilience hypothesis-driven with observed
++recovery (I11/I12), a **conjunctive** G09 dossier where a security blocker cannot be outvoted (I14),
++mandatory non-coverage (I15), explicit flake policy (I16), and the gate separations G08≠G09 (I17),
++G09≠G10 (I18), G09≠G12 (I19). External sources are **adapt-not-authority**: `petrkindlmann/qa-skills`
++(taxonomy/adapters; its `release-readiness` is G10, not G09), Grafana `k6` (performance methodology),
++OWASP Secure Agent Playbook (primary security methodology); scanners/runtimes are observation
++producers, never authority. Ladder-internal at this rung (SKILL + 17 references, no gate/schema);
++WP-VAL-B (typed G09 evidence contracts) and WP-VAL-C (canonical deterministic controls) are
++shared-surface and go to BADF-QA + BADF-REV. Authored by BARCHI-1 as Senior ARCH & ENGIN. Registry
++`badf-release-validation: DESIGNED`.
++## A guard that could not pass — the build shadow's authority case (`BADF-WP-0110`, Issue #225 / GOV-0097)
++
++`tests/test_badf_build_shadow.py`'s `authority-replayed` case compared the record's stored demand
++`status` — a **snapshot of a mutable field**, taken at the record's `measured_on` — against the **live**
++demand file. So it measured *"is this demand currently `AUTHORIZED`"* while the record claims *"was this
++demand human-authorized as measured"*. The consequence was sharper than a loose comparison: the
++`CLOSED_DEMAND` branch was **unreachable**. Element 0 is frozen at `AUTHORIZED`, so a legitimately
++discharged demand could never satisfy the tuple the branch existed to accommodate — the mirror image of
++an assertion that can never fail, and the only one of the evening's instances that CI caught rather than
++a seat. One case reddened when `BADF-DEM-0087` was discharged (#224); **all 67 would have** when #220's
++derived terminality lands, which was a hard sequencing dependency now removed.
++
++The fix recomputes the demand **at the record's `measured_on`**, exactly what the generator read: the
++comparison stays *exact* rather than being loosened to "`AUTHORIZED` or any terminal state", which would
++have kept the light green by proving less — a demand that reached terminal *wrongly* would have passed.
++It also restores the module's own convention: the sibling case classes all recompute at a pinned
++revision via `show(c["landed_as"], …)`; this one had skipped it. One durable live assertion remains,
++chosen because no legitimate lifecycle transition can break it: a demand recorded as human-authorized
++must still record a human principal.
++
++**The record was not re-measured.** `examples/build-shadow-evidence.json` is byte-identical. Editing a
++frozen measurement so that today's tests pass would falsify the measurement — the standing rule when a
++shadow and the present disagree is that the *test* is wrong, or the present is, and never that the past
++should be rewritten. #220's derived-terminality work must not reach for that green either.
+ 
+ ## Discovery ≠ scope expansion
+ 
+diff --git a/docs/learnings/a-guard-that-cannot-fail-is-not-a-guard.md b/docs/learnings/a-guard-that-cannot-fail-is-not-a-guard.md
+new file mode 100644
+index 0000000..aa46e1a
+--- /dev/null
++++ b/docs/learnings/a-guard-that-cannot-fail-is-not-a-guard.md
+@@ -0,0 +1,111 @@
++# A guard that cannot fail is not a guard
++
++From `BADF-DEM-0087` / `0090` / `0092` / `0093` / `0095` — the `badf-engineering-verification`
++ladder, Issues #195 / #200 / #204 / #207 / #214 (**RESOLVED**).
++
++The G08 ladder shipped five rungs, each failing-first and mutation-killed, and its own controls
++refused every defect injected at them. The defects that actually got through were of one kind, and
++it was never the thing under test — it was the **check**:
++
++- **Dead assertions.** Two `assertEqual([], entry["allowed_tools"])` calls were spliced into
++  end-of-line comments by rung-flip edits (`stmt1;` replaced with `stmt  # comment`, leaving
++  `stmt2; stmt3` after the `#`). Both suites stayed green — a dead assertion fails nothing. Found by
++  BADF-QA/BADF-REV on PR #208, not by CI, which cannot distinguish an assertion that passes from one
++  that does not run. A third site was filed as #210.
++- **A masked exit code.** `git apply -3 patch | head -5` discarded a *total* apply failure: the
++  pipeline's status is the last command's, so the chain "succeeded" against an unchanged tree.
++- **A stale claim bound before the thing it claimed.** `badf_compose.py --record` was run before the
++  content commit, so the composition record bound a tree that no longer existed by push time.
++- **A pin that guards a different property than assumed.** `references/acceptance.md` is the one
++  reference the contract test never content-asserted; the architecture family has a stale-status guard
++  for exactly this file and this family does not (#216). It **is** integrity-locked — measured:
++  `badf/lockfile.json` holds 1316 digests, 134 under `skills/`, 18 for this capability including
++  `acceptance.md`, re-signed by this very PR — so the lockfile catches an *unrecorded* edit but cannot
++  catch an *authorized* edit that introduces a stale claim. Two different guarantees; only one was in
++  place.
++- **A guard concentrated to a single point.** Each rung relaxed the previous rung's exact status
++  assertion to a floor and moved exactness forward — correct, but it leaves exactly one exact pin
++  alive; relaxing that one unpins status entirely (#218).
++- **A watch that matched an adjacent thing.** A verdict monitor grepping for the reviewer's seat name
++  fired on a *different* seat's comment that merely mentioned it.
++
++- **A claim repeated without measuring it.** The first draft of *this file* asserted that `skills/` was
++  absent from the lockfile — "0 of 27" — carried over from a peer's supporting premise and never run.
++  BADF-REV measured it and it was false (1316 digests, 134 under `skills/`). An institutional learning
++  about unverified checks came within one review of shipping an unverified claim.
++- **A wrong-tree measurement producing a confident false negative about a guard.** BADF-REV's first
++  attempt to reproduce the `verify_demand_learnings` red measured against `ce3c458`, where `DEM-0087` is
++  still `AUTHORIZED` and correctly needs no learning — so the guard "did not fire", and the reviewer
++  nearly filed that as a finding. Caught by printing the tree and the record's status before writing it
++  up. The reviewer of this document is not exempt from its subject either: the count is six, not five.
++- **A guard that is correct and never reached.** `verify_demand_learnings` is real, wired into `repo`,
++  and has fired — yet, **measured on `8de88d5`, 87 of 91 demand records sat non-terminal with all 86
++  issue-linked sources CLOSED**, so the requirement examined four records while green CI attested
++  compliance over the rest. Nothing is broken; the precondition is simply never met (#220). *That count
++  is pinned to a revision on purpose: it is a live number, it has already moved (89 of 93 by the time
++  this file was reviewed), and an unqualified count in an extend-only directory would be this file
++  committing the very defect it describes — a proxy standing in for a property. Caught by BADF-QA in
++  review of this file.*
++- **A check that flags working code.** BADF-REV's own acceptance criterion on #210 would have matched
++  correct lines; their first AST-based replacement then produced a second false positive. Struck and
++  corrected on the issue.
++- **A silent fallback that manufactures a plausible wrong answer.** `d.get('files', d)` and
++  `d['paths'] if isinstance(d.get('paths'), dict) else d` — two seats, same hour, same false zero, both
++  while measuring the same ledger. The expected key was `digests`; neither lookup said so.
++
++**Learned:** these are one defect class — *the check matched something adjacent to the thing it was
++meant to check, could not fail at all, or guarded a different property than the one assumed*. Green is
++not evidence that a guard ran; it is evidence that nothing which ran failed. The two are different
++claims, and only the second is measured. The class extends to prose: a premise inherited from a
++trusted peer is still an unmeasured claim until you run it yourself.
++
++**Changed, concretely:**
++
++- An anchor that appends a `#` comment must consume the **whole line**. To *detect* the failure, use the
++  corrected criterion on #210 — AST-based, with string-literal masking and an asserted positive control —
++  **not** a grep for `#` followed by `self.assert`. That grep is itself an instance of this defect class:
++  it matches the `#` character wherever it occurs, including inside a string literal, so at `ce3c458` it
++  fires on `tests/test_badf_build_activation.py:52`, where `text.find("## badf-build → ACTIVE")` precedes
++  a live `self.assertGreater` in a module that passes 4/4. The character is a proxy; "this assertion does
++  not execute" is the property.
++
++  *This correction was caught by BADF-REV in review of this very file, which had listed that grep as a
++  finding and then prescribed it as the remedy two paragraphs later. Recorded rather than quietly fixed:
++  a document whose thesis is "the check matched a proxy" shipping the proxy-check as its cure is the most
++  instructive failure in it.*
++- A guard's exit status is read **unpiped** — capture to a file, then grep — because a pipe discards it.
++- Bind order is fixed: content commit → `compose --record` → `self-dossier` → chore commit →
++  re-compose must print `PASS` → only then push. Verify against the **pushed** tree, not the intended one.
++- A verdict or state watch matches on the **author** plus the head plus the token, never on a name
++  appearing anywhere in a body.
++- Where exactness is *moved* rather than dropped (the floor pattern), something must assert that at
++  least one exact pin still exists — #218.
++- Before repeating a peer's structural claim — especially one that widens a finding — **run it**. Cite
++  the measurement, not the source.
++
++**The generalization, stated by BADF-REV and load-bearing here.** Every one of these was a check
++pointed at a **proxy** for its property rather than at the property — a character (`#`), a name
++(a seat's banner in any body), a dict key (`files`, `paths`), a line, a status field, a pipeline's
++last exit code. A proxy can occur without the property holding, and the property can hold without the
++proxy occurring; the guard cannot tell the difference, and neither can a green run. Two mitigations
++would have caught all of them:
++
++1. **Assert the property directly.** Not "the comment character is absent" but "the assertion executes";
++   not "a name appears in a body" but "this author posted it about this head"; not "the key is present"
++   but "the container holds the members I claim to be counting".
++2. **Give every guard a positive control that has actually been seen to fail.** A guard never observed
++   red is not evidence — it is an untested claim wearing a test's clothes. Every mutation battery in
++   this ladder exists for that reason, and every defect above was in something that had no such control.
++
++**Whose defects these were.** All four seats, in one evening — six instances, the last two found *during the review of this file*: the author's spliced assertions and
++repeated unmeasured claim; BADF-QA's false zero and two struck premises; BADF-REV's #210 criterion and
++its AST replacement; and the shared-ledger measurement both QA and the author got wrong independently.
++No seat was exempt, and that is the finding — this is not a property of one agent's care but of the
++shape itself. A record listing only its author's mistakes would be a confession; this one is a
++description.
++
++**Not changed:** none of this is mechanically enforced by the gate today, and #210 / #216 / #218 / #220
++are the open proposals to make parts of it structural. Until they land, the discipline is the control —
++and the reason the ladder's defects were caught at all is that independent seats measured the tree
++instead of reading the diff. Every single one was found by measurement, none by CI: a green run is
++evidence that nothing which ran failed, never that the intended check ran at all.
