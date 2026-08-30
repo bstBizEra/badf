@@ -1,1 +1,0 @@
-python -m py_compile scripts/badf_gate.py scripts/badf_compose.py -> exit 0

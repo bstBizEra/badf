@@ -6,11 +6,11 @@
   "owner": "human_sponsor",
   "demand": "BADF-DEM-0074",
   "repository": "bstBizEra/badf",
-  "objective": "Advance the badf-git family root DESIGNED -> ACTIVE on the operator's admission decision recorded on #169, now that every ladder rung below ACTIVE is objectively met on main (seven IMPLEMENTED subskills with failing-first + mutation suites; deterministic inspector tests in CI; GIT-I shadow evidence landed at 78eab75). Registry status flip only: digest sha256:17ea1e41... and SKILL.md unchanged, allowed_tools stays [], no scripts/badf_git.py, no schema -- activation grants no Git authority (GIT_CAPABILITY != GIT_AUTHORITY). The eight DESIGNED test pins move to ACTIVE; a doctrine section records the authorization, the evidence SHA, the declared non-coverage and #160.",
+  "objective": "Advance the badf-git family root DESIGNED -> ACTIVE on the operator's admission decision recorded on #169, now that every ladder rung below ACTIVE is objectively met on main (six IMPLEMENTED subskills with failing-first + mutation suites; deterministic inspector tests in CI; GIT-I shadow evidence landed at 78eab75). Registry status flip only: digest sha256:17ea1e41... and SKILL.md unchanged, allowed_tools stays [], no scripts/badf_git.py, no schema -- activation grants no Git authority (GIT_CAPABILITY != GIT_AUTHORITY). The eight DESIGNED test pins move to ACTIVE; a doctrine section records the authorization, the evidence SHA, the declared non-coverage and #160.",
   "business_value": "An ACTIVE badf-git family is the pinned, admitted Git contract every BADF work package is integrated under: the identity rule, composition binding, staleness, recovery and release inspectors stop being 'designed' and become the family's admitted behaviour, with the digest frozen and no authority granted.",
   "in_scope": [
     "badf/skill-registry.json: badf-git status DESIGNED -> ACTIVE (digest unchanged; SKILL.md untouched)",
-    "tests/test_badf_git_activation.py (failing-first): root ACTIVE with the frozen digest; activation grants no authority; seven subskills stay IMPLEMENTED; doctrine cites the authorization and every non-coverage item",
+    "tests/test_badf_git_activation.py (failing-first): root ACTIVE with the frozen digest; activation grants no authority; six subskills stay IMPLEMENTED; doctrine cites the authorization and every non-coverage item",
     "eight registry pins DESIGNED -> ACTIVE (renamed ..._root_is_active / ..._is_active_...) in test_badf_git_{contract,baseline,staleness,composition,integration,recovery,release,shadow}.py",
     "docs/governance/GITHUB_CONTROL_PLANE.md doctrine section: the admission, its operator authorization (#169), the GIT-I evidence SHA 78eab75, non-coverage that ACTIVE does not erase, #160",
     "badf/demands/BADF-DEM-0074.json; own composition record + G07 self-dossier; reconcile WP-2026-0088 (landed 3967b23)"
@@ -19,7 +19,7 @@
     "any change to badf_gate.py, badf_compose.py, the CI workflow, the eight contract references or the subskill SKILL.md files",
     "fixing #160 (harness) -- its own work package",
     "regenerating the shadow record to include later landings -- a later work package (re-shadow)",
-    "advancing the seven subskills off IMPLEMENTED (they are the active family's components)"
+    "advancing the six subskills off IMPLEMENTED (they are the active family's components)"
   ],
   "target_gate": "G07",
   "change_class": "C1",

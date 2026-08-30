@@ -1,7 +1,7 @@
 """GIT-J: badf-git admitted DESIGNED -> ACTIVE by registry status flip only (WP-2026-0087, #169).
 
 Pins what activation must and must not change: the root is ACTIVE with the frozen digest; the
-family still holds no tools and grants no authority; the seven subskills stay IMPLEMENTED; the
+family still holds no tools and grants no authority; the six subskills stay IMPLEMENTED; the
 doctrine records the operator authorization, the evidence SHA and the non-coverage ACTIVE does
 not erase. Failing-first: every test here was red before the flip landed.
 """

@@ -1099,7 +1099,7 @@ be green inside `test_badf_git_composition` — filed as #160 (GOV-0064).
 contract frozen at GIT-A. The authorization is the operator's decision recorded on #169
 (comment 5467417478) — rung 6 `APPROVED` of `docs/07`, owner approval proportional to a family that
 holds **no tools** (`allowed_tools: []`) and grants **no authority**. Every rung below was met on `main`
-before the flip: seven `IMPLEMENTED` subskills (GIT-C…H, failing-first + mutation suites), deterministic
+before the flip: six `IMPLEMENTED` subskills (GIT-C…H, failing-first + mutation suites), deterministic
 inspector tests in CI on every PR (`VALIDATED`), and the GIT-I shadow recomputed from real history at
 `78eab75` (`SHADOWED`, `examples/git-shadow-evidence.json` + `skills/badf-git/evidence/shadow-evidence.md`).
 
@@ -1107,7 +1107,7 @@ inspector tests in CI on every PR (`VALIDATED`), and the GIT-I shadow recomputed
 holds after the flip exactly as before it: no `scripts/badf_git.py`, no `schemas/git.schema.json`, no
 mutation path, `badf_gate.py` the sole gate authority, and the human still merges (BADF-MAIN-001). The
 eight registry pins in the badf-git test modules (contract, baseline, staleness, composition, integration,
-recovery, release, shadow) move to `ACTIVE` with the truth; the contract-surface guard is unchanged. The seven subskills stay `IMPLEMENTED` — family = capability admission, subskill =
+recovery, release, shadow) move to `ACTIVE` with the truth; the contract-surface guard is unchanged. The six subskills stay `IMPLEMENTED` — family = capability admission, subskill =
 implementation status (the `badf-research` precedent, WP-0058; the registry-only flip is the
 `badf-solution-design` precedent, WP-0077).
 
