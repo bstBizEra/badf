@@ -50,11 +50,14 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "dcbcc54"
+    "base_revision": "dcbcc54",
+    "landed_content_tree": "aff1bcbdd8728730e6482ec14ed4b1709c93e9dd",
+    "composition_verified": true,
+    "landed_as": "5b428f7d6f50312a753296fe2cca26b39d94e7a6"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-VER-C of the badf-engineering-verification program (#195 A->E authorization; approval recorded on #204). Shared surface (badf_gate.py + work-package.schema.json) -> non-authoring QA + REV; lean disabled. Resolves #204 / GOV-0088. Engineered by BARCHI-3 under /loop. Reconciles the land-time-current WP at landing."
 }

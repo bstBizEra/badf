@@ -1,0 +1,27 @@
+python3 -m unittest tests.test_badf_build_activation  # before the flip
+.F.F
+======================================================================
+FAIL: test_admission_doctrine_cites_authorization_landings_and_non_coverage (tests.test_badf_build_activation.ActivationTests.test_admission_doctrine_cites_authorization_landings_and_non_coverage)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-build-e/tests/test_badf_build_activation.py", line 48, in test_admission_doctrine_cites_authorization_landings_and_non_coverage
+    start = text.find("## badf-build → ACTIVE"); self.assertGreater(start, 0, "no BLD-E admission section")
+                                                 ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: -1 not greater than 0 : no BLD-E admission section
+
+======================================================================
+FAIL: test_root_is_active_with_the_frozen_digest (tests.test_badf_build_activation.ActivationTests.test_root_is_active_with_the_frozen_digest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-build-e/tests/test_badf_build_activation.py", line 29, in test_root_is_active_with_the_frozen_digest
+    self.assertEqual(g["status"], "ACTIVE")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'SHADOWED' != 'ACTIVE'
+- SHADOWED
++ ACTIVE
+
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.034s
+
+FAILED (failures=2)

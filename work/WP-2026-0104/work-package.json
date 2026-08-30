@@ -1,0 +1,55 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0104",
+  "title": "WP-BLD-E: admit badf-build SHADOWED -> ACTIVE (operator admission; registry status flip only, no authority granted)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0091",
+  "repository": "bstBizEra/badf",
+  "objective": "Advance the badf-build family root SHADOWED -> ACTIVE on the operator's admission decision -- pre-authorized for the whole ladder on #188 (comment 5469168780) and bound to the evidence on #203 -- now that every rung below is met on main: DESIGNED (BLD-A cf431fa), IMPLEMENTED (BLD-B 6814a24), VALIDATED (BLD-C 8f3d805), SHADOWED (BLD-D 07c23f7). Registry status flip only: digest unchanged (SKILL.md untouched since BLD-A), allowed_tools [], risk_class C1; no scripts/badf_build.py, no mutation path, no push/merge/release tool -- activation grants no authority (BUILD != INTEGRATION); the seven controls and the typed producer are byte-untouched. The doctrine records the authorization, the four landing SHAs and -- verbatim -- the shadow's non-coverage (C3/C4/C6/C7 scratch-proven only; no build controller run yet); ACTIVE does not erase it. Test pins move with the truth.",
+  "business_value": "An ACTIVE badf-build is the admitted contract every BADF work package is built under from here: one authorized Work Package, exact baseline, contained scope, red before green where a seam exists, fresh verification, budget and stop dominance, delegation that only narrows -- with the honest statement of what history could not yet exercise.",
+  "in_scope": [
+    "badf/skill-registry.json: badf-build SHADOWED -> ACTIVE (digest, source, risk_class, allowed_tools unchanged)",
+    "tests/test_badf_build_activation.py (4, failing-first): frozen digest, no authority, controls/producer untouched, doctrine cites authorization + landings + non-coverage",
+    "pins moved to ACTIVE: tests/test_badf_build_contract.py (registry pin), tests/test_badf_build_shadow.py (doc/registry pin)",
+    "GITHUB_CONTROL_PLANE.md doctrine section (authorization #188/#203, landings, non-coverage verbatim, re-shadow trigger); badf/demands/BADF-DEM-0091.json; own composition record + typed self-dossier; reconcile WP-2026-0105"
+  ],
+  "out_of_scope": [
+    "any change to the controls, the producer, the schemas, the workflow, the references or the shadow record",
+    "a real-project re-shadow (its own deferred issue; trigger = the first Work Package executed through badf-build's workflow)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "registry: badf-build ACTIVE; digest == sha256(SKILL.md) == the freeze value; allowed_tools []; risk_class C1",
+    "no scripts/badf_build.py; BUILD != INTEGRATION and BLD-I17/I18 stated in SKILL.md; check_g07_binding, _require_authorized_demand, _check_build_budget_and_stop, _check_delegations and the four typed schemas present and unchanged",
+    "doctrine section names #203, #188 / 5469168780, cf431fa, 6814a24, 8f3d805, 07c23f7, C3/C4/C6/C7 non-coverage and the no-controller-run trigger; 'does not erase'",
+    "tests/test_badf_build_activation.py failing-first before the flip, green after; moved pins green; CI green on the composed tree"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_build_activation.py (4)",
+    "tests/test_badf_build_contract.py, tests/test_badf_build_shadow.py (pins moved)"
+  ],
+  "evidence": [
+    "failing-first run",
+    "green run",
+    "registry mutation against the activation module (status/digest/tools/risk)",
+    "compose output incl. composition record",
+    "typed G07 self-dossier under C1..C7"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "5b428f7"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-BLD-E of the badf-build program -- the operator's admission (pre-authorized on #188, recorded on #203). Governance-only WP (registry status + test pins + doctrine; empty gate diff). Resolves #203 / GOV-0087. Reconciles WP-2026-0105 (VER-C; composition_verified true). Lean mode disabled (authority-adjacent admission)."
+}
