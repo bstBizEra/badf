@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0108-G07-source-change",
+  "work_package_id": "WP-2026-0108",
+  "gate": "G07",
+  "claim": "the change WP-2026-0108 makes to this repository, outside its own directory and the lockfile",
+  "evidence_type": "source-change",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-08-30T20:16:44Z",
+  "completed_at": "2026-08-30T20:16:44Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0108/evidence/G07/source-change.diff",
+  "digest": "sha256:4ebccc7bc19ca079deb5e64cd1bc73765b1993cf42cb6738150a31df4759acba",
+  "binding": {
+    "base_sha": "8de88d5ca3d42ce236523260113f196b41741f82",
+    "head_sha": "72eb32e430a01b180bbacd867bfb9436ddefd9b4",
+    "content_tree": "6b2999b8167508596ad48fb2878edbf1562177e4",
+    "changed_paths": [
+      "badf/demands/BADF-DEM-0095.json",
+      "badf/skill-registry.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "skills/badf-engineering-verification/evidence/shadow-evidence.md",
+      "skills/badf-engineering-verification/references/acceptance.md",
+      "tests/test_badf_engineering_verification_contract.py",
+      "tests/test_badf_verification_shadow.py",
+      "work/WP-2026-0106/work-package.json"
+    ],
+    "expected_surfaces": {
+      "declared": false,
+      "files": []
+    },
+    "unexpected_paths": [],
+    "change_digest": "sha256:4ebccc7bc19ca079deb5e64cd1bc73765b1993cf42cb6738150a31df4759acba"
+  }
+}

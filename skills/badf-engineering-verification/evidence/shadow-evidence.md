@@ -52,9 +52,15 @@ record is `examples/verification-shadow-evidence.json` (`measured_on` = the `mai
   reviewer; BARCHI-2 (not encoded) co-reviews the encoding class for fidelity, and BARCHI-1's verdict
   discloses the COI.
 
-## The root is `SHADOWED`, not `ACTIVE`
+## What this shadow earned, and what the operator then decided
 
 The shadow shows the controls refuse what they must and touch nothing they must not — on
-representative fixtures, one real dossier and five reconstructed reviews. Admission (`VER-E`) is the
-**operator's decision on this evidence**, asked on its own issue — it was never pre-granted, and the
-registry advances by evidence, not by instruction.
+representative fixtures, one real dossier and five reconstructed reviews. That earned `SHADOWED`.
+Admission (`VER-E`) was the **operator's decision on this evidence**, asked on its own issue — it was
+never pre-granted, and the registry advances by evidence, not by instruction.
+
+**Decided on #214 (GOV-0092): `ACTIVATE`.** The question was put with the `HOLD AT SHADOWED` alternative
+stated beside it and the four gaps above named in the issue body; the operator chose to activate over
+them, and the real-conditions re-shadow is deferred to its own trigger-gated issue. **The measurement on
+this page is unchanged by that decision** — an admission does not retroactively widen a shadow, and the
+gaps it was granted over remain exactly as declared here. The live status is `badf/skill-registry.json`.

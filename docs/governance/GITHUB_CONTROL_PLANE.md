@@ -1524,6 +1524,42 @@ schema or lifecycle change (ladder-internal). **Admission (`VER-E`) is the opera
 evidence, asked on its own issue — never pre-granted**; the real typed re-shadow trigger (first project
 G08 with typed objects) is filed as a deferred issue at close-out, mirroring #185 / #166.
 
+## badf-engineering-verification → ACTIVE — the operator's admission on the shadow evidence (`BADF-WP-0108` / WP-VER-E, Issue #214 / GOV-0092)
+
+The G08 verification capability is admitted `ACTIVE`. **The flip grants nothing**: registry status only,
+digest unchanged, `allowed_tools: []`, `risk_class: C1`, no `scripts/badf_engineering_verification.py`
+(VER-I20), no gate, schema or lifecycle change — `VERIFICATION ≠ APPROVAL` (VER-I18) is as true after the
+admission as before it. C1–C7 have been enforcing on every G08 dossier since `5b428f7` independently of any
+label; what changes is that the contract, the typed schemas, the seven controls and the shadow evidence are
+now the **admitted** G08 verification doctrine for BADF-governed work.
+
+**What the operator admitted over — carried into the admission, not around it.** The decision was put on
+#214 with the alternative (`HOLD AT SHADOWED`) stated beside it, and these four gaps named in the issue body
+rather than only in linked evidence:
+
+- **No typed real G08 dossier exists** — the typed-object shadow is representative fixtures. A real
+  re-shadow is owed the first time a project passes G08 with typed objects; it is filed as a deferred,
+  trigger-gated issue (the #212 / #185 / #166 pattern).
+- **One reviewer seat at encoding time** — reviewer correlation `NOT_MEASURABLE`. The BADF-QA and BADF-REV
+  seats change this going forward.
+- **The real-review class is RECONSTRUCTED** from public prose verdicts with ids cited — honest, but not
+  observed records.
+- **The per-fixture scratch-clone `validate_dossier` path** is declared, not shipped — end-to-end
+  `validate_dossier` is exercised by the historical WP-2026-0010 case and CI's composed run.
+
+**The ladder that earned it:** VER-A froze the two-plane contract and VER-I01…I20 (#198); VER-B added the
+four typed G08 schemas, the verification record and `badf_gate.py verify`, additive so WP-2026-0010's
+historical dossier stayed untouched (#201); VER-C added the seven pure dossier-level controls (#205); VER-D
+measured them — WP-2026-0010 `UNTOUCHED`, five RECONSTRUCTED single-reviewer records of a real verdict arc
+verified and tamper-refused, 12/12 injected defects refused with every control and VER-I10/VER-I14
+load-bearing, 0 false refusals (#208). Every rung was failing-first and mutation-killed; the VER-D rung was
+independently reviewed by BADF-QA and BADF-REV, both of whom issued Request Changes that found real defects
+— two dead assertions and an anachronistic binding — before approving the fixed heads.
+
+**Doctrine, unchanged by the admission:** no findings does not mean correctness; passing tests do not mean
+coverage; source-head success does not mean composed-result safety; G08 does not replace G09. The gate
+evaluates the evidence and `quality_authority` decides whether G08 advances.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
