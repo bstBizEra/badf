@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-SHADOW-FEATURE",
+  "tasks": [
+    {
+      "id": "WBS-001",
+      "description": "Tracer-bullet: end-to-end refund-approval slice",
+      "change_class": "C1",
+      "authority_requirement": {
+        "required_roles": [
+          "engineering_owner",
+          "independent_reviewer"
+        ]
+      },
+      "acceptance": [
+        "AC-010"
+      ],
+      "test_obligations": [
+        {
+          "id": "TEST-010",
+          "claim": "AC-010",
+          "level": "integration"
+        }
+      ],
+      "execution_budget": {
+        "max_attempts": 3
+      },
+      "stop_conditions": [
+        "AUTHORITY_CONFLICT"
+      ],
+      "expected_surfaces": {
+        "files": [
+          "api/refunds.py"
+        ],
+        "interfaces": [
+          "API-refund-approve"
+        ]
+      }
+    },
+    {
+      "id": "WBS-002",
+      "description": "A plain follow-up task carrying no planning fields (minimal is valid)",
+      "depends_on": [
+        "WBS-001"
+      ]
+    }
+  ]
+}

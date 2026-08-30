@@ -42,11 +42,13 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "14761b1"
+    "base_revision": "14761b1",
+    "composition_verified": false,
+    "landed_as": "7547223941784022bb1a6737ea8c5db8b8395bea"
   },
   "note": "Lands IN_PROGRESS by design; next WP reconciles it. Adds gate controls to check_work_breakdown -> mutation-tested (all 6 mutations kill their tests; /mnt/c write-then-immediate-subprocess race needs os.sync). Isolated worktree (badf-wt-impc). Ids WP-0093/DEM-0080/GOV-0075. Reconciles WP-2026-0092 (WP-IMP-B, composition_verified: false). SHARED SURFACE (badf_gate.py) -> sent to BARCHI-2 for objects-level review. Operator /loop 'proceed from WP-IMP-A to WP-IMP-E'. Resolves #181."
 }

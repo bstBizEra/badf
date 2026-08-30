@@ -1190,6 +1190,27 @@ resolves to real tasks and is acyclic, kept **separate** from `depends_on` (bloc
 the existing minimal example and every record still validate. No `lifecycle.json` change, no new gate
 command, no `scripts/badf_implementation_plan.py`. Registry `IMPLEMENTED → VALIDATED`.
 
+## badf-implementation-plan → SHADOWED — representative planning calibration (`BADF-WP-0094` / WP-IMP-D, Issue #183 / GOV-0076)
+
+`SHADOWED` means the controls were run against cases and behaved. `badf-research` and `badf-architecture`
+shadowed on **real** BADF history; `badf-implementation-plan` — like solution-design and security-design
+before it — has **no real G06 planning breakdowns yet** (BADF's own work packages are governance work,
+not product implementation plans), so the shadow is **REPRESENTATIVE**, and the evidence
+(`references/shadow-evidence.md`) says so in its first section: a real re-shadow is owed the first time a
+project plans through G06. The calibration ran `check_work_breakdown` over representative breakdowns:
+**all six defect classes refused** (cyclic depends_on · authority-reduced · uncovered-acceptance ·
+non-positive/boolean max_attempts · empty-stop · dangling/cyclic composition_after); **zero false
+positives** on three clean breakdowns — including the feature breakdown's **minimal task carrying no
+planning fields**, the false-positive check that proves the controls are field-scoped (a task without the
+optional fields triggers none of them). And it **declares its non-coverage**: the cross-WP execution
+frontier (it spans a whole plan and a live ledger, not one artifact), the semantic resolution of every
+ref against its real artifact, and the GitHub-issue projection / `badf-git` topology realization (contract
+boundaries, demonstrated as doctrine not run). Two committed shadow breakdowns
+(`examples/work-breakdown-shadow-migration.json` — an expand/migrate/contract sequence — and
+`-feature.json` — a vertical slice) are validated in the test. No `lifecycle.json` change, no new control,
+no second validator. Registry `VALIDATED → SHADOWED`; `APPROVED`/`ACTIVE` remain the operator's admission
+decision.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

@@ -1,0 +1,54 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0094",
+  "title": "WP-IMP-D: representative planning shadow (badf-implementation-plan -> SHADOWED)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0081",
+  "repository": "bstBizEra/badf",
+  "objective": "Advance badf-implementation-plan VALIDATED -> SHADOWED by running check_work_breakdown retrospectively over representative work-breakdowns and recording the calibration: true positives (each of the six defect classes refused), zero false positives (clean breakdowns pass, incl. a minimal task carrying no planning fields -- proving the controls are field-scoped), and declared non-coverage (cross-WP execution frontier; semantic ref resolution; the issue-projection + badf-git topology realization, which are contract boundaries demonstrated as doctrine). Because BADF has no real G06 planning breakdowns, the shadow is REPRESENTATIVE and labelled so; a real re-shadow is owed on first real use. Ship shadow-evidence.md + 2 representative shadow breakdowns. Ladder-internal: no gate/schema/reconcile change.",
+  "business_value": "SHADOWED proves the planning controls behave across the outcome space and honestly bounds what they do NOT cover. Doing it on representative cases -- and saying plainly it is representative -- keeps the admission ladder truthful, mirroring badf-solution-design and badf-security-design; the operator can hold APPROVED/ACTIVE for a real re-shadow if preferred.",
+  "in_scope": [
+    "skills/badf-implementation-plan/references/shadow-evidence.md: the calibration (TP/FP/non-coverage) over representative breakdowns, explicitly REPRESENTATIVE-not-real",
+    "examples/work-breakdown-shadow-migration.json + work-breakdown-shadow-feature.json (representative clean breakdowns) validated in the test",
+    "badf/skill-registry.json: badf-implementation-plan VALIDATED -> SHADOWED",
+    "tests/test_badf_g06_planning_controls.py: shadow breakdowns pass; shadow-evidence carries the representative caveat + non-coverage; registry SHADOWED",
+    "tests/test_badf_implementation_plan_contract.py: REFS set adds shadow-evidence.md",
+    "skills/badf-implementation-plan/references/acceptance.md ladder; GITHUB_CONTROL_PLANE.md doctrine; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "a real-project shadow (no real G06 breakdowns exist yet -- deferred honestly to first real use)",
+    "the cross-WP execution frontier + semantic ref resolution (need a live plan/ledger + specialist artifacts)",
+    "APPROVED/ACTIVE (WP-IMP-E, operator-authorized); any gate/schema/lifecycle change; scripts/badf_implementation_plan.py"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the representative shadow breakdowns render PASS via check_work_breakdown",
+    "shadow-evidence.md records the TP defects, the FP-free clean passes (incl. the minimal-task field-scoping check), the declared non-coverage, and the REPRESENTATIVE caveat",
+    "badf-implementation-plan registered SHADOWED; no scripts/badf_implementation_plan.py; lifecycle.json unchanged",
+    "tests pass; repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_g06_planning_controls.py",
+    "tests/test_badf_implementation_plan_contract.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "7547223"
+  },
+  "note": "Lands IN_PROGRESS by design; next WP reconciles it. Shadow evidence + status advance; no new control (controls are WP-IMP-C), so no mutation. Ladder-internal (no badf_gate.py/schema/reconcile change) -> no BARCHI-2 review needed by the shared-surface rule. Isolated worktree (badf-wt-impd). Ids WP-0094/DEM-0081/GOV-0076. Reconciles WP-2026-0093 (WP-IMP-C, composition_verified: false). Operator /loop 'proceed from WP-IMP-A to WP-IMP-E'. Resolves #183."
+}

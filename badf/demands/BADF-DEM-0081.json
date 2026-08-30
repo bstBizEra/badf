@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0081",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 183,
+    "url": "https://github.com/bstBizEra/badf/issues/183",
+    "exported_at": "2026-08-30T12:57:40Z",
+    "body_digest": "sha256:161c9e4a84191af7df323e6ce8b4bdd341971405043a5ea0c9635c0f9664587d"
+  },
+  "title": "GOV-0076: WP-IMP-D \u2014 representative planning shadow (badf-implementation-plan -> SHADOWED)",
+  "problem": "## Observed\n\nbadf-implementation-plan is VALIDATED (WP-IMP-C): the G06 planning controls are enforced in check_work_breakdown. SHADOWED is next. But BADF has no real G06 planning breakdowns (its WPs are governance work, not product plans), so the shadow is representative and must say so.\n\n## Expected\n\n**WP-IMP-D -> SHADOWED.** shadow-evidence.md: run check_work_breakdown over representative breakdowns, measured for TP (each control refuses its defect: cyclic-deps/authority-reduced/uncovered-acceptance/nonpositive-or-boolean-max_attempts/empty-stop/dangling-or-cyclic-composition), zero FP (clean breakdowns pass incl. a minimal task with no planning fields -- field-scoping), declared non-coverage (cross-WP execution frontier; semantic ref resolution; issue-projection + badf-git topology realization as doctrine not run). REPRESENTATIVE, not real-project; real re-shadow owed on first real use. 2 committed shadow breakdowns (expand/migrate/contract migration; vertical-slice feature). Registry VALIDATED -> SHADOWED. Ladder-internal (no gate/schema/reconcile change).\n\n## Evidence\n\n- WP-IMP-C controls + independent mutation pass already demonstrate TP; this assembles them as calibration evidence + representative breakdowns, mirroring WP-SOL-D / WP-SEC-D.\n\n## Unknowns\n\nWhether SHADOWED should wait for a real breakdown -- recorded honestly so the operator can hold APPROVED/ACTIVE for a real re-shadow if preferred.\n\ndiscovered-by: operator /loop 'proceed from WP-IMP-A to WP-IMP-E' 2026-08-30 \u00b7 status: DISCOVERED\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-30T12:57:40Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "WP-IMP-D advances badf-implementation-plan VALIDATED->SHADOWED via REPRESENTATIVE planning shadow (no real G06 breakdowns -- honestly labelled; real re-shadow owed). TP/FP/non-coverage over 2 representative breakdowns (expand/migrate/contract; vertical slice + minimal task FP check). Mirrors WP-SOL-D/WP-SEC-D. Ladder-internal (no shared surface). DEM-0081/GOV-0076/WP-0094. Reconciles WP-2026-0093."
+}

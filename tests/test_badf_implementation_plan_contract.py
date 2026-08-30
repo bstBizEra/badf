@@ -22,6 +22,7 @@ REFS = {
     "dependency-graph.md", "composition-order.md", "authority-and-risk.md", "test-planning.md",
     "evidence-planning.md", "execution-budget.md", "stop-conditions.md", "release-planning.md",
     "rollback-planning.md", "issue-projection.md", "acceptance.md", "external-methodology.md",
+    "shadow-evidence.md",  # WP-IMP-D shadow calibration
 }
 
 
