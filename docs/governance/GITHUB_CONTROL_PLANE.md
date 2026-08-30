@@ -1361,6 +1361,29 @@ disabled); VER-D shadows on WP-2026-0010's G08 dossier and BADF's own review his
 injected defects; VER-E is the operator's admission on that evidence. No findings does not mean
 correctness; passing tests do not mean coverage; source-head success does not mean composed-result safety;
 G08 does not replace G09.
+## badf-build → VALIDATED — seven deterministic G07 controls in the canonical gate (`BADF-WP-0099` / WP-BLD-C, Issue #194 / GOV-0082)
+
+BLD-A froze the invariants and BLD-B made them measurable; BLD-C makes the gate **refuse** their
+violation. All seven live in `badf_gate.py` — in the self-dossier producer, in the G07 evidence rules
+and in `validate_dossier` — typed in code (never walker-trusted), firing only on the field that
+declares them, so every object already on the ledger stays valid and nothing is declared to satisfy
+a control.
+
+| Control | Invariant | Refuses |
+| :--- | :--- | :--- |
+| **C1** authority before mutation | BLD-I03 | a request assembled under a demand that is absent, not `AUTHORIZED`, or not authorized by a **human** |
+| **C2** exact baseline | BLD-I02 | a `source-change` whose `base_sha` is not the work package's `base_revision`, or whose content tree / base disagree with the composition record |
+| **C3** scope containment enforced | BLD-I04 | a **PASS** with paths outside `expected_surfaces` unless a declared `discovery_allowance` covers each (a request keeps its C-2 condition) |
+| **C4** red before green, exceptions explicit | BLD-I07/I08 | declared unit obligations with no observed red and no `tdd_exception.reason` — silence; an exception is bound as `binding.tdd = {applies: false, reason}` |
+| **C5** fresh verification | BLD-I09 | a unit-test `PASS` on a passing dossier with no composition record — the composed-tree run *is* the fresh run |
+| **C6** budget and stop dominate | BLD-I11–I13 | a build whose ledger records `STOP`, or more `RETRY` events than `execution_budget.max_attempts` — refused at assembly and on a PASS; the ledger is read for refusal only, never to grant |
+| **C7** delegation is a strict subset | BLD-I10 | a delegation in `build/session.json` with a path outside the declared surface, a missing prohibition (`push`, `merge`, `release`, `credential-use`), or an integration tool — on every disposition; declared delegations survive re-assembly |
+
+Three optional inputs were added so the controls have something declared to judge, all additive:
+`expected_surfaces.discovery_allowance` and `tdd_exception` on the work package, `binding.tdd` on the
+typed unit-test evidence. No change to `check_schema`, `badf_compose.py`, the CI workflow or
+`lifecycle.json`. `badf-build` advances `IMPLEMENTED → VALIDATED`; the shadow on BADF's own G07
+history (BLD-D) and the operator's admission (BLD-E) remain.
 
 ## Discovery ≠ scope expansion
 

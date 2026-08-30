@@ -148,12 +148,13 @@ class LedgerRulesTests(LedgerScratch):
 
     def test_closed_without_a_corroborated_landing_needs_a_stated_reason(self):
         self.set_record(WP18, status="CLOSED", landed_as=self.git("rev-parse", LANDED_18))   # keep 18 clean
-        self.new_record("WP-2026-0099")
-        self.set_record("WP-2026-0099", status="CLOSED", landing_not_on_ledger=None)
+        # WP-2026-9999: a sentinel the sequential ledger can never allocate (0099 was used until BADF-WP-0099 landed and collided).
+        self.new_record("WP-2026-9999")
+        self.set_record("WP-2026-9999", status="CLOSED", landing_not_on_ledger=None)
         r = self.cmd("repo")
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("landing_not_on_ledger", r.stderr)
-        self.set_record("WP-2026-0099", landing_not_on_ledger="withdrawn before any PR was opened")
+        self.set_record("WP-2026-9999", landing_not_on_ledger="withdrawn before any PR was opened")
         r = self.cmd("repo")
         self.assertEqual(r.returncode, 0, r.stderr)
 
@@ -165,7 +166,7 @@ class LedgerRulesTests(LedgerScratch):
 
     def test_new_record_while_a_landed_one_is_unreconciled_is_refused(self):
         self.set_record(WP18, status="IN_PROGRESS", landed_as=None)
-        self.new_record("WP-2026-0099")
+        self.new_record("WP-2026-9999")
         r = self.cmd("repo")
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("before opening a new one", r.stderr)
@@ -173,7 +174,7 @@ class LedgerRulesTests(LedgerScratch):
 
     def test_new_record_after_reconciliation_is_admitted(self):
         self.set_record(WP18, status="CLOSED", landed_as=self.git("rev-parse", LANDED_18))
-        self.new_record("WP-2026-0099")
+        self.new_record("WP-2026-9999")
         r = self.cmd("repo")
         self.assertEqual(r.returncode, 0, r.stderr)
 
@@ -209,8 +210,8 @@ class ReconcileTests(LedgerScratch):
         self.assertEqual(r.returncode, 0, r.stderr)
 
     def test_reconcile_refuses_a_wp_the_ledger_does_not_show(self):
-        self.new_record("WP-2026-0099")
-        r = self.cmd("reconcile", "WP-2026-0099")
+        self.new_record("WP-2026-9999")
+        r = self.cmd("reconcile", "WP-2026-9999")
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("has not landed", r.stderr)
 

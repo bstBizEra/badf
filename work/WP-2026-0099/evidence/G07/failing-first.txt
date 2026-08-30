@@ -1,0 +1,69 @@
+python3 -m unittest tests.test_badf_build_controls  # before any gate change
+FFFFFFF.
+======================================================================
+FAIL: test_c1_unauthorized_demand_refuses_assembly (tests.test_badf_build_controls.C1AuthorityTests.test_c1_unauthorized_demand_refuses_assembly)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-build-c/tests/test_badf_build_controls.py", line 92, in test_c1_unauthorized_demand_refuses_assembly
+    r = self.self_dossier(); self.assertNotEqual(r.returncode, 0); self.assertIn("AUTHORIZED", r.stdout + r.stderr)
+                             ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_c2_base_sha_must_match_base_revision_and_the_composition_record (tests.test_badf_build_controls.C2C3C4C5RuleTests.test_c2_base_sha_must_match_base_revision_and_the_composition_record)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-build-c/tests/test_badf_build_controls.py", line 111, in test_c2_base_sha_must_match_base_revision_and_the_composition_record
+    r = self.rule("source-change", dict(ev["binding"], base_sha="0" * 40)); self.assertNotEqual(r.returncode, 0); self.assertIn("base_revision", r.stderr)
+                                                                            ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_c3_pass_with_unexpected_paths_refused_unless_discovery_allowance (tests.test_badf_build_controls.C2C3C4C5RuleTests.test_c3_pass_with_unexpected_paths_refused_unless_discovery_allowance)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-build-c/tests/test_badf_build_controls.py", line 121, in test_c3_pass_with_unexpected_paths_refused_unless_discovery_allowance
+    r = self.rule("source-change", ev["binding"]); self.assertNotEqual(r.returncode, 0); self.assertIn("BLD-I04", r.stderr)
+                                                   ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_c4_red_required_when_unit_obligations_declared_and_exception_must_be_explicit (tests.test_badf_build_controls.C2C3C4C5RuleTests.test_c4_red_required_when_unit_obligations_declared_and_exception_must_be_explicit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-build-c/tests/test_badf_build_controls.py", line 130, in test_c4_red_required_when_unit_obligations_declared_and_exception_must_be_explicit
+    r = self.self_dossier(); self.assertNotEqual(r.returncode, 0); self.assertIn("red", (r.stdout + r.stderr).lower())
+                             ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_c5_pass_requires_a_composition_record (tests.test_badf_build_controls.C2C3C4C5RuleTests.test_c5_pass_requires_a_composition_record)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-build-c/tests/test_badf_build_controls.py", line 141, in test_c5_pass_requires_a_composition_record
+    r = self.rule("unit-test", ub); self.assertNotEqual(r.returncode, 0); self.assertIn("BLD-I09", r.stderr)
+                                    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_c6_retry_over_budget_and_stop_event_refuse_assembly (tests.test_badf_build_controls.C6C7LedgerAndDelegationTests.test_c6_retry_over_budget_and_stop_event_refuse_assembly)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-build-c/tests/test_badf_build_controls.py", line 152, in test_c6_retry_over_budget_and_stop_event_refuse_assembly
+    self.lock(); r = self.self_dossier(); self.assertNotEqual(r.returncode, 0); self.assertIn("max_attempts", r.stdout + r.stderr)
+                                          ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0
+
+======================================================================
+FAIL: test_c7_delegation_outside_the_surface_or_permissions_is_refused (tests.test_badf_build_controls.C6C7LedgerAndDelegationTests.test_c7_delegation_outside_the_surface_or_permissions_is_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-build-c/tests/test_badf_build_controls.py", line 164, in test_c7_delegation_outside_the_surface_or_permissions_is_refused
+    r = self.dossier(); self.assertEqual(r.returncode, 1); self.assertIn("slice-A", r.stdout + r.stderr)
+                        ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+AssertionError: 3 != 1
+
+----------------------------------------------------------------------
+Ran 8 tests in 217.636s
+
+FAILED (failures=7)

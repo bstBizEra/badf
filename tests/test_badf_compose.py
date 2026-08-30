@@ -157,10 +157,12 @@ class ComposeVerdictTests(ComposeScratch):
         """The line is there, so the pre-check passes; the composed ledger must
         still be asked whether THAT work package actually landed."""
         self.commit_candidate()
-        other = Path(self.tmp) / "other.txt"; other.write_text("title\n\nWork-Package: BADF-WP-0099\nCloses #21\n")
+        # A phantom id must be one the sequential ledger can never allocate: 9999. (0099 was used here
+        # until the ledger reached it -- BADF-WP-0099 landed and this test broke on the real record.)
+        other = Path(self.tmp) / "other.txt"; other.write_text("title\n\nWork-Package: BADF-WP-9999\nCloses #21\n")
         r = self.compose(message=other)
         self.assertNotEqual(r.returncode, 0, "a work package with no record passed")
-        self.assertIn("no work package record for WP-2026-0099", r.stdout)
+        self.assertIn("no work package record for WP-2026-9999", r.stdout)
 
     def test_candidate_that_does_not_compose_fails(self):
         (self.repo / "README.md").write_text("# candidate's README\n")

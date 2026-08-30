@@ -1548,6 +1548,84 @@ def _diff_paths(text: str) -> list[str]:
     return sorted({m.group(1) for m in re.finditer(r"^diff --git a/(\S+) b/", text, re.M)})
 
 
+
+# ---- badf-build BLD-C (BADF-WP-0099, #194): deterministic G07 controls ----
+# Each control fires only on the field that declares it (undeclared -> BLD-B behaviour), is typed
+# in code (never walker-trusted), and refuses with the invariant it enforces. No second gate.
+
+DELEGATION_PROHIBITED = ("push", "merge", "release", "credential-use")
+
+
+def _wp_record(wp_id: str) -> dict[str, Any] | None:
+    path = ROOT / "work" / wp_id / "work-package.json"
+    return load_json(path) if path.is_file() else None
+
+
+def _require_authorized_demand(wp: dict[str, Any], wp_id: str) -> None:
+    """C1 (BLD-I03): authority before mutation -- the work package's demand must exist, be
+    AUTHORIZED, and be authorized by a human. Absent is not validated."""
+    demand = str(wp.get("demand") or "")
+    path = ROOT / "badf" / "demands" / f"{demand}.json"
+    if not demand or not path.is_file():
+        raise ValidationError(f"{wp_id}: demand {demand or '(none)'} has no record at badf/demands/; authority cannot be validated before mutation (BLD-I03 / C1)")
+    rec = load_json(path)
+    if rec.get("status") != "AUTHORIZED":
+        raise ValidationError(f"{wp_id}: demand {demand} is {rec.get('status')!r}, not AUTHORIZED (BLD-I03 / C1)")
+    who = rec.get("authorized_by") or {}
+    if not isinstance(who, dict) or who.get("principal_type") != "human":
+        raise ValidationError(f"{wp_id}: demand {demand} is authorized by principal_type {who.get('principal_type') if isinstance(who, dict) else who!r}; a human must authorize (BLD-I03 / C1)")
+
+
+def _build_events(wp_dir: Path) -> list[dict[str, Any]]:
+    path = wp_dir / BUILD_LEDGER
+    if not path.is_file():
+        return []
+    return [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines() if l.strip()]
+
+
+def _check_build_budget_and_stop(wp_dir: Path, wp: dict[str, Any], wp_id: str) -> None:
+    """C6 (BLD-I11..I13): the ledger is read for REFUSAL only, never to grant. RETRY events may
+    not exceed execution_budget.max_attempts; a recorded STOP dominates."""
+    events = _build_events(wp_dir)
+    stops = [e for e in events if e.get("step") == "STOP"]
+    if stops:
+        s = stops[-1]
+        raise ValidationError(f"{wp_id}: the build ledger records STOP ({s.get('outcome')}: {s.get('note', '')}); a stopped build hands off BLOCKED -- it is not packaged or passed (BLD-I13 / C6)")
+    budget = wp.get("execution_budget")
+    if isinstance(budget, dict) and isinstance(budget.get("max_attempts"), int) and not isinstance(budget.get("max_attempts"), bool):
+        retries = sum(1 for e in events if e.get("step") == "RETRY")
+        if retries > budget["max_attempts"]:
+            raise ValidationError(f"{wp_id}: {retries} RETRY events exceed execution_budget.max_attempts {budget['max_attempts']}; exhaustion yields BLOCKED, never an autonomous extension (BLD-I12 / C6)")
+
+
+def _check_delegations(wp_dir: Path, wp: dict[str, Any], wp_id: str) -> None:
+    """C7 (BLD-I10): every delegation in build/session.json is a strict subset of the work
+    package -- paths inside the declared surface, the prohibited set intact, no integration tools."""
+    path = wp_dir / "build" / "session.json"
+    if not path.is_file():
+        return
+    delegations = (load_json(path) or {}).get("delegations") or []
+    if not delegations:
+        return
+    surface = [str(x) for x in ((wp.get("expected_surfaces") or {}).get("files") or [])]
+    for d in delegations:
+        if not isinstance(d, dict):
+            raise ValidationError(f"{wp_id}: a delegation is not a mapping (C7)")
+        name = str(d.get("task") or "?")
+        if not surface:
+            raise ValidationError(f"{wp_id}: delegation {name} declared but the work package declares no expected_surfaces; a subset of nothing cannot be granted (BLD-I10 / C7)")
+        for ap in d.get("allowed_paths") or []:
+            probe = ap[:-3] + "/__probe__" if str(ap).endswith("/**") else str(ap)
+            if not any(_surface_match(probe, pat) for pat in surface):
+                raise ValidationError(f"{wp_id}: delegation {name} allows path {ap!r} outside the work package's expected_surfaces {surface} (BLD-I10 / C7)")
+        missing = sorted(set(DELEGATION_PROHIBITED) - set(d.get("prohibited") or []))
+        if missing:
+            raise ValidationError(f"{wp_id}: delegation {name} leaves {missing} out of its prohibited set; the prohibited set {list(DELEGATION_PROHIBITED)} stays intact -- delegation can only narrow authority (BLD-I10 / C7)")
+        bad_tools = sorted(set(d.get("allowed_tools") or []) & set(DELEGATION_PROHIBITED + ("git-push", "gh", "deploy")))
+        if bad_tools:
+            raise ValidationError(f"{wp_id}: delegation {name} grants integration tools {bad_tools} (BLD-I10 / BLD-I17 / C7)")
+
+
 def check_g07_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
     """EVIDENCE_RULES entry for the four G07 types: a typed `binding`, when present, must
     conform to schemas/<type>.schema.json AND agree with the artifact it binds -- the gate
@@ -1559,16 +1637,51 @@ def check_g07_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[st
     check_schema(kind, evidence)
     b = evidence["binding"]
     label = f"evidence {evidence.get('id', kind)}"
+    wp_id = str(evidence.get("work_package_id") or "")
+    wp = _wp_record(wp_id) if wp_id else None
+    wp_dir = ROOT / "work" / wp_id
     if kind == "source-change":
         paths = _diff_paths(artifact.read_text(encoding="utf-8", errors="replace"))
         if sorted(b["changed_paths"]) != paths:
             raise ValidationError(f"{label}: binding.changed_paths {sorted(b['changed_paths'])} do not equal the paths in the diff artifact {paths}")
         if b["change_digest"] != evidence["digest"]:
             raise ValidationError(f"{label}: binding.change_digest does not equal the artifact digest")
-    elif kind == "unit-test" and b["result"] != "NOT_RUN":
-        result, ran, failures = _parse_unittest_log(artifact.read_text(encoding="utf-8", errors="replace"))
-        if (result, ran, failures) != (b["result"], b["tests_run"], b["failures"]):
-            raise ValidationError(f"{label}: binding ({b['result']}, {b['tests_run']}, {b['failures']}) does not equal the log ({result}, {ran}, {failures})")
+        if wp is not None:
+            # C2 (BLD-I02): the exact baseline -- the binding's base is the work package's base, and
+            # the content tree agrees with the composition claim when one exists.
+            base_rev = str(((wp.get("external_target") or {}).get("base_revision")) or "")
+            resolved = _git("rev-parse", base_rev) if base_rev else None
+            if resolved and b["base_sha"] != resolved:
+                raise ValidationError(f"{label}: binding.base_sha {b['base_sha'][:12]} does not equal the work package's base_revision {resolved[:12]} (BLD-I02 / C2)")
+            record = wp_dir / "evidence" / "G07" / "composition-record.json"
+            if record.is_file():
+                rec = load_json(record)
+                if rec.get("expected_content_tree") and b["content_tree"] != rec["expected_content_tree"]:
+                    raise ValidationError(f"{label}: binding.content_tree {b['content_tree'][:12]} does not equal the composition record's expected_content_tree {str(rec['expected_content_tree'])[:12]} (BLD-I02 / C2)")
+                if rec.get("target_base_sha") and b["base_sha"] != rec["target_base_sha"]:
+                    raise ValidationError(f"{label}: binding.base_sha does not equal the composition record's target_base_sha (BLD-I02 / C2)")
+            # C3 (BLD-I04): a PASS with paths outside the declared surface is refused unless a
+            # discovery allowance covers each of them; a request keeps its C-2 condition instead.
+            if dossier.get("disposition") == "PASS" and b.get("unexpected_paths"):
+                allowance = [str(x) for x in ((wp.get("expected_surfaces") or {}).get("discovery_allowance") or [])]
+                uncovered = [x for x in b["unexpected_paths"] if not any(_surface_match(x, a) for a in allowance)]
+                if uncovered:
+                    raise ValidationError(f"{label}: PASS claimed with changed paths outside expected_surfaces and no discovery_allowance covering {uncovered}; unexpected scope is refused or re-authorized, never absorbed (BLD-I04 / C3)")
+    elif kind == "unit-test":
+        if b["result"] != "NOT_RUN":
+            result, ran, failures = _parse_unittest_log(artifact.read_text(encoding="utf-8", errors="replace"))
+            if (result, ran, failures) != (b["result"], b["tests_run"], b["failures"]):
+                raise ValidationError(f"{label}: binding ({b['result']}, {b['tests_run']}, {b['failures']}) does not equal the log ({result}, {ran}, {failures})")
+        if wp is not None:
+            # C4 (BLD-I07/I08): declared unit obligations require observed red, or an explicit exception.
+            if any(isinstance(o, dict) and o.get("level") == "unit" for o in (wp.get("test_obligations") or [])):
+                tdd = b.get("tdd")
+                excepted = isinstance(tdd, dict) and tdd.get("applies") is False and str(tdd.get("reason") or "").strip()
+                if not excepted and not all((o.get("red") or {}).get("observed") for o in b.get("obligations") or []):
+                    raise ValidationError(f"{label}: the work package declares unit test obligations but the binding carries no observed red phase and no tdd exception with a reason (BLD-I07 / BLD-I08 / C4)")
+        # C5 (BLD-I09): a PASS on a passing dossier needs the fresh composed-tree run -- the composition record.
+        if dossier.get("disposition") == "PASS" and b["result"] == "PASS" and not (wp_dir / "evidence" / "G07" / "composition-record.json").is_file():
+            raise ValidationError(f"{label}: unit-test PASS claimed on a passing dossier without a composition record for {wp_id}; the composed-tree run is the fresh verification (BLD-I09 / C5)")
     elif kind == "build":
         m = re.search(r"-> exit (\d+)", artifact.read_text(encoding="utf-8", errors="replace"))
         if not m:
@@ -3136,6 +3249,9 @@ def self_dossier(wp_id: str) -> str:
     base = ((wp.get("external_target") or {}).get("base_revision"))
     if not base:
         raise ValidationError(f"{wp_id} has no external_target.base_revision to diff against")
+    _require_authorized_demand(wp, wp_id)                       # C1: no request without validated authority
+    _check_build_budget_and_stop(wp_dir, wp, wp_id)             # C6: a stopped or exhausted build is not packaged
+    _check_delegations(wp_dir, wp, wp_id)                       # C7: delegations must be subsets before anything is bound
     now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     ev_dir = wp_dir / "evidence/G07"
     ev_dir.mkdir(parents=True, exist_ok=True)
@@ -3185,6 +3301,12 @@ def self_dossier(wp_id: str) -> str:
                    for i, m in enumerate(modules)]
     unit_binding = {"obligations": obligations, "command": ut_command, "result": ut_result, "tests_run": ut_ran, "failures": ut_failures,
                     "coverage_scope": modules, "fresh_run": fresh_run}
+    # C4 (BLD-I07/I08): declared unit obligations need an observed red, or an explicit exception with a reason.
+    if any(isinstance(o, dict) and o.get("level") == "unit" for o in (wp.get("test_obligations") or [])) and not red_obs:
+        reason = str(((wp.get("tdd_exception") or {}).get("reason")) or "").strip() if isinstance(wp.get("tdd_exception"), dict) else ""
+        if not reason:
+            raise ValidationError(f"{wp_id}: the work package declares unit test obligations but no failing-first (red) observation is bound and no tdd_exception.reason is declared; TDD is required at a durable seam or its absence is explicit, never silent (BLD-I07 / BLD-I08 / C4)")
+        unit_binding["tdd"] = {"applies": False, "reason": reason}
     doc_changed = [n for n in names if n.startswith("docs/") or n in ("README.md", "AGENTS.md")]
     contract_changed = any(n.startswith("schemas/") or n in ("badf/lifecycle.json", "badf/skill-registry.json") for n in names)
     behavior_changed = any(n.startswith("scripts/") for n in names)
@@ -3194,8 +3316,12 @@ def self_dossier(wp_id: str) -> str:
     source_binding_partial = {"base_sha": base_full, "head_sha": head_full, "content_tree": ctree, "changed_paths": names,
                               "expected_surfaces": {"declared": declared, "files": patterns}, "unexpected_paths": unexpected}
     build_dir = wp_dir / "build"; build_dir.mkdir(parents=True, exist_ok=True)
-    (build_dir / "session.json").write_text(json.dumps({"work_package_id": wp_id, "producer": "badf-self-dossier", "started_at": now,
-                                                        "base_sha": base_full, "head_sha": head_full, "content_tree": ctree}, indent=2) + "\n", encoding="utf-8")
+    session = {"work_package_id": wp_id, "producer": "badf-self-dossier", "started_at": now, "base_sha": base_full, "head_sha": head_full, "content_tree": ctree}
+    if (build_dir / "session.json").is_file():
+        prior = load_json(build_dir / "session.json") or {}
+        if prior.get("delegations"):
+            session["delegations"] = prior["delegations"]   # declared delegations survive re-assembly (C7 judged them)
+    (build_dir / "session.json").write_text(json.dumps(session, indent=2) + "\n", encoding="utf-8")
     append_build_event(wp_id, "START", "OK", "self-dossier assembly started")
     append_build_event(wp_id, "BASELINE", "OK", f"base {base_full[:12]} head {head_full[:12]} content tree {ctree[:12]}")
 
@@ -3696,6 +3822,11 @@ def validate_dossier(dossier_path: Path) -> str:
     dossier["council_disposition"] = {"disposition": council["disposition"], "triggers": council["triggers"]}
     rendered = verify_two_plane(dossier)
 
+    _wp = _wp_record(dossier["work_package_id"])
+    if _wp is not None:
+        _check_delegations(ROOT / "work" / dossier["work_package_id"], _wp, dossier["work_package_id"])   # C7, any disposition
+        if dossier["disposition"] in {"PASS", "PASS_WITH_CONDITIONS"}:
+            _check_build_budget_and_stop(ROOT / "work" / dossier["work_package_id"], _wp, dossier["work_package_id"])   # C6
     if dossier["disposition"] == "HUMAN_REQUIRED":
         # A HUMAN_REQUIRED dossier is a REQUEST for authority, not a CLAIM of
         # it (badf init produces one). Its evidence is PREPARED and unsigned;

@@ -51,11 +51,14 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "6814a24"
+    "base_revision": "6814a24",
+    "landed_content_tree": "672da1efe145a9ff8e3b89e1b13899b6f086e9e8",
+    "composition_verified": true,
+    "landed_as": "e1423ad43b63491292c983435fae4bff11185cde"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-VER-A of the badf-engineering-verification program (operator design directive 2026-08-30; approval + A->E authorization on #195, VER-E admission not taken in advance). Governance-only WP: skill files + registry + tests + doctrine; empty gate diff. Resolves #195 / GOV-0083. Engineered by BARCHI-3 under /loop ('proceed according to the scope from WP-VER-A to WP-VER-E'); ladder-internal (no shared surface) -- lands under the standing evidence bar. Reconciles WP-2026-0098."
 }

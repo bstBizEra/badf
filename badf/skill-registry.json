@@ -298,7 +298,7 @@
       "version": "0.1.0",
       "risk_class": "C1",
       "allowed_tools": [],
-      "status": "IMPLEMENTED",
+      "status": "VALIDATED",
       "digest": "sha256:6cc3266ecde8bf6ed14fc3b5ae3b1de38a42154242d9b7517ca6f0cdb38bf0f3"
     },
     {

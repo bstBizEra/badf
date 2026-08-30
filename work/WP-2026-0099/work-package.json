@@ -1,0 +1,58 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0099",
+  "title": "WP-BLD-C: deterministic G07 controls in the canonical gate (badf-build -> VALIDATED)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0086",
+  "repository": "bstBizEra/badf",
+  "objective": "Enforce, in badf_gate.py, the seven build invariants that BLD-A froze and BLD-B made measurable: C1 a self-dossier is assembled and a PASS dossier accepted only under a demand AUTHORIZED by a human (BLD-I03); C2 source-change.binding.base_sha equals the WP's resolved base_revision and the recomputed content tree equals the binding (BLD-I02); C3 a PASS dossier with unexpected_paths is refused unless the WP declares a discovery_allowance covering them (BLD-I04); C4 when test_obligations declare a red phase every unit-test obligation carries red.observed, otherwise the binding declares tdd.applies=false with a reason -- silence refused (BLD-I07/I08); C5 a unit-test PASS on a PASS dossier requires a composition record for the same WP and base (BLD-I09); C6 ledger RETRY events may not exceed execution_budget.max_attempts and a STOP event forces BLOCKED/HUMAN_REQUIRED (BLD-I11..I13); C7 delegations in build/session.json are strict subsets of the WP's surface and permissions with the prohibited set intact (BLD-I10). Controls fire only on declared fields (existing objects on main stay valid); typed in code, not walker-trusted; no second gate.",
+  "business_value": "Without these controls the typed evidence describes a build; with them the gate refuses a build that exceeded its authorization, its surface, its budget or its verification contract -- the difference between a coding agent that reports and one that is governed.",
+  "in_scope": [
+    "scripts/badf_gate.py: controls C1..C7 in self_dossier / check_g07_binding / validate_dossier (+ read-only ledger inspection for refusal only)",
+    "tests/test_badf_build_controls.py (8, failing-first; mutation 7/7)",
+    "badf/skill-registry.json: badf-build IMPLEMENTED -> VALIDATED (SKILL.md untouched)",
+    "GITHUB_CONTROL_PLANE.md doctrine section; badf/demands/BADF-DEM-0086.json; own composition record + typed G07 self-dossier; reconcile WP-2026-0100",
+    "tests/test_badf_build_evidence.py + tests/test_badf_self_dossier.py fixtures: declare an AUTHORIZED human demand (BADF-DEM-0001 on main is RESOLVED -- a closed demand authorizes nothing under C1)"
+  ],
+  "out_of_scope": [
+    "shadow (BLD-D); admission (BLD-E)",
+    "any change to badf_compose.py, the CI workflow, check_schema, or lifecycle.json",
+    "executing tests inside the gate; any new schema loosening"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "each of C1..C7 refuses its violation with a message naming the invariant, and is silent when the governing field is undeclared (BLD-B objects on main unaffected)",
+    "failing-first 8 red -> green; mutation: each control's refusal disabled -> its test red (7/7)",
+    "existing build_evidence / self_dossier / reconcile / composition / integration suites green; CI green on the composed tree",
+    "registry badf-build VALIDATED; QA + REV by BARCHI-1 (shared surface)"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_build_controls.py (8)",
+    "tests/test_badf_build_evidence.py (11; fixture now declares a human-AUTHORIZED demand, as C1 requires)",
+    "tests/test_badf_self_dossier.py (fixture likewise), tests/test_badf_reconcile.py (unchanged)"
+  ],
+  "evidence": [
+    "failing-first run (8 red)",
+    "green run",
+    "mutation 7/7",
+    "compose output incl. composition record",
+    "typed G07 self-dossier (under the new controls)"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "e1423ad"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-BLD-C of the badf-build program (#188 A->E authorization). Shared surface -> QA + REV by BARCHI-1. Lean mode disabled. Resolves #194 / GOV-0082. Reconciles WP-2026-0100 (composition_verified true)."
+}
