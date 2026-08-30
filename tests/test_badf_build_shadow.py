@@ -99,13 +99,13 @@ class BuildShadowTests(unittest.TestCase):
         with self.assertRaises(AssertionError):
             for c in bad["cases"]: assert c["case"] in ALLOWED_CASES
 
-    def test_doc_names_every_case_and_gap_and_root_is_shadowed(self):
+    def test_doc_names_every_case_and_gap_and_root_is_active(self):
         text = DOC.read_text(encoding="utf-8")
         for token in ("request-digest-bound", "authority-replayed", "typed-binding-recomputed", "fresh-verification-replayed", "dossier-not-on-ledger",
                       "non-coverage", "C3", "C4", "C6", "C7", "WP-2026-0010", "SHADOWED", "BLD-E", "admission", "run"):
             self.assertIn(token, text, token)
         reg = gate.load_json(gate.ROOT / "badf/skill-registry.json"); by = {s["name"]: s for s in reg["skills"]}
-        self.assertEqual(by["badf-build"]["status"], "SHADOWED")
+        self.assertEqual(by["badf-build"]["status"], "ACTIVE")  # BLD-E: admitted; the note still records the SHADOWED measurement
         self.assertEqual(hashlib.sha256((gate.ROOT / by["badf-build"]["source"]).read_bytes()).hexdigest(), by["badf-build"]["digest"][7:])
 
 

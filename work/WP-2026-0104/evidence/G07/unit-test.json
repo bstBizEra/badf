@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0104-G07-unit-test",
+  "work_package_id": "WP-2026-0104",
+  "gate": "G07",
+  "claim": "the author's unit-test run, bound; the composed-tree gate is the fresh run",
+  "evidence_type": "unit-test",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "unittest",
+    "version": "1"
+  },
+  "operation": "python3 -m unittest tests.test_badf_build_activation",
+  "started_at": "2026-08-30T19:02:46Z",
+  "completed_at": "2026-08-30T19:02:46Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0104/evidence/G07/unit-test.log",
+  "digest": "sha256:653c141eb5a83f1f690d10327d0fbfe31c272e9b22b6714022177456edab4a77",
+  "binding": {
+    "obligations": [
+      {
+        "id": "TEST-001",
+        "seam": {
+          "type": "module",
+          "ref": "tests/test_badf_build_activation.py"
+        },
+        "red": {
+          "observed": true,
+          "ref": "work/WP-2026-0104/evidence/G07/failing-first.txt",
+          "digest": "sha256:8c0846f6b0370e1663e221d9c9a36fe9eedccb3c408eb39a23bd19aecaff3662"
+        },
+        "green": {
+          "observed": true,
+          "ref": "work/WP-2026-0104/evidence/G07/unit-test.log",
+          "digest": "sha256:653c141eb5a83f1f690d10327d0fbfe31c272e9b22b6714022177456edab4a77"
+        }
+      },
+      {
+        "id": "TEST-002",
+        "seam": {
+          "type": "module",
+          "ref": "tests/test_badf_build_contract.py,"
+        },
+        "red": {
+          "observed": true,
+          "ref": "work/WP-2026-0104/evidence/G07/failing-first.txt",
+          "digest": "sha256:8c0846f6b0370e1663e221d9c9a36fe9eedccb3c408eb39a23bd19aecaff3662"
+        },
+        "green": {
+          "observed": true,
+          "ref": "work/WP-2026-0104/evidence/G07/unit-test.log",
+          "digest": "sha256:653c141eb5a83f1f690d10327d0fbfe31c272e9b22b6714022177456edab4a77"
+        }
+      }
+    ],
+    "command": "python3 -m unittest tests.test_badf_build_activation",
+    "result": "PASS",
+    "tests_run": 4,
+    "failures": 0,
+    "coverage_scope": [
+      "tests/test_badf_build_activation.py",
+      "tests/test_badf_build_contract.py,"
+    ],
+    "fresh_run": "scripts/badf_compose.py (the composed-tree gate) re-runs the suite on the tree that would land; CI is the fresh, authoritative run (BLD-I09)"
+  }
+}

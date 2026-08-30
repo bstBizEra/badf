@@ -1476,6 +1476,28 @@ BLD-C's `tdd_exception` and `discovery_allowance` — additive, as every plannin
 disabled: these are HARD INVARIANTS. **Ladder:** VER-D shadows the controls on the G08 material BADF has
 (WP-2026-0010's dossier and the seats' review history, with known and injected defects); VER-E is the
 operator's admission on that evidence.
+## badf-build → ACTIVE — BLD-E admission (`BADF-WP-0104`, Issue #203 / GOV-0087)
+
+`badf-build` is admitted `SHADOWED → ACTIVE` by **registry status flip only**: `digest` is the GIT-A-style
+freeze value (`SKILL.md` untouched since BLD-A), `allowed_tools: []`, `risk_class` C1. The authorization is the
+operator's decision — pre-authorized for the whole ladder on #188 (comment 5469168780, "proceed on your
+call to build the badf-build from WP-BLD-A - WP-BLD-E as ACTIVE") and bound to the evidence on #203. Every
+rung below was met on `main` before the flip: BLD-A `cf431fa` (contract, BLD-I01…I18), BLD-B `6814a24`
+(typed G07 evidence, build ledger), BLD-C `8f3d805` (seven deterministic controls, mutation-killed,
+independently reviewed), BLD-D `07c23f7` (shadow on every landed self-dossier: requests digest-bound,
+demands human-authorized, typed bindings exact, no `PASS` without a composed run).
+
+**Activation changes what the family *is*, not what it *may do*.** `BUILD ≠ INTEGRATION` holds after the
+flip exactly as before it: no `scripts/badf_build.py`, no mutation path, no push/merge/release tool; the
+seven controls and the typed producer are byte-untouched; the human still merges (BADF-MAIN-001).
+
+**`ACTIVE` does not erase the shadow's non-coverage.** It is carried here verbatim: **C3** scope
+containment, **C4** red before green / explicit exception, **C6** budget and stop, **C7** delegation subset
+have **no historical corpus** — nothing on the ledger ever declared `expected_surfaces`, `test_obligations`,
+a `RETRY`/`STOP` or a delegation — and are proven on scratch fixtures only; **no build controller** has yet
+executed a Work Package through the workflow. `ACTIVE` therefore means "admitted on the program's own
+builds, with four controls proven only on scratch", and not more; the first real project — or the first
+build executed under the contract — is the deferred re-shadow's trigger.
 
 ## Discovery ≠ scope expansion
 
