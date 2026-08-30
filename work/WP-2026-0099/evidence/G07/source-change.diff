@@ -1,0 +1,686 @@
+diff --git a/badf/demands/BADF-DEM-0086.json b/badf/demands/BADF-DEM-0086.json
+new file mode 100644
+index 0000000..d51a561
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0086.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0086",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 194,
++    "url": "https://github.com/bstBizEra/badf/issues/194",
++    "exported_at": "2026-08-30T15:53:07Z",
++    "body_digest": "sha256:6232bfa956fada758b94073837752c9ffc139ab1a0ced44b740aae490b07df25"
++  },
++  "title": "GOV-0082: WP-BLD-C — deterministic G07 controls in the canonical gate (authority, exact baseline, scope, red-before-green, fresh verification, budget/stop, delegation); badf-build → VALIDATED",
++  "problem": "🧠 **ARCHI (BARCHI-2)** — plan for WP-BLD-C: deterministic G07 controls in the canonical gate (`badf-build` → `VALIDATED`)\n\n## Stage-Gate\n- **Stage:** 4 prototype → 5 workflow-integration: the controls run on every G07 dossier the gate judges.\n- **Decision:** Continue — rung C of the operator-authorized ladder (#188).\n- **Over-engineering risk:** a `scripts/badf_build.py` or a control that trusts a declaration instead of opening an artifact. Refused (BLD-I18): every control below is a `badf_gate.py` check on a typed G07 binding BLD-B already produces, or on the Work Package fields WP-IMP-B already declares; nothing new is declared to satisfy a control.\n- **Glossary stage(s):** 7 build; G08 untouched.\n\n## Observed (what BLD-B made measurable, and what is still unenforced)\nOn `main` after #193, every self-produced G07 object carries an exact typed binding, and the gate refuses a malformed or artifact-disagreeing binding. Nothing yet **judges** the binding against the Work Package's contract: a request can be assembled with no human authorization on its demand; a binding's `base_sha` is not held to the WP's `base_revision`; a PASS dossier may still pass with `unexpected_paths` non-empty; a WP that declares `test_obligations` with a red phase passes without `red.observed`; a unit-test `PASS` needs no fresh composed run; the ledger's attempts are not held to `execution_budget`; a delegation may exceed the WP's surface. Those are BLD-I03/I02/I04/I07-I08/I09/I11-I13/I10 — frozen at A, producible since B, enforced at C.\n\n## Acceptance criteria (WP-2026-0099 / BADF-DEM-0086) — seven controls, each failing-first and mutation-killed\n- **BLD-C1 authority before mutation (BLD-I03):** `self-dossier` refuses to assemble unless the WP's demand record exists with `status: AUTHORIZED` and a **human** `authorized_by`; on a PASS dossier the rule refuses evidence whose WP demand is not so authorized. Message names the demand.\n- **BLD-C2 exact baseline (BLD-I02):** `source-change.binding.base_sha` must equal the resolved `external_target.base_revision`; on the composed tree the recomputed content tree must equal `binding.content_tree` (reuse `content_tree`; the compose path already recomputes — the gate rule now requires agreement, not just presence).\n- **BLD-C3 scope containment enforced (BLD-I04):** a dossier that claims `PASS` with `unexpected_paths` non-empty is refused unless the WP declares `expected_surfaces.discovery_allowance` covering each path; `HUMAN_REQUIRED` requests keep the C-2 condition (BLD-B behaviour).\n- **BLD-C4 red before green, exceptions explicit (BLD-I07/I08):** when the WP declares `test_obligations` with `required_phase` containing `red`, every unit-test obligation must have `red.observed: true` (digest-bound); otherwise the binding must carry `tdd: {\"applies\": false, \"reason\": \"...\"}` (`TDD_NOT_APPLICABLE_WITH_REASON`) — silence is refused.\n- **BLD-C5 fresh verification (BLD-I09):** a unit-test `PASS` on a PASS dossier requires a composition record for the same WP and base (the composed-tree run is the fresh run); absent → refused with the BLD-I09 reason.\n- **BLD-C6 budget and stop dominate (BLD-I11–I13):** when the WP declares `execution_budget`, the ledger's `RETRY` events must not exceed `max_attempts` and a `STOP` event carrying a declared stop condition forces the dossier disposition to `BLOCKED`/`HUMAN_REQUIRED`; a PASS dossier over a ledger with a `STOP` is refused. Read-only on the ledger for *refusal* only — the ledger still never *grants* anything.\n- **BLD-C7 delegation is a strict subset (BLD-I10):** `build/session.json` may list `delegations[]`; each `allowed_paths ⊆ expected_surfaces.files`, `allowed_tools ⊆ WP.permissions`-derived tools, and `prohibited ⊇ {push, merge, release, credential-use}`; a violation refuses the dossier naming the delegation.\n- All seven live in `badf_gate.py` (`check_g07_binding` / `validate_dossier` / `self_dossier`), typed in code (per #171 / GOV-0080, not walker-trusted); no schema loosened; existing BLD-B objects on `main` stay valid (the controls fire only on fields that are declared).\n- Registry `badf-build` `IMPLEMENTED → VALIDATED`; doctrine section; DEM export; own composition record + typed self-dossier; reconciles the land-time-current WP.\n\n## Tests (`tests/test_badf_build_controls.py`, failing-first)\n- `test_c1_unauthorized_demand_refuses_assembly` · `test_c2_base_sha_must_match_base_revision` · `test_c3_pass_with_unexpected_paths_refused_unless_allowance` · `test_c4_red_required_when_declared_and_exception_must_be_explicit` · `test_c5_pass_requires_composition_record` · `test_c6_retry_over_budget_and_stop_event_block` · `test_c7_delegation_outside_surface_refused` · `test_controls_are_silent_when_fields_undeclared` (BLD-B objects on `main` unaffected).\n- Existing `test_badf_build_evidence`, `test_badf_self_dossier`, `test_badf_reconcile`, composition/integration fixtures stay green. Mutation: each control's refusal disabled → its test red (7/7).\n\n## Out of scope\n- Shadow on historical self-dossiers (BLD-D) and admission (BLD-E); any change to `badf_compose.py`, the CI workflow or `check_schema`; executing tests inside the gate.\n\n**Version tier:** minor (new gate controls, backward-compatible). **Lean mode:** **disabled** (authority / stop-control invariants — HARD INVARIANTS, never traded for leanness). QA + REV: BARCHI-1 (shared surface).\n\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T15:53:07Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-BLD-C: seven deterministic G07 controls in badf_gate.py (C1 authority before mutation, C2 exact baseline, C3 scope containment enforced, C4 red before green with explicit exceptions, C5 fresh verification, C6 budget/stop dominate, C7 delegation subset) on the typed bindings BLD-B produces and the WP fields WP-IMP-B declares; badf-build IMPLEMENTED -> VALIDATED. Lean mode disabled (authority/stop-control invariants)."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index d91f8e8..b85637b 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -298,7 +298,7 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "IMPLEMENTED",
++      "status": "VALIDATED",
+       "digest": "sha256:6cc3266ecde8bf6ed14fc3b5ae3b1de38a42154242d9b7517ca6f0cdb38bf0f3"
+     },
+     {
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 474b22e..54d4387 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1361,6 +1361,29 @@ disabled); VER-D shadows on WP-2026-0010's G08 dossier and BADF's own review his
+ injected defects; VER-E is the operator's admission on that evidence. No findings does not mean
+ correctness; passing tests do not mean coverage; source-head success does not mean composed-result safety;
+ G08 does not replace G09.
++## badf-build → VALIDATED — seven deterministic G07 controls in the canonical gate (`BADF-WP-0099` / WP-BLD-C, Issue #194 / GOV-0082)
++
++BLD-A froze the invariants and BLD-B made them measurable; BLD-C makes the gate **refuse** their
++violation. All seven live in `badf_gate.py` — in the self-dossier producer, in the G07 evidence rules
++and in `validate_dossier` — typed in code (never walker-trusted), firing only on the field that
++declares them, so every object already on the ledger stays valid and nothing is declared to satisfy
++a control.
++
++| Control | Invariant | Refuses |
++| :--- | :--- | :--- |
++| **C1** authority before mutation | BLD-I03 | a request assembled under a demand that is absent, not `AUTHORIZED`, or not authorized by a **human** |
++| **C2** exact baseline | BLD-I02 | a `source-change` whose `base_sha` is not the work package's `base_revision`, or whose content tree / base disagree with the composition record |
++| **C3** scope containment enforced | BLD-I04 | a **PASS** with paths outside `expected_surfaces` unless a declared `discovery_allowance` covers each (a request keeps its C-2 condition) |
++| **C4** red before green, exceptions explicit | BLD-I07/I08 | declared unit obligations with no observed red and no `tdd_exception.reason` — silence; an exception is bound as `binding.tdd = {applies: false, reason}` |
++| **C5** fresh verification | BLD-I09 | a unit-test `PASS` on a passing dossier with no composition record — the composed-tree run *is* the fresh run |
++| **C6** budget and stop dominate | BLD-I11–I13 | a build whose ledger records `STOP`, or more `RETRY` events than `execution_budget.max_attempts` — refused at assembly and on a PASS; the ledger is read for refusal only, never to grant |
++| **C7** delegation is a strict subset | BLD-I10 | a delegation in `build/session.json` with a path outside the declared surface, a missing prohibition (`push`, `merge`, `release`, `credential-use`), or an integration tool — on every disposition; declared delegations survive re-assembly |
++
++Three optional inputs were added so the controls have something declared to judge, all additive:
++`expected_surfaces.discovery_allowance` and `tdd_exception` on the work package, `binding.tdd` on the
++typed unit-test evidence. No change to `check_schema`, `badf_compose.py`, the CI workflow or
++`lifecycle.json`. `badf-build` advances `IMPLEMENTED → VALIDATED`; the shadow on BADF's own G07
++history (BLD-D) and the operator's admission (BLD-E) remain.
+ 
+ ## Discovery ≠ scope expansion
+ 
+diff --git a/schemas/unit-test.schema.json b/schemas/unit-test.schema.json
+index 34c486b..2e6fb26 100644
+--- a/schemas/unit-test.schema.json
++++ b/schemas/unit-test.schema.json
+@@ -229,6 +229,22 @@
+         },
+         "fresh_run": {
+           "type": "string"
++        },
++        "tdd": {
++          "type": "object",
++          "required": [
++            "applies",
++            "reason"
++          ],
++          "properties": {
++            "applies": {
++              "type": "boolean"
++            },
++            "reason": {
++              "type": "string"
++            }
++          },
++          "additionalProperties": false
+         }
+       },
+       "additionalProperties": false
+diff --git a/schemas/work-package.schema.json b/schemas/work-package.schema.json
+index 387dd00..8ff5946 100644
+--- a/schemas/work-package.schema.json
++++ b/schemas/work-package.schema.json
+@@ -289,6 +289,13 @@
+           "items": {
+             "type": "string"
+           }
++        },
++        "discovery_allowance": {
++          "type": "array",
++          "description": "Paths a build MAY touch beyond the declared surface without re-authorization (BLD-I04 / C3); a bounded discovery allowance, declared by planning.",
++          "items": {
++            "type": "string"
++          }
+         }
+       }
+     },
+@@ -433,6 +440,19 @@
+           }
+         }
+       }
++    },
++    "tdd_exception": {
++      "type": "object",
++      "description": "TDD_NOT_APPLICABLE_WITH_REASON (BLD-I08 / C4): why this work package's unit obligations carry no red phase.",
++      "required": [
++        "reason"
++      ],
++      "properties": {
++        "reason": {
++          "type": "string"
++        }
++      },
++      "additionalProperties": false
+     }
+   }
+ }
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 4b70907..7030169 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -1548,6 +1548,84 @@ def _diff_paths(text: str) -> list[str]:
+     return sorted({m.group(1) for m in re.finditer(r"^diff --git a/(\S+) b/", text, re.M)})
+ 
+ 
++
++# ---- badf-build BLD-C (BADF-WP-0099, #194): deterministic G07 controls ----
++# Each control fires only on the field that declares it (undeclared -> BLD-B behaviour), is typed
++# in code (never walker-trusted), and refuses with the invariant it enforces. No second gate.
++
++DELEGATION_PROHIBITED = ("push", "merge", "release", "credential-use")
++
++
++def _wp_record(wp_id: str) -> dict[str, Any] | None:
++    path = ROOT / "work" / wp_id / "work-package.json"
++    return load_json(path) if path.is_file() else None
++
++
++def _require_authorized_demand(wp: dict[str, Any], wp_id: str) -> None:
++    """C1 (BLD-I03): authority before mutation -- the work package's demand must exist, be
++    AUTHORIZED, and be authorized by a human. Absent is not validated."""
++    demand = str(wp.get("demand") or "")
++    path = ROOT / "badf" / "demands" / f"{demand}.json"
++    if not demand or not path.is_file():
++        raise ValidationError(f"{wp_id}: demand {demand or '(none)'} has no record at badf/demands/; authority cannot be validated before mutation (BLD-I03 / C1)")
++    rec = load_json(path)
++    if rec.get("status") != "AUTHORIZED":
++        raise ValidationError(f"{wp_id}: demand {demand} is {rec.get('status')!r}, not AUTHORIZED (BLD-I03 / C1)")
++    who = rec.get("authorized_by") or {}
++    if not isinstance(who, dict) or who.get("principal_type") != "human":
++        raise ValidationError(f"{wp_id}: demand {demand} is authorized by principal_type {who.get('principal_type') if isinstance(who, dict) else who!r}; a human must authorize (BLD-I03 / C1)")
++
++
++def _build_events(wp_dir: Path) -> list[dict[str, Any]]:
++    path = wp_dir / BUILD_LEDGER
++    if not path.is_file():
++        return []
++    return [json.loads(l) for l in path.read_text(encoding="utf-8").splitlines() if l.strip()]
++
++
++def _check_build_budget_and_stop(wp_dir: Path, wp: dict[str, Any], wp_id: str) -> None:
++    """C6 (BLD-I11..I13): the ledger is read for REFUSAL only, never to grant. RETRY events may
++    not exceed execution_budget.max_attempts; a recorded STOP dominates."""
++    events = _build_events(wp_dir)
++    stops = [e for e in events if e.get("step") == "STOP"]
++    if stops:
++        s = stops[-1]
++        raise ValidationError(f"{wp_id}: the build ledger records STOP ({s.get('outcome')}: {s.get('note', '')}); a stopped build hands off BLOCKED -- it is not packaged or passed (BLD-I13 / C6)")
++    budget = wp.get("execution_budget")
++    if isinstance(budget, dict) and isinstance(budget.get("max_attempts"), int) and not isinstance(budget.get("max_attempts"), bool):
++        retries = sum(1 for e in events if e.get("step") == "RETRY")
++        if retries > budget["max_attempts"]:
++            raise ValidationError(f"{wp_id}: {retries} RETRY events exceed execution_budget.max_attempts {budget['max_attempts']}; exhaustion yields BLOCKED, never an autonomous extension (BLD-I12 / C6)")
++
++
++def _check_delegations(wp_dir: Path, wp: dict[str, Any], wp_id: str) -> None:
++    """C7 (BLD-I10): every delegation in build/session.json is a strict subset of the work
++    package -- paths inside the declared surface, the prohibited set intact, no integration tools."""
++    path = wp_dir / "build" / "session.json"
++    if not path.is_file():
++        return
++    delegations = (load_json(path) or {}).get("delegations") or []
++    if not delegations:
++        return
++    surface = [str(x) for x in ((wp.get("expected_surfaces") or {}).get("files") or [])]
++    for d in delegations:
++        if not isinstance(d, dict):
++            raise ValidationError(f"{wp_id}: a delegation is not a mapping (C7)")
++        name = str(d.get("task") or "?")
++        if not surface:
++            raise ValidationError(f"{wp_id}: delegation {name} declared but the work package declares no expected_surfaces; a subset of nothing cannot be granted (BLD-I10 / C7)")
++        for ap in d.get("allowed_paths") or []:
++            probe = ap[:-3] + "/__probe__" if str(ap).endswith("/**") else str(ap)
++            if not any(_surface_match(probe, pat) for pat in surface):
++                raise ValidationError(f"{wp_id}: delegation {name} allows path {ap!r} outside the work package's expected_surfaces {surface} (BLD-I10 / C7)")
++        missing = sorted(set(DELEGATION_PROHIBITED) - set(d.get("prohibited") or []))
++        if missing:
++            raise ValidationError(f"{wp_id}: delegation {name} leaves {missing} out of its prohibited set; the prohibited set {list(DELEGATION_PROHIBITED)} stays intact -- delegation can only narrow authority (BLD-I10 / C7)")
++        bad_tools = sorted(set(d.get("allowed_tools") or []) & set(DELEGATION_PROHIBITED + ("git-push", "gh", "deploy")))
++        if bad_tools:
++            raise ValidationError(f"{wp_id}: delegation {name} grants integration tools {bad_tools} (BLD-I10 / BLD-I17 / C7)")
++
++
+ def check_g07_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+     """EVIDENCE_RULES entry for the four G07 types: a typed `binding`, when present, must
+     conform to schemas/<type>.schema.json AND agree with the artifact it binds -- the gate
+@@ -1559,16 +1637,51 @@ def check_g07_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[st
+     check_schema(kind, evidence)
+     b = evidence["binding"]
+     label = f"evidence {evidence.get('id', kind)}"
++    wp_id = str(evidence.get("work_package_id") or "")
++    wp = _wp_record(wp_id) if wp_id else None
++    wp_dir = ROOT / "work" / wp_id
+     if kind == "source-change":
+         paths = _diff_paths(artifact.read_text(encoding="utf-8", errors="replace"))
+         if sorted(b["changed_paths"]) != paths:
+             raise ValidationError(f"{label}: binding.changed_paths {sorted(b['changed_paths'])} do not equal the paths in the diff artifact {paths}")
+         if b["change_digest"] != evidence["digest"]:
+             raise ValidationError(f"{label}: binding.change_digest does not equal the artifact digest")
+-    elif kind == "unit-test" and b["result"] != "NOT_RUN":
+-        result, ran, failures = _parse_unittest_log(artifact.read_text(encoding="utf-8", errors="replace"))
+-        if (result, ran, failures) != (b["result"], b["tests_run"], b["failures"]):
+-            raise ValidationError(f"{label}: binding ({b['result']}, {b['tests_run']}, {b['failures']}) does not equal the log ({result}, {ran}, {failures})")
++        if wp is not None:
++            # C2 (BLD-I02): the exact baseline -- the binding's base is the work package's base, and
++            # the content tree agrees with the composition claim when one exists.
++            base_rev = str(((wp.get("external_target") or {}).get("base_revision")) or "")
++            resolved = _git("rev-parse", base_rev) if base_rev else None
++            if resolved and b["base_sha"] != resolved:
++                raise ValidationError(f"{label}: binding.base_sha {b['base_sha'][:12]} does not equal the work package's base_revision {resolved[:12]} (BLD-I02 / C2)")
++            record = wp_dir / "evidence" / "G07" / "composition-record.json"
++            if record.is_file():
++                rec = load_json(record)
++                if rec.get("expected_content_tree") and b["content_tree"] != rec["expected_content_tree"]:
++                    raise ValidationError(f"{label}: binding.content_tree {b['content_tree'][:12]} does not equal the composition record's expected_content_tree {str(rec['expected_content_tree'])[:12]} (BLD-I02 / C2)")
++                if rec.get("target_base_sha") and b["base_sha"] != rec["target_base_sha"]:
++                    raise ValidationError(f"{label}: binding.base_sha does not equal the composition record's target_base_sha (BLD-I02 / C2)")
++            # C3 (BLD-I04): a PASS with paths outside the declared surface is refused unless a
++            # discovery allowance covers each of them; a request keeps its C-2 condition instead.
++            if dossier.get("disposition") == "PASS" and b.get("unexpected_paths"):
++                allowance = [str(x) for x in ((wp.get("expected_surfaces") or {}).get("discovery_allowance") or [])]
++                uncovered = [x for x in b["unexpected_paths"] if not any(_surface_match(x, a) for a in allowance)]
++                if uncovered:
++                    raise ValidationError(f"{label}: PASS claimed with changed paths outside expected_surfaces and no discovery_allowance covering {uncovered}; unexpected scope is refused or re-authorized, never absorbed (BLD-I04 / C3)")
++    elif kind == "unit-test":
++        if b["result"] != "NOT_RUN":
++            result, ran, failures = _parse_unittest_log(artifact.read_text(encoding="utf-8", errors="replace"))
++            if (result, ran, failures) != (b["result"], b["tests_run"], b["failures"]):
++                raise ValidationError(f"{label}: binding ({b['result']}, {b['tests_run']}, {b['failures']}) does not equal the log ({result}, {ran}, {failures})")
++        if wp is not None:
++            # C4 (BLD-I07/I08): declared unit obligations require observed red, or an explicit exception.
++            if any(isinstance(o, dict) and o.get("level") == "unit" for o in (wp.get("test_obligations") or [])):
++                tdd = b.get("tdd")
++                excepted = isinstance(tdd, dict) and tdd.get("applies") is False and str(tdd.get("reason") or "").strip()
++                if not excepted and not all((o.get("red") or {}).get("observed") for o in b.get("obligations") or []):
++                    raise ValidationError(f"{label}: the work package declares unit test obligations but the binding carries no observed red phase and no tdd exception with a reason (BLD-I07 / BLD-I08 / C4)")
++        # C5 (BLD-I09): a PASS on a passing dossier needs the fresh composed-tree run -- the composition record.
++        if dossier.get("disposition") == "PASS" and b["result"] == "PASS" and not (wp_dir / "evidence" / "G07" / "composition-record.json").is_file():
++            raise ValidationError(f"{label}: unit-test PASS claimed on a passing dossier without a composition record for {wp_id}; the composed-tree run is the fresh verification (BLD-I09 / C5)")
+     elif kind == "build":
+         m = re.search(r"-> exit (\d+)", artifact.read_text(encoding="utf-8", errors="replace"))
+         if not m:
+@@ -3136,6 +3249,9 @@ def self_dossier(wp_id: str) -> str:
+     base = ((wp.get("external_target") or {}).get("base_revision"))
+     if not base:
+         raise ValidationError(f"{wp_id} has no external_target.base_revision to diff against")
++    _require_authorized_demand(wp, wp_id)                       # C1: no request without validated authority
++    _check_build_budget_and_stop(wp_dir, wp, wp_id)             # C6: a stopped or exhausted build is not packaged
++    _check_delegations(wp_dir, wp, wp_id)                       # C7: delegations must be subsets before anything is bound
+     now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+     ev_dir = wp_dir / "evidence/G07"
+     ev_dir.mkdir(parents=True, exist_ok=True)
+@@ -3185,6 +3301,12 @@ def self_dossier(wp_id: str) -> str:
+                    for i, m in enumerate(modules)]
+     unit_binding = {"obligations": obligations, "command": ut_command, "result": ut_result, "tests_run": ut_ran, "failures": ut_failures,
+                     "coverage_scope": modules, "fresh_run": fresh_run}
++    # C4 (BLD-I07/I08): declared unit obligations need an observed red, or an explicit exception with a reason.
++    if any(isinstance(o, dict) and o.get("level") == "unit" for o in (wp.get("test_obligations") or [])) and not red_obs:
++        reason = str(((wp.get("tdd_exception") or {}).get("reason")) or "").strip() if isinstance(wp.get("tdd_exception"), dict) else ""
++        if not reason:
++            raise ValidationError(f"{wp_id}: the work package declares unit test obligations but no failing-first (red) observation is bound and no tdd_exception.reason is declared; TDD is required at a durable seam or its absence is explicit, never silent (BLD-I07 / BLD-I08 / C4)")
++        unit_binding["tdd"] = {"applies": False, "reason": reason}
+     doc_changed = [n for n in names if n.startswith("docs/") or n in ("README.md", "AGENTS.md")]
+     contract_changed = any(n.startswith("schemas/") or n in ("badf/lifecycle.json", "badf/skill-registry.json") for n in names)
+     behavior_changed = any(n.startswith("scripts/") for n in names)
+@@ -3194,8 +3316,12 @@ def self_dossier(wp_id: str) -> str:
+     source_binding_partial = {"base_sha": base_full, "head_sha": head_full, "content_tree": ctree, "changed_paths": names,
+                               "expected_surfaces": {"declared": declared, "files": patterns}, "unexpected_paths": unexpected}
+     build_dir = wp_dir / "build"; build_dir.mkdir(parents=True, exist_ok=True)
+-    (build_dir / "session.json").write_text(json.dumps({"work_package_id": wp_id, "producer": "badf-self-dossier", "started_at": now,
+-                                                        "base_sha": base_full, "head_sha": head_full, "content_tree": ctree}, indent=2) + "\n", encoding="utf-8")
++    session = {"work_package_id": wp_id, "producer": "badf-self-dossier", "started_at": now, "base_sha": base_full, "head_sha": head_full, "content_tree": ctree}
++    if (build_dir / "session.json").is_file():
++        prior = load_json(build_dir / "session.json") or {}
++        if prior.get("delegations"):
++            session["delegations"] = prior["delegations"]   # declared delegations survive re-assembly (C7 judged them)
++    (build_dir / "session.json").write_text(json.dumps(session, indent=2) + "\n", encoding="utf-8")
+     append_build_event(wp_id, "START", "OK", "self-dossier assembly started")
+     append_build_event(wp_id, "BASELINE", "OK", f"base {base_full[:12]} head {head_full[:12]} content tree {ctree[:12]}")
+ 
+@@ -3696,6 +3822,11 @@ def validate_dossier(dossier_path: Path) -> str:
+     dossier["council_disposition"] = {"disposition": council["disposition"], "triggers": council["triggers"]}
+     rendered = verify_two_plane(dossier)
+ 
++    _wp = _wp_record(dossier["work_package_id"])
++    if _wp is not None:
++        _check_delegations(ROOT / "work" / dossier["work_package_id"], _wp, dossier["work_package_id"])   # C7, any disposition
++        if dossier["disposition"] in {"PASS", "PASS_WITH_CONDITIONS"}:
++            _check_build_budget_and_stop(ROOT / "work" / dossier["work_package_id"], _wp, dossier["work_package_id"])   # C6
+     if dossier["disposition"] == "HUMAN_REQUIRED":
+         # A HUMAN_REQUIRED dossier is a REQUEST for authority, not a CLAIM of
+         # it (badf init produces one). Its evidence is PREPARED and unsigned;
+diff --git a/tests/test_badf_build_contract.py b/tests/test_badf_build_contract.py
+index 94be673..9f0c4ac 100644
+--- a/tests/test_badf_build_contract.py
++++ b/tests/test_badf_build_contract.py
+@@ -88,11 +88,11 @@ class BadfBuildContractTests(unittest.TestCase):
+             self.assertIn(token, text, token)
+         self.assertIn("not automatically", read("self-review.md").lower())
+ 
+-    def test_registry_pin_is_implemented_and_tool_empty(self):
++    def test_registry_pin_is_validated_and_tool_empty(self):
+         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
+         entries = [e for e in registry["skills"] if e.get("name") == "badf-build"]
+         self.assertEqual(1, len(entries)); entry = entries[0]
+-        self.assertEqual("IMPLEMENTED", entry["status"]); self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])  # BLD-B
++        self.assertEqual("VALIDATED", entry["status"]); self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])  # BLD-B
+         self.assertEqual("skills/badf-build/SKILL.md", entry["source"])
+         self.assertEqual("sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest(), entry["digest"])
+ 
+diff --git a/tests/test_badf_build_controls.py b/tests/test_badf_build_controls.py
+new file mode 100644
+index 0000000..bd5767c
+--- /dev/null
++++ b/tests/test_badf_build_controls.py
+@@ -0,0 +1,183 @@
++"""badf-build BLD-C (BADF-WP-0099, #194): seven deterministic G07 controls in the canonical gate.
++
++C1 authority before mutation (BLD-I03) · C2 exact baseline (BLD-I02) · C3 scope containment
++enforced (BLD-I04) · C4 red before green, exceptions explicit (BLD-I07/I08) · C5 fresh verification
++(BLD-I09) · C6 budget and stop dominate (BLD-I11..I13) · C7 delegation is a strict subset (BLD-I10).
++Each control fires only on the field that declares it; undeclared fields leave BLD-B behaviour intact.
++PASS-path rules are exercised at the function level inside the scratch (BADF has no PASS G07 example).
++"""
++import json
++import os
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
++import badf_gate as gate  # noqa: E402
++from tests._scratch import seed_clone  # noqa: E402
++
++WP = "WP-2026-0997"
++DEM = "BADF-DEM-0997"
++
++
++class _Scratch(unittest.TestCase):
++    def setUp(self):
++        self.tmp = tempfile.mkdtemp(); self.root = Path(self.tmp) / "badf"
++        self.base = seed_clone(self.root, carry_working_state=True)
++        self.env = {k: v for k, v in os.environ.items() if not k.startswith("BADF_")}
++        on_ledger = set(self.git("ls-tree", "-r", "--name-only", "origin/main", "--", "work/").splitlines())
++        for rec in list((self.root / "work").glob("WP-*/work-package.json")):
++            if rec.relative_to(self.root).as_posix() not in on_ledger:
++                shutil.rmtree(rec.parent)
++        for rec in list((self.root / "work").glob("WP-*/work-package.json")):
++            subprocess.run([sys.executable, "scripts/badf_gate.py", "reconcile", rec.parent.name], cwd=self.root, env=self.env, capture_output=True)
++        (self.root / "README.md").write_text((self.root / "README.md").read_text() + "\n<!-- WP-0997 deliverable -->\n")
++        self.git("add", "README.md"); self.commit("deliverable")
++        self.wp_dir = self.root / "work" / WP; self.wp_dir.mkdir(parents=True)
++        self.write_demand("AUTHORIZED", "human")
++        self.write_wp(); self.lock()
++
++    def write_demand(self, status, principal_type):
++        src = json.loads((self.root / "badf/demands/BADF-DEM-0001.json").read_text(encoding="utf-8"))
++        src["demand_id"] = DEM; src["status"] = status; src["authorized_by"] = {"principal": "operator", "principal_type": principal_type}
++        (self.root / "badf/demands" / f"{DEM}.json").write_text(json.dumps(src, indent=2) + "\n", encoding="utf-8")
++
++    def write_wp(self, **extra):
++        rec = {"$schema": "../../schemas/work-package.schema.json", "schema_version": "1.0.0", "id": WP,
++               "title": "scratch build-controls work package", "owner": "human_sponsor", "repository": "bstBizEra/badf",
++               "demand": DEM, "objective": "x", "business_value": "x", "in_scope": ["x"], "out_of_scope": ["y"],
++               "target_gate": "G07", "change_class": "C2", "data_classification": "internal",
++               "acceptance_criteria": ["x"], "permissions": ["write: bstBizEra/badf via PR"], "tests": ["tests/test_probe.py (3)"],
++               "evidence": ["source-change"], "rollback": {"reversible": True, "method": "revert"},
++               "status": "IN_PROGRESS", "external_target": {"repository": "bstBizEra/badf", "branch": "main", "base_revision": self.base}}
++        rec.update(extra); (self.wp_dir / "work-package.json").write_text(json.dumps(rec, indent=2) + "\n")
++
++    def tearDown(self): shutil.rmtree(self.tmp, ignore_errors=True)
++    def git(self, *a): return subprocess.run(["git", "-C", str(self.root), "-c", "user.email=t@t", "-c", "user.name=t", *a], capture_output=True, text=True, check=True).stdout.strip()
++    def commit(self, msg): self.git("commit", "-q", "-m", msg)
++    def lock(self): subprocess.run([sys.executable, "scripts/badf_gate.py", "lock"], cwd=self.root, env=self.env, capture_output=True, check=True)
++    def gate_cmd(self, *args): return subprocess.run([sys.executable, "scripts/badf_gate.py", *args], cwd=self.root, env=self.env, capture_output=True, text=True)
++    def self_dossier(self): return self.gate_cmd("self-dossier", WP)
++    def dossier(self): return self.gate_cmd("dossier", f"work/{WP}/gate-dossier.G07.json")
++    def in_scratch(self, code):
++        """Run python against the SCRATCH's gate (its ROOT), for function-level PASS-path rules."""
++        pre = "import sys, json; sys.path.insert(0, 'scripts'); import badf_gate as gate\n"
++        return subprocess.run([sys.executable, "-c", pre + code], cwd=self.root, env=self.env, capture_output=True, text=True)
++
++    def evidence_with(self, kind, binding, outcome="PASS"):
++        """A minimal evidence dict + artifact for check_g07_binding, written into the scratch WP dir."""
++        art = self.wp_dir / "evidence" / "G07" / f"probe-{kind}.txt"; art.parent.mkdir(parents=True, exist_ok=True)
++        text = {"source-change": "diff --git a/README.md b/README.md\n", "unit-test": "Ran 3 tests in 0.1s\n\nOK\n", "build": "-> exit 0\n"}[kind]
++        art.write_text(text, encoding="utf-8")
++        ev = {"schema_version": "1.0.0", "id": f"EVD-{WP}-G07-{kind}", "work_package_id": WP, "gate": "G07", "claim": "x", "evidence_type": kind,
++              "producer": {"id": "t", "type": "controller"}, "source_revision": "HEAD", "target": "bstBizEra/badf:main", "toolchain": {"name": "t", "version": "1"},
++              "operation": "t", "started_at": "2026-01-01T00:00:00Z", "completed_at": "2026-01-01T00:00:00Z", "outcome": outcome,
++              "artifact": f"work/{WP}/evidence/G07/probe-{kind}.txt", "digest": gate.sha256(art), "binding": binding}
++        return art, ev
++
++    def rule(self, kind, binding, disposition="PASS"):
++        art, ev = self.evidence_with(kind, binding)
++        code = f"art = gate.ROOT / {str(art.relative_to(self.root))!r}\nev = json.loads({json.dumps(json.dumps(ev))})\n" \
++               f"gate.check_g07_binding(art, {{'disposition': {disposition!r}, 'work_package_id': {WP!r}}}, ev)\nprint('ACCEPTED')\n"
++        return self.in_scratch(code)
++
++
++class C1AuthorityTests(_Scratch):
++    def test_c1_unauthorized_demand_refuses_assembly(self):
++        self.write_demand("DRAFT", "human"); self.lock()
++        r = self.self_dossier(); self.assertNotEqual(r.returncode, 0); self.assertIn("AUTHORIZED", r.stdout + r.stderr)
++        self.write_demand("AUTHORIZED", "agent"); self.lock()
++        r = self.self_dossier(); self.assertNotEqual(r.returncode, 0); self.assertIn("human", r.stdout + r.stderr)
++        (self.root / "badf/demands" / f"{DEM}.json").unlink(); self.lock()
++        r = self.self_dossier(); self.assertNotEqual(r.returncode, 0); self.assertIn(DEM, r.stdout + r.stderr)
++        self.write_demand("AUTHORIZED", "human"); self.lock()
++        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++
++
++class C2C3C4C5RuleTests(_Scratch):
++    def _sc_binding(self, **over):
++        base = self.git("rev-parse", self.base); head = self.git("rev-parse", "HEAD")
++        b = {"base_sha": base, "head_sha": head, "content_tree": gate.content_tree(self.root, WP, "HEAD"), "changed_paths": ["README.md"],
++             "change_digest": None, "expected_surfaces": {"declared": False, "files": []}, "unexpected_paths": []}
++        b.update(over); return b
++
++    def test_c2_base_sha_must_match_base_revision_and_the_composition_record(self):
++        art, ev = self.evidence_with("source-change", self._sc_binding()); ev["binding"]["change_digest"] = ev["digest"]
++        r = self.rule("source-change", ev["binding"]); self.assertIn("ACCEPTED", r.stdout, r.stderr)
++        r = self.rule("source-change", dict(ev["binding"], base_sha="0" * 40)); self.assertNotEqual(r.returncode, 0); self.assertIn("base_revision", r.stderr)
++        rec = {"record": "git-composition", "work_package_id": WP, "target_ref": "refs/heads/main", "target_base_sha": ev["binding"]["base_sha"], "source_head_sha": ev["binding"]["head_sha"],
++               "merge_base_sha": ev["binding"]["base_sha"], "merge_method": "squash", "expected_result_tree": "0" * 40, "expected_content_tree": "1" * 40}
++        (self.wp_dir / "evidence/G07/composition-record.json").write_text(json.dumps(rec) + "\n")
++        r = self.rule("source-change", ev["binding"]); self.assertNotEqual(r.returncode, 0); self.assertIn("composition record", r.stderr)
++
++    def test_c3_pass_with_unexpected_paths_refused_unless_discovery_allowance(self):
++        self.write_wp(expected_surfaces={"files": ["README.md"]}); self.lock()
++        art, ev = self.evidence_with("source-change", self._sc_binding(changed_paths=["README.md"], expected_surfaces={"declared": True, "files": ["README.md"]}, unexpected_paths=["docs/x.md"]))
++        ev["binding"]["change_digest"] = ev["digest"]
++        r = self.rule("source-change", ev["binding"]); self.assertNotEqual(r.returncode, 0); self.assertIn("BLD-I04", r.stderr)
++        r = self.rule("source-change", ev["binding"], disposition="HUMAN_REQUIRED"); self.assertIn("ACCEPTED", r.stdout, "a request may carry unexpected paths (held with C-2); only a PASS is refused")
++        self.write_wp(expected_surfaces={"files": ["README.md"], "discovery_allowance": ["docs/**"]}); self.lock()
++        r = self.rule("source-change", ev["binding"]); self.assertIn("ACCEPTED", r.stdout, r.stderr)
++
++    def test_c4_red_required_when_unit_obligations_declared_and_exception_must_be_explicit(self):
++        self.write_wp(test_obligations=[{"id": "TEST-001", "claim": "x", "level": "unit"}]); self.lock()
++        ev = self.wp_dir / "evidence/G07"; ev.mkdir(parents=True, exist_ok=True)
++        (ev / "unit-test.log").write_text("python3 -m unittest tests.test_probe\nRan 3 tests in 0.1s\n\nOK\n", encoding="utf-8")
++        r = self.self_dossier(); self.assertNotEqual(r.returncode, 0); self.assertIn("red", (r.stdout + r.stderr).lower())
++        self.write_wp(test_obligations=[{"id": "TEST-001", "claim": "x", "level": "unit"}], tdd_exception={"reason": "documentation-only change: structural lint is the verification"}); self.lock()
++        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        b = json.loads((ev / "unit-test.json").read_text())["binding"]; self.assertEqual(b["tdd"], {"applies": False, "reason": "documentation-only change: structural lint is the verification"})
++        (ev / "failing-first.txt").write_text("Ran 3 tests\n\nFAILED (errors=3)\n", encoding="utf-8")
++        self.write_wp(test_obligations=[{"id": "TEST-001", "claim": "x", "level": "unit"}]); self.lock()
++        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        b = json.loads((ev / "unit-test.json").read_text())["binding"]; self.assertTrue(b["obligations"][0]["red"]["observed"]); self.assertNotIn("tdd", b)
++
++    def test_c5_pass_requires_a_composition_record(self):
++        ub = {"obligations": [], "command": "x", "result": "PASS", "tests_run": 3, "failures": 0, "coverage_scope": [], "fresh_run": "x"}
++        r = self.rule("unit-test", ub); self.assertNotEqual(r.returncode, 0); self.assertIn("BLD-I09", r.stderr)
++        r = self.rule("unit-test", ub, disposition="HUMAN_REQUIRED"); self.assertIn("ACCEPTED", r.stdout, r.stderr)
++        (self.wp_dir / "evidence/G07/composition-record.json").write_text(json.dumps({"record": "git-composition", "work_package_id": WP}) + "\n")
++        r = self.rule("unit-test", ub); self.assertIn("ACCEPTED", r.stdout, r.stderr)
++
++
++class C6C7LedgerAndDelegationTests(_Scratch):
++    def test_c6_retry_over_budget_and_stop_event_refuse_assembly(self):
++        self.write_wp(execution_budget={"max_attempts": 1}); self.lock()
++        for step in ("RETRY", "RETRY"):
++            self.in_scratch(f"gate.append_build_event({WP!r}, {step!r}, 'FAIL', 'attempt')")
++        self.lock(); r = self.self_dossier(); self.assertNotEqual(r.returncode, 0); self.assertIn("max_attempts", r.stdout + r.stderr)
++        shutil.rmtree(self.wp_dir / "build"); self.write_wp(execution_budget={"max_attempts": 5}, stop_conditions=["CREDENTIAL_EXPOSURE"]); self.lock()
++        self.in_scratch(f"gate.append_build_event({WP!r}, 'STOP', 'CREDENTIAL_EXPOSURE', 'secret in diff')"); self.lock()
++        r = self.self_dossier(); self.assertNotEqual(r.returncode, 0); self.assertIn("STOP", r.stdout + r.stderr)
++        shutil.rmtree(self.wp_dir / "build"); self.lock(); r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++
++    def test_c7_delegation_outside_the_surface_or_permissions_is_refused(self):
++        self.write_wp(expected_surfaces={"files": ["README.md"]}); self.lock()
++        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr); self.assertEqual(self.dossier().returncode, 3)
++        s = self.wp_dir / "build/session.json"; sess = json.loads(s.read_text())
++        sess["delegations"] = [{"task": "slice-A", "allowed_paths": ["scripts/**"], "allowed_tools": ["shell"], "prohibited": ["push", "merge", "release", "credential-use"]}]
++        s.write_text(json.dumps(sess, indent=2) + "\n"); self.lock()
++        r = self.dossier(); self.assertEqual(r.returncode, 1); self.assertIn("slice-A", r.stdout + r.stderr)
++        sess["delegations"] = [{"task": "slice-A", "allowed_paths": ["README.md"], "allowed_tools": ["shell"], "prohibited": ["push", "merge"]}]
++        s.write_text(json.dumps(sess, indent=2) + "\n"); self.lock()
++        r = self.dossier(); self.assertEqual(r.returncode, 1); self.assertIn("prohibited", r.stdout + r.stderr)
++        sess["delegations"] = [{"task": "slice-A", "allowed_paths": ["README.md"], "allowed_tools": ["shell"], "prohibited": ["push", "merge", "release", "credential-use"]}]
++        s.write_text(json.dumps(sess, indent=2) + "\n"); self.lock()
++        self.assertEqual(self.dossier().returncode, 3)
++        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        self.assertEqual(json.loads(s.read_text())["delegations"][0]["task"], "slice-A", "re-assembly must preserve declared delegations")
++
++
++class SilenceTests(_Scratch):
++    def test_controls_are_silent_when_fields_are_undeclared(self):
++        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        self.assertEqual(self.dossier().returncode, 3)
++        b = json.loads((self.wp_dir / "evidence/G07/unit-test.json").read_text())["binding"]; self.assertNotIn("tdd", b)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/tests/test_badf_build_evidence.py b/tests/test_badf_build_evidence.py
+index a8b3519..2ba51c1 100644
+--- a/tests/test_badf_build_evidence.py
++++ b/tests/test_badf_build_evidence.py
+@@ -26,6 +26,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+ import badf_gate as gate  # noqa: E402
+ from tests._scratch import seed_clone  # noqa: E402
+ 
++def authorized_demand(root, demand_id="BADF-DEM-0001"):
++    """C1 (BLD-I03, WP-2026-0099): a scratch request needs a demand AUTHORIZED by a human."""
++    import json as _json
++    src = _json.loads((root / "badf/demands/BADF-DEM-0001.json").read_text(encoding="utf-8"))
++    src["demand_id"] = demand_id; src["status"] = "AUTHORIZED"; src["authorized_by"] = {"principal": "operator", "principal_type": "human"}
++    (root / "badf/demands" / f"{demand_id}.json").write_text(_json.dumps(src, indent=2) + "\n", encoding="utf-8")
++
++
+ WP = "WP-2026-0998"
+ G07 = ("source-change", "build", "unit-test", "documentation")
+ 
+@@ -58,6 +66,7 @@ class _SelfDossierScratch(unittest.TestCase):
+         self.git("add", "README.md"); self.commit("deliverable")
+         self.wp_dir = self.root / "work" / WP; self.wp_dir.mkdir(parents=True)
+         self.write_wp()
++        authorized_demand(self.root)
+         self.lock()
+ 
+     def write_wp(self, **extra):
+diff --git a/tests/test_badf_compose.py b/tests/test_badf_compose.py
+index 49f9e42..4a0214a 100644
+--- a/tests/test_badf_compose.py
++++ b/tests/test_badf_compose.py
+@@ -157,10 +157,12 @@ class ComposeVerdictTests(ComposeScratch):
+         """The line is there, so the pre-check passes; the composed ledger must
+         still be asked whether THAT work package actually landed."""
+         self.commit_candidate()
+-        other = Path(self.tmp) / "other.txt"; other.write_text("title\n\nWork-Package: BADF-WP-0099\nCloses #21\n")
++        # A phantom id must be one the sequential ledger can never allocate: 9999. (0099 was used here
++        # until the ledger reached it -- BADF-WP-0099 landed and this test broke on the real record.)
++        other = Path(self.tmp) / "other.txt"; other.write_text("title\n\nWork-Package: BADF-WP-9999\nCloses #21\n")
+         r = self.compose(message=other)
+         self.assertNotEqual(r.returncode, 0, "a work package with no record passed")
+-        self.assertIn("no work package record for WP-2026-0099", r.stdout)
++        self.assertIn("no work package record for WP-2026-9999", r.stdout)
+ 
+     def test_candidate_that_does_not_compose_fails(self):
+         (self.repo / "README.md").write_text("# candidate's README\n")
+diff --git a/tests/test_badf_reconcile.py b/tests/test_badf_reconcile.py
+index b4ce8ef..7305ca0 100644
+--- a/tests/test_badf_reconcile.py
++++ b/tests/test_badf_reconcile.py
+@@ -148,12 +148,13 @@ class LedgerRulesTests(LedgerScratch):
+ 
+     def test_closed_without_a_corroborated_landing_needs_a_stated_reason(self):
+         self.set_record(WP18, status="CLOSED", landed_as=self.git("rev-parse", LANDED_18))   # keep 18 clean
+-        self.new_record("WP-2026-0099")
+-        self.set_record("WP-2026-0099", status="CLOSED", landing_not_on_ledger=None)
++        # WP-2026-9999: a sentinel the sequential ledger can never allocate (0099 was used until BADF-WP-0099 landed and collided).
++        self.new_record("WP-2026-9999")
++        self.set_record("WP-2026-9999", status="CLOSED", landing_not_on_ledger=None)
+         r = self.cmd("repo")
+         self.assertNotEqual(r.returncode, 0)
+         self.assertIn("landing_not_on_ledger", r.stderr)
+-        self.set_record("WP-2026-0099", landing_not_on_ledger="withdrawn before any PR was opened")
++        self.set_record("WP-2026-9999", landing_not_on_ledger="withdrawn before any PR was opened")
+         r = self.cmd("repo")
+         self.assertEqual(r.returncode, 0, r.stderr)
+ 
+@@ -165,7 +166,7 @@ class LedgerRulesTests(LedgerScratch):
+ 
+     def test_new_record_while_a_landed_one_is_unreconciled_is_refused(self):
+         self.set_record(WP18, status="IN_PROGRESS", landed_as=None)
+-        self.new_record("WP-2026-0099")
++        self.new_record("WP-2026-9999")
+         r = self.cmd("repo")
+         self.assertNotEqual(r.returncode, 0)
+         self.assertIn("before opening a new one", r.stderr)
+@@ -173,7 +174,7 @@ class LedgerRulesTests(LedgerScratch):
+ 
+     def test_new_record_after_reconciliation_is_admitted(self):
+         self.set_record(WP18, status="CLOSED", landed_as=self.git("rev-parse", LANDED_18))
+-        self.new_record("WP-2026-0099")
++        self.new_record("WP-2026-9999")
+         r = self.cmd("repo")
+         self.assertEqual(r.returncode, 0, r.stderr)
+ 
+@@ -209,8 +210,8 @@ class ReconcileTests(LedgerScratch):
+         self.assertEqual(r.returncode, 0, r.stderr)
+ 
+     def test_reconcile_refuses_a_wp_the_ledger_does_not_show(self):
+-        self.new_record("WP-2026-0099")
+-        r = self.cmd("reconcile", "WP-2026-0099")
++        self.new_record("WP-2026-9999")
++        r = self.cmd("reconcile", "WP-2026-9999")
+         self.assertNotEqual(r.returncode, 0)
+         self.assertIn("has not landed", r.stderr)
+ 
+diff --git a/tests/test_badf_self_dossier.py b/tests/test_badf_self_dossier.py
+index de36bda..02d94ea 100644
+--- a/tests/test_badf_self_dossier.py
++++ b/tests/test_badf_self_dossier.py
+@@ -21,6 +21,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+ import badf_gate as gate  # noqa: E402
+ from tests._scratch import seed_clone  # noqa: E402
+ 
++def authorized_demand(root, demand_id="BADF-DEM-0001"):
++    """C1 (BLD-I03, WP-2026-0099): a scratch request needs a demand AUTHORIZED by a human."""
++    import json as _json
++    src = _json.loads((root / "badf/demands/BADF-DEM-0001.json").read_text(encoding="utf-8"))
++    src["demand_id"] = demand_id; src["status"] = "AUTHORIZED"; src["authorized_by"] = {"principal": "operator", "principal_type": "human"}
++    (root / "badf/demands" / f"{demand_id}.json").write_text(_json.dumps(src, indent=2) + "\n", encoding="utf-8")
++
++
+ WP = "WP-2026-0999"
+ 
+ 
+@@ -58,6 +66,7 @@ class SelfDossierScratch(unittest.TestCase):
+                "evidence": ["source-change"], "rollback": {"reversible": True, "method": "revert"},
+                "status": "IN_PROGRESS", "external_target": {"repository": "bstBizEra/badf", "branch": "main", "base_revision": self.base}}
+         (d / "work-package.json").write_text(json.dumps(rec, indent=2) + "\n")
++        authorized_demand(self.root)
+         self.lock()
+ 
+     def tearDown(self):
+diff --git a/work/WP-2026-0100/work-package.json b/work/WP-2026-0100/work-package.json
+index db754c1..ca54930 100644
+--- a/work/WP-2026-0100/work-package.json
++++ b/work/WP-2026-0100/work-package.json
+@@ -51,11 +51,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "6814a24"
++    "base_revision": "6814a24",
++    "landed_content_tree": "672da1efe145a9ff8e3b89e1b13899b6f086e9e8",
++    "composition_verified": true,
++    "landed_as": "e1423ad43b63491292c983435fae4bff11185cde"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-VER-A of the badf-engineering-verification program (operator design directive 2026-08-30; approval + A->E authorization on #195, VER-E admission not taken in advance). Governance-only WP: skill files + registry + tests + doctrine; empty gate diff. Resolves #195 / GOV-0083. Engineered by BARCHI-3 under /loop ('proceed according to the scope from WP-VER-A to WP-VER-E'); ladder-internal (no shared surface) -- lands under the standing evidence bar. Reconciles WP-2026-0098."
+ }
