@@ -1,0 +1,22 @@
+{
+  "record": "git-composition",
+  "schema_version": "1.0.0",
+  "observed_at": "2026-08-30T14:18:24Z",
+  "repository": "bstBizEra/badf",
+  "work_package_id": "WP-2026-0096",
+  "target_ref": "refs/heads/main",
+  "target_base_sha": "d4b8c4a4fe5e92bf5362f963cb835c6628445957",
+  "source_ref": "refs/heads/wp/WP-2026-0096-build-contract-freeze",
+  "source_head_sha": "92e9e7d9588119743232319abfeae57862a3871e",
+  "merge_base_sha": "d4b8c4a4fe5e92bf5362f963cb835c6628445957",
+  "merge_method": "squash",
+  "expected_result_tree": "3ad39b2f077ca12b0cebb727a7971dcd524bde60",
+  "expected_content_tree": "8467d106ec11664f305e1de85886960b9a6dc65d",
+  "policy_epoch": "BADF-2026-08-25",
+  "test_set_epoch": null,
+  "suite_pattern": "test_badf_build_contract.py",
+  "non_coverage": [
+    "test_set_epoch: BADF defines no test-set/toolchain epoch; not recorded rather than invented",
+    "source_head_sha and expected_result_tree are informational: committing this record moves both; the binding is expected_content_tree (work/<WP>/ and the lockfile excluded)"
+  ]
+}
