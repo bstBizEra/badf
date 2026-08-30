@@ -1,0 +1,20 @@
+..F.......
+======================================================================
+FAIL: test_every_family_named_in_the_surface_resolves_in_the_registry (tests.test_badf_build_contract.BadfBuildContractTests.test_every_family_named_in_the_surface_resolves_in_the_registry)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-bldf/tests/test_badf_build_contract.py", line 127, in test_every_family_named_in_the_surface_resolves_in_the_registry
+    self.assertEqual({}, unresolved, "badf-* families named in the badf-build surface but absent from "
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     + f"{REGISTRY.relative_to(ROOT)}: "
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     + "; ".join(f"{t} named in {', '.join(files)}" for t, files in sorted(unresolved.items())))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {} != {'badf-verification': ['skills/badf-build/SKILL.md']}
+- {}
++ {'badf-verification': ['skills/badf-build/SKILL.md']} : badf-* families named in the badf-build surface but absent from badf/skill-registry.json: badf-verification named in skills/badf-build/SKILL.md
+
+----------------------------------------------------------------------
+Ran 10 tests in 0.132s
+
+FAILED (failures=1)

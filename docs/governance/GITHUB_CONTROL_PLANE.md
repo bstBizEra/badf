@@ -1559,6 +1559,34 @@ independently reviewed by BADF-QA and BADF-REV, both of whom issued Request Chan
 **Doctrine, unchanged by the admission:** no findings does not mean correctness; passing tests do not mean
 coverage; source-head success does not mean composed-result safety; G08 does not replace G09. The gate
 evaluates the evidence and `quality_authority` decides whether G08 advances.
+## badf-build's Boundary named a family that does not exist — and the first controller run (`BADF-WP-0109`, Issue #219 / GOV-0095)
+
+`skills/badf-build/SKILL.md`'s frozen **Boundary** block named `badf-verification (G08)` as the family
+that independently verifies a build. No such family is in `badf/skill-registry.json`; the one that
+verifies at G08 is `badf-engineering-verification`. Every other family the surface names resolved. In a
+block a build controller reads to learn **who checks its work**, that is a dangling authority reference —
+found by BARCHI-3 at their VER-A freeze and left for this surface's owner rather than edited across the
+seat boundary. The fix is one name (the block re-aligns by whitespace; no description changes), the
+registry digest re-pinned in the same change, and the activation test's pinned literal moved with it —
+its meaning preserved, since it still ties the pin to `sha256(SKILL.md)`. The **guard** is what keeps the
+class out: every `badf-*` token appearing anywhere under `skills/badf-build/**` must resolve in the
+registry, red before this fix and green after.
+
+**This work package is also the first ever executed *through* `badf-build`'s own workflow** — the family
+went `ACTIVE` at `bbec762` having never governed a build. It declared `expected_surfaces` (7 files),
+one unit `test_obligation` with a red phase required, an `execution_budget` of 3 attempts and six
+`stop_conditions`, and it **delegated one slice** — the guard test — to a subagent whose contract was a
+strict subset: `allowed_paths: ["tests/test_badf_build_contract.py"]`, the integration verbs prohibited,
+2 attempts. The delegate stayed inside it (verified by the controller, not taken on report) and did not
+touch the defect it was writing a guard against, so the red phase was real.
+
+So the controls the BLD-D shadow could only prove on scratch fixtures met real conditions here: **C3**
+compared a really-declared surface against the actual diff, **C4** required and got an observed red,
+**C6** recorded a genuine `RETRY` (the first attempt at moving the pinned digest silently matched
+nothing — there is no `FREEZE_DIGEST` constant, the literal is inline — and the activation test caught
+it; 2 attempts of 3), and **C7** judged a real delegation. The build ledger records
+`START · BASELINE · RED · RETRY · GREEN · VERIFY · HANDOFF`. #212 (the deferred real-conditions
+re-shadow) now has its first real case; discharging #212 remains its own work package.
 
 ## Discovery ≠ scope expansion
 

@@ -299,7 +299,7 @@
       "risk_class": "C1",
       "allowed_tools": [],
       "status": "ACTIVE",
-      "digest": "sha256:6cc3266ecde8bf6ed14fc3b5ae3b1de38a42154242d9b7517ca6f0cdb38bf0f3"
+      "digest": "sha256:927fad724957a13407c3de752c0e9ef5a3a99bbb7b58f344653aa827bf9d5330"
     },
     {
       "name": "badf-engineering-verification",

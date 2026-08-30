@@ -1,0 +1,32 @@
+{
+  "work_package_id": "WP-2026-0109",
+  "producer": "badf-self-dossier",
+  "started_at": "2026-08-30T20:51:23Z",
+  "base_sha": "d292801646bfe3cb237f153c53baf20208c57229",
+  "head_sha": "85e6ccfa4667cee5c0263cd02e956f170fbe851f",
+  "content_tree": "ac1962f09b908a00a22fba99e4e8b7868f123bf7",
+  "delegations": [
+    {
+      "task": "guard-test-slice",
+      "acceptance_refs": [
+        "TEST-001"
+      ],
+      "allowed_paths": [
+        "tests/test_badf_build_contract.py"
+      ],
+      "allowed_tools": [
+        "filesystem"
+      ],
+      "prohibited": [
+        "push",
+        "merge",
+        "release",
+        "credential-use",
+        "schema-outside-scope"
+      ],
+      "budget": {
+        "attempts": 2
+      }
+    }
+  ]
+}

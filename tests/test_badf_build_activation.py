@@ -28,7 +28,11 @@ class ActivationTests(unittest.TestCase):
         g = registry()["badf-build"]
         self.assertEqual(g["status"], "ACTIVE")
         self.assertEqual(g["digest"], "sha256:" + hashlib.sha256((gate.ROOT / g["source"]).read_bytes()).hexdigest(), "activation must not touch SKILL.md")
-        self.assertEqual(g["digest"], "sha256:6cc3266ecde8bf6ed14fc3b5ae3b1de38a42154242d9b7517ca6f0cdb38bf0f3")
+        # The pinned contract digest. It moved once, under WP-2026-0109 (#219), when the Boundary
+        # block was corrected to name badf-engineering-verification and the registry was re-pinned
+        # in the same change; the assertion above still ties it to sha256(SKILL.md), so a silent
+        # edit is still caught.
+        self.assertEqual(g["digest"], "sha256:927fad724957a13407c3de752c0e9ef5a3a99bbb7b58f344653aa827bf9d5330")
 
     def test_activation_grants_no_authority(self):
         g = registry()["badf-build"]

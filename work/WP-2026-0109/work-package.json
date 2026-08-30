@@ -1,0 +1,86 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0109",
+  "title": "badf-build's frozen contract names a family that does not exist (SKILL.md:31) + the guard; executed through the badf-build workflow",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0096",
+  "repository": "bstBizEra/badf",
+  "objective": "Correct the one line in badf-build's frozen Boundary block that names `badf-verification (G08)` -- a family absent from badf/skill-registry.json -- to `badf-engineering-verification`, the family that actually verifies at G08; re-pin the registry digest (a skill edited without its digest re-pinned is refused) and the frozen-digest literal in the activation test, preserving that test's meaning (digest == sha256(SKILL.md)); and add the failing-first guard that keeps the class out: every badf-* family named anywhere in skills/badf-build/** must resolve in the registry. No other contract text changes -- the twelve stages, BLD-I01..I18 and the fourteen references stay byte-identical. Executed through badf-build's own workflow (CLAIM..HANDOFF) with declared surfaces, obligations, budget, stop conditions and one delegated slice: the first controller run, whose evidence is what the BLD-D shadow could not produce.",
+  "business_value": "The Boundary block is what a build controller reads to learn who verifies its work; a name resolving to nothing is a dangling authority reference in an ACTIVE family. The guard makes the class un-repeatable on this surface.",
+  "in_scope": [
+    "skills/badf-build/SKILL.md: the Boundary block names badf-engineering-verification (G08) -- one line",
+    "badf/skill-registry.json: badf-build digest re-pinned to sha256(SKILL.md); status/source/tools/risk unchanged",
+    "tests/test_badf_build_activation.py: frozen-digest literal moved, meaning preserved",
+    "tests/test_badf_build_contract.py: failing-first guard -- every badf-* name in skills/badf-build/** resolves in the registry",
+    "docs/governance/GITHUB_CONTROL_PLANE.md doctrine note; badf/demands/BADF-DEM-0096.json; own composition record + typed G07 self-dossier; reconcile WP-2026-0106"
+  ],
+  "out_of_scope": [
+    "any other family's files; badf_gate.py; schemas; the workflow; the references' content",
+    "the deferred real-conditions re-shadow (#212) -- this run is a case for it, not its discharge",
+    "a repo-wide family-name linter for other skills"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "no badf-* name in skills/badf-build/** is absent from the registry (guard test, red before the fix)",
+    "badf-build digest == sha256(skills/badf-build/SKILL.md); status ACTIVE, allowed_tools [], risk_class C1 unchanged",
+    "the twelve-stage workflow, BLD-I01..I18 and the fourteen reference filenames unchanged in SKILL.md",
+    "existing activation, contract and shadow suites green; CI green on the composed tree; QA + REV by the BADF-QA / BADF-REV seats"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_build_contract.py (guard, failing-first)",
+    "tests/test_badf_build_activation.py, tests/test_badf_build_shadow.py (unchanged, must stay green)"
+  ],
+  "evidence": [
+    "failing-first run (guard red)",
+    "green run",
+    "controller build ledger (START/BASELINE/RED/GREEN/VERIFY/HANDOFF)",
+    "compose output incl. composition record",
+    "typed G07 self-dossier under C1..C7 with a declared surface, obligation, budget and delegation"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "d292801"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Defect fix on badf-build's own surface, flagged by BARCHI-3 at VER-A and left for this seat. THE FIRST WORK PACKAGE EXECUTED THROUGH badf-build's WORKFLOW: declared expected_surfaces (C3), a unit test_obligation with red required (C4), an execution_budget (C6) and one delegated slice (C7) -- the controls the BLD-D shadow could only prove on scratch now meet real conditions. Resolves #219 / GOV-0095. Reconciles WP-2026-0108 (VER-E).",
+  "expected_surfaces": {
+    "files": [
+      "skills/badf-build/SKILL.md",
+      "badf/skill-registry.json",
+      "badf/demands/BADF-DEM-0096.json",
+      "tests/test_badf_build_activation.py",
+      "tests/test_badf_build_contract.py",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "work/WP-2026-0108/work-package.json"
+    ]
+  },
+  "test_obligations": [
+    {
+      "id": "TEST-001",
+      "claim": "every badf-* family named in skills/badf-build/** resolves in badf/skill-registry.json",
+      "level": "unit"
+    }
+  ],
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ]
+}
