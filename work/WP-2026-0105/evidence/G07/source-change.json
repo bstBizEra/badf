@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0105-G07-source-change",
+  "work_package_id": "WP-2026-0105",
+  "gate": "G07",
+  "claim": "the change WP-2026-0105 makes to this repository, outside its own directory and the lockfile",
+  "evidence_type": "source-change",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-08-30T18:39:15Z",
+  "completed_at": "2026-08-30T18:39:15Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0105/evidence/G07/source-change.diff",
+  "digest": "sha256:e4fb17c25ac835eae46930b008d74c64397eb4b305bd2d347254ee9eb3318bea",
+  "binding": {
+    "base_sha": "dcbcc54cc8f629ab5c0a98e08ddf7ba967c6562f",
+    "head_sha": "0a6f594d7fa330bbea42780b8058538b6046c2e9",
+    "content_tree": "aff1bcbdd8728730e6482ec14ed4b1709c93e9dd",
+    "changed_paths": [
+      "badf/demands/BADF-DEM-0088.json",
+      "badf/demands/BADF-DEM-0092.json",
+      "badf/skill-registry.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "examples/build-shadow-evidence.json",
+      "schemas/work-package.schema.json",
+      "scripts/badf_gate.py",
+      "skills/badf-build/evidence/shadow-evidence.md",
+      "tests/test_badf_build_contract.py",
+      "tests/test_badf_build_shadow.py",
+      "tests/test_badf_engineering_verification_contract.py",
+      "tests/test_badf_verification_controls.py",
+      "tests/test_badf_verification_evidence.py",
+      "work/WP-2026-0101/build/progress.jsonl",
+      "work/WP-2026-0101/build/session.json",
+      "work/WP-2026-0101/evidence/G07/build.json",
+      "work/WP-2026-0101/evidence/G07/build.txt",
+      "work/WP-2026-0101/evidence/G07/composition-record.json",
+      "work/WP-2026-0101/evidence/G07/composition.json",
+      "work/WP-2026-0101/evidence/G07/documentation.diff",
+      "work/WP-2026-0101/evidence/G07/documentation.json",
+      "work/WP-2026-0101/evidence/G07/failing-first.txt",
+      "work/WP-2026-0101/evidence/G07/source-change.diff",
+      "work/WP-2026-0101/evidence/G07/source-change.json",
+      "work/WP-2026-0101/evidence/G07/unit-test.json",
+      "work/WP-2026-0101/evidence/G07/unit-test.log",
+      "work/WP-2026-0101/gate-dossier.G07.json",
+      "work/WP-2026-0101/work-package.json",
+      "work/WP-2026-0103/work-package.json"
+    ],
+    "expected_surfaces": {
+      "declared": false,
+      "files": []
+    },
+    "unexpected_paths": [],
+    "change_digest": "sha256:e4fb17c25ac835eae46930b008d74c64397eb4b305bd2d347254ee9eb3318bea"
+  }
+}

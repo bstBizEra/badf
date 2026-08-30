@@ -1,0 +1,64 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 65fe2cd..b7648e4 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1423,6 +1423,59 @@ dossier level (target and staleness binding, quorum by change class, runtime cre
+ non-coverage, finding preservation across the dossier) — lean disabled; VER-D shadows on the G08 material
+ BADF has; VER-E is the operator's admission on that evidence. A verification ledger writer stays declared,
+ not built, until a runtime exists to write it.
++## badf-build → SHADOWED — the program's own builds, judged by the tools it built (`BADF-WP-0101` / WP-BLD-D, Issue #197 / GOV-0084)
++
++`badf-build` shadows on the one corpus BADF has: **67 landed work packages carrying a G07 self-dossier**
++(WP-2026-0011, WP-2026-0100), measured at `8f3d805` and recorded once in `examples/build-shadow-evidence.json`,
++which `tests/test_badf_build_shadow.py` recomputes from the object store on every run — artifact digests at the
++landed tree, the demand record, `content_tree` — and whose tampering it refuses. What history rendered:
++**67/67** requests digest-bound (no request ever pointed at nothing), **67/67** demands `AUTHORIZED` by a
++human (C1 would have admitted every one), **3/3** typed bindings recomputing `MATCH` (WP-2026-0098, WP-2026-0099, WP-2026-0100 — the last
++produced by VER-A under the same producer), and fresh verification honest about the pre-BLD-B era: 55 deferred,
++10 deferred with a composition record, 2 `PASS` — each behind a composed run, **0 without** (C5 replayed). One dossier
++(WP-2026-0010) predates the ledger's identity window and is declared as not placeable, not counted.
++
++**No contract gap surfaced — and the non-coverage is named, not implied.** C3 (scope containment), C4 (red
++before green / explicit exception), C6 (budget and stop) and C7 (delegation subset) have **no historical
++corpus**: nothing on the ledger ever declared `expected_surfaces`, `test_obligations`, a `RETRY`/`STOP` or a
++delegation; they are proven on scratch fixtures only, and no build controller has yet executed a Work Package
++through the workflow. That statement travels verbatim into the BLD-E admission: `ACTIVE` will mean "admitted
++on the program's own builds, with four controls proven only on scratch", and not more. `badf-build` advances
++`VALIDATED → SHADOWED`; no gate, schema or lifecycle change.
++
++## badf-engineering-verification → VALIDATED — seven deterministic G08 controls in the canonical gate (`BADF-WP-0105` / WP-VER-C, Issue #204 / GOV-0088)
++
++VER-B made typed G08 objects checkable in isolation; this rung judges them **against each other, the Work
++Package and the composition record** — as one **pure** function, `check_g08_dossier(dossier, work_package,
++evidence, composition_record, record)`: no reads, no writes, no git. `validate_dossier` resolves the inputs
++(the indexed evidence objects, `work/<WP>/evidence/G07/composition-record.json` when present, and the
++verification record when a typed review's artifact is one — validated first by `validate_verification_record`)
++and calls it **only for a G08 dossier claiming `PASS` / `PASS_WITH_CONDITIONS`**; the G07 flow and every
++other gate are untouched. Every control fires only on fields that are declared, so every dossier on `main`
++— WP-2026-0010's generic G08 dossier included — stays valid, and `validate_dossier` stays idempotent.
++
++**The seven controls.** **C1 exact target (VER-I01):** every typed binding binds the dossier's
++`source_revision` and, when the record exists, the composition record's `expected_content_tree` and
++`target_base_sha`. **C2 one composed identity (VER-I05):** all typed objects on one dossier bind the same
++content tree — a review of tree X with observations of tree Y verifies nothing together. **C3 independence
++and quorum (VER-I04/I19):** the author's execution or identity cannot be the reviewer unless the
++single-collaborator deviation is carried as an OPEN condition (never hidden, never satisfied by a banner);
++C2/C3 change classes require a verification record with ≥2 / ≥3 distinct reviewers *and* runs and the
++mandatory lenses (`correctness` + `quality/test`, + `data/integration` at C3). **C4 runtime credit
++(VER-I08):** a Work Package may declare `verification_obligations.runtime_required`; then an untyped
++observation on a passing dossier earns no credit. **C5 per-artifact non-coverage (VER-I11):** a typed
++observation with empty `non_coverage` is refused unless the Work Package names that type in
++`verification_obligations.comprehensive_coverage_permitted_for`. **C6 review blockers resolved
++(VER-I12):** an OPEN MAJOR/CRITICAL finding refuses `PASS`; on `PASS_WITH_CONDITIONS` each maps to a
++dossier condition naming it; the review's findings are carried or withdrawn by the record — synthesis
++cannot erase. **C7 composed-result authority (VER-I15):** `composed-tree-test` is never `NOT_APPLICABLE`
++— a G08 dossier without a composed observation cannot pass; `contract-test` may still be declared.
++
++`schemas/work-package.schema.json` gains the optional, closed `verification_obligations` object beside
++BLD-C's `tdd_exception` and `discovery_allowance` — additive, as every planning field has been. Lean mode
++disabled: these are HARD INVARIANTS. **Ladder:** VER-D shadows the controls on the G08 material BADF has
++(WP-2026-0010's dossier and the seats' review history, with known and injected defects); VER-E is the
++operator's admission on that evidence.
+ 
+ ## Discovery ≠ scope expansion
+ 
