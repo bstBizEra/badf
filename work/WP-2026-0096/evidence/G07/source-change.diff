@@ -1,0 +1,1091 @@
+diff --git a/badf/demands/BADF-DEM-0083.json b/badf/demands/BADF-DEM-0083.json
+new file mode 100644
+index 0000000..ab09169
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0083.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0083",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 188,
++    "url": "https://github.com/bstBizEra/badf/issues/188",
++    "exported_at": "2026-08-30T14:10:28Z",
++    "body_digest": "sha256:1add31680d54285a4fe9de92c37399fb16b7170347c51cdf50b1f8fa8da8e9e9"
++  },
++  "title": "GOV-0079: WP-BLD-A — freeze the badf-build capability contract (G07 execution under a Governed Work Package; BLD-I01…I18; DESIGNED, no second gate)",
++  "problem": "🧠 **ARCHI (BARCHI-2)** — plan for WP-BLD-A: freeze the `badf-build` capability contract (G07)\n\n## Stage-Gate\n- **Stage:** 3 self-exercise design → this WP freezes the contract only; no runtime, no validator, no mutation engine.\n- **Decision:** Continue — operator design directive for the next gate (G07), received 2026-08-30 in the BARCHI-2 session (\"Next gate 07 … `badf-build` should absorb Matt Pocock and Superpowers as engineering discipline, while BADF remains the authority, state, evidence, budget, and stop-control system\").\n- **Over-engineering risk:** registering five subskills up front, or a `scripts/badf_build.py`. Refused: freeze the orchestration contract first (the `badf-git` GIT-A / `badf-solution-design` SOL-A precedent); subskills only when a rung needs them; deterministic G07 semantics stay in `badf_gate.py` (BLD-I18).\n- **Glossary stage(s):** 7 build (contract for the build phase); no later-stage (verification/release) deliverable pulled in — G08 is explicitly out of scope.\n\n## Observed\n`main` `d4b8c4a`: `badf-implementation-plan` is `ACTIVE` and retains IMP-I15 (the plan cannot execute its own Work Packages) and IMP-I17 (the canonical gate remains the authority). No `skills/badf-build` exists. G07's four evidence types (`source-change`, `build`, `unit-test`, `documentation`) are already **produced** by `badf_gate.py self-dossier` for BADF's own WPs, but only as generic `evidence.schema.json` instances — no type-specific schema exists, and nothing enforces the doctrine of *how* a build may mutate a repository under a Governed Work Package. That is the gap the `badf-build` ladder closes: A freeze → B evidence schemas + substrate → C deterministic G07 controls → D shadow on BADF's own builds → E operator admission.\n\n## Acceptance criteria (WP-2026-0096 / BADF-DEM-0083)\n- `skills/badf-build/SKILL.md` — a **thin declarative router**: purpose; the strict boundary (plan decides *how*, build performs the *authorized mutation*, verification/G08 judges independently, `badf-git` governs integration, the gate evaluates evidence, authority permits transitions); the workflow `CLAIM → PREFLIGHT → ISOLATE → BASELINE → SLICE → TEST-FIRST/VERIFY-FIRST → IMPLEMENT → LOCAL VERIFY → SELF-REVIEW → RECONCILE → PACKAGE → HANDOFF`; the eighteen invariants **BLD-I01…I18** verbatim as frozen; status points to the registry, never hardcoded.\n- `skills/badf-build/references/` — exactly fourteen: `g07-contract`, `preflight`, `execution-contract`, `tdd-contract` (governed TDD: `TDD_REQUIRED` / `TDD_NOT_APPLICABLE_WITH_REASON`, the change-type table, red→green→bounded refactor→green as METHOD OPTION), `test-seams` (seams come from the G06 `test-plan`; `TEST_PLAN_DEFECT` routes upstream), `delegation` (`delegated_authority ⊆ WP_authority ⊆ repository_policy`; task ≠ WP), `scope-containment` (planned vs actual surface; `UNEXPECTED_SCOPE` → classify → stop/amend/replan), `retry-and-budget` (same command + same hypothesis + same input ≠ new attempt; exhaustion → `BLOCKED`), `stop-conditions`, `self-review` (author review ≠ G08 independence), `evidence-packaging` (the four G07 types normalized, richer bindings), `handoff-to-g08` (commit if granted; never infer push/PR/merge), `acceptance` (ladder A→E), `external-methodology` (mattpocock `implement` / `tdd` and obra/superpowers as REFERENCE / ADAPT with the ADOPT/REJECT lists frozen: ticket-as-authority, agent ruling as authority, autonomous scope expansion, branch-finish as merge permission, self-review as G08 — all REJECTED).\n- The design-drift routing table frozen in `execution-contract`: `ARCHITECTURE_CHANGE_REQUIRED` / `AUTHORIZATION_DESIGN_CHANGE_REQUIRED` / `SECURITY_DESIGN_CHANGE_REQUIRED` / `REQUIREMENT_CHANGE_REQUIRED` / `PRODUCT_REBASE_REQUIRED` → upstream, never silent redesign.\n- `badf/skill-registry.json`: `badf-build` registered `DESIGNED`, `risk_class` C1, `allowed_tools: []`, real digest; lockfile re-signed.\n- **No** `scripts/badf_build.py`, **no** new schema, **no** lifecycle change (G07's four evidence types and G08 untouched); build ledger layout (`work/<WP>/build/`) *described* in `evidence-packaging`, not created.\n- `docs/governance/GITHUB_CONTROL_PLANE.md` doctrine section (boundary, invariants summary, the doctrine block \"a successful build proves only: the authorized change was built and author-verified\"); DEM-0083 exported from this issue; own composition record + G07 self-dossier; reconciles the land-time-current WP.\n\n## Tests (`tests/test_badf_build_contract.py`)\n- `test_contract_surface_is_declarative_only` — exactly the 14 references; no `scripts/badf_build.py`; no `schemas/build*.json` / `source-change*.json`.\n- `test_root_states_all_invariants_and_the_workflow` — BLD-I01…I18 present; the twelve-stage workflow string present; `GIT_CAPABILITY`-style split stated as `BUILD ≠ INTEGRATION` and `AUTHOR REVIEW ≠ INDEPENDENT ASSURANCE`.\n- `test_tdd_is_governed_not_religious` — `TDD_REQUIRED`, `TDD_NOT_APPLICABLE_WITH_REASON`, `NO UNVERIFIED MUTATION` present; the change-type table rows present.\n- `test_delegation_cannot_expand_authority` — the subset chain and `subagent task ≠ new Work Package` present.\n- `test_drift_routes_upstream` — the five `*_CHANGE_REQUIRED` / `PRODUCT_REBASE_REQUIRED` tokens present.\n- `test_no_lifecycle_change_and_composes_into_g07` — `lifecycle.json` G07/G08 evidence lists unchanged; `check_*` map unchanged.\n- `test_registry_pin_is_designed_and_tool_empty`; `test_skill_points_to_registry_not_a_hardcoded_status`; `test_external_methodology_is_reference_adapt_only` (REJECT list present, no vendored executable).\n\n## Out of scope (later rungs)\n- BLD-B: `schemas/source-change|build|unit-test|documentation.schema.json`, preflight/execution substrate, build ledger. BLD-C: deterministic G07 controls in `badf_gate.py` (authority, exact baseline, scope containment, red-before-green evidence, fresh verification, budget/stop, delegation). BLD-D: shadow on BADF's own historical builds (every G07 self-dossier since WP-0030 is a real case). BLD-E: operator admission.\n- Any change to `self_dossier`'s current evidence production (BLD-B extends it; BLD-I18 forbids a second producer of G07 semantics).\n\n**Version tier:** minor (new family, backward-compatible). **Lean mode:** advisory for A; **disabled** at C (authority/stop-control invariants).\n\n**Program goal (BARCHI-2):** carry `badf-build` A→E in design order, one WP per loop, freeze first, no second gate, `self_dossier` reuse; the root advances only at BLD-E by the operator's admission. QA + REV by BARCHI-1 on shared-surface rungs (B, C touch `badf_gate.py`/schemas).\n\n🛑 **STOP — awaiting operator approval of this plan.** No branch, no files, no registry edit until a human replies here.\n\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T14:10:28Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-BLD-A: freeze the badf-build capability contract (G07 execution under a Governed Work Package): thin router SKILL.md, BLD-I01..I18, twelve-stage workflow, fourteen references, registry DESIGNED C1 allowed_tools [], no scripts/badf_build.py, no schema, no lifecycle change. Operator design directive 2026-08-30; approval + A->E authorization recorded on #188."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 85b7876..9279d07 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -290,6 +290,16 @@
+       "allowed_tools": [],
+       "status": "ACTIVE",
+       "digest": "sha256:b4cb8255f8fb75015f069f10ade5dd5b058d9ff8364a06f7e74de35b81be9a9f"
++    },
++    {
++      "name": "badf-build",
++      "source": "skills/badf-build/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [],
++      "status": "DESIGNED",
++      "digest": "sha256:6cc3266ecde8bf6ed14fc3b5ae3b1de38a42154242d9b7517ca6f0cdb38bf0f3"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index da71f25..40bc2b8 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1229,6 +1229,37 @@ ACTIVE`) — the third capability, after `badf-solution-design` and `badf-securi
+ end to end, and the one that gives G06 (Implementation planning) its authoring capability. Registry
+ `SHADOWED → ACTIVE`.
+ 
++## badf-build — G07 capability contract freeze (`BADF-WP-0096` / WP-BLD-A, Issue #188 / GOV-0079)
++
++`badf-build` is frozen `DESIGNED` as the next capability after `badf-implementation-plan` reached `ACTIVE`:
++the plan decides *how* authorized work is decomposed and retains IMP-I15 (it cannot execute its own Work
++Packages); `badf-build` performs the **authorized mutation** of exactly one Governed Work Package inside
++its exact scope, baseline, budget and stop contract; G08 verifies independently; `badf-git` governs
++integration; the canonical gate evaluates the four G07 evidence types; authority permits the transition.
++The freeze is a thin router (`SKILL.md`) with eighteen invariants **BLD-I01…I18** and fourteen references,
++registered C1 with no tools — no runtime, no `scripts/badf_build.py` (BLD-I18: deterministic G07 semantics
++stay in `badf_gate.py`), no schema, no lifecycle change.
++
++**What it absorbs and what it refuses.** Matt Pocock's `implement`/`tdd` discipline (bounded source
++contract, governed TDD at durable seams, red before green, continuous typecheck/test, full verification
++at finish, review after implementation) and obra/superpowers' execution pipeline (isolation, fresh-context
++units, review loops, recovery ledger, verification before completion) are adapted as REFERENCE only.
++Their authority semantics are rejected: a ticket is not authority, an agent's "ruling" is not a BADF
++authority decision, scope does not expand autonomously, finishing a branch is not merge permission, and
++build-side review does not satisfy G08 independence. TDD is governed, not religious —
++`TDD_REQUIRED` where a durable observable seam exists, `TDD_NOT_APPLICABLE_WITH_REASON` with an alternate
++verification obligation where it does not; the doctrine is `NO UNVERIFIED MUTATION`. Test seams come from
++the G06 `test-plan`; a `TEST_PLAN_DEFECT` routes upstream rather than moving the seam. Delegation can
++only narrow authority (`delegated_authority ⊆ WP_authority ⊆ repository_policy`; a subagent task is not a
++Work Package). Actual surface is compared with planned surface and `UNEXPECTED_SCOPE` is refused or
++re-authorized at build time. Design drift returns upstream as `*_CHANGE_REQUIRED`.
++
++**Ladder:** BLD-B formalizes the four G07 evidence schemas by extending the self-dossier producer and adds
++the preflight/execution substrate and build ledger; BLD-C adds deterministic G07 controls to the gate;
++BLD-D shadows on every G07 self-dossier BADF has produced since WP-0030; BLD-E is the operator's admission.
++A successful build proves only that the authorized change was built and author-verified — never
++"independently verified", "approved to merge", "approved to release" or "safe for production".
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/skills/badf-build/SKILL.md b/skills/badf-build/SKILL.md
+new file mode 100644
+index 0000000..dc5d8e3
+--- /dev/null
++++ b/skills/badf-build/SKILL.md
+@@ -0,0 +1,179 @@
++---
++name: badf-build
++description: Execute exactly one authorized BADF Governed Work Package into G07 build evidence — claim, preflight, isolate, baseline, slice, test-first where a durable seam exists, implement, verify freshly, self-review, reconcile, package, hand off — inside the WP's exact scope, baseline, budget and stop contract. Use when a G06-planned Work Package is authorized for implementation. Grants no push, merge, release or gate authority.
++---
++
++# BADF Build
++
++`badf-build` performs the **authorized mutation**. `badf-implementation-plan` decides *how* authorized
++work is decomposed (IMP-I15: the plan cannot execute its own Work Packages); `badf-build` executes one
++Governed Work Package; G08 verifies the result **independently**; `badf-git` governs repository
++topology and integration; the canonical BADF gate evaluates the evidence; **authority** permits the
++lifecycle transition. `badf-build` must not swallow G08.
++
++The skill's admission status is recorded in `badf/skill-registry.json`; this file defines behavior and
++must not hardcode a lifecycle status that can drift from the registry.
++
++## Fundamental rule
++
++```text
++NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
++NO UNVERIFIED MUTATION
++BUILD ≠ INTEGRATION
++AUTHOR REVIEW ≠ INDEPENDENT ASSURANCE
++```
++
++## Boundary
++
++```text
++badf-implementation-plan   decides HOW authorized work is decomposed
++badf-build                 performs the authorized mutation
++badf-verification (G08)    independently verifies the result
++badf-git                   governs repository topology / integration
++BADF gate                  evaluates evidence
++Authority                  permits lifecycle transition
++```
++
++```text
++G06 — Implementation planning: work-breakdown · test-plan · release-plan · rollback-plan
++G07 — Build complete:          source-change · build · unit-test · documentation
++G08 — Engineering verification: independent-review · integration-test · contract-test · composed-tree-test
++```
++
++## Authority split
++
++```text
++Agent judgment MAY resolve implementation detail inside granted scope.
++
++Agent judgment MUST NOT resolve an authority conflict, scope expansion, risk-class change,
++security acceptance, architectural deviation, acceptance weakening, or destructive escalation.
++```
++
++A build controller may make local engineering choices only while they remain within the already
++authorized Work Package contract. An external methodology's "ruling" is never a BADF authority decision.
++
++## Workflow
++
++```text
++CLAIM → PREFLIGHT → ISOLATE → BASELINE → SLICE → TEST-FIRST/VERIFY-FIRST → IMPLEMENT → LOCAL VERIFY → SELF-REVIEW → RECONCILE → PACKAGE → HANDOFF
++```
++
++1. **CLAIM** — resolve exactly one Governed Work Package: identity, demand, G06 plan, source baselines,
++   scope, expected surfaces, change class, authority, budget, stop conditions, test and evidence
++   obligations. No valid WP → **NO BUILD**. See `references/preflight.md`.
++2. **PREFLIGHT** — before any mutation: WP executable, dependencies satisfied, G06 baseline current,
++   authority current, expected branch/base current, permissions sufficient, budget remaining,
++   environment available, stop contract loaded. Any uncertainty affecting authority → **STOP**, not guess.
++3. **ISOLATE** — use the isolation declared by planning; request the workspace from `badf-git`, never
++   invent branch mechanics.
++4. **BASELINE** — record pre-change evidence (repository state, baseline tests, build/typecheck, known
++   failures, environment identity, base SHA, composition baseline). `PRE-EXISTING FAILURE ≠
++   BUILD-INTRODUCED FAILURE`.
++5. **SLICE** — one coherent acceptance slice at a time: acceptance → test seam → failing observation →
++   minimal mutation → passing observation → next slice.
++6. **TEST-FIRST / VERIFY-FIRST** — governed TDD at durable seams declared by the G06 test-plan; where
++   TDD does not apply, an explicit alternate verification obligation. See `references/tdd-contract.md`.
++7. **IMPLEMENT** — the minimal mutation that makes the observed failure pass, inside the authorized
++   surface. Design drift is upstream work. See `references/execution-contract.md`.
++8. **LOCAL VERIFY** — focused tests and typecheck continuously; the full verification at finish; fresh,
++   never inferred.
++9. **SELF-REVIEW** — author-side challenge (self, per-task, whole-branch). It is G07 author verification
++   evidence, **not** G08 independent review. See `references/self-review.md`.
++10. **RECONCILE** — compare planned surface with actual surface; unexpected scope is refused or
++    re-authorized. See `references/scope-containment.md`.
++11. **PACKAGE** — normalize into exactly the four G07 evidence types. See `references/evidence-packaging.md`.
++12. **HANDOFF** — commit to the authorized working branch if granted; route integration to `badf-git`
++    and verification to G08. Never infer push → PR → merge. See `references/handoff-to-g08.md`.
++
++## Invariants (frozen)
++
++```text
++BLD-I01 — One authorized WP
++Every build run binds exactly one executable Governed Work Package.
++
++BLD-I02 — Exact baseline
++Build begins from the revision/baseline authorized by the WP.
++
++BLD-I03 — Authority before mutation
++No mutation occurs until WP authority and tool/environment permissions are validated.
++
++BLD-I04 — Scope containment
++Actual mutation remains within authorized scope; unexpected material surface is refused or re-authorized.
++
++BLD-I05 — Acceptance binding
++Every material mutation resolves to an acceptance, defect, test, migration or required implementation obligation.
++
++BLD-I06 — Durable verification seam
++Behavior tests use declared observable seams, not implementation details.
++
++BLD-I07 — Red before green when TDD applies
++A test-required behavioral change carries observed failing evidence before the implementation that makes it pass.
++
++BLD-I08 — TDD exceptions explicit
++Absence of red-green evidence requires NOT_APPLICABLE_WITH_REASON and an alternate verification obligation.
++
++BLD-I09 — Fresh verification
++No success/completion claim relies only on prior, inferred or agent-reported results.
++
++BLD-I10 — Delegation cannot expand authority
++Every subagent's authority is a strict subset of the governing WP.
++
++BLD-I11 — Retry changes information
++Repeated execution without a changed hypothesis/input/implementation/diagnostic does not consume another permitted engineering attempt.
++
++BLD-I12 — Budget enforced
++Attempt/time/cost exhaustion yields BLOCKED, never autonomous extension.
++
++BLD-I13 — Stop conditions dominate
++Authority conflict, destructive surprise, credential exposure, policy bypass, evidence corruption and other WP stop conditions stop mutation.
++
++BLD-I14 — Design drift is upstream work
++Build cannot silently modify architecture, security, requirements or acceptance semantics.
++
++BLD-I15 — Author review ≠ independent assurance
++Build-side review cannot self-satisfy G08 independence.
++
++BLD-I16 — Build evidence is exact
++Source/build/test/documentation evidence binds exact revision, commands/toolchain and resulting artifact digests.
++
++BLD-I17 — Build ≠ integration
++Completion of implementation grants no push/merge/release authority.
++
++BLD-I18 — No second gate
++No scripts/badf_build.py may become a competing lifecycle validator; deterministic G07 semantics remain in badf_gate.py.
++```
++
++## Doctrine
++
++```text
++G06 authorizes a bounded implementation plan.
++A Governed Work Package is the unit of execution authority.
++badf-build executes one authorized Work Package inside its exact scope, baseline, budget and stop contract.
++TDD is used at durable behavioral seams where applicable.
++Subagents may perform work, but delegation can only reduce authority, never expand it.
++Fresh verification precedes every completion claim.
++Build-side review improves the work but does not replace independent G08 assurance.
++badf-git governs repository integration.
++The canonical BADF gate evaluates G07 evidence.
++
++A successful build proves only:
++  "the authorized change was built and author-verified."
++It does not mean "independently verified", "approved to merge", "approved to release", or "safe for production".
++```
++
++## References
++
++- `references/g07-contract.md` — what G07 evidence is, what it binds, what a build does and does not prove.
++- `references/preflight.md` — CLAIM fields and the PREFLIGHT checklist; STOP over guess.
++- `references/execution-contract.md` — isolate, baseline, slice, implement, refactor doctrine, design-drift routing.
++- `references/tdd-contract.md` — governed TDD: required / not-applicable-with-reason, by change type.
++- `references/test-seams.md` — seams come from the G06 test-plan; TEST_PLAN_DEFECT routing.
++- `references/delegation.md` — subagent contracts as strict subsets; task ≠ Work Package.
++- `references/scope-containment.md` — planned vs actual surface; UNEXPECTED_SCOPE handling.
++- `references/retry-and-budget.md` — attempts that add information; budget exhaustion → BLOCKED.
++- `references/stop-conditions.md` — the conditions that stop mutation, and their precedence.
++- `references/self-review.md` — build review vs G08 independent review.
++- `references/evidence-packaging.md` — the four G07 evidence bindings and the build ledger.
++- `references/handoff-to-g08.md` — package, route to badf-git, hand to G08; no inferred integration.
++- `references/acceptance.md` — the admission ladder BLD-A…E.
++- `references/external-methodology.md` — Matt Pocock and Superpowers: adapted, rejected, never authority.
+diff --git a/skills/badf-build/references/acceptance.md b/skills/badf-build/references/acceptance.md
+new file mode 100644
+index 0000000..ec3c9e1
+--- /dev/null
++++ b/skills/badf-build/references/acceptance.md
+@@ -0,0 +1,17 @@
++# Admission ladder — badf-build
++
++The skill's status is recorded in `badf/skill-registry.json`; this ladder is a pointer, not a second
++status.
++
++- `DESIGNED` — **WP-BLD-A** (this freeze): thin router, BLD-I01…I18, twelve-stage workflow, fourteen
++  references, registered C1 with no tools; no runtime, no validator, no schema, no lifecycle change.
++- `IMPLEMENTED` — **WP-BLD-B**: G07 evidence schemas (`source-change`, `build`, `unit-test`,
++  `documentation`) formalized from the objects the self-dossier already produces; preflight/execution
++  substrate; the build ledger. Extends the canonical producer; adds no second one.
++- `VALIDATED` — **WP-BLD-C**: deterministic G07 controls in `badf_gate.py` — authority before mutation,
++  exact baseline, scope containment, red-before-green evidence where TDD applies, fresh verification,
++  budget/stop, delegation as a strict subset — each failing-first and mutation-killed.
++- `SHADOWED` — **WP-BLD-D**: shadow on BADF's own historical builds — every G07 self-dossier since
++  WP-0030 is a real case — with non-coverage declared, not implied.
++- `APPROVED` / `ACTIVE` — **WP-BLD-E**: the operator's admission decision; registry status flip only,
++  digest unchanged, no authority granted.
+diff --git a/skills/badf-build/references/delegation.md b/skills/badf-build/references/delegation.md
+new file mode 100644
+index 0000000..157b1d2
+--- /dev/null
++++ b/skills/badf-build/references/delegation.md
+@@ -0,0 +1,62 @@
++# Delegation — subagents may execute; authority can only narrow
++
++Fresh-context subagents reduce context contamination and are welcome. BADF adds a stronger rule:
++
++```text
++Parent WP authority
++        ↓
++delegated task contract
++        ↓
++STRICT SUBSET
++```
++
++```text
++delegated_authority  ⊆  WP_authority  ⊆  repository_policy
++```
++
++No escalation through delegation (BLD-I10). A subagent may receive:
++
++```yaml
++task:
++  wp: WP-2026-NNNN
++  acceptance_refs:
++    - AC-021
++  allowed_paths:
++    - src/payments/**
++    - tests/payments/**
++  allowed_tools:
++    - filesystem
++    - shell
++  prohibited:
++    - push
++    - merge
++    - release
++    - credential-use
++    - schema-outside-scope
++  budget:
++    attempts: 2
++```
++
++It may **never** receive more authority than the parent Work Package.
++
++## The Work Package remains the governed unit
++
++```text
++Governed WP
++   ├── execution slice A
++   ├── execution slice B
++   └── execution slice C
++```
++
++Slices may be dispatched to fresh agents, but all of them remain inside WP scope, WP authority, WP risk,
++WP budget and the WP evidence contract. Therefore:
++
++```text
++subagent task  ≠  new Work Package
++```
++
++unless the work genuinely needs independent authority, lifecycle, rollback or landing — in which case
++it returns to planning as a new Work Package, never as a task that quietly grew one.
++
++A subagent's "ruling" on ambiguity is an engineering choice inside granted scope at most; it is never
++a BADF authority decision.
+diff --git a/skills/badf-build/references/evidence-packaging.md b/skills/badf-build/references/evidence-packaging.md
+new file mode 100644
+index 0000000..ea18fa0
+--- /dev/null
++++ b/skills/badf-build/references/evidence-packaging.md
+@@ -0,0 +1,37 @@
++# Evidence packaging — the four G07 types, and the build ledger
++
++## PACKAGE — exactly four types, richer bindings (BLD-I16)
++
++`source-change` binds WP, base SHA, head SHA, changed paths, change digest, the expected-surface
++comparison and unexpected-surface list, producer and toolchain. `build` captures command, working
++directory, environment/toolchain identity, started_at, completed_at, exit code, artifact refs, artifact
++digests and non-coverage. `unit-test` binds test obligation, acceptance criterion, seam, red evidence
++where required, green evidence, command, result, test count, failure count and coverage scope.
++`documentation` answers: what changed, what contract changed, what operator/developer behavior changed,
++what docs required update, what was NOT updated and why.
++
++The types stay the four in `badf/lifecycle.json`; their schemas are BLD-B; the producer remains the
++canonical gate's self-dossier path, extended — never a second producer (BLD-I18).
++
++## The build ledger (recovery and evidence, never authority)
++
++A persistent ledger prevents context compaction from redispatching finished work:
++
++```text
++work/WP-.../
++├── work-package.json
++├── build/
++│   ├── session.json
++│   ├── progress.jsonl
++│   ├── decisions.jsonl
++│   └── evidence/
++```
++
++(or BADF's session infrastructure where its storage contract fits.) Every material execution transition is
++recorded:
++
++```text
++START · BASELINE · RED · GREEN · VERIFY · RETRY · STOP · RESUME · HANDOFF
++```
++
++The ledger is recovery and evidence. It is not authority: nothing in it permits a transition.
+diff --git a/skills/badf-build/references/execution-contract.md b/skills/badf-build/references/execution-contract.md
+new file mode 100644
+index 0000000..bf17c42
+--- /dev/null
++++ b/skills/badf-build/references/execution-contract.md
+@@ -0,0 +1,80 @@
++# Execution contract — ISOLATE · BASELINE · SLICE · IMPLEMENT · LOCAL VERIFY
++
++## ISOLATE
++
++Use the isolation strategy declared by planning. Usually:
++
++```text
++badf-build
++    ↓ requests workspace
++badf-git
++    ↓ verifies/creates governed isolation
++worktree / branch
++```
++
++`badf-build` does not invent branch mechanics; repository topology is `badf-git`'s contract.
++
++## BASELINE (BLD-I02)
++
++Run pre-change evidence before the first mutation:
++
++```text
++repository state · baseline tests · build/typecheck baseline · known failures
++environment identity · base SHA · composition baseline
++```
++
++The distinction this buys is critical and must be recorded, never inferred:
++
++```text
++PRE-EXISTING FAILURE
++≠
++BUILD-INTRODUCED FAILURE
++```
++
++## SLICE
++
++One coherent acceptance slice at a time (the tracer-bullet discipline bound to WP acceptance
++traceability):
++
++```text
++AC → test seam → failing observation → minimal mutation → passing observation → next acceptance slice
++```
++
++## IMPLEMENT and LOCAL VERIFY
++
++The minimal mutation that makes the observed failure pass, inside the authorized surface. Typecheck and
++focused tests run continuously; the full verification runs at finish. Verification is **fresh** — a
++prior run, an inferred result or an agent's report of a result is not evidence (BLD-I09).
++
++## Refactoring doctrine (METHOD OPTION, not invariant)
++
++```text
++RED → GREEN → optional bounded REFACTOR → GREEN AGAIN
++```
++
++with the condition that a refactor may not expand scope or alter acceptance semantics. Whether the
++refactor phase sits at step three or in review is a method option; the governance-relevant part is that
++behavior remains proven and scope remains bounded.
++
++## Design drift is upstream work (BLD-I14)
++
++Build often discovers that the planned design is wrong. The build agent must not silently redesign:
++
++```text
++need a new service boundary          → ARCHITECTURE_CHANGE_REQUIRED
++need broader permission              → AUTHORIZATION_DESIGN_CHANGE_REQUIRED
++need a weaker security control       → SECURITY_DESIGN_CHANGE_REQUIRED
++requirement impossible as specified  → REQUIREMENT_CHANGE_REQUIRED
++acceptance criterion no longer apt   → PRODUCT_REBASE_REQUIRED
++```
++
++Then return upstream. Engineering convenience is not design authority.
++
++## Authority split, restated
++
++```text
++Agent judgment MAY resolve implementation detail inside granted scope.
++
++Agent judgment MUST NOT resolve an authority conflict, scope expansion, risk-class change,
++security acceptance, architectural deviation, acceptance weakening, or destructive escalation.
++```
+diff --git a/skills/badf-build/references/external-methodology.md b/skills/badf-build/references/external-methodology.md
+new file mode 100644
+index 0000000..df18b5a
+--- /dev/null
++++ b/skills/badf-build/references/external-methodology.md
+@@ -0,0 +1,69 @@
++# External methodology provenance
++
++Status: **REFERENCE / ADAPT ONLY — no external executable vendored, no external skill granted authority.**
++
++`badf-build` absorbs engineering discipline from two external sources and puts every mutation back inside
++BADF's Governed Work Package, evidence, budget and authority envelope. The sources are references, not
++BADF authority; vendoring or direct execution of either requires a separate external-skill admission WP
++under `docs/07-skills-governance.md`.
++
++## mattpocock/skills/implement
++
++```text
++ADAPT
++  ✓ implementation from a bounded source contract   (BADF: the authorized Governed Work Package)
++  ✓ TDD where appropriate
++  ✓ focused tests during work
++  ✓ typecheck/build continuously
++  ✓ full verification at finish
++  ✓ review after implementation
++
++REJECT
++  ✗ ticket as authority
++  ✗ implicit permission to commit/push
++  ✗ review as gate approval
++```
++
++## mattpocock/skills/tdd
++
++```text
++ADAPT
++  ✓ behavioral tests
++  ✓ durable public seams
++  ✓ red before green
++  ✓ vertical slices
++  ✓ anti-tautology discipline
++
++ADAPT, NOT FREEZE EXACTLY
++  ~ exact placement of the refactor phase   (BADF: METHOD OPTION, see tdd-contract.md)
++```
++
++## obra/superpowers
++
++```text
++ADAPT
++  ✓ isolated workspace
++  ✓ fresh agent context
++  ✓ per-unit implementation
++  ✓ review loops
++  ✓ recovery ledger
++  ✓ verification before completion   ("NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE")
++  ✓ explicit finish workflow          (BADF: routed through badf-git, see handoff-to-g08.md)
++
++REJECT
++  ✗ agent ruling as authority
++  ✗ autonomous scope expansion
++  ✗ branch finish as merge permission
++  ✗ self-review as independent G08 assurance
++```
++
++## The divergence, stated once
++
++Superpowers' subagent-driven development permits the executing agent to make "rulings" on ambiguity and
++continue, treating the spec as binding authority. That is appropriate there. It is **not** BADF authority
++doctrine: a build controller may make local engineering choices only within the already authorized Work
++Package contract, and
++
++```text
++Superpowers ruling  ≠  BADF authority decision
++```
+diff --git a/skills/badf-build/references/g07-contract.md b/skills/badf-build/references/g07-contract.md
+new file mode 100644
+index 0000000..b70b316
+--- /dev/null
++++ b/skills/badf-build/references/g07-contract.md
+@@ -0,0 +1,46 @@
++# G07 contract — what a build proves
++
++G07 ("Build complete") requires four evidence types in `badf/lifecycle.json`: `source-change`, `build`,
++`unit-test`, `documentation`. `badf-build` normalizes its execution into **exactly those** — it does not
++invent another gate, another evidence type, or a second validator (BLD-I18). Deterministic G07 semantics
++live in `badf_gate.py`; today the self-dossier already produces the four objects for BADF's own Work
++Packages, and later rungs *extend* that producer rather than compete with it.
++
++## The boundary this contract sits on
++
++```text
++G06 — Implementation planning:   work-breakdown · test-plan · release-plan · rollback-plan
++G07 — Build complete:            source-change · build · unit-test · documentation
++G08 — Engineering verification:  independent-review · integration-test · contract-test · composed-tree-test
++```
++
++`badf-implementation-plan` decides how authorized work is decomposed. `badf-build` performs the
++authorized mutation. G08 independently verifies the result. `badf-git` governs repository
++topology and integration. The gate evaluates evidence. Authority permits the transition.
++
++## What the four evidence types must bind (BLD-I16)
++
++| Evidence | Binds |
++| :--- | :--- |
++| `source-change` | WP · base SHA · head SHA · changed paths · change digest · expected-surface comparison · unexpected-surface list · producer · toolchain |
++| `build` | command · working directory · environment/toolchain identity · started_at · completed_at · exit code · artifact refs · artifact digests · non-coverage |
++| `unit-test` | test obligation · acceptance criterion · seam · red evidence where required · green evidence · command · result · test count · failure count · coverage scope |
++| `documentation` | what changed · what contract changed · what operator/developer behavior changed · what docs required update · what was NOT updated and why |
++
++Key rule for `source-change`: a changed path outside the authorized expected surface is a **stop /
++re-authorize** event at build time — not a fact reported afterwards (see `scope-containment.md`).
++
++## What a successful build proves — and does not
++
++```text
++A successful build proves only:
++  "the authorized change was built and author-verified."
++
++It does not mean:
++  "independently verified"   (that is G08)
++  "approved to merge"        (that is integration authority via badf-git)
++  "approved to release"      (that is G10/G11)
++  "safe for production"      (that is G12/G13)
++```
++
++Completion of implementation grants no push, merge or release authority (BLD-I17).
+diff --git a/skills/badf-build/references/handoff-to-g08.md b/skills/badf-build/references/handoff-to-g08.md
+new file mode 100644
+index 0000000..06238fc
+--- /dev/null
++++ b/skills/badf-build/references/handoff-to-g08.md
+@@ -0,0 +1,25 @@
++# Handoff — package, route to badf-git, hand to G08 (BLD-I17)
++
++The source methodology finishes through a branch-finishing skill. BADF routes instead:
++
++```text
++badf-build
++  PACKAGE G07
++       ↓
++badf-git
++  inspect branch / base / composition / staleness
++       ↓
++G08 independent verification
++       ↓
++PR / integration authority
++```
++
++`badf-build` may **commit to the authorized working branch** if granted. It must not infer:
++
++```text
++tests pass → push → open PR → merge
++```
++
++Each side effect follows its own authority: push and PR under `badf-git`'s branch/PR contract, merge under
++the integration authority, release under G10/G11. The build's handoff states what was built and
++author-verified, what was not covered, and what the next authority must decide.
+diff --git a/skills/badf-build/references/preflight.md b/skills/badf-build/references/preflight.md
+new file mode 100644
+index 0000000..ad20ea7
+--- /dev/null
++++ b/skills/badf-build/references/preflight.md
+@@ -0,0 +1,49 @@
++# CLAIM and PREFLIGHT — nothing mutates before authority is validated
++
++## CLAIM — resolve exactly one Governed Work Package (BLD-I01)
++
++```text
++WP identity            demand                 G06 plan
++source baselines       scope                  expected surfaces
++change class           authority              budget
++stop conditions        test obligations       evidence obligations
++```
++
++No valid Work Package:
++
++```text
++NO BUILD
++```
++
++A ticket, a chat instruction, a spec or a plan file is **not** a Work Package. The authorized Governed
++Work Package (G06 PASS, authority valid) is the only thing a build may claim.
++
++## PREFLIGHT — before any mutation (BLD-I03)
++
++```text
++WP status executable?
++dependencies satisfied?
++G06 baseline current?
++authority current?
++expected branch/base current?
++permissions sufficient?
++budget remaining?
++required environment available?
++stop contract loaded?
++```
++
++Any uncertainty that affects authority:
++
++```text
++STOP
++```
++
++not guess. Preflight resolves *facts* (is the base current, is the budget positive); it never resolves
++*authority* (should this WP run at all). The second kind of question returns upstream.
++
++## What CLAIM consumes from G06
++
++The planning contract already carries what the build needs — `expected_surfaces`, `authority_requirement`,
++`execution_budget`, `stop_conditions`, `test_obligations`, `evidence_obligations`, `composition` — as
++optional Work Package fields (WP-IMP-B) enforced on the work-breakdown (WP-IMP-C). `badf-build` reads
++them; it does not redefine them.
+diff --git a/skills/badf-build/references/retry-and-budget.md b/skills/badf-build/references/retry-and-budget.md
+new file mode 100644
+index 0000000..70d0b72
+--- /dev/null
++++ b/skills/badf-build/references/retry-and-budget.md
+@@ -0,0 +1,30 @@
++# Retry and budget — retries must add information (BLD-I11, BLD-I12)
++
++The build does not "keep trying until it works". It inherits the BADF Engineering Loop and the Work
++Package's `execution_budget`:
++
++```text
++attempt 1
++   ↓ failure
++change hypothesis
++   ↓
++attempt 2
++   ↓ materially similar failure
++ROOT_CAUSE_MODE
++   ↓
++attempt 3
++   ↓ budget exhausted
++BLOCKED HANDOFF
++```
++
++BADF doctrine, preserved:
++
++```text
++same command + same hypothesis + same input
++≠
++new attempt
++```
++
++A repeat without a changed hypothesis, input, implementation or diagnostic does not consume a permitted
++engineering attempt — and does not earn one either. Attempt, time or cost exhaustion yields `BLOCKED`
++with the ledger and evidence so far; never an autonomous extension of the budget.
+diff --git a/skills/badf-build/references/scope-containment.md b/skills/badf-build/references/scope-containment.md
+new file mode 100644
+index 0000000..43b61b1
+--- /dev/null
++++ b/skills/badf-build/references/scope-containment.md
+@@ -0,0 +1,41 @@
++# Scope containment — planned surface vs actual surface (BLD-I04)
++
++G06 produces bounded Work Packages with `expected_surfaces`. The build compares, at reconcile time and
++before any handoff:
++
++```text
++PLANNED SURFACE
++vs
++ACTUAL SURFACE
++```
++
++Example:
++
++```text
++Expected:
++  src/auth/**
++  tests/auth/**
++  docs/auth.md
++
++Actual:
++  src/auth/login.py
++  tests/auth/test_login.py
++  scripts/release.py
++```
++
++```text
++scripts/release.py  =  UNEXPECTED_SCOPE
++```
++
++The agent cannot say "it was necessary, so I changed it too". Instead:
++
++```text
++unexpected scope → classify → stop / amend / replan
++```
++
++unless the Work Package explicitly grants a **bounded discovery** allowance (declared paths or a
++declared class of incidental change), in which case the discovery is recorded in `source-change` as such.
++
++This is one of BADF's largest improvements over ordinary coding-agent workflows: the surface is a
++contract checked at mutation time, not a diff summarized afterwards. `source-change` evidence carries the
++expected-surface comparison and the unexpected-surface list (see `evidence-packaging.md`).
+diff --git a/skills/badf-build/references/self-review.md b/skills/badf-build/references/self-review.md
+new file mode 100644
+index 0000000..93715ca
+--- /dev/null
++++ b/skills/badf-build/references/self-review.md
+@@ -0,0 +1,28 @@
++# Self-review vs independent review (BLD-I15)
++
++The source methodologies invoke code review after implementation, per task and for the whole branch.
++BADF keeps that discipline — and distinguishes what it is:
++
++```text
++BUILD REVIEW
++=
++author-side challenge
++
++G08 INDEPENDENT REVIEW
++=
++independent assurance evidence
++```
++
++A reviewer dispatched by the same build controller may improve code quality, but does **not automatically**
++satisfy G08 `independent-review` unless BADF's separation-of-duties contract proves genuine independence
++(a different principal, not the author's delegate, with its own authority to refuse).
++
++```text
++self-review · task-review · branch-review
++       ↓
++G07 author verification evidence
++
++NOT automatically
++
++G08 independent-review
++```
+diff --git a/skills/badf-build/references/stop-conditions.md b/skills/badf-build/references/stop-conditions.md
+new file mode 100644
+index 0000000..6645317
+--- /dev/null
++++ b/skills/badf-build/references/stop-conditions.md
+@@ -0,0 +1,19 @@
++# Stop conditions dominate (BLD-I13)
++
++The Work Package's `stop_conditions` are loaded at PREFLIGHT and dominate every later stage. In addition
++to the WP's own, these always stop mutation:
++
++```text
++authority conflict         — the WP, the plan and the observed repository disagree about what is permitted
++destructive surprise       — a mutation would delete, rewrite or force beyond the authorized surface
++credential exposure        — a secret is read, written or would be committed
++policy bypass              — a control, hook, gate or review would be skipped or weakened
++evidence corruption        — a baseline, ledger or evidence object cannot be trusted
++budget exhaustion          — attempts, time or cost are spent (see retry-and-budget.md)
++unexpected scope           — see scope-containment.md
++design drift               — see execution-contract.md
++```
++
++Stop means: record the transition in the build ledger, package what exists as evidence with declared
++non-coverage, and hand off `BLOCKED` or `HUMAN_REQUIRED`. Stop never means: guess, widen, retry
++silently, or escalate a subagent's authority to get past the condition.
+diff --git a/skills/badf-build/references/tdd-contract.md b/skills/badf-build/references/tdd-contract.md
+new file mode 100644
+index 0000000..8256c4a
+--- /dev/null
++++ b/skills/badf-build/references/tdd-contract.md
+@@ -0,0 +1,47 @@
++# Governed TDD — required where a durable seam exists, explicit where it does not
++
++BADF does **not** define ~~EVERY CHANGE MUST USE TDD~~. That produces bad tests for change types that have
++no meaningful behavioral seam. The doctrine is:
++
++```text
++NO UNVERIFIED MUTATION
++```
++
++not merely "no code without a unit test".
++
++```text
++TDD_REQUIRED
++    when a durable observable behavior seam exists.
++
++TDD_NOT_APPLICABLE_WITH_REASON
++    when the change is not meaningfully behavior-testable through a stable seam —
++    and an alternate verification obligation is declared (BLD-I08).
++```
++
++## By change type
++
++| Change | Expected |
++| :--- | :--- |
++| business behavior | TDD required |
++| API behavior | contract/TDD required |
++| bug fix | reproducing failing test required where possible |
++| parser/validator | TDD strongly required |
++| schema validation | failing-first fixture |
++| migration | migration forward/backward test |
++| IaC | policy/plan validation |
++| documentation-only | structural/link/lint checks |
++| generated artifact | generator/source verification |
++| mechanical refactor | behavioral regression evidence |
++
++## Red before green (BLD-I07)
++
++When TDD applies, the test-required behavioral change carries **observed failing evidence** before the
++implementation that makes it pass — recorded, not remembered. The seam is established before the test
++is written; one vertical slice at a time; tests exercise behavior through public interfaces, never
++internals; tautological tests and bulk speculative tests are refused.
++
++## Refactor placement — METHOD OPTION
++
++`RED → GREEN → optional bounded REFACTOR → GREEN AGAIN`, on condition that the refactor neither expands
++scope nor alters acceptance semantics. The exact placement of the refactor phase is a method option
++adapted from the source methodology, not a BADF invariant.
+diff --git a/skills/badf-build/references/test-seams.md b/skills/badf-build/references/test-seams.md
+new file mode 100644
+index 0000000..05611c2
+--- /dev/null
++++ b/skills/badf-build/references/test-seams.md
+@@ -0,0 +1,44 @@
++# Test seams come from G06 — the build does not invent its test surface
++
++The source methodology asks the human to agree test seams. BADF has a better answer: the G06
++`test-plan` identifies them. `badf-build` **consumes** a test obligation:
++
++```yaml
++test_obligation:
++  id: TEST-031
++  acceptance_ref: AC-021
++  seam:
++    type: api
++    ref: API-017
++  behavior:
++    given: ...
++    when: ...
++    then: ...
++  required_phase:
++    - red
++    - green
++```
++
++The build agent then writes tests at *that* seam (BLD-I06), through the public interface it names,
++never against implementation details.
++
++## When implementation reveals the planned seam is invalid
++
++```text
++TEST_PLAN_DEFECT
++        ↓
++do not silently move the seam
++        ↓
++G06 amendment / bounded ruling
++```
++
++depending on materiality: a bounded ruling inside granted scope may pick between two declared seams;
++choosing a seam the plan never declared, or dropping a red phase the plan required, is a G06 amendment
++and returns upstream.
++
++## Seam discipline (adapted)
++
++- test behavior through public interfaces; don't test internals;
++- establish the seam before writing tests;
++- one vertical slice at a time; red before green;
++- avoid tautological tests; don't bulk-write speculative tests.
+diff --git a/tests/test_badf_build_contract.py b/tests/test_badf_build_contract.py
+new file mode 100644
+index 0000000..7b8f8a9
+--- /dev/null
++++ b/tests/test_badf_build_contract.py
+@@ -0,0 +1,111 @@
++"""badf-build contract freeze (BADF-WP-0096 / WP-BLD-A, #188).
++
++badf-build executes exactly one authorized Governed Work Package inside its exact scope,
++baseline, budget and stop contract. It is a declarative router over an execution
++discipline adapted from Matt Pocock's implement/tdd skills and obra/superpowers -- NOT a
++runtime, NOT a second gate, NOT a grant of push/merge/release authority. This WP freezes
++the contract only: SKILL.md + fourteen references, registered DESIGNED, no scripts, no
++schema, no lifecycle change. These tests guard that declarative surface.
++"""
++import hashlib
++import json
++import unittest
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[1]
++SKILL = ROOT / "skills" / "badf-build" / "SKILL.md"
++REFERENCES = ROOT / "skills" / "badf-build" / "references"
++REGISTRY = ROOT / "badf" / "skill-registry.json"
++LIFECYCLE = ROOT / "badf" / "lifecycle.json"
++
++REFS = {
++    "g07-contract.md", "preflight.md", "execution-contract.md", "tdd-contract.md", "test-seams.md",
++    "delegation.md", "scope-containment.md", "retry-and-budget.md", "stop-conditions.md",
++    "self-review.md", "evidence-packaging.md", "handoff-to-g08.md", "acceptance.md",
++    "external-methodology.md",
++}
++WORKFLOW = ("CLAIM → PREFLIGHT → ISOLATE → BASELINE → SLICE → TEST-FIRST/VERIFY-FIRST → IMPLEMENT → "
++            "LOCAL VERIFY → SELF-REVIEW → RECONCILE → PACKAGE → HANDOFF")
++
++
++def read(name: str) -> str:
++    return (REFERENCES / name).read_text(encoding="utf-8")
++
++
++class BadfBuildContractTests(unittest.TestCase):
++    def test_contract_surface_is_declarative_only(self):
++        self.assertTrue(SKILL.is_file())
++        self.assertEqual(REFS, {p.name for p in REFERENCES.glob("*.md")})
++        self.assertFalse((ROOT / "scripts" / "badf_build.py").exists())  # BLD-I18: no second gate
++        for pat in ("build*.json", "source-change*.json", "unit-test*.json", "documentation*.json"):
++            self.assertEqual([], list((ROOT / "schemas").glob(pat)), f"{pat}: G07 evidence schemas are BLD-B, not the freeze")
++
++    def test_root_states_all_invariants_and_the_workflow(self):
++        text = SKILL.read_text(encoding="utf-8")
++        for n in range(1, 19):
++            self.assertIn(f"BLD-I{n:02d}", text)
++        self.assertIn(WORKFLOW, text)
++        self.assertIn("BUILD ≠ INTEGRATION", text)
++        self.assertIn("AUTHOR REVIEW ≠ INDEPENDENT ASSURANCE", text)
++        self.assertIn("NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE", text)
++        self.assertIn("A successful build proves only", text)
++
++    def test_tdd_is_governed_not_religious(self):
++        text = read("tdd-contract.md")
++        for token in ("TDD_REQUIRED", "TDD_NOT_APPLICABLE_WITH_REASON", "NO UNVERIFIED MUTATION", "METHOD OPTION",
++                      "business behavior", "bug fix", "migration", "documentation-only", "mechanical refactor"):
++            self.assertIn(token, text, token)
++        # the religious form appears only struck through -- as the rejected doctrine, never as a rule
++        self.assertEqual(text.count("EVERY CHANGE MUST USE TDD"), text.count("~~EVERY CHANGE MUST USE TDD~~"))
++        self.assertGreaterEqual(text.count("~~EVERY CHANGE MUST USE TDD~~"), 1)
++
++    def test_seams_come_from_g06_and_defects_route_upstream(self):
++        text = read("test-seams.md")
++        for token in ("test-plan", "test_obligation", "acceptance_ref", "seam", "TEST_PLAN_DEFECT", "G06 amendment"):
++            self.assertIn(token, text, token)
++
++    def test_delegation_cannot_expand_authority(self):
++        text = read("delegation.md")
++        for token in ("delegated_authority", "WP_authority", "repository_policy", "STRICT SUBSET",
++                      "subagent task", "new Work Package", "allowed_paths", "prohibited"):
++            self.assertIn(token, text, token)
++
++    def test_scope_containment_and_drift_route_upstream(self):
++        scope = read("scope-containment.md"); exe = read("execution-contract.md")
++        for token in ("PLANNED SURFACE", "ACTUAL SURFACE", "UNEXPECTED_SCOPE", "bounded discovery"):
++            self.assertIn(token, scope, token)
++        for token in ("ARCHITECTURE_CHANGE_REQUIRED", "AUTHORIZATION_DESIGN_CHANGE_REQUIRED", "SECURITY_DESIGN_CHANGE_REQUIRED",
++                      "REQUIREMENT_CHANGE_REQUIRED", "PRODUCT_REBASE_REQUIRED", "PRE-EXISTING FAILURE", "BUILD-INTRODUCED FAILURE"):
++            self.assertIn(token, exe, token)
++
++    def test_no_lifecycle_change_and_composes_into_g07(self):
++        lifecycle = json.loads(LIFECYCLE.read_text(encoding="utf-8"))
++        by = {g["id"]: g["required_evidence"] for g in lifecycle["gates"]}
++        self.assertEqual(["source-change", "build", "unit-test", "documentation"], by["G07"])
++        self.assertEqual(["independent-review", "integration-test", "contract-test", "composed-tree-test"], by["G08"])
++        text = read("g07-contract.md")
++        for token in ("source-change", "unit-test", "documentation", "does not mean", "independently verified", "approved to merge"):
++            self.assertIn(token, text, token)
++        self.assertIn("not automatically", read("self-review.md").lower())
++
++    def test_registry_pin_is_designed_and_tool_empty(self):
++        registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
++        entries = [e for e in registry["skills"] if e.get("name") == "badf-build"]
++        self.assertEqual(1, len(entries)); entry = entries[0]
++        self.assertEqual("DESIGNED", entry["status"]); self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])
++        self.assertEqual("skills/badf-build/SKILL.md", entry["source"])
++        self.assertEqual("sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest(), entry["digest"])
++
++    def test_skill_points_to_registry_and_external_methodology_is_reference_only(self):
++        text = SKILL.read_text(encoding="utf-8")
++        self.assertIn("badf/skill-registry.json", text)
++        self.assertNotIn("Status: `", text)
++        ext = read("external-methodology.md")
++        for token in ("REFERENCE / ADAPT", "mattpocock", "superpowers", "REJECT", "ticket as authority",
++                      "agent ruling as authority", "autonomous scope expansion", "branch finish as merge permission",
++                      "self-review as independent G08 assurance"):
++            self.assertIn(token, ext, token)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0095/work-package.json b/work/WP-2026-0095/work-package.json
+index cff5a0f..c4d8f45 100644
+--- a/work/WP-2026-0095/work-package.json
++++ b/work/WP-2026-0095/work-package.json
+@@ -43,11 +43,13 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR (registry back to SHADOWED)"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "4deb094"
++    "base_revision": "4deb094",
++    "composition_verified": false,
++    "landed_as": "d4b8c4a4fe5e92bf5362f963cb835c6628445957"
+   },
+   "note": "Lands IN_PROGRESS by design; next WP reconciles it. Registry admission SHADOWED->ACTIVE on the operator's standing /loop 'to E' directive (2026-08-30); grants no authority; caveat preserved; real re-shadow deferred to #185. No new control -> no mutation. Ladder-internal (no shared surface). Isolated worktree (badf-wt-impe). Ids WP-0095/DEM-0082/GOV-0077. Reconciles WP-2026-0094 (composition_verified: false). Completes WP-IMP-A..E -- 3rd capability (after solution-design + security-design) to traverse DESIGNED->ACTIVE. Resolves #186 / GOV-0077."
+ }

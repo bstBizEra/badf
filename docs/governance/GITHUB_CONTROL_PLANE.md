@@ -1229,6 +1229,37 @@ ACTIVE`) — the third capability, after `badf-solution-design` and `badf-securi
 end to end, and the one that gives G06 (Implementation planning) its authoring capability. Registry
 `SHADOWED → ACTIVE`.
 
+## badf-build — G07 capability contract freeze (`BADF-WP-0096` / WP-BLD-A, Issue #188 / GOV-0079)
+
+`badf-build` is frozen `DESIGNED` as the next capability after `badf-implementation-plan` reached `ACTIVE`:
+the plan decides *how* authorized work is decomposed and retains IMP-I15 (it cannot execute its own Work
+Packages); `badf-build` performs the **authorized mutation** of exactly one Governed Work Package inside
+its exact scope, baseline, budget and stop contract; G08 verifies independently; `badf-git` governs
+integration; the canonical gate evaluates the four G07 evidence types; authority permits the transition.
+The freeze is a thin router (`SKILL.md`) with eighteen invariants **BLD-I01…I18** and fourteen references,
+registered C1 with no tools — no runtime, no `scripts/badf_build.py` (BLD-I18: deterministic G07 semantics
+stay in `badf_gate.py`), no schema, no lifecycle change.
+
+**What it absorbs and what it refuses.** Matt Pocock's `implement`/`tdd` discipline (bounded source
+contract, governed TDD at durable seams, red before green, continuous typecheck/test, full verification
+at finish, review after implementation) and obra/superpowers' execution pipeline (isolation, fresh-context
+units, review loops, recovery ledger, verification before completion) are adapted as REFERENCE only.
+Their authority semantics are rejected: a ticket is not authority, an agent's "ruling" is not a BADF
+authority decision, scope does not expand autonomously, finishing a branch is not merge permission, and
+build-side review does not satisfy G08 independence. TDD is governed, not religious —
+`TDD_REQUIRED` where a durable observable seam exists, `TDD_NOT_APPLICABLE_WITH_REASON` with an alternate
+verification obligation where it does not; the doctrine is `NO UNVERIFIED MUTATION`. Test seams come from
+the G06 `test-plan`; a `TEST_PLAN_DEFECT` routes upstream rather than moving the seam. Delegation can
+only narrow authority (`delegated_authority ⊆ WP_authority ⊆ repository_policy`; a subagent task is not a
+Work Package). Actual surface is compared with planned surface and `UNEXPECTED_SCOPE` is refused or
+re-authorized at build time. Design drift returns upstream as `*_CHANGE_REQUIRED`.
+
+**Ladder:** BLD-B formalizes the four G07 evidence schemas by extending the self-dossier producer and adds
+the preflight/execution substrate and build ledger; BLD-C adds deterministic G07 controls to the gate;
+BLD-D shadows on every G07 self-dossier BADF has produced since WP-0030; BLD-E is the operator's admission.
+A successful build proves only that the authorized change was built and author-verified — never
+"independently verified", "approved to merge", "approved to release" or "safe for production".
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

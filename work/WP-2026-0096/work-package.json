@@ -1,0 +1,59 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0096",
+  "title": "WP-BLD-A: freeze badf-build capability contract (G07 execution under a Governed Work Package; DESIGNED, thin router, no second gate)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0083",
+  "repository": "bstBizEra/badf",
+  "objective": "Freeze the badf-build contract as a declarative router: badf-build executes exactly one authorized Governed Work Package inside its exact scope, baseline, budget and stop contract; badf-implementation-plan decides HOW work is decomposed (IMP-I15: it cannot execute), badf-git governs repository integration, G08 verifies independently, the canonical gate evaluates G07 evidence, and authority permits lifecycle transitions. Adapts Matt Pocock's implement/tdd discipline (bounded source contract, governed TDD at durable seams, red before green, continuous typecheck/test, full verification at finish) and obra/superpowers' execution pipeline (isolation, fresh-context units, review loops, recovery ledger, verification before completion) while REJECTING their authority semantics (ticket as authority, agent ruling as authority, autonomous scope expansion, branch finish as merge permission, self-review as G08 assurance). BLD-I01..I18 frozen; no runtime, no validator, no schema, no lifecycle change.",
+  "business_value": "Every coding agent can build; BADF needs a build that cannot exceed its authorization: scope contained to planned surfaces, red-before-green evidence where a seam exists, fresh verification before any completion claim, delegation that only narrows authority, budget and stop conditions that dominate. The freeze makes that contract the thing later rungs implement and shadow, instead of an opinion.",
+  "in_scope": [
+    "skills/badf-build/SKILL.md -- thin router: boundary (plan/build/verify/git/gate/authority), CLAIM->PREFLIGHT->ISOLATE->BASELINE->SLICE->TEST-FIRST/VERIFY-FIRST->IMPLEMENT->LOCAL VERIFY->SELF-REVIEW->RECONCILE->PACKAGE->HANDOFF, BLD-I01..I18 verbatim, doctrine block; status points to the registry, never hardcoded",
+    "skills/badf-build/references/: g07-contract, preflight, execution-contract, tdd-contract, test-seams, delegation, scope-containment, retry-and-budget, stop-conditions, self-review, evidence-packaging, handoff-to-g08, acceptance, external-methodology (14)",
+    "badf/skill-registry.json: register badf-build DESIGNED, C1, allowed_tools=[], real digest; lockfile re-signed",
+    "tests/test_badf_build_contract.py: declarative surface (14 refs, no scripts/badf_build.py, no build/source-change schema), invariants + workflow stated, governed TDD tokens, delegation subset chain, drift routing tokens, no lifecycle change, DESIGNED pin, no hardcoded status, external methodology REFERENCE/ADAPT with REJECT list",
+    "GITHUB_CONTROL_PLANE.md doctrine section; badf/demands/BADF-DEM-0083.json; own composition record + G07 self-dossier; reconcile the land-time-current WP"
+  ],
+  "out_of_scope": [
+    "scripts/badf_build.py or any second validator/gate/mutation engine (BLD-I18)",
+    "schemas for source-change/build/unit-test/documentation (BLD-B) and any change to self_dossier's evidence production",
+    "deterministic G07 controls in badf_gate.py (BLD-C); shadow (BLD-D); admission (BLD-E)",
+    "any change to lifecycle.json G07/G08 required_evidence or the artifact-checker map",
+    "registering subskills (only when a rung needs them)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the declarative surface is exactly SKILL.md + 14 references; no scripts/badf_build.py; no schemas/build*.json or source-change*.json",
+    "SKILL.md states BLD-I01..I18 and the twelve-stage workflow; TDD is governed (TDD_REQUIRED / TDD_NOT_APPLICABLE_WITH_REASON / NO UNVERIFIED MUTATION); delegation subset chain; five drift routes; BUILD != INTEGRATION; AUTHOR REVIEW != INDEPENDENT ASSURANCE",
+    "badf-build registered DESIGNED, C1, allowed_tools [], digest == sha256(SKILL.md); SKILL.md points to the registry for status",
+    "lifecycle.json G07/G08 evidence lists and the checker map unchanged; external methodology recorded as REFERENCE/ADAPT with the REJECT list; no vendored executable",
+    "tests/test_badf_build_contract.py failing-first before the files exist, green after; CI green on the composed tree"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_build_contract.py (9)"
+  ],
+  "evidence": [
+    "failing-first run",
+    "green run",
+    "registry mutation (status/digest/tool) against the contract test",
+    "compose output incl. composition record",
+    "G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "d4b8c4a"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-BLD-A of the badf-build program (operator design directive 2026-08-30; approval + A->E authorization on #188). Governance-only WP: skill files + registry + tests + doctrine; empty gate diff. Resolves #188 / GOV-0079. Engineered by BARCHI-2 under /loop ('proceed on your call'); ladder-internal (no shared surface) -- lands under the standing evidence bar."
+}
