@@ -46,11 +46,14 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "dcbcc54"
+    "base_revision": "dcbcc54",
+    "landed_content_tree": "6e45715784b8daf486e45b8de0a2e2fda0c6210a",
+    "composition_verified": true,
+    "landed_as": "07c23f7150bcf00c34c418469a6124837d37ee8c"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-BLD-D of the badf-build program (#188 A->E authorization). Ladder-internal (no shared surface) -- lands under the standing evidence bar. Resolves #197 / GOV-0084. Reconciles WP-2026-0103 (VER-B, dcbcc54)."
 }

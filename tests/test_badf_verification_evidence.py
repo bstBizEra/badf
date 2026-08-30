@@ -245,10 +245,10 @@ class VerifyRecordTests(unittest.TestCase):
 
 
 class RegistryTests(unittest.TestCase):
-    def test_registry_pin_is_implemented_and_skill_digest_unchanged(self):
+    def test_registry_pin_is_at_least_implemented_and_skill_digest_unchanged(self):
         registry = json.loads((gate.ROOT / "badf/skill-registry.json").read_text(encoding="utf-8"))
         entry = next(e for e in registry["skills"] if e["name"] == "badf-engineering-verification")
-        self.assertEqual("IMPLEMENTED", entry["status"]); self.assertEqual([], entry["allowed_tools"])
+        self.assertIn(entry["status"], ("IMPLEMENTED", "VALIDATED", "SHADOWED", "ACTIVE"));  # VER-B floor; later rungs advance it self.assertEqual([], entry["allowed_tools"])
         self.assertEqual(entry["digest"], gate.sha256(gate.ROOT / "skills/badf-engineering-verification/SKILL.md"))
 
 

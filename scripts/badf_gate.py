@@ -1768,6 +1768,124 @@ def check_g08_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[st
 EVIDENCE_RULES.update({t: check_g08_binding for t in ("independent-review", "integration-test", "contract-test", "composed-tree-test")})
 
 
+G08_OBSERVATIONS = ("integration-test", "contract-test", "composed-tree-test")
+G08_QUORUM = {"C2": 2, "C3": 3}
+G08_REQUIRED_LENSES = {"C2": {"correctness", "quality/test"}, "C3": {"correctness", "quality/test", "data/integration"}}
+
+
+def _independent_reviewer_deviation_carried(dossier: dict[str, Any]) -> bool:
+    """The single-collaborator deviation: an OPEN dossier condition naming the missing independent
+    reviewer (the self-dossier's C-1). Carried, never hidden -- and never satisfied by a banner."""
+    for c in dossier.get("conditions") or []:
+        if isinstance(c, dict) and c.get("status") == "OPEN" and "independent reviewer" in str(c.get("statement", "")).lower():
+            return True
+    return False
+
+
+def check_g08_dossier(dossier: dict[str, Any], work_package: dict[str, Any] | None, evidence: dict[str, dict[str, Any]],
+                      composition_record: dict[str, Any] | None, record: dict[str, Any] | None) -> None:
+    """badf-engineering-verification VER-C: the seven dossier-level G08 controls, as ONE PURE function --
+    no reads, no writes, no git; validate_dossier resolves the inputs and stays idempotent. Fires only on
+    a G08 dossier claiming PASS / PASS_WITH_CONDITIONS, and each control only on fields that are declared
+    (a typed binding, a verification record, a Work Package `verification_obligations`), so every dossier
+    on main -- WP-2026-0010's generic G08 dossier included -- stays valid.
+      C1 exact target (VER-I01): typed bindings bind the dossier's source_revision and the composition
+         record's expected_content_tree / target_base_sha.
+      C2 one composed identity (VER-I05): all typed objects bind the same content tree.
+      C3 independence and quorum (VER-I04/I19): the author's execution or identity cannot be the reviewer
+         unless the deviation is carried as an OPEN condition; C2/C3 change classes need a verification
+         record with a quorum of distinct reviewers/runs and the mandatory lenses.
+      C4 runtime credit (VER-I08): when the WP declares runtime_required, an untyped observation earns none.
+      C5 per-artifact non-coverage (VER-I11): a typed observation declares what it did not observe unless
+         the WP permits a comprehensive-coverage claim for that type.
+      C6 review blockers resolved (VER-I12): an OPEN MAJOR/CRITICAL finding refuses PASS and must map to a
+         condition on PASS_WITH_CONDITIONS; the review's findings are carried or withdrawn by the record.
+      C7 composed-result authority (VER-I15): composed-tree-test is never NOT_APPLICABLE."""
+    if dossier.get("gate") != "G08" or dossier.get("disposition") not in {"PASS", "PASS_WITH_CONDITIONS"}:
+        return
+    typed = {t: e for t, e in evidence.items() if isinstance(e, dict) and isinstance(e.get("binding"), dict)}
+    change_class = dossier.get("change_class")
+    src = str(dossier.get("source_revision", ""))
+    # C1 -- exact target
+    rec_tree = str((composition_record or {}).get("expected_content_tree") or "")
+    rec_base = str((composition_record or {}).get("target_base_sha") or "")
+    for t, e in typed.items():
+        tb = e["binding"].get("target") or {}
+        if str(tb.get("source_revision")) != src:
+            raise ValidationError(f"{t}: binding.target.source_revision {str(tb.get('source_revision'))[:12]} does not equal the dossier's source_revision {src[:12]} (VER-I01 / C1)")
+        if rec_tree and str(tb.get("expected_content_tree")) != rec_tree:
+            raise ValidationError(f"{t}: binding.target.expected_content_tree {str(tb.get('expected_content_tree'))[:12]} does not equal the composition record's expected_content_tree {rec_tree[:12]} (VER-I01 / C1)")
+        if rec_base and t == "composed-tree-test" and str((e["binding"].get("composition") or {}).get("target_base_sha")) != rec_base:
+            raise ValidationError(f"{t}: binding.composition.target_base_sha does not equal the composition record's target_base_sha {rec_base[:12]} (VER-I01 / C1)")
+        if rec_base and t == "independent-review" and str(tb.get("target_base_sha")) != rec_base:
+            raise ValidationError(f"{t}: binding.target.target_base_sha does not equal the composition record's target_base_sha {rec_base[:12]} (VER-I01 / C1)")
+    # C2 -- one composed identity
+    trees = {t: str((e["binding"].get("target") or {}).get("expected_content_tree")) for t, e in typed.items()}
+    if len(set(trees.values())) > 1:
+        raise ValidationError(f"typed G08 objects do not bind one composed identity: {{{', '.join(f'{k}: {v[:12]}' for k, v in sorted(trees.items()))}}}; a review of one tree and observations of another verify nothing together (VER-I05 / C2)")
+    # C3 -- independence and quorum by change class
+    rv = typed.get("independent-review")
+    if rv is not None:
+        b = rv["binding"]; ind = b.get("independence") or {}; who = b.get("reviewer") or {}
+        same_run = str(who.get("reviewer_run_id")) == str(ind.get("author_run_id"))
+        same_identity = str(who.get("identity", "")).strip().lower() == str(dossier.get("author", "")).strip().lower()
+        if (same_run or same_identity) and not _independent_reviewer_deviation_carried(dossier):
+            raise ValidationError("independent-review: the reviewer is the author's execution or identity and the dossier carries no OPEN independent-reviewer deviation condition; independence is established or carried, never hidden (VER-I04 / C3)")
+    if change_class in G08_QUORUM:
+        if record is None:
+            raise ValidationError(f"a {change_class} G08 dossier requires a verification record (council review) as the independent-review artifact; none is bound (VER-I19 / C3)")
+        ballots = [x for x in (record.get("ballots") or []) if isinstance(x, dict)]
+        reviewers = {str(x.get("reviewer")) for x in ballots}; runs = {str(x.get("reviewer_run_id")) for x in ballots}
+        need = G08_QUORUM[change_class]
+        if min(len(reviewers), len(runs)) < need:
+            raise ValidationError(f"{change_class} quorum requires {need} distinct reviewers and runs; the verification record carries {len(reviewers)} reviewer(s) / {len(runs)} run(s) (VER-I19 / C3)")
+        missing = sorted(G08_REQUIRED_LENSES[change_class] - {str(x) for x in (record.get("lenses_routed") or [])})
+        if missing:
+            raise ValidationError(f"{change_class} review must route the mandatory lens(es) {missing} (review-lenses.md / C3)")
+    # C4 -- runtime credit when the Work Package demands it
+    vo = (work_package or {}).get("verification_obligations") or {}
+    if vo.get("runtime_required"):
+        for t in G08_OBSERVATIONS:
+            e = evidence.get(t)
+            if isinstance(e, dict) and e.get("outcome") == "PASS" and "binding" not in e:
+                raise ValidationError(f"{t}: the work package declares verification_obligations.runtime_required but the observation carries no typed binding; an untyped {str((e.get('producer') or {}).get('type'))}-produced result earns no runtime credit (VER-I08 / C4)")
+    # C5 -- non-coverage per artifact
+    permitted = {str(x) for x in (vo.get("comprehensive_coverage_permitted_for") or [])}
+    for t in G08_OBSERVATIONS:
+        e = typed.get(t)
+        if e is not None and not e["binding"].get("non_coverage") and t not in permitted:
+            raise ValidationError(f"{t}: typed observation declares no non-coverage and the work package does not permit a comprehensive-coverage claim for it; a run that states nothing unobserved is incomplete (VER-I11 / C5)")
+    # C6 -- review blockers resolved
+    open_blocking: dict[str, dict[str, Any]] = {}
+    review_findings = [f for f in ((rv or {}).get("binding") or {}).get("findings") or [] if isinstance(f, dict)]
+    for f in review_findings:
+        if f.get("status") == "OPEN" and f.get("severity") in BLOCKING_SEVERITIES:
+            open_blocking[str(f.get("finding_id"))] = f
+    if record is not None:
+        rec_findings = [f for f in (record.get("findings") or []) if isinstance(f, dict)]
+        for f in rec_findings:
+            if f.get("status") == "OPEN" and f.get("severity") in BLOCKING_SEVERITIES:
+                open_blocking[str(f.get("finding_id"))] = f
+        carried = {str(f.get("finding_id")) for f in rec_findings} | {str(w.get("finding_id")) for w in ((record.get("synthesis") or {}).get("withdrawn") or []) if isinstance(w, dict)}
+        lost = [str(f.get("finding_id")) for f in review_findings if str(f.get("finding_id")) not in carried]
+        if lost:
+            raise ValidationError(f"review finding(s) {lost} are neither carried nor withdrawn by the verification record; synthesis cannot erase a finding (VER-I12 / C6)")
+    if open_blocking:
+        if dossier.get("disposition") == "PASS":
+            raise ValidationError(f"OPEN blocking finding(s) {sorted(open_blocking)} refuse PASS; review blockers are resolved or carried as conditions, never passed over (VER-I12 / C6)")
+        statements = " ".join(str(c.get("statement", "")) for c in (dossier.get("conditions") or []) if isinstance(c, dict))
+        unmapped = [fid for fid in sorted(open_blocking) if fid not in statements]
+        if unmapped:
+            raise ValidationError(f"OPEN blocking finding(s) {unmapped} map to no dossier condition; PASS_WITH_CONDITIONS carries each blocker as a condition naming it (VER-I12 / C6)")
+    # C7 -- composed-result authority
+    for n in dossier.get("non_coverage") or []:
+        if isinstance(n, dict) and n.get("evidence_type") == "composed-tree-test":
+            raise ValidationError("composed-tree-test declared as non-coverage (NOT_APPLICABLE); a G08 dossier without a composed observation cannot pass -- source-head success is not composed verification (VER-I15 / C7)")
+    ct = evidence.get("composed-tree-test")
+    if isinstance(ct, dict) and ct.get("outcome") == "NOT_APPLICABLE":
+        raise ValidationError("composed-tree-test outcome NOT_APPLICABLE; the composed observation is never optional at G08 (VER-I15 / C7)")
+
+
 def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -> None:
     evidence = load_json(path)
     require_fields(evidence, EVIDENCE_FIELDS, f"evidence {path}")
@@ -3985,6 +4103,19 @@ def validate_dossier(dossier_path: Path) -> str:
         return rendered
     for evidence_type, path_value in indexed.items():
         validate_evidence(safe_repo_path(path_value, "evidence path"), dossier, evidence_type)
+    if dossier["gate"] == "G08" and dossier["disposition"] in {"PASS", "PASS_WITH_CONDITIONS"}:
+        # VER-C: resolve the inputs here, judge them in the pure check_g08_dossier (C1..C7).
+        objects = {t: load_json(safe_repo_path(p, "evidence path")) for t, p in indexed.items()}
+        comp_path = ROOT / "work" / dossier["work_package_id"] / "evidence" / "G07" / "composition-record.json"
+        composition_record = load_json(comp_path) if comp_path.is_file() else None
+        record = None
+        rv = objects.get("independent-review")
+        if isinstance(rv, dict) and "binding" in rv:
+            art = safe_repo_path(rv["artifact"], "independent-review artifact")
+            if art.suffix == ".json":
+                validate_verification_record(art)   # the review artifact IS the council record
+                record = load_json(art)
+        check_g08_dossier(dossier, work_package, objects, composition_record, record)
     return rendered
 
 

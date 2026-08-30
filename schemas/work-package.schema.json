@@ -453,6 +453,27 @@
         }
       },
       "additionalProperties": false
+    },
+    "verification_obligations": {
+      "type": "object",
+      "description": "G08 verification demands declared by planning (badf-engineering-verification VER-C): runtime_required refuses an untyped observation on a passing G08 dossier (VER-I08 / C4); comprehensive_coverage_permitted_for names the evidence types allowed an empty per-artifact non-coverage (VER-I11 / C5).",
+      "properties": {
+        "runtime_required": {
+          "type": "boolean"
+        },
+        "comprehensive_coverage_permitted_for": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "independent-review",
+              "integration-test",
+              "contract-test",
+              "composed-tree-test"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
     }
   }
 }
