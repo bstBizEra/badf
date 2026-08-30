@@ -48,11 +48,14 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "e1423ad"
+    "base_revision": "e1423ad",
+    "landed_content_tree": "ec92ce19c1abfb41f6cd0c7a093292765f3915a1",
+    "composition_verified": true,
+    "landed_as": "8f3d80548cc9804403ad61040fc5517d2a574541"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-BLD-C of the badf-build program (#188 A->E authorization). Shared surface -> QA + REV by BARCHI-1. Lean mode disabled. Resolves #194 / GOV-0082. Reconciles WP-2026-0100 (composition_verified true)."
 }

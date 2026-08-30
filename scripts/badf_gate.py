@@ -1705,6 +1705,69 @@ EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_crit
 EVIDENCE_RULES.update({t: check_g07_binding for t in ("source-change", "build", "unit-test", "documentation")})
 
 
+CONTRACT_RESULT_OUTCOME = {"CONFORMANT": "PASS", "NONCONFORMANT": "FAIL", "INDETERMINATE": "BLOCKED", "NOT_APPLICABLE": "NOT_APPLICABLE"}
+BLOCKING_SEVERITIES = {"MAJOR", "CRITICAL"}
+
+
+def check_g08_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    """EVIDENCE_RULES entry for the four G08 types (badf-engineering-verification VER-B): a typed
+    `binding`, when present, must conform to schemas/<type>.schema.json AND agree with the artifact
+    the gate opens. Generic objects (no binding) stay admissible -- the typed form is additive, so
+    WP-2026-0010's historical G08 dossier is untouched. The Reviewer plane: a review is findings +
+    non-coverage + completion, never a bare PASS (VER-I10/I11), and its verdict cannot contradict
+    its own findings. The Verifier plane: an observation is produced by a runtime, never by an
+    agent (VER-I08); a contract result serialises onto the evidence outcome and INDETERMINATE is
+    never a pass (VER-I14); a composed observation binds a CURRENT, reproduced composition
+    (VER-I01/I15); counts and exit codes are read from the artifact, not from the binding."""
+    if "binding" not in evidence:
+        return
+    kind = evidence["evidence_type"]
+    check_schema(kind, evidence)
+    b = evidence["binding"]
+    label = f"evidence {evidence.get('id', kind)}"
+    if kind == "independent-review":
+        if not b["findings"] and not b["non_coverage"] and not b["completion"].get("comprehensive_coverage_permitted_by"):
+            raise ValidationError(f"{label}: a review with no findings and no non_coverage claims comprehensive coverage without naming the contract that permits it (VER-I10 / VER-I11: no findings is not correctness)")
+        open_blocking = [f["finding_id"] for f in b["findings"] if f["status"] == "OPEN" and f["severity"] in BLOCKING_SEVERITIES]
+        if b["verdict"] == "APPROVE" and open_blocking:
+            raise ValidationError(f"{label}: verdict APPROVE contradicts OPEN blocking finding(s) {', '.join(open_blocking)}; a verdict cannot contradict its own findings")
+        return
+    if evidence["producer"]["type"] == "agent":
+        raise ValidationError(f"{label}: a typed {kind} observation carries producer.type 'agent'; a claimed result is not an observation (VER-I08)")
+    text = artifact.read_text(encoding="utf-8", errors="replace")
+    if kind == "contract-test":
+        want = CONTRACT_RESULT_OUTCOME[b["result"]]
+        if evidence["outcome"] != want:
+            raise ValidationError(f"{label}: contract result {b['result']} serialises as outcome {want}, not {evidence['outcome']} (VER-I14: INDETERMINATE is never a pass)")
+        return
+    if kind == "integration-test":
+        ex = b["execution"]
+        if re.search(r"^Ran \d+ tests?", text, re.M):
+            result, ran, failures = _parse_unittest_log(text)
+            if (ran, failures) != (ex["tests"]["total"], ex["tests"]["failed"]) or (evidence["outcome"] == "PASS" and result != "PASS"):
+                raise ValidationError(f"{label}: binding tests ({ex['tests']['total']} run, {ex['tests']['failed']} failed) do not equal the log (Ran {ran}, {failures} failed, {result})")
+            return
+        m = re.search(r"(?:^|\s)exit=(\d+)|-> exit (\d+)", text)
+        if not m:
+            raise ValidationError(f"{label}: the artifact carries neither a `Ran N tests` transcript nor an `exit=N` line, so binding.execution.exit_code {ex['exit_code']} cannot be verified against it (VER-I09: provenance is read from the artifact)")
+        got = int(m.group(1) or m.group(2))
+        if got != ex["exit_code"]:
+            raise ValidationError(f"{label}: binding.execution.exit_code {ex['exit_code']} does not equal the recorded exit {got}")
+        return
+    if kind == "composed-tree-test":
+        c = b["composition"]
+        if b["staleness"] != "CURRENT":
+            raise ValidationError(f"{label}: staleness {b['staleness']}; a composed observation binds a CURRENT composition or it is stale evidence (VER-I01)")
+        if c["equal"] is not True or c["recorded_expected_content_tree"] != c["recomputed_content_tree"]:
+            raise ValidationError(f"{label}: composition.equal must be true with recorded == recomputed content tree ({c['recorded_expected_content_tree'][:12]} vs {c['recomputed_content_tree'][:12]}); a composition that did not reproduce is not verified (VER-I15)")
+        tree = c["recomputed_content_tree"]
+        if tree not in text and tree[:7] not in text:
+            raise ValidationError(f"{label}: the recomputed content tree {tree[:12]} does not appear in the artifact; a binding is not evidence of itself")
+
+
+EVIDENCE_RULES.update({t: check_g08_binding for t in ("independent-review", "integration-test", "contract-test", "composed-tree-test")})
+
+
 def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -> None:
     evidence = load_json(path)
     require_fields(evidence, EVIDENCE_FIELDS, f"evidence {path}")
@@ -3748,6 +3811,76 @@ def validate_architecture_assurance(path: Path) -> str:
     return f"BADF ASSURE PASS: {rec['id']} -- baseline {base_rev[:12]} vs observed {obs_rev[:12]}; conclusion {conclusion}; grants no implementation authority"
 
 
+def validate_verification_record(path: Path) -> str:
+    """`badf_gate.py verify <path>`: the structural controls of a G08 verification record
+    (badf-engineering-verification VER-B). One record in the canonical gate -- not a second
+    validator (VER-I20) and not a lifecycle result. Every ballot cites the council's sealed input
+    digest (VER-I05); no reviewer identity or run counts twice (VER-I19); the author's run cannot
+    ballot (VER-I04); every balloted finding is carried or withdrawn with a reason -- synthesis
+    cannot erase (VER-I12); every finding names a persisted ballot (VER-I06); matrix refs resolve;
+    a VERIFIED row carries no OPEN blocking finding and needs a composed-tree observation
+    (VER-I15); non-coverage is declared (VER-I11); the record grants no authority (VER-I18)."""
+    rec = load_json(path)
+    check_schema("verification-record", rec)
+    _no_placeholders(rec, "verification-record")
+    sealed = rec["target"]["sealed_input_digest"]
+    ind = rec["independence"]
+    if ind["sealed_input_digest"] != sealed:
+        raise ValidationError("independence.sealed_input_digest differs from the target's sealed input digest (VER-I05)")
+    ballots = rec["ballots"]
+    if not ballots:
+        raise ValidationError("verification record carries no ballot; nothing was reviewed (VER-I04)")
+    ballot_ids, reviewers, runs = [], [], []
+    for b in ballots:
+        if b["sealed_input_digest"] != sealed:
+            raise ValidationError(f"ballot {b['ballot_id']} cites a sealed input digest that is not the council's; a ballot on other inputs is not this review (VER-I05)")
+        if b["reviewer_run_id"] == ind["author_run_id"]:
+            raise ValidationError(f"ballot {b['ballot_id']}: reviewer run {b['reviewer_run_id']!r} is the author run; the build execution cannot review its own candidate (VER-I04)")
+        ballot_ids.append(b["ballot_id"]); reviewers.append(b["reviewer"]); runs.append(b["reviewer_run_id"])
+    if len(set(ballot_ids)) != len(ballot_ids):
+        raise ValidationError("verification record carries a duplicate ballot_id")
+    if len(set(reviewers)) != len(reviewers) or len(set(runs)) != len(runs):
+        raise ValidationError("council has a duplicate reviewer identity or run; one execution cannot increase quorum (VER-I19)")
+    findings = {f["finding_id"]: f for f in rec["findings"]}
+    if len(findings) != len(rec["findings"]):
+        raise ValidationError("verification record carries a duplicate finding_id")
+    withdrawn = {w["finding_id"] for w in rec["synthesis"]["withdrawn"]}
+    for b in ballots:
+        for fid in b["finding_ids"]:
+            if fid not in findings and fid not in withdrawn:
+                raise ValidationError(f"ballot {b['ballot_id']} reported {fid} but the record neither carries it nor withdraws it with a reason; synthesis cannot erase a finding (VER-I12)")
+    for d in rec["synthesis"]["downgraded"]:
+        if d["finding_id"] not in findings:
+            raise ValidationError(f"synthesis downgrades {d['finding_id']}, which the record does not carry (VER-I12)")
+    for f in rec["findings"]:
+        if not f["reported_by"]:
+            raise ValidationError(f"finding {f['finding_id']} has no reporting ballot; a finding nobody balloted is invented (VER-I06)")
+        for bid in f["reported_by"] + f["also_reported_by"]:
+            if bid not in ballot_ids:
+                raise ValidationError(f"finding {f['finding_id']} cites reporter {bid}, which is not a persisted ballot (VER-I06)")
+    evidence_ids = set(rec["evidence_index"])
+    for i, row in enumerate(rec["matrix"]):
+        for bid in row["review_refs"]:
+            if bid not in ballot_ids:
+                raise ValidationError(f"matrix[{i}] {row['claim_ref']}: review_ref {bid} does not resolve to a ballot")
+        for key in ("integration_refs", "contract_refs", "composed_refs"):
+            for eid in row[key]:
+                if eid not in evidence_ids:
+                    raise ValidationError(f"matrix[{i}] {row['claim_ref']}: {key} {eid} does not resolve to an indexed evidence id")
+        if row["result"] == "VERIFIED":
+            against = [f["finding_id"] for f in rec["findings"] if f["status"] == "OPEN" and f["severity"] in BLOCKING_SEVERITIES
+                       and set(f["reported_by"] + f["also_reported_by"]) & set(row["review_refs"])]
+            if against:
+                raise ValidationError(f"matrix[{i}] {row['claim_ref']} is VERIFIED while OPEN blocking finding(s) {', '.join(against)} stand against it (MAJOR/CRITICAL)")
+            if not row["composed_refs"]:
+                raise ValidationError(f"matrix[{i}] {row['claim_ref']} is VERIFIED without a composed-tree observation; source-head success is not composed verification (VER-I15)")
+    if not rec["non_coverage"]:
+        raise ValidationError("verification record declares no non-coverage; a review that states nothing uninspected is incomplete (VER-I11)")
+    open_count = sum(1 for f in rec["findings"] if f["status"] == "OPEN")
+    return (f"BADF VERIFY PASS: {rec['id']} -- target {rec['target']['source_revision'][:12]} tree {rec['target']['expected_content_tree'][:12]}; "
+            f"{len(ballots)} ballot(s), {len(findings)} finding(s) ({open_count} open), matrix {len(rec['matrix'])} row(s); grants no verification authority")
+
+
 def validate_dossier(dossier_path: Path) -> str:
     validate_repo()
     dossier = load_json(dossier_path.resolve())
@@ -4443,6 +4576,8 @@ def main() -> int:
     research_parser.add_argument("path", type=Path)
     assure_parser = subparsers.add_parser("assure", help="validate an architecture-assurance record's ASSURE controls (WP-ARCH-C)")
     assure_parser.add_argument("path", type=Path)
+    verify_parser = subparsers.add_parser("verify", help="validate a G08 verification record's structural controls (badf-engineering-verification VER-B); grants no authority")
+    verify_parser.add_argument("path", type=Path)
     sol_parser = subparsers.add_parser("solution", help="validate a solution-composition matrix's structural controls (WP-SOL-B)")
     sol_parser.add_argument("path", type=Path)
     sec_parser = subparsers.add_parser("security", help="validate a security-composition matrix's structural controls (WP-SEC-B)")
@@ -4528,6 +4663,9 @@ def main() -> int:
             return 0
         elif args.command == "assure":
             print(validate_architecture_assurance(args.path))
+            return 0
+        elif args.command == "verify":
+            print(validate_verification_record(args.path))
             return 0
         elif args.command == "solution":
             print(validate_solution_composition(args.path))

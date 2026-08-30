@@ -54,8 +54,8 @@ class BadfEngineeringVerificationContractTests(unittest.TestCase):
         self.assertTrue(SKILL.is_file())
         self.assertEqual(REFS, {p.name for p in REFERENCES.glob("*.md")})
         self.assertFalse((ROOT / "scripts" / "badf_engineering_verification.py").exists())  # VER-I20: no second gate
-        for name in G08_TYPES:  # VER-B adds the typed G08 schemas; at DESIGNED none may exist
-            self.assertFalse((ROOT / "schemas" / f"{name}.schema.json").exists(), name)
+        for name in G08_TYPES:  # VER-B (WP-2026-0103): the typed G08 schemas exist from IMPLEMENTED on
+            self.assertTrue((ROOT / "schemas" / f"{name}.schema.json").is_file(), name)
 
     def test_root_states_all_invariants_and_the_workflow(self):
         text = SKILL.read_text(encoding="utf-8")
@@ -135,7 +135,7 @@ class BadfEngineeringVerificationContractTests(unittest.TestCase):
                          by["G09"]["required_evidence"])
         self.assertEqual("quality_authority", by["G08"]["owner_role"])
         rules = set(gate_module().EVIDENCE_RULES)
-        self.assertFalse(rules & set(G08_TYPES), "VER-A adds no gate rule; typed G08 checks are VER-B/C")
+        self.assertEqual(set(G08_TYPES), rules & set(G08_TYPES), "VER-B (WP-2026-0103): the additive check_g08_binding rule covers the four G08 types")
         text = read("g08-contract.md")
         for token in G08_TYPES + ["quality_authority", "non-coverage declared", "does not mean"]:
             self.assertIn(token, text, token)
@@ -143,11 +143,11 @@ class BadfEngineeringVerificationContractTests(unittest.TestCase):
         for token in ("G08", "G09", "C2", "security-validation", "does not replace"):
             self.assertIn(token, boundary, token)
 
-    def test_registry_pin_is_designed_and_tool_empty(self):
+    def test_registry_pin_is_implemented_and_tool_empty(self):
         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
         entries = [e for e in registry["skills"] if e.get("name") == "badf-engineering-verification"]
         self.assertEqual(1, len(entries)); entry = entries[0]
-        self.assertEqual("DESIGNED", entry["status"]); self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])
+        self.assertEqual("IMPLEMENTED", entry["status"]);  # VER-B self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])
         self.assertEqual("skills/badf-engineering-verification/SKILL.md", entry["source"])
         self.assertEqual("sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest(), entry["digest"])
 

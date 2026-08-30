@@ -1,0 +1,453 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://badf.bizera.local/schemas/independent-review.schema.json",
+  "title": "BADF G08 evidence: independent-review (typed binding, VER-B / BADF-WP-0103)",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "work_package_id",
+    "gate",
+    "claim",
+    "evidence_type",
+    "producer",
+    "source_revision",
+    "target",
+    "toolchain",
+    "operation",
+    "started_at",
+    "completed_at",
+    "outcome",
+    "artifact",
+    "digest",
+    "binding"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^EVD-[A-Za-z0-9._-]+$"
+    },
+    "work_package_id": {
+      "type": "string",
+      "pattern": "^WP-[A-Za-z0-9._-]+$"
+    },
+    "gate": {
+      "type": "string",
+      "pattern": "^G(0[0-9]|1[0-4])$"
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_type": {
+      "enum": [
+        "independent-review"
+      ]
+    },
+    "producer": {
+      "type": "object",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "enum": [
+            "human",
+            "agent",
+            "service",
+            "controller"
+          ]
+        }
+      }
+    },
+    "source_revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target": {
+      "type": "string",
+      "minLength": 1
+    },
+    "toolchain": {
+      "type": "object",
+      "required": [
+        "name",
+        "version"
+      ]
+    },
+    "operation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "outcome": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "BLOCKED",
+        "NOT_RUN",
+        "NOT_APPLICABLE"
+      ]
+    },
+    "artifact": {
+      "type": "string",
+      "minLength": 1
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "composition": {
+      "type": "object"
+    },
+    "sanitization": {
+      "type": "string"
+    },
+    "binding": {
+      "type": "object",
+      "required": [
+        "target",
+        "lens",
+        "reviewer",
+        "independence",
+        "findings",
+        "non_coverage",
+        "completion",
+        "verdict"
+      ],
+      "properties": {
+        "target": {
+          "type": "object",
+          "required": [
+            "source_revision",
+            "target_base_sha",
+            "expected_content_tree",
+            "sealed_input_digest"
+          ],
+          "properties": {
+            "source_revision": {
+              "type": "string",
+              "minLength": 1
+            },
+            "target_base_sha": {
+              "type": "string",
+              "minLength": 1
+            },
+            "expected_content_tree": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sealed_input_digest": {
+              "type": "string",
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "lens": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reviewer": {
+          "type": "object",
+          "required": [
+            "identity",
+            "reviewer_run_id",
+            "principal_type"
+          ],
+          "properties": {
+            "identity": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reviewer_run_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "principal_type": {
+              "enum": [
+                "human",
+                "agent"
+              ]
+            },
+            "model": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "independence": {
+          "type": "object",
+          "required": [
+            "reviewer_run_id",
+            "author_run_id",
+            "same_execution",
+            "sealed_input_digest",
+            "prior_findings_visible",
+            "author_reasoning_visible",
+            "cross_pass_communication_before_ballot",
+            "target_digest_equal",
+            "conflicts_of_interest"
+          ],
+          "properties": {
+            "reviewer_run_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "author_run_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "same_execution": {
+              "enum": [
+                false
+              ]
+            },
+            "sealed_input_digest": {
+              "type": "string",
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            },
+            "prior_findings_visible": {
+              "enum": [
+                false
+              ]
+            },
+            "author_reasoning_visible": {
+              "enum": [
+                false
+              ]
+            },
+            "cross_pass_communication_before_ballot": {
+              "enum": [
+                false
+              ]
+            },
+            "target_digest_equal": {
+              "enum": [
+                true
+              ]
+            },
+            "conflicts_of_interest": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "finding_id",
+              "kind",
+              "severity",
+              "baseline_ref",
+              "observed_ref",
+              "affected_elements",
+              "evidence_locations",
+              "expected",
+              "observed",
+              "impact",
+              "failure_scenario",
+              "recommendation_direction",
+              "status",
+              "non_coverage",
+              "lens",
+              "reported_by",
+              "also_reported_by",
+              "requirement_refs",
+              "evidence_refs"
+            ],
+            "properties": {
+              "finding_id": {
+                "type": "string",
+                "pattern": "^VF-[0-9]{3,}$"
+              },
+              "kind": {
+                "enum": [
+                  "REGRESSION",
+                  "DEFECT",
+                  "SECURITY",
+                  "CONTRACT",
+                  "DATA",
+                  "OPERABILITY",
+                  "CONVENTION",
+                  "PROMPT_INJECTION"
+                ]
+              },
+              "severity": {
+                "enum": [
+                  "INFO",
+                  "MINOR",
+                  "MAJOR",
+                  "CRITICAL"
+                ]
+              },
+              "baseline_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "observed_ref": {
+                "type": "string",
+                "minLength": 1
+              },
+              "affected_elements": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "evidence_locations": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "expected": {
+                "type": "string",
+                "minLength": 1
+              },
+              "observed": {
+                "type": "string",
+                "minLength": 1
+              },
+              "impact": {
+                "type": "string",
+                "minLength": 1
+              },
+              "failure_scenario": {
+                "type": "string",
+                "minLength": 1
+              },
+              "recommendation_direction": {
+                "type": "string",
+                "minLength": 1
+              },
+              "status": {
+                "enum": [
+                  "OPEN",
+                  "RESOLVED",
+                  "ACCEPTED_BY_AUTHORITY",
+                  "WITHDRAWN"
+                ]
+              },
+              "non_coverage": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "lens": {
+                "type": "string",
+                "minLength": 1
+              },
+              "reported_by": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^BALLOT-[A-Za-z0-9._-]+$"
+                }
+              },
+              "also_reported_by": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^BALLOT-[A-Za-z0-9._-]+$"
+                }
+              },
+              "requirement_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "evidence_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "non_coverage": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "surface",
+              "reason"
+            ],
+            "properties": {
+              "surface": {
+                "type": "string",
+                "minLength": 1
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1
+              },
+              "impact": {
+                "type": "string"
+              },
+              "owner": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "completion": {
+          "type": "object",
+          "required": [
+            "inspected_complete_diff",
+            "inspected_call_sites"
+          ],
+          "properties": {
+            "inspected_complete_diff": {
+              "type": "boolean"
+            },
+            "inspected_call_sites": {
+              "type": "boolean"
+            },
+            "comprehensive_coverage_permitted_by": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "verdict": {
+          "enum": [
+            "APPROVE",
+            "APPROVE_WITH_CONDITIONS",
+            "REJECT",
+            "ABSTAIN",
+            "INSUFFICIENT_EVIDENCE"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
