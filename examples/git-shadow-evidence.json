@@ -1,11 +1,11 @@
 {
   "record": "git-shadow",
   "schema_version": "1.0.0",
-  "work_package_id": "WP-2026-0082",
+  "work_package_id": "WP-2026-0090",
   "repository": "bstBizEra/badf",
-  "measured_on": "605f97fe12b419072f7bc9e254d5945e11ffb4db",
-  "measured_at": "2026-08-29T23:10:00Z",
-  "corpus": "this program's own history: every badf-git work package (GIT-B..H) was integrated through the tools it was building",
+  "measured_on": "fc9e727db9f8522b7e840120a011bec97066b838",
+  "measured_at": "2026-08-30T10:46:21Z",
+  "corpus": "this program's own history since the GIT-A freeze (b1e0f5a): every badf-git work package (GIT-B..J) was integrated through the tools it was building, including the admission itself; re-measured at fc9e727 (WP-2026-0090) from the record first taken at 605f97f (WP-2026-0082)",
   "cases": [
     {
       "case": "landing-without-record",
@@ -110,87 +110,61 @@
       "verdict": "MATCH"
     },
     {
-      "case": "identity-conform",
-      "commit": "605f97fe12b419072f7bc9e254d5945e11ffb4db",
-      "label": "BADF-WP-0081",
-      "trailer": "WP-2026-0081",
-      "verdict": "CONFORM"
+      "case": "landing-verified",
+      "wp": "WP-2026-0082",
+      "landed_as": "78eab75afbeeb5275db7fc6227fc6d302073ab6e",
+      "expected_content_tree": "212c22bac155b6f52c7dafbd6f5246bae5fde44e",
+      "landed_content_tree": "212c22bac155b6f52c7dafbd6f5246bae5fde44e",
+      "recorded_for_base": "8a753cb2689ada8774d16755f0a422541784939c",
+      "verdict": "MATCH"
+    },
+    {
+      "case": "landing-without-record",
+      "wp": "WP-2026-0083",
+      "landed_as": "eb9f0c58b0beb3334444695602bc6c6688875a45",
+      "verdict": "composition_verified: false"
+    },
+    {
+      "case": "landing-without-record",
+      "wp": "WP-2026-0084",
+      "landed_as": "c7b5c392ee94ad6ca045e992d4dfc622266618f4",
+      "verdict": "composition_verified: false"
+    },
+    {
+      "case": "landing-without-record",
+      "wp": "WP-2026-0085",
+      "landed_as": "5b6cd5284ec2d0014e28fa59018075fedf7bbbad",
+      "verdict": "composition_verified: false"
+    },
+    {
+      "case": "landing-without-record",
+      "wp": "WP-2026-0086",
+      "landed_as": "8a753cb2689ada8774d16755f0a422541784939c",
+      "verdict": "composition_verified: false"
+    },
+    {
+      "case": "landing-verified",
+      "wp": "WP-2026-0087",
+      "landed_as": "fc9e727db9f8522b7e840120a011bec97066b838",
+      "expected_content_tree": "fb53f315ea38ca193b6f3192623c0a758c819fc0",
+      "landed_content_tree": "fb53f315ea38ca193b6f3192623c0a758c819fc0",
+      "recorded_for_base": "3967b23b674d7935146d1e810e73d6ae136e0dbe",
+      "verdict": "MATCH"
+    },
+    {
+      "case": "landing-verified",
+      "wp": "WP-2026-0088",
+      "landed_as": "3967b23b674d7935146d1e810e73d6ae136e0dbe",
+      "expected_content_tree": "1ba5acbb1c8867f8f2690c336c135666c8722020",
+      "landed_content_tree": "1ba5acbb1c8867f8f2690c336c135666c8722020",
+      "recorded_for_base": "78eab75afbeeb5275db7fc6227fc6d302073ab6e",
+      "verdict": "MATCH"
     },
     {
       "case": "identity-conform",
-      "commit": "74282a4f21405378ccb84f7dace7b58aac5af2d9",
-      "label": "BADF-WP-0080",
-      "trailer": "WP-2026-0080",
-      "verdict": "CONFORM"
-    },
-    {
-      "case": "identity-conform",
-      "commit": "928fc6bca7cbf572783feb699bd559052176721e",
-      "label": "BADF-WP-0079",
-      "trailer": "WP-2026-0079",
-      "verdict": "CONFORM"
-    },
-    {
-      "case": "identity-conform",
-      "commit": "2d080e059102afa485696a1a3ff1fa290240db36",
-      "label": "BADF-WP-0078",
-      "trailer": "WP-2026-0078",
-      "verdict": "CONFORM"
-    },
-    {
-      "case": "identity-conform",
-      "commit": "5aaeb62bb7029a00b487ff9746acd791d5235373",
-      "label": "BADF-WP-0076",
-      "trailer": "WP-2026-0076",
-      "verdict": "CONFORM"
-    },
-    {
-      "case": "identity-conform",
-      "commit": "1b80d7c9d20e1f39c6287aa033904e6cbff17dc3",
-      "label": "BADF-WP-0077",
-      "trailer": "WP-2026-0077",
-      "verdict": "CONFORM"
-    },
-    {
-      "case": "identity-conform",
-      "commit": "dc6b608ebea7aee2097b050883f0a0fe9ce9ed6c",
-      "label": "BADF-WP-0074",
-      "trailer": "WP-2026-0074",
-      "verdict": "CONFORM"
-    },
-    {
-      "case": "identity-conform",
-      "commit": "f1a0a5c9f7060a4bb9b18aa3007e0cfa00722f69",
-      "label": "BADF-WP-0075",
-      "trailer": "WP-2026-0075",
-      "verdict": "CONFORM"
-    },
-    {
-      "case": "identity-conform",
-      "commit": "0b2fd527c4e53b7c5b142de11c71438bea6b17b7",
-      "label": "BADF-WP-0069",
-      "trailer": "WP-2026-0069",
-      "verdict": "CONFORM"
-    },
-    {
-      "case": "identity-conform",
-      "commit": "9cf4b13bd3c56d860c517f558ac7c53dc6316bf2",
-      "label": "BADF-WP-0072",
-      "trailer": "WP-2026-0072",
-      "verdict": "CONFORM"
-    },
-    {
-      "case": "identity-conform",
-      "commit": "0343c8e96740f97fdfe54f7b29b574e296c559a2",
-      "label": "BADF-WP-0070",
-      "trailer": "WP-2026-0070",
-      "verdict": "CONFORM"
-    },
-    {
-      "case": "identity-conform",
-      "commit": "aba7de3bd8028f99ee6c4f78efc6fcda2111fca1",
-      "label": "BADF-WP-0071",
-      "trailer": "WP-2026-0071",
+      "commit": "8673d9a3292d304968c4c8bc15b9a6cd4d64b031",
+      "label": "BADF-WP-0067",
+      "trailer": "WP-2026-0067",
       "verdict": "CONFORM"
     },
     {
@@ -202,9 +176,135 @@
     },
     {
       "case": "identity-conform",
-      "commit": "8673d9a3292d304968c4c8bc15b9a6cd4d64b031",
-      "label": "BADF-WP-0067",
-      "trailer": "WP-2026-0067",
+      "commit": "aba7de3bd8028f99ee6c4f78efc6fcda2111fca1",
+      "label": "BADF-WP-0071",
+      "trailer": "WP-2026-0071",
+      "verdict": "CONFORM"
+    },
+    {
+      "case": "identity-conform",
+      "commit": "0343c8e96740f97fdfe54f7b29b574e296c559a2",
+      "label": "BADF-WP-0070",
+      "trailer": "WP-2026-0070",
+      "verdict": "CONFORM"
+    },
+    {
+      "case": "identity-conform",
+      "commit": "9cf4b13bd3c56d860c517f558ac7c53dc6316bf2",
+      "label": "BADF-WP-0072",
+      "trailer": "WP-2026-0072",
+      "verdict": "CONFORM"
+    },
+    {
+      "case": "identity-conform",
+      "commit": "0b2fd527c4e53b7c5b142de11c71438bea6b17b7",
+      "label": "BADF-WP-0069",
+      "trailer": "WP-2026-0069",
+      "verdict": "CONFORM"
+    },
+    {
+      "case": "identity-conform",
+      "commit": "f1a0a5c9f7060a4bb9b18aa3007e0cfa00722f69",
+      "label": "BADF-WP-0075",
+      "trailer": "WP-2026-0075",
+      "verdict": "CONFORM"
+    },
+    {
+      "case": "identity-conform",
+      "commit": "dc6b608ebea7aee2097b050883f0a0fe9ce9ed6c",
+      "label": "BADF-WP-0074",
+      "trailer": "WP-2026-0074",
+      "verdict": "CONFORM"
+    },
+    {
+      "case": "identity-conform",
+      "commit": "1b80d7c9d20e1f39c6287aa033904e6cbff17dc3",
+      "label": "BADF-WP-0077",
+      "trailer": "WP-2026-0077",
+      "verdict": "CONFORM"
+    },
+    {
+      "case": "identity-conform",
+      "commit": "5aaeb62bb7029a00b487ff9746acd791d5235373",
+      "label": "BADF-WP-0076",
+      "trailer": "WP-2026-0076",
+      "verdict": "CONFORM"
+    },
+    {
+      "case": "identity-conform",
+      "commit": "2d080e059102afa485696a1a3ff1fa290240db36",
+      "label": "BADF-WP-0078",
+      "trailer": "WP-2026-0078",
+      "verdict": "CONFORM"
+    },
+    {
+      "case": "identity-conform",
+      "commit": "928fc6bca7cbf572783feb699bd559052176721e",
+      "label": "BADF-WP-0079",
+      "trailer": "WP-2026-0079",
+      "verdict": "CONFORM"
+    },
+    {
+      "case": "identity-conform",
+      "commit": "74282a4f21405378ccb84f7dace7b58aac5af2d9",
+      "label": "BADF-WP-0080",
+      "trailer": "WP-2026-0080",
+      "verdict": "CONFORM"
+    },
+    {
+      "case": "identity-conform",
+      "commit": "605f97fe12b419072f7bc9e254d5945e11ffb4db",
+      "label": "BADF-WP-0081",
+      "trailer": "WP-2026-0081",
+      "verdict": "CONFORM"
+    },
+    {
+      "case": "identity-conform",
+      "commit": "eb9f0c58b0beb3334444695602bc6c6688875a45",
+      "label": "BADF-WP-0083",
+      "trailer": "WP-2026-0083",
+      "verdict": "CONFORM"
+    },
+    {
+      "case": "identity-conform",
+      "commit": "c7b5c392ee94ad6ca045e992d4dfc622266618f4",
+      "label": "BADF-WP-0084",
+      "trailer": "WP-2026-0084",
+      "verdict": "CONFORM"
+    },
+    {
+      "case": "identity-conform",
+      "commit": "5b6cd5284ec2d0014e28fa59018075fedf7bbbad",
+      "label": "BADF-WP-0085",
+      "trailer": "WP-2026-0085",
+      "verdict": "CONFORM"
+    },
+    {
+      "case": "identity-conform",
+      "commit": "8a753cb2689ada8774d16755f0a422541784939c",
+      "label": "BADF-WP-0086",
+      "trailer": "WP-2026-0086",
+      "verdict": "CONFORM"
+    },
+    {
+      "case": "identity-conform",
+      "commit": "78eab75afbeeb5275db7fc6227fc6d302073ab6e",
+      "label": "BADF-WP-0082",
+      "trailer": "WP-2026-0082",
+      "verdict": "CONFORM"
+    },
+    {
+      "case": "identity-conform",
+      "commit": "3967b23b674d7935146d1e810e73d6ae136e0dbe",
+      "label": "BADF-WP-0088",
+      "trailer": "WP-2026-0088",
+      "verdict": "CONFORM"
+    },
+    {
+      "case": "identity-conform",
+      "commit": "fc9e727db9f8522b7e840120a011bec97066b838",
+      "label": "BADF-WP-0087",
+      "trailer": "WP-2026-0087",
       "verdict": "CONFORM"
     },
     {
@@ -266,6 +366,40 @@
         "git-recovery: EVIDENCE_ONLY RECOVERABLE",
         "git-release-check: RELEASE_BOUND BADF-BASELINE-1.0.0",
         "composition: CURRENT (7a27cff)"
+      ]
+    },
+    {
+      "run_id": 33284842460,
+      "pr": 161,
+      "inspectors": [
+        "git-baseline: head_kind detached (refs/pull/161/merge)",
+        "git-staleness: CURRENT",
+        "git-recovery: EVIDENCE_ONLY RECOVERABLE",
+        "git-release-check: RELEASE_BOUND BADF-BASELINE-1.0.0",
+        "composition: CURRENT (content tree 212c22b, base 8a753cb)"
+      ]
+    },
+    {
+      "run_id": 33301153596,
+      "pr": 173,
+      "inspectors": [
+        "git-baseline: head_kind detached (refs/pull/173/merge)",
+        "git-staleness: CURRENT",
+        "git-recovery: EVIDENCE_ONLY RECOVERABLE",
+        "git-release-check: RELEASE_BOUND BADF-BASELINE-1.0.0",
+        "composition: CURRENT (content tree 1ba5acb, base 78eab75)"
+      ]
+    },
+    {
+      "run_id": 33302765046,
+      "pr": 174,
+      "inspectors": [
+        "git-baseline: head_kind detached (refs/pull/174/merge)",
+        "git-staleness: CURRENT",
+        "git-recovery: EVIDENCE_ONLY RECOVERABLE",
+        "git-release-check: RELEASE_BOUND BADF-BASELINE-1.0.0",
+        "composition: CURRENT (content tree fb53f31, base 3967b23)",
+        "repo: PASS on the ACTIVE registry"
       ]
     }
   ],

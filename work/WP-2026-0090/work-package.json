@@ -1,0 +1,57 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0090",
+  "title": "Re-shadow badf-git on the main that includes its own admission (7 record-bearing landings MATCH, 21 identities CONFORM); six subskills, not seven",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0077",
+  "repository": "bstBizEra/badf",
+  "objective": "Re-measure examples/git-shadow-evidence.json at fc9e727 -- the main that includes GIT-I, the #160 harness fix and the GIT-J admission -- under the same corpus rule as the GIT-I record (the program's history since the GIT-A freeze, b1e0f5a) with the real tools (ledger_landings, content_tree, git_staleness, git_release_check): every record-bearing landing's content tree equals its claim (7/7), every first-parent landing since 8673d9a conforms to the identity rule (21/21), 15 landings without a record render composition_verified: false, the staleness and release cases stand, the runner citations gain #161/#173/#174; the non-coverage list is kept because no gap was closed. Raise the shadow test thresholds to 7/15/21; refresh the calibration note (root ACTIVE at GIT-J; seven -> six subskills, also in the GIT-I doctrine section). No registry, lifecycle, gate, compose or workflow change; no generator tool added to the repo.",
+  "business_value": "An ACTIVE family's shadow evidence must describe the main it governs, including its own admission; a record frozen at GIT-H with a wrong subskill count would be the kind of stale claim the family exists to refuse.",
+  "in_scope": [
+    "examples/git-shadow-evidence.json regenerated at fc9e727 (same corpus rule; 7 verified / 15 without record / 21 identity / staleness / release; runner citations +3; non_coverage kept)",
+    "tests/test_badf_git_shadow.py thresholds 4/11/14 -> 7/15/21 and doc tokens ACTIVE / #169 / six subskills (failing-first)",
+    "skills/badf-git/evidence/shadow-evidence.md refreshed: measurement table, root ACTIVE at GIT-J (WP-2026-0087, #169), seven -> six subskills",
+    "docs/governance/GITHUB_CONTROL_PLANE.md: GIT-I section seven -> six; a short re-shadow note",
+    "badf/demands/BADF-DEM-0077.json; own composition record + G07 self-dossier; reconcile WP-2026-0087 (landed fc9e727)"
+  ],
+  "out_of_scope": [
+    "any change to the shadow's contract parts, the tools, the registry or the lifecycle",
+    "re-measuring the staleness/release cases on new heads (kept as the real cases they are)",
+    "adding the generator to the repo (the tests are the tool)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "every landing-verified case recomputes MATCH and every identity case CONFORM from the object store (existing tests, raised thresholds)",
+    "the tamper test still refuses a wrong tree / wrong verdict / non-recomputable case",
+    "the calibration note names ACTIVE, #169 and six subskills; the GIT-I doctrine section no longer says seven",
+    "non_coverage unchanged in content (no gap closed); runner citations cover #161, #173, #174",
+    "CI green on the composed tree; QA + REV comment before merge (BARCHI-1 pattern)"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_git_shadow.py (8; thresholds raised)"
+  ],
+  "evidence": [
+    "failing-first run (4 red: thresholds + doc tokens)",
+    "green run after the regenerated record and refreshed note",
+    "tamper test (unchanged) still refusing",
+    "compose output incl. composition record",
+    "G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "fc9e727"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Evidence-refresh WP (examples + tests + docs; empty gate diff). Resolves #175 / GOV-0072 -- the last loose end of the badf-git program under the operator's 'complete the below' directive. Reconciles WP-2026-0087 (composition_verified true). Engineered by BARCHI-2; QA/REV by BARCHI-1 requested."
+}

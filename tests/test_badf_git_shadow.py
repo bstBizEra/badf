@@ -55,7 +55,7 @@ class ShadowRecordTests(unittest.TestCase):
 
     def test_every_recorded_landing_matches_its_content_tree(self):
         landings = gate.ledger_landings(); seen = cases("landing-verified")
-        self.assertGreaterEqual(len(seen), 4)
+        self.assertGreaterEqual(len(seen), 7)
         for c in seen:
             with self.subTest(wp=c["wp"]):
                 self.assertEqual(landings[c["wp"]][-1], c["landed_as"], "the ledger's landing must be the recorded one")
@@ -67,7 +67,7 @@ class ShadowRecordTests(unittest.TestCase):
 
     def test_every_no_record_landing_has_no_record_in_its_landed_tree(self):
         landings = gate.ledger_landings(); seen = cases("landing-without-record")
-        self.assertGreaterEqual(len(seen), 11)
+        self.assertGreaterEqual(len(seen), 15)
         for c in seen:
             with self.subTest(wp=c["wp"]):
                 self.assertEqual(landings[c["wp"]][-1], c["landed_as"])
@@ -75,7 +75,7 @@ class ShadowRecordTests(unittest.TestCase):
                 self.assertEqual(c["verdict"], "composition_verified: false")
 
     def test_every_identity_case_conforms_on_real_history(self):
-        seen = cases("identity-conform"); self.assertGreaterEqual(len(seen), 14)
+        seen = cases("identity-conform"); self.assertGreaterEqual(len(seen), 21)
         first_parent = set(g("rev-list", "--first-parent", TARGET).split())
         for c in seen:
             with self.subTest(commit=c["commit"][:7]):
@@ -125,7 +125,7 @@ class ShadowRecordTests(unittest.TestCase):
     def test_shadow_evidence_doc_names_every_case_and_gap_and_root_is_active(self):
         text = DOC.read_text(encoding="utf-8")
         for token in ("landing-verified", "landing-without-record", "identity-conform", "staleness-source-advanced", "release-bound",
-                      "STALE_EVIDENCE", "synthetic", "non-coverage", "DESIGNED", "GIT-J", "admission", "run"):
+                      "STALE_EVIDENCE", "synthetic", "non-coverage", "DESIGNED", "ACTIVE", "GIT-J", "admission", "#169", "six subskills", "run"):
             self.assertIn(token, text, token)
         reg = gate.load_json(gate.ROOT / "badf/skill-registry.json"); by = {s["name"]: s for s in reg["skills"]}
         self.assertEqual(by["badf-git"]["status"], "ACTIVE")

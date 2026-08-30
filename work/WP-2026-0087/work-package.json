@@ -49,11 +49,14 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "3967b23"
+    "base_revision": "3967b23",
+    "landed_content_tree": "fb53f315ea38ca193b6f3192623c0a758c819fc0",
+    "composition_verified": true,
+    "landed_as": "fc9e727db9f8522b7e840120a011bec97066b838"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-J per GTGM v0.1 section 17, after GIT-I (WP-2026-0082 / 78eab75). Governance-only WP (registry status + test pins + doctrine; empty gate diff). Resolves #169 / GOV-0069 on the operator's admission recorded there. Reconciles WP-2026-0088 (composition_verified true). Grants no authority even ACTIVE. Engineered by BARCHI-2; QA by BARCHI-1 and a REV verdict required before merge."
 }
