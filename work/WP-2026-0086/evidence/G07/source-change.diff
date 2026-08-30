@@ -1,0 +1,123 @@
+diff --git a/badf/demands/BADF-DEM-0073.json b/badf/demands/BADF-DEM-0073.json
+new file mode 100644
+index 0000000..a660ae2
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0073.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0073",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 167,
++    "url": "https://github.com/bstBizEra/badf/issues/167",
++    "exported_at": "2026-08-30T00:40:53Z",
++    "body_digest": "sha256:b6f72ba4ff216620189b71b92cf008f69f28821b1b4c68318853655009c72b4c"
++  },
++  "title": "GOV-0067: WP-SEC-E \u2014 admit badf-security-design SHADOWED -> ACTIVE (representative shadow accepted; re-shadow deferred #166)",
++  "problem": "## Observed\n\nbadf-security-design is SHADOWED (WP-SEC-D / #165) on a REPRESENTATIVE shadow. The final admission rung is ACTIVE, a human admission gate (self-approval prohibited).\n\n## Expected\n\n**WP-SEC-E \u2014 admit SHADOWED -> ACTIVE.** The operator's standing /loop directive 'proceed next steps until badf-security-design is active' (2026-08-30) is the admission decision to activate on the representative shadow, with the real re-shadow tracked as a deferred follow-up (#166). Registry SHADOWED -> ACTIVE; representative caveat preserved (shadow-evidence.md still points at #166); ACTIVE grants NO new authority (SEC-I15/I13, the gate stays sole authority, security-approval stays security_authority's); no new control, no lifecycle change, no second validator. Mirrors badf-solution-design WP-SOL-E.\n\n## Evidence\n\n- Operator admission via /loop 'until active' 2026-08-30.\n- shadow-evidence.md (WP-SEC-D) is the calibration backing admission; #166 tracks the owed real re-shadow.\n\n## Unknowns\n\nNone that block admission \u2014 the representative-vs-real risk is explicitly accepted by the operator's 'until active' directive and bounded by #166.\n\ndiscovered-by: BADF-WP-0085 (badf-security-design landed SHADOWED) \u00b7 status: DISCOVERED\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T00:40:53Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-SEC-E admits badf-security-design SHADOWED->ACTIVE on the operator's standing /loop 'until active' directive (2026-08-30). Grants no new authority (SEC-I15/I13). Preserves the representative caveat; real re-shadow deferred to #166. DEM-0073/GOV-0067/WP-0086. Reconciles WP-2026-0085. Completes the WP-SEC-A..E ladder (DESIGNED->ACTIVE)."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 6d853df..540198a 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -248,7 +248,7 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "SHADOWED",
++      "status": "ACTIVE",
+       "digest": "sha256:60d0a80d0ec829627555698c353b962975e519a2a71b081109b5d75320cdef6e"
+     },
+     {
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 4a0b099..a63affe 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1046,6 +1046,25 @@ matrices (`examples/security-composition-shadow-api.json`, `-data.json`) are val
+ `lifecycle.json` change, no new control, no second validator. Registry `VALIDATED → SHADOWED`;
+ `APPROVED`/`ACTIVE` remain the operator's admission decision.
+ 
++## badf-security-design → ACTIVE — operator admission on a representative shadow (`BADF-WP-0086` / WP-SEC-E, Issue #167 / GOV-0067)
++
++`SHADOWED → ACTIVE` is a **human admission gate** — self-approval is prohibited, so no agent crosses it.
++The operator's standing directive — `/loop … proceed next steps until badf-security-design is active`
++(2026-08-30) — is the admission decision to **activate on the representative shadow**, rather than hold
++`ACTIVE` indefinitely for a real security-composition matrix that BADF — a governance framework with no
++threat surface of its own — may not produce soon. This WP records that decision as a governed registry
++advance, mirroring `badf-solution-design` WP-SOL-E: `ACTIVE` **grants the skill no new authority**
++(SEC-I15 — `badf_gate.py` stays the sole gate authority; SEC-I13 — `security-approval` stays
++`security_authority`'s), and there is no `lifecycle.json` change, no new control, no second validator.
++
++The admission does **not erase the caveat**: `references/shadow-evidence.md` still labels the shadow
++representative, and the owed real-project re-shadow is filed as a tracked follow-up (**#166**,
++`DISCOVERED`, trigger = the first real security-composition matrix). So the ladder stays truthful — the
++capability is admitted for use, its trust honestly bounded to a representative shadow, the debt to
++re-shadow on real data tracked rather than lost. This **completes the WP-SEC-A…E ladder**
++(`DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED → ACTIVE`), the second capability after
++`badf-solution-design` to traverse it end to end. Registry `SHADOWED → ACTIVE`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/skills/badf-security-design/references/acceptance.md b/skills/badf-security-design/references/acceptance.md
+index 770ab2c..875704c 100644
+--- a/skills/badf-security-design/references/acceptance.md
++++ b/skills/badf-security-design/references/acceptance.md
+@@ -14,8 +14,8 @@ contract first, prove it later, in separate WPs. **Do not build every specialist
+ | WP-SEC-A | root `SKILL.md` + references: G05 mapping, routing, specialist boundaries, architecture/solution-design interfaces, threat/control/risk model, normalization contract, OWASP dispositions, SEC-I01…I15, admission criteria | `DESIGNED` |
+ | WP-SEC-B | the `security-composition` matrix schema + the `security` gate command with structural controls (no-empty · SEC-C01 unique · SEC-C02 provenance · SEC-C03 controlled-has-control · SEC-I12 residual-risk-not-accepted by schema); see `traceability.md` | `IMPLEMENTED` |
+ | WP-SEC-C | matrix-internal cross-artifact **seam** controls: SEC-C04 (a `controlled` threat is verified, SEC-I04 downstream) + SEC-C05 (residual-risk ↔ disposition coherence, SEC-I12); external-artifact seams (full SEC-I04 bidirectional, SEC-I01 baseline binding, semantic resolution) deferred | `VALIDATED` |
+-| **WP-SEC-D** | **representative** shadow calibration (no real security-composition matrices exist yet; real re-shadow owed on first real use); see `shadow-evidence.md` | `SHADOWED` |
+-| WP-SEC-E | operator admission on the representative shadow (caveat preserved; real re-shadow tracked) → registry activation | `ACTIVE` |
++| WP-SEC-D | **representative** shadow calibration (no real security-composition matrices exist yet; real re-shadow owed on first real use); see `shadow-evidence.md` | `SHADOWED` |
++| **WP-SEC-E** | operator admission on the representative shadow (caveat preserved; real re-shadow tracked as #166) → registry activation | `ACTIVE` |
+ 
+ ## WP-SEC-A boundaries (no scope creep)
+ 
+diff --git a/tests/test_badf_security_composition.py b/tests/test_badf_security_composition.py
+index 7b9c41a..8e561fa 100644
+--- a/tests/test_badf_security_composition.py
++++ b/tests/test_badf_security_composition.py
+@@ -164,10 +164,10 @@ class ShadowCalibrationTests(SecurityCompositionBase):
+ 
+ 
+ class RegistryStatusTests(unittest.TestCase):
+-    def test_badf_security_design_is_registered_shadowed(self):  # WP-SEC-D advanced VALIDATED -> SHADOWED
++    def test_badf_security_design_is_registered_active(self):  # WP-SEC-E admitted SHADOWED -> ACTIVE (operator admission)
+         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
+         entry = next(e for e in reg["skills"] if e["name"] == "badf-security-design")
+-        self.assertEqual(entry["status"], "SHADOWED")
++        self.assertEqual(entry["status"], "ACTIVE")
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/work/WP-2026-0085/work-package.json b/work/WP-2026-0085/work-package.json
+index 554822e..bb31ce9 100644
+--- a/work/WP-2026-0085/work-package.json
++++ b/work/WP-2026-0085/work-package.json
+@@ -46,11 +46,13 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "c7b5c39"
++    "base_revision": "c7b5c39",
++    "composition_verified": false,
++    "landed_as": "5b6cd5284ec2d0014e28fa59018075fedf7bbbad"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Shadow evidence + status advance; no new control (controls are WP-SEC-B/C), so no mutation. Isolated worktree (badf-wt-secd, GIT-I04) parallel to BARCHI-2 GIT-I (#157/#161). Ids WP-0085/DEM-0072/GOV-0066. Reconciles WP-2026-0084 (composition_verified: false). Shipped via operator /loop 'proceed next steps until badf-security-design is active'. Resolves #164."
+ }
