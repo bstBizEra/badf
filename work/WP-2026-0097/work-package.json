@@ -1,0 +1,57 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0097",
+  "title": "Enforce scalar/array type conformance in the check_schema walker (closes #171)",
+  "owner": "engineering_owner",
+  "demand": "BADF-DEM-0084",
+  "repository": "bstBizEra/badf",
+  "objective": "Close #171 (GOV-0071): the check_schema JSON-schema-lite walker enforced required / enum / pattern / additionalProperties and the object-must-be-a-mapping rule, but did NOT refuse a value whose JSON type mismatched a declared scalar/array `type` -- an `array` given an object was silently skipped, and string/number/integer/boolean were never type-checked. Add deterministic type conformance for array/string/integer/number/boolean at any depth (integer/number exclude Python bool, which is an int subclass). This closes the gap for all ~25 gate-validated artifacts at once (Option 1 from #171), rather than sprinkling per-field code controls. The typed planning fields the G06 ladder added (execution_budget, stop_conditions, dependencies, ...) become type-enforced at the schema layer.",
+  "business_value": "The value of the typed schema extensions the G06 ladder shipped depends on the walker actually checking types; until now a malformed type passed the schema layer and was only caught (if at all) by a downstream code control. One small deterministic change hardens every governed artifact's type discipline and removes the need for per-field type code controls.",
+  "in_scope": [
+    "scripts/badf_gate.py: check_schema walker -- add scalar/array type conformance (array/string/integer/number/boolean), integer/number excluding bool",
+    "tests/test_badf_schema_type_enforcement.py: new failing-first tests pinning each type branch (via real committed examples)",
+    "tests/test_badf_g06_planning_controls.py: update the now-stale bool-max_attempts needle (bool is refused at the schema layer since this change; refusal preserved, layer moved)",
+    "docs/governance/GITHUB_CONTROL_PLANE.md: doctrine section for the type layer",
+    "re-sign lockfile in the same diff; own G07 self-dossier; reconcile WP-2026-0095"
+  ],
+  "out_of_scope": [
+    "removing the IMP-C3 positive-integer code control (kept as defense-in-depth; the walker adds the type layer, the value layer stays)",
+    "enforcing minLength / minItems / minimum / format (the walker still ignores these; out of #171's scope)",
+    "any new gate command, schema field, or lifecycle change"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "check_schema refuses a value whose JSON type mismatches a declared type of array/string/integer/number/boolean, at any depth",
+    "integer and number reject Python bool and accept genuine ints/floats",
+    "no regression: badf_gate.py repo stays PASS on the full committed ledger + locked examples; composed-tree suite green on CI",
+    "existing controls preserved: the IMP-C3 positive-integer control still rejects 0/negative max_attempts",
+    "the gate change is signed (lock) in the same diff"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_schema_type_enforcement.py",
+    "tests/test_badf_g06_planning_controls.py"
+  ],
+  "evidence": [
+    "audit: badf_gate.py repo PASS under the strict walker at d4b8c4a; re-verified at cf431fa after rebase (zero governed records break)",
+    "failing-first: 7/9 new tests fail on the pristine walker",
+    "mutation: 7/7 type branches (incl. both bool-exclusions) killed",
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR (walker returns to the pre-#171 lax behavior)"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "cf431fa"
+  },
+  "note": "Shared-surface change (core check_schema walker) -> BARCHI-2 independent review (change_class C1). Patch tier. Audit-first satisfied before coding. Ids WP-0097/DEM-0084/GOV-0080 (yielded 0096/DEM-0083/GOV-0079 to BARCHI-2's BLD-A). Rebased onto cf431fa after BLD-A (WP-0096) landed; reconciles WP-2026-0096. Lands IN_PROGRESS by design; next WP reconciles it."
+}

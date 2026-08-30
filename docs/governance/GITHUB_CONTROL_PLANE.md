@@ -1260,6 +1260,33 @@ BLD-D shadows on every G07 self-dossier BADF has produced since WP-0030; BLD-E i
 A successful build proves only that the authorized change was built and author-verified — never
 "independently verified", "approved to merge", "approved to release" or "safe for production".
 
+## check_schema type conformance — closing the walker's type gap (`BADF-WP-0097`, Issue #189 / GOV-0080, closes #171)
+
+The `check_schema` walker is BADF's single structural authority for ~25 gate-validated artifacts
+(work-breakdown, test-plan, release-plan, rollback-plan, solution/security-composition, architecture,
+requirements, …). It enforced `required`, `enum`, `pattern`, `additionalProperties: false`, and the
+object-must-be-a-mapping rule — but it did **not** refuse a value whose JSON type mismatched a declared
+scalar/array `type`: an `array` given an object was silently skipped (the items loop is guarded by
+`isinstance(val, list)`), and `string` / `number` / `integer` / `boolean` were never type-checked
+(discovered under WP-IMP-0, tracked as **#171**). The typed planning fields the G06 ladder added
+(`execution_budget`, `stop_conditions`, `dependencies`, …) were therefore declared but not
+type-enforced at the schema layer.
+
+This WP adds deterministic **type conformance** for `array` / `string` / `integer` / `number` /
+`boolean`, at any depth — Option 1 from #171, closing the gap for **all governed artifacts at once**
+rather than sprinkling per-field code controls. Because a Python `bool` is an `int` subclass, `integer`
+and `number` **exclude bool explicitly**. The walker still deliberately ignores `minLength` / `minItems`
+/ `minimum` / `format` (out of #171's scope — non-emptiness and value bounds stay code controls, e.g.
+IMP-C3's positive-integer check, kept as defense-in-depth).
+
+**Audit-first** (the safety gate, run before coding): the strict walker was applied to the tree at
+`d4b8c4a` and `badf_gate.py repo` ran **PASS** — zero governed records break. One observed interaction:
+a bool `max_attempts` (and a non-numeric NFR `target.value`) is now refused at the schema layer *before*
+the downstream code control (IMP-C3, `check_nfr`) emits its message; the refusal is preserved, only the
+layer moved (the three affected G02/G06 test needles were widened to `a number` / `integer`, matching
+both layers — the code controls stay as defense-in-depth). change_class **C1** (shared control surface)
+→ independent review. Patch tier. Registry unchanged (no capability advances).
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

@@ -130,13 +130,16 @@ class NfrRuleTests(G02Scratch):
         nfr = self.artifact("nfr")
         nfr["nfrs"][0]["target"]["value"] = "fast"
         self.rewrite("nfr", nfr)
-        self.refused("is not quantified")
+        # "a number" matches both the schema-layer message ("must be a number", since
+        # GOV-0080 the walker type-checks target.value) and the check_nfr code control
+        # ("... is not a number"); the NFR-quantified rule is enforced either way.
+        self.refused("a number")
 
     def test_a_boolean_nfr_target_is_not_a_quantity(self):
         nfr = self.artifact("nfr")
         nfr["nfrs"][0]["target"]["value"] = True
         self.rewrite("nfr", nfr)
-        self.refused("is not quantified")
+        self.refused("a number")
 
 
 class DefinitionOfReadyRuleTests(G02Scratch):

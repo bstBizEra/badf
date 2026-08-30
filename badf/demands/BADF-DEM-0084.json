@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0084",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 189,
+    "url": "https://github.com/bstBizEra/badf/issues/189",
+    "exported_at": "2026-08-30T14:00:01Z",
+    "body_digest": "sha256:ba88469216cd8099f2a3f926b10f4df351037995978dfa20b8fa67e1105436d7"
+  },
+  "title": "GOV-0080: enforce scalar/array type conformance in check_schema walker (closes #171)",
+  "problem": "🧠 **ARCHI (BARCHI-1)** — Enforce scalar/array type conformance in the `check_schema` walker\n\n## Context\n\n`badf_gate.py check_schema` (the JSON-schema-lite walker) enforces `required`, `enum`,\n`pattern`, `additionalProperties: false`, and the object-must-be-a-mapping rule — but it\ndoes **not** refuse a value whose JSON type mismatches a scalar/array `type` declaration\n(`array` given an object is silently skipped; `string`/`number`/`integer`/`boolean` are\nnever type-checked). Discovered under WP-IMP-0 and tracked as #171 (GOV-0071). The typed\nplanning fields the G06 ladder added (`execution_budget`, `stop_conditions`, `dependencies`,\n…) are declared but only value-checked by code controls; a malformed *type* would pass the\nschema layer. This closes the gap for **all ~25 gate-validated artifacts at once** (Option 1\nfrom #171), rather than sprinkling per-field code controls.\n\n## Change class / authority / tier\n\n- **change_class: C1** (shared control surface: the core `check_schema` walker).\n  Required roles: engineering_owner + independent_reviewer (**BARCHI-2**, shared surface).\n- **Version tier: patch** (`0.0.X`) — bug fix to an existing gate control; no new public API.\n- DEV Glossary stage: gate hardening (existing G00–G06 enforcement surface).\n\n## Audit-first (done at plan time — the safety gate)\n\nApplied the strict walker to the tree at `d4b8c4a` and ran `badf_gate.py repo`:\n**PASS** — zero governed records break. A `$schema`-scan of 89 records found only two\n*object* placeholders in `templates/gate-dossier.json`, which is **not** a `check_schema`\ntarget and which the existing walker already governs identically. So tightening the\nscalar/array types turns nothing on the ledger RED.\n\n## Acceptance criteria\n\n- `check_schema` refuses a value whose JSON type mismatches a declared `type` of\n  `array` / `string` / `integer` / `number` / `boolean`, at any depth.\n- `integer` and `number` **reject Python `bool`** (a bool is an int subclass) — and accept\n  genuine ints/floats.\n- No regression: `badf_gate.py repo` stays PASS on the full committed ledger + locked\n  examples (composed-tree suite green on CI).\n- Existing controls preserved: the IMP-C3 positive-integer control still rejects `0`/negative\n  `max_attempts` (the walker adds the type layer; the value layer stays).\n- The change is signed (`lock`) in the same diff.\n\n## Test list\n\n- `test_type_string_field_rejects_non_string`\n- `test_type_array_field_rejects_object` (the original silent-skip gap)\n- `test_type_integer_field_rejects_bool`\n- `test_type_integer_field_rejects_string`\n- `test_type_number_field_rejects_bool`\n- `test_type_boolean_field_rejects_non_bool`\n- `test_conforming_types_still_pass` (no false positives on valid records)\n- `test_repo_gate_passes_under_strict_walker` (ledger-wide regression guard)\n- (updated) `test_boolean_max_attempts_is_refused` — bool now refused at the schema layer\n\ndiscovered-by: #171 (GOV-0071) · delivered-by: BADF-WP-0097 · closes #171\n\n<!-- agent: architect -->\n\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-30T14:00:01Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "WP-0097 closes #171 (GOV-0071): the check_schema walker now type-checks declared scalar/array types (array/string/integer/number/boolean), rejecting a JSON-type mismatch at any depth; integer/number exclude Python bool. Audit-first: repo PASS under the strict walker at d4b8c4a (zero governed records break). change_class C1 (shared surface: core walker) -> BARCHI-2 independent review. Patch tier. DEM-0084/GOV-0080/WP-0097. Rebased onto cf431fa after BLD-A landed; reconciles WP-2026-0096."
+}

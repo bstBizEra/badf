@@ -58,9 +58,12 @@ class PlanningControlTests(G06PlanningControlsBase):
         self.refuse(lambda w: w["tasks"][0]["execution_budget"].__setitem__("max_attempts", 0),
                     "positive integer")
 
-    def test_boolean_max_attempts_is_refused(self):  # IMP-C3: True is an int in python; must be rejected
+    def test_boolean_max_attempts_is_refused(self):  # True is an int in python; refused at the schema layer (GOV-0080)
+        # Since GOV-0080 the check_schema walker type-checks `integer`, so a bool max_attempts
+        # is refused at the schema layer ("must be an integer, got bool") before the IMP-C3
+        # positive-integer code control runs. The refusal is preserved; only the layer moved.
         self.refuse(lambda w: w["tasks"][0]["execution_budget"].__setitem__("max_attempts", True),
-                    "positive integer")
+                    "integer")
 
     def test_empty_stop_conditions_is_refused(self):  # IMP-C4 / IMP-I12
         self.refuse(lambda w: w["tasks"][0].__setitem__("stop_conditions", []),

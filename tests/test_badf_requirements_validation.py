@@ -39,7 +39,10 @@ class CaseB_Rework(G02Scratch):
         nfr = self.artifact("nfr")
         nfr["nfrs"][0]["target"]["value"] = "fast"
         self.rewrite("nfr", nfr)
-        self.refused("is not quantified")
+        # "a number" matches both the schema-layer message (since GOV-0080 the walker
+        # type-checks target.value) and the check_nfr code control; a qualitative
+        # (non-numeric) NFR target is refused as rework either way.
+        self.refused("a number")
 
 
 class CaseC_SecurityProvenance(G02Scratch):
