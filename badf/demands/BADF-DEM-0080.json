@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0080",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 181,
+    "url": "https://github.com/bstBizEra/badf/issues/181",
+    "exported_at": "2026-08-30T12:27:30Z",
+    "body_digest": "sha256:3d1409737db875ac2ba818a04690c4f6ab53bb0b9ce3b1b735eef9aaeeab4ee4"
+  },
+  "title": "GOV-0075: WP-IMP-C \u2014 deterministic G06 planning controls in badf_gate.py (badf-implementation-plan -> VALIDATED)",
+  "problem": "## Observed\n\nbadf-implementation-plan is IMPLEMENTED (WP-IMP-B). The gate-enforced G06 artifact is the work-breakdown (check_work_breakdown), which enforces non-empty/unique/resolvable-deps/acyclic. The operator's remaining planning controls (authority derivation, coverage, budget/stop) are not yet enforced. (Finding: check_schema(work-package) is never called in the gate -- WP records are the human-readable contract, the work-breakdown is the machine-enforced DAG.)\n\n## Expected\n\n**WP-IMP-C -> VALIDATED.** Extend schemas/work-breakdown.schema.json (optional per-task planning fields; additionalProperties:false stays) and check_work_breakdown with 5 code controls, each failing-first + mutation-killed: IMP-C1 authority-not-reduced (required_roles superset of authority-matrix[change_class]); IMP-C2 acceptance coverage (each acceptance claim has a test_obligation); IMP-C3 bounded budget (execution_budget.max_attempts positive integer, code control since walker doesn't type-check #171, rejects True); IMP-C4 non-empty stop contract; IMP-C5 composition_after resolves + acyclic, separate from depends_on. Enriched example; existing minimal example + records still validate. Registry IMPLEMENTED -> VALIDATED. No new gate command, no lifecycle change.\n\n## Evidence\n\n- authority-matrix.json change_classes carry required_roles (C0..C3) -- IMP-C1 uses them. All controls field-scoped so backward-compatible.\n\n## Unknowns\n\nNone -- controls on the gate-enforced work-breakdown artifact.\n\ndiscovered-by: operator /loop 'proceed from WP-IMP-A to WP-IMP-E' 2026-08-30 \u00b7 status: DISCOVERED\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-30T12:27:30Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "WP-IMP-C advances badf-implementation-plan IMPLEMENTED->VALIDATED: 5 deterministic controls in check_work_breakdown (IMP-C1 authority/IMP-C2 coverage/IMP-C3 budget/IMP-C4 stop/IMP-C5 composition-order), each failing-first + mutation-killed (all 6 mutations kill their tests; /mnt/c write-then-subprocess race needs os.sync). Controls on the gate-enforced work-breakdown (check_schema(work-package) is never called -- WP record is contract, work-breakdown is enforced). DEM-0080/GOV-0075/WP-0093. Reconciles WP-2026-0092. SHARED SURFACE (badf_gate.py) -> BARCHI-2 review."
+}

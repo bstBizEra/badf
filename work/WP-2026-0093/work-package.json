@@ -1,0 +1,52 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0093",
+  "title": "WP-IMP-C: deterministic G06 planning controls in check_work_breakdown (badf-implementation-plan -> VALIDATED)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0080",
+  "repository": "bstBizEra/badf",
+  "objective": "Advance badf-implementation-plan IMPLEMENTED -> VALIDATED by adding the deterministic planning controls to check_work_breakdown -- the gate-enforced G06 DAG artifact -- and extending schemas/work-breakdown.schema.json with the optional per-task fields they read. Five controls, each failing-first + mutation-killed: IMP-C1 authority-not-reduced (required_roles superset of the authority matrix for the task's change_class); IMP-C2 acceptance coverage; IMP-C3 bounded execution budget (positive-integer max_attempts, a code control since the walker doesn't type-check, #171); IMP-C4 non-empty stop contract; IMP-C5 composition_after resolves + acyclic, separate from depends_on. Each fires only when its optional field is present, so the existing minimal work-breakdown and every record still validate. No new gate command, no lifecycle change.",
+  "business_value": "The work-breakdown is the DAG the gate already validates; putting the operator's authority/coverage/budget/stop/composition controls there makes them deterministically enforced on every G06 dossier, not advisory. The type/positive-integer checks are code controls precisely because the schema walker doesn't type-check (#171) -- the exact gap WP-IMP-B flagged.",
+  "in_scope": [
+    "scripts/badf_gate.py check_work_breakdown: IMP-C1..C5 (each fires only when its optional field is present)",
+    "schemas/work-breakdown.schema.json: optional per-task fields (change_class/authority_requirement/acceptance/test_obligations/evidence_obligations/execution_budget/stop_conditions/composition_after/expected_surfaces); additionalProperties:false stays; task required unchanged",
+    "examples/work-breakdown-planned.json: an enriched work-breakdown exercising every control",
+    "tests/test_badf_g06_planning_controls.py: enriched example passes; minimal task still validates; per-control failing-first refusals mutation-killed; registry VALIDATED",
+    "skills/badf-implementation-plan/references/acceptance.md ladder; GITHUB_CONTROL_PLANE.md doctrine; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "WP-record-level gate validation (the gate validates the work-breakdown, not WP records; check_schema(work-package) is never called -- the WP-record fields from WP-IMP-B are the contract, test-validated)",
+    "any new gate command, lifecycle.json change, scripts/badf_implementation_plan.py; WP-IMP-D shadow / WP-IMP-E admission"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the enriched example renders PASS via check_work_breakdown; each control refuses its mutation (authority-reduced/uncovered-acceptance/nonpositive-or-boolean-max_attempts/empty-stop/dangling-or-cyclic-composition_after), all mutation-killed",
+    "the existing minimal work-breakdown example + the G06 example dossier still validate (backward-compatible)",
+    "badf-implementation-plan registered VALIDATED; no new gate command; lifecycle.json unchanged",
+    "tests pass; repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_g06_planning_controls.py",
+    "tests/test_badf_implementation_plan_contract.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "14761b1"
+  },
+  "note": "Lands IN_PROGRESS by design; next WP reconciles it. Adds gate controls to check_work_breakdown -> mutation-tested (all 6 mutations kill their tests; /mnt/c write-then-immediate-subprocess race needs os.sync). Isolated worktree (badf-wt-impc). Ids WP-0093/DEM-0080/GOV-0075. Reconciles WP-2026-0092 (WP-IMP-B, composition_verified: false). SHARED SURFACE (badf_gate.py) -> sent to BARCHI-2 for objects-level review. Operator /loop 'proceed from WP-IMP-A to WP-IMP-E'. Resolves #181."
+}

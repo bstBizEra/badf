@@ -43,11 +43,13 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "ccc0c71"
+    "base_revision": "ccc0c71",
+    "composition_verified": false,
+    "landed_as": "14761b18b12111d37ef234619461d136bf8bd1eb"
   },
   "note": "Lands IN_PROGRESS by design; next WP reconciles it. Backward-compat schema extension; no gate code (controls are WP-IMP-C) -> no mutation. Isolated worktree (badf-wt-impb). Ids WP-0092/DEM-0079/GOV-0074. Reconciles WP-2026-0091 (WP-IMP-A, composition_verified: false). Foundational-artifact change: BARCHI-2 schema-diff review + operator visibility requested. Operator /loop 'proceed from WP-IMP-A to WP-IMP-E'. Resolves #179."
 }
