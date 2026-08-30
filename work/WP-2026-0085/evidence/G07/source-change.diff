@@ -1,0 +1,415 @@
+diff --git a/.github/workflows/badf-gates.yml b/.github/workflows/badf-gates.yml
+index 2614089..d814162 100644
+--- a/.github/workflows/badf-gates.yml
++++ b/.github/workflows/badf-gates.yml
+@@ -84,6 +84,8 @@ jobs:
+           python3 scripts/badf_gate.py solution examples/solution-composition-shadow-refund.json
+           python3 scripts/badf_gate.py solution examples/solution-composition-shadow-reporting.json
+           python3 scripts/badf_gate.py security examples/security-composition.json
++          python3 scripts/badf_gate.py security examples/security-composition-shadow-api.json
++          python3 scripts/badf_gate.py security examples/security-composition-shadow-data.json
+       - name: PR traceability + identity (Work-Package + Closes #N; title + branch carry the same NNNN)
+         # BADF-MAIN-001. Only a PR has a body; a push to main has already been
+         # traced by the PR that produced it. Reports on the PR event only.
+diff --git a/badf/demands/BADF-DEM-0072.json b/badf/demands/BADF-DEM-0072.json
+new file mode 100644
+index 0000000..c565798
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0072.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0072",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 164,
++    "url": "https://github.com/bstBizEra/badf/issues/164",
++    "exported_at": "2026-08-30T00:21:08Z",
++    "body_digest": "sha256:2fdcd1f36c5a61ce6cdcf6be9bacc694c67ce174a633fde1a748af85f4e2b470"
++  },
++  "title": "GOV-0066: WP-SEC-D \u2014 representative shadow calibration (badf-security-design -> SHADOWED)",
++  "problem": "## Observed\n\nbadf-security-design is VALIDATED (WP-SEC-C). SHADOWED is the next rung. But BADF has no real security-composition matrices (no UX/API/authz/threat surface of its own), so the shadow must be representative and say so.\n\n## Expected\n\n**WP-SEC-D -> SHADOWED.** shadow-evidence.md: run `security` over representative threat matrices, measured for true positives (each structural + seam defect refused), zero false positives (clean matrices pass incl. a disposition-scoped deferred row), declared non-coverage (external-artifact seams: full SEC-I04 bidirectional, SEC-I01 baseline binding, semantic resolution). Explicitly REPRESENTATIVE not real-project; real re-shadow owed on first real use. 2 committed representative shadow matrices (API/payment, data/privacy) validated in CI. Registry VALIDATED -> SHADOWED. Mirrors WP-SOL-D. APPROVED/ACTIVE a later operator-authorized step.\n\n## Evidence\n\n- WP-SEC-B/C suites already demonstrate the TP detections + clean passes; this assembles them as calibration evidence + fresh representative matrices, mirroring badf-solution-design WP-SOL-D.\n\n## Unknowns\n\nWhether SHADOWED should wait for a real matrix instead of a representative one -- recorded honestly so the operator can hold APPROVED/ACTIVE for a real re-shadow if preferred.\n\ndiscovered-by: operator /loop 'proceed until active' 2026-08-30 \u00b7 status: DISCOVERED\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T00:21:08Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-SEC-D advances badf-security-design VALIDATED->SHADOWED via REPRESENTATIVE shadow calibration (no real security matrices exist -- honestly labelled; real re-shadow owed on first real use). TP/FP/non-coverage over 2 representative matrices (API/payment, data/privacy). External-artifact seams declared non-covered. Mirrors WP-SOL-D. DEM-0072/GOV-0066/WP-0085. Reconciles WP-2026-0084 (composition_verified: false). Operator /loop to active 2026-08-30."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index b182ff6..6d853df 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -248,7 +248,7 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "VALIDATED",
++      "status": "SHADOWED",
+       "digest": "sha256:60d0a80d0ec829627555698c353b962975e519a2a71b081109b5d75320cdef6e"
+     },
+     {
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 80a17ea..4a0b099 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1027,6 +1027,25 @@ digest binding, and the semantic resolution of every ref against the architectur
+ stay **deferred**, honestly, until those artifacts exist. No new invariant, no `lifecycle.json` change, no
+ second validator (SEC-I15). Registry `IMPLEMENTED → VALIDATED`.
+ 
++## badf-security-design → SHADOWED — representative calibration (`BADF-WP-0085` / WP-SEC-D, Issue #164 / GOV-0066)
++
++`SHADOWED` means the controls were run against cases and behaved. `badf-research` and `badf-architecture`
++shadowed on **real** BADF history; `badf-security-design` — like `badf-solution-design` before it — has
++**no real security-composition matrices yet** (BADF has no UX/API/authorization/threat surface of its own
++to model), so the shadow is **REPRESENTATIVE**, and the evidence (`references/shadow-evidence.md`) says so
++in its first section: a real re-shadow is owed the first time a project actually uses the skill. The
++calibration ran the `security` command over representative matrices: **all seven defect classes refused**
++(empty · duplicate id · no-provenance · controlled-no-control · controlled-no-verification ·
++residual-incoherence · bare-`ACCEPTED`); **zero false positives** on three clean matrices — including the
++data/privacy matrix's **`deferred`** row, the false-positive check that proves SEC-C03/C04 are
++disposition-scoped (a threat not yet controlled needs neither a control nor a verification) and SEC-C05 is
++one-directional. And it **declares its non-coverage**: the external-artifact seams (full SEC-I04
++bidirectional against a real sec-req registry, SEC-I01 exact-baseline digest binding, and the semantic
++resolution of every ref) are not exercised — they need adapters that do not exist. Two committed shadow
++matrices (`examples/security-composition-shadow-api.json`, `-data.json`) are validated in CI. No
++`lifecycle.json` change, no new control, no second validator. Registry `VALIDATED → SHADOWED`;
++`APPROVED`/`ACTIVE` remain the operator's admission decision.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/examples/security-composition-shadow-api.json b/examples/security-composition-shadow-api.json
+new file mode 100644
+index 0000000..830a341
+--- /dev/null
++++ b/examples/security-composition-shadow-api.json
+@@ -0,0 +1,91 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-SHADOW-PAYMENTS",
++  "architecture_baseline": "ARCH-1.0.0",
++  "solution_baseline": "SOL-1.0.0",
++  "threats": [
++    {
++      "security_id": "SEC-THR-001",
++      "source": {
++        "architecture_refs": [
++          "TB-03"
++        ],
++        "solution_refs": [
++          "API-017",
++          "ACT-payment-create"
++        ]
++      },
++      "disposition": "controlled",
++      "control_refs": [
++        "CTRL-step-up-auth"
++      ],
++      "security_requirement_refs": [
++        "SEC-REQ-001"
++      ],
++      "verification_refs": [
++        "SEC-TEST-001"
++      ],
++      "residual_risk": "MITIGATED"
++    },
++    {
++      "security_id": "SEC-THR-002",
++      "source": {
++        "solution_refs": [
++          "API-017"
++        ],
++        "data_flow_refs": [
++          "DF-account"
++        ]
++      },
++      "disposition": "controlled",
++      "control_refs": [
++        "CTRL-ownership-authz"
++      ],
++      "security_requirement_refs": [
++        "SEC-REQ-002"
++      ],
++      "verification_refs": [
++        "SEC-TEST-002"
++      ],
++      "residual_risk": "MITIGATED"
++    },
++    {
++      "security_id": "SEC-THR-003",
++      "source": {
++        "solution_refs": [
++          "API-017"
++        ],
++        "requirement_refs": [
++          "REQ-021"
++        ]
++      },
++      "disposition": "controlled",
++      "control_refs": [
++        "CTRL-idempotency-replay"
++      ],
++      "security_requirement_refs": [
++        "SEC-REQ-003"
++      ],
++      "verification_refs": [
++        "TEST-SEC-031"
++      ],
++      "residual_risk": "MITIGATED"
++    },
++    {
++      "security_id": "SEC-THR-004",
++      "source": {
++        "architecture_refs": [
++          "EXT-payment-provider"
++        ],
++        "trust_boundary_refs": [
++          "TB-05"
++        ]
++      },
++      "disposition": "pending-authority",
++      "security_requirement_refs": [
++        "SEC-REQ-004"
++      ],
++      "residual_risk": "ACCEPTED-PENDING-AUTHORITY"
++    }
++  ]
++}
+diff --git a/examples/security-composition-shadow-data.json b/examples/security-composition-shadow-data.json
+new file mode 100644
+index 0000000..3c7d52f
+--- /dev/null
++++ b/examples/security-composition-shadow-data.json
+@@ -0,0 +1,64 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-SHADOW-PRIVACY",
++  "architecture_baseline": "ARCH-1.0.0",
++  "solution_baseline": "SOL-1.0.0",
++  "threats": [
++    {
++      "security_id": "SEC-THR-001",
++      "source": {
++        "data_flow_refs": [
++          "DF-pii-export"
++        ],
++        "requirement_refs": [
++          "NFR-privacy-01"
++        ]
++      },
++      "disposition": "controlled",
++      "control_refs": [
++        "CTRL-field-encryption"
++      ],
++      "security_requirement_refs": [
++        "SEC-REQ-010"
++      ],
++      "verification_refs": [
++        "SEC-TEST-010"
++      ],
++      "residual_risk": "MITIGATED"
++    },
++    {
++      "security_id": "SEC-THR-002",
++      "source": {
++        "data_flow_refs": [
++          "DF-audit-log"
++        ],
++        "trust_boundary_refs": [
++          "TB-02"
++        ]
++      },
++      "disposition": "controlled",
++      "control_refs": [
++        "CTRL-audit-tamper-resistance"
++      ],
++      "security_requirement_refs": [
++        "SEC-REQ-011"
++      ],
++      "verification_refs": [
++        "SEC-TEST-011"
++      ],
++      "residual_risk": "DEFERRED"
++    },
++    {
++      "security_id": "SEC-THR-003",
++      "source": {
++        "requirement_refs": [
++          "REQ-retention-01"
++        ]
++      },
++      "disposition": "deferred",
++      "security_requirement_refs": [
++        "SEC-REQ-012"
++      ]
++    }
++  ]
++}
+diff --git a/skills/badf-security-design/references/acceptance.md b/skills/badf-security-design/references/acceptance.md
+index 0bfb16f..770ab2c 100644
+--- a/skills/badf-security-design/references/acceptance.md
++++ b/skills/badf-security-design/references/acceptance.md
+@@ -13,9 +13,9 @@ contract first, prove it later, in separate WPs. **Do not build every specialist
+ | :--- | :--- | :--- |
+ | WP-SEC-A | root `SKILL.md` + references: G05 mapping, routing, specialist boundaries, architecture/solution-design interfaces, threat/control/risk model, normalization contract, OWASP dispositions, SEC-I01…I15, admission criteria | `DESIGNED` |
+ | WP-SEC-B | the `security-composition` matrix schema + the `security` gate command with structural controls (no-empty · SEC-C01 unique · SEC-C02 provenance · SEC-C03 controlled-has-control · SEC-I12 residual-risk-not-accepted by schema); see `traceability.md` | `IMPLEMENTED` |
+-| **WP-SEC-C** | matrix-internal cross-artifact **seam** controls: SEC-C04 (a `controlled` threat is verified, SEC-I04 downstream) + SEC-C05 (residual-risk ↔ disposition coherence, SEC-I12); external-artifact seams (full SEC-I04 bidirectional, SEC-I01 baseline binding, semantic resolution) deferred | `VALIDATED` |
+-| WP-SEC-D | historical / representative security-design shadow calibration | `SHADOWED` |
+-| WP-SEC-E | independent admission | `ACTIVE` |
++| WP-SEC-C | matrix-internal cross-artifact **seam** controls: SEC-C04 (a `controlled` threat is verified, SEC-I04 downstream) + SEC-C05 (residual-risk ↔ disposition coherence, SEC-I12); external-artifact seams (full SEC-I04 bidirectional, SEC-I01 baseline binding, semantic resolution) deferred | `VALIDATED` |
++| **WP-SEC-D** | **representative** shadow calibration (no real security-composition matrices exist yet; real re-shadow owed on first real use); see `shadow-evidence.md` | `SHADOWED` |
++| WP-SEC-E | operator admission on the representative shadow (caveat preserved; real re-shadow tracked) → registry activation | `ACTIVE` |
+ 
+ ## WP-SEC-A boundaries (no scope creep)
+ 
+diff --git a/skills/badf-security-design/references/shadow-evidence.md b/skills/badf-security-design/references/shadow-evidence.md
+new file mode 100644
+index 0000000..34f678a
+--- /dev/null
++++ b/skills/badf-security-design/references/shadow-evidence.md
+@@ -0,0 +1,67 @@
++# Shadow-evidence — badf-security-design (WP-SEC-D)
++
++The capability's live status is `badf/skill-registry.json` (`SHADOWED` at `BADF-WP-0085`). This records
++the shadow calibration that earned it.
++
++## The honest caveat — this shadow is REPRESENTATIVE, not real-project
++
++`badf-research` and `badf-architecture` shadowed on **real historical BADF cases**.
++`badf-security-design` has **no real security-composition matrices yet** — BADF is a governance framework
++with no UX / API / authorization / threat surface of its own to model. So this calibration runs on
++**representative** threat matrices spanning the outcome space, and says so plainly. **A real re-shadow is
++owed the first time a project actually uses the skill**, and the operator may hold `APPROVED`/`ACTIVE`
++until then. (This mirrors `badf-solution-design` WP-SOL-D exactly.)
++
++## Calibration
++
++The `security` command (structural SEC-C01/02/03 + matrix-internal seam SEC-C04/05 controls) was run over
++representative matrices. Every command below is reproducible.
++
++### True positives — every defect is refused
++
++| Defect (mutated from a clean matrix) | Control | Outcome |
++| :--- | :--- | :--- |
++| empty `threats` | no-empty-matrix | refused |
++| duplicate `security_id` | SEC-C01 | refused |
++| a threat binding no provenance `source` | SEC-C02 / SEC-I02 | refused |
++| a `controlled` threat with no `control_refs` | SEC-C03 / SEC-I03 | refused |
++| a `controlled` threat with no `verification_refs` | SEC-C04 / SEC-I04 | refused |
++| `residual_risk` = `ACCEPTED-PENDING-AUTHORITY` on a non-`pending-authority` disposition | SEC-C05 / SEC-I12 | refused |
++| a bare `ACCEPTED` residual risk | SEC-I12 (schema) | refused |
++
++These are exercised as `tests/test_badf_security_composition.py` (each mutation-killed).
++
++### Zero false positives — clean matrices pass
++
++| Representative matrix | Shape | Outcome |
++| :--- | :--- | :--- |
++| `examples/security-composition.json` | 4 threats, 3 controlled + 1 pending-authority | PASS |
++| `examples/security-composition-shadow-api.json` | API/payment threat model, all seams satisfied | PASS |
++| `examples/security-composition-shadow-data.json` | data/privacy model, incl. a **`deferred`** threat with no control/verification | PASS |
++
++The data matrix's `deferred` row is the key false-positive check: SEC-C03/C04 are **disposition-scoped** —
++a threat not yet `controlled` legitimately carries neither a control nor a verification obligation, and
++passes. SEC-C05 is **one-directional** — a `pending-authority` threat need not have declared its residual
++risk yet.
++
++### Declared non-coverage — what this shadow does NOT exercise
++
++The **external-artifact** seams cannot be exercised without the specialist artifacts and registries,
++which do not exist:
++
++- the FULL SEC-I04 **bidirectional** traceability (a `security_requirement_ref` resolving *up* to a real
++  threat/requirement/NFR against a sec-req registry);
++- SEC-I01 exact-baseline **digest** binding (that `architecture_baseline`/`solution_baseline` name the
++  real committed digests);
++- the *semantic* resolution of every ref against its artifact (does `API-017` exist and is
++  `ACT-payment-create` actually the tuple that guards it?).
++
++Silence is not coverage: these are named here, not implied to pass.
++
++## Result
++
++Over the representative outcome space: **all seven defect classes detected, zero false positives on three
++clean matrices (including the disposition-scoped `deferred` row), non-coverage declared** — no contract
++gap surfaced at the structural + matrix-internal level. `VALIDATED → SHADOWED`. `APPROVED`/`ACTIVE`
++remain the operator's admission decision, and a real-project re-shadow is owed before the skill is trusted
++on production threat models.
+diff --git a/tests/test_badf_security_composition.py b/tests/test_badf_security_composition.py
+index 70fadf4..7b9c41a 100644
+--- a/tests/test_badf_security_composition.py
++++ b/tests/test_badf_security_composition.py
+@@ -139,11 +139,35 @@ class MatrixInternalSeamTests(SecurityCompositionBase):
+         self.admitted(rec)
+ 
+ 
++class ShadowCalibrationTests(SecurityCompositionBase):
++    """WP-SEC-D: the representative shadow matrices pass, and the shadow-evidence reference
++    labels itself REPRESENTATIVE (not real-project) and declares the external-artifact seams
++    it does NOT cover -- silence is not coverage."""
++
++    SHADOWS = ("security-composition-shadow-api.json", "security-composition-shadow-data.json")
++
++    def test_representative_shadow_matrices_pass(self):
++        for name in self.SHADOWS:
++            rec = json.loads((gate.ROOT / "examples" / name).read_text())
++            self.admitted(rec)
++
++    def test_shadow_evidence_declares_representative_caveat(self):
++        doc = (gate.ROOT / "skills/badf-security-design/references/shadow-evidence.md").read_text()
++        self.assertIn("REPRESENTATIVE", doc)
++        self.assertIn("no real security-composition matrices yet", doc)
++
++    def test_shadow_evidence_declares_noncoverage(self):
++        doc = (gate.ROOT / "skills/badf-security-design/references/shadow-evidence.md").read_text()
++        self.assertIn("non-coverage", doc.lower())
++        for seam in ("SEC-I04", "SEC-I01", "semantic"):
++            self.assertIn(seam, doc, f"{seam} not declared as non-covered")
++
++
+ class RegistryStatusTests(unittest.TestCase):
+-    def test_badf_security_design_is_registered_validated(self):  # WP-SEC-C advanced IMPLEMENTED -> VALIDATED
++    def test_badf_security_design_is_registered_shadowed(self):  # WP-SEC-D advanced VALIDATED -> SHADOWED
+         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
+         entry = next(e for e in reg["skills"] if e["name"] == "badf-security-design")
+-        self.assertEqual(entry["status"], "VALIDATED")
++        self.assertEqual(entry["status"], "SHADOWED")
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/tests/test_badf_security_design_contract.py b/tests/test_badf_security_design_contract.py
+index 96ad07a..2e76d19 100644
+--- a/tests/test_badf_security_design_contract.py
++++ b/tests/test_badf_security_design_contract.py
+@@ -25,6 +25,7 @@ REFS = {
+     "privacy-contract.md", "abuse-case-contract.md", "api-security-contract.md",
+     "iam-security-contract.md", "supply-chain-contract.md", "ai-agent-security-contract.md",
+     "normalization.md", "traceability.md", "acceptance.md", "external-methodology.md",
++    "shadow-evidence.md",  # WP-SEC-D shadow calibration
+ }
+ 
+ 
+diff --git a/work/WP-2026-0084/work-package.json b/work/WP-2026-0084/work-package.json
+index 0b4cc71..d512b16 100644
+--- a/work/WP-2026-0084/work-package.json
++++ b/work/WP-2026-0084/work-package.json
+@@ -44,11 +44,13 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "eb9f0c5"
++    "base_revision": "eb9f0c5",
++    "composition_verified": false,
++    "landed_as": "c7b5c392ee94ad6ca045e992d4dfc622266618f4"
+   },
+   "note": "Lands IN_PROGRESS by design; next WP reconciles it. Adds 2 seam controls -> mutation-tested. Isolated worktree (badf-wt-secc, GIT-I04) parallel to BARCHI-2 GIT-I (#157/#161). Ids WP-0084/DEM-0071/GOV-0065 (0082/0069/0062=GIT-I, GOV-0064=#160). Reconciles WP-2026-0083 (composition_verified: false). Operator /loop 'proceed next steps until badf-security-design is active' 2026-08-30. Resolves #162."
+ }
