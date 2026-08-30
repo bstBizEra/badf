@@ -16,19 +16,20 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-08-30T23:31:16Z",
-  "completed_at": "2026-08-30T23:31:16Z",
+  "started_at": "2026-08-30T23:35:26Z",
+  "completed_at": "2026-08-30T23:35:26Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0112/evidence/G07/source-change.diff",
-  "digest": "sha256:73cddc0a38435bcab4db24570690ad1d96e38b09d250d257fcf337f2415208bf",
+  "digest": "sha256:ae0dde46c00420306210b9519f90f2b7fd0533f5621300c31153eea304d37ebf",
   "binding": {
     "base_sha": "66c92f846f05bcea90ba0bcc8de1f8784a3bdd6e",
-    "head_sha": "6ee0192a9379b13bc74e543bf3c3b33281e12f63",
-    "content_tree": "49ac672c0aca01215ff263f62bdf666476c74b7f",
+    "head_sha": "7c97ab349b2c3518f48ad182a275076026465735",
+    "content_tree": "e6ca7048435781738dbd6332468e44770c9fab3a",
     "changed_paths": [
       "badf/demands/BADF-DEM-0099.json",
       "docs/governance/GITHUB_CONTROL_PLANE.md",
-      "tests/test_badf_build_contract.py"
+      "tests/test_badf_build_contract.py",
+      "work/WP-2026-0111/work-package.json"
     ],
     "expected_surfaces": {
       "declared": true,
@@ -40,6 +41,6 @@
       ]
     },
     "unexpected_paths": [],
-    "change_digest": "sha256:73cddc0a38435bcab4db24570690ad1d96e38b09d250d257fcf337f2415208bf"
+    "change_digest": "sha256:ae0dde46c00420306210b9519f90f2b7fd0533f5621300c31153eea304d37ebf"
   }
 }
