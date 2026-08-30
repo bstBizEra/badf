@@ -1,0 +1,32 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 398559a..b35adc7 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1081,7 +1081,7 @@ by the tests, so the record cannot drift from history. **Non-coverage is named,
+ verdicts (`STALE_EVIDENCE`) were exercised only synthetically — the rewritten heads were force-pushed
+ away; the recovery inventory on real dirty state was observed, not committed; branch-name conformance
+ of landed heads was API-observed; no signed tag exists. **Result: no contract gap surfaced under real
+-conditions.** The root stays `DESIGNED` — a declarative router whose implementation is its seven
++conditions.** The root stays `DESIGNED` — a declarative router whose implementation is its six
+ `IMPLEMENTED` subskills and their suites; advancing the family is the operator's admission decision
+ (GIT-J), the `badf-research` precedent. No registry status change, no lifecycle change, no new
+ control, no new tool.
+@@ -1118,6 +1118,18 @@ limitation #160 (GOV-0064) — the composition fixtures judge a candidate with t
+ shadow record is measured at `605f97f`; landings after it (WP-0082 itself, WP-0083…0086) are not in it —
+ a re-shadow is a later work package, not a condition of this admission.
+ 
++## badf-git re-shadow — the record re-measured on the `main` that includes its admission (`BADF-WP-0090`, Issue #175 / GOV-0072)
++
++The GIT-I record was measured at `605f97f`. The program then landed GIT-I, the #160 harness fix and
++its own admission GIT-J — three more record-bearing landings. `examples/git-shadow-evidence.json` is
++re-measured at `fc9e727` under the **same corpus rule** (the program's history since the GIT-A freeze
++`b1e0f5a`): **7/7** record-bearing landings `MATCH` their claims, **21/21** first-parent landings since
++`8673d9a` `CONFORM`, 15 landings without a record render `composition_verified: false`, the staleness
++and release cases stand, the runner citations gain the #161, #173 and #174 runs. **No gap was closed:**
++the non-coverage list is kept in full. The note also corrects a count that had propagated from GIT-I:
++the family has **six** subskills (GIT-C…H), not seven. The generator is not a repo tool — the shadow
++test recomputes every case from the object store on every run, in CI and in the composed world.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
