@@ -1,0 +1,2060 @@
+diff --git a/badf/demands/BADF-DEM-0088.json b/badf/demands/BADF-DEM-0088.json
+new file mode 100644
+index 0000000..e418b30
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0088.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0088",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 197,
++    "url": "https://github.com/bstBizEra/badf/issues/197",
++    "exported_at": "2026-08-30T16:40:32Z",
++    "body_digest": "sha256:50aeaa47f1cfd2f2cc035c6c35813bae2298b9f214ae2f7ae72bccccb0137411"
++  },
++  "title": "GOV-0084: WP-BLD-D — shadow badf-build on every landed G07 self-dossier (65 requests digest-bound, 65 human-authorized, typed bindings recompute; C3/C4/C6/C7 non-coverage declared); badf-build → SHADOWED",
++  "problem": "🧠 **ARCHI (BARCHI-2)** — plan for WP-BLD-D: shadow `badf-build` on every G07 self-dossier BADF has landed (`badf-build` → `SHADOWED`)\n\n## Stage-Gate\n- **Stage:** 5 workflow-integration → the controls replayed on the program's own builds, without affecting any gate.\n- **Decision:** Continue — rung D of the operator-authorized ladder (#188).\n- **Over-engineering risk:** a generator tool in the repo, or a shadow that claims coverage the corpus cannot give. Refused: the record is regenerated once from history and **recomputed by the tests on every run** (the badf-git precedent); every control with no historical corpus is declared as non-coverage, not implied.\n- **Glossary stage(s):** 7 build; no G08 term pulled in.\n\n## Observed (measured on `main` `6814a24` with the real tools — `ledger_landings`, `content_tree`, the artifact digests)\nThe corpus is **65 landed work packages carrying a G07 self-dossier** (WP-2026-0011 … 0098; WP-0010's dossier predates the ledger's identity window and is not on the ledger — a case class, not a gap hidden). On that corpus:\n- **request-digest-bound 65/65 `BOUND`** — every indexed evidence artifact recomputes its digest at the landed tree (a request never pointed at nothing, from WP-0011 on).\n- **authority-replayed 65/65 `AUTHORIZED_HUMAN`** — every landed WP's demand, as recorded on `main`, is `AUTHORIZED` by a human (C1 would have admitted every one).\n- **typed-binding-recomputed 1/1 `MATCH`** — the one BLD-B-era dossier's content tree recomputes from the object store (#196 adds a second).\n- **fresh-verification-replayed:** 55 `NOT_RUN_DEFERRED`, 9 `NOT_RUN_DEFERRED_WITH_RECORD`, 1 `PASS_WITH_RECORD` — history is honest about the pre-BLD-B producer: verification was deferred to compose, and where a unit-test `PASS` was claimed a composition record stood behind it (C5 replayed: 0 `PASS_WITHOUT_RECORD`).\n- **No historical corpus at all** for C3 (no WP declared `expected_surfaces`), C4 (no `test_obligations` on any landed WP), C6 (one ledger exists, no `RETRY`/`STOP`), C7 (no delegations). These are **non-coverage** of the shadow, to be declared verbatim and carried into the BLD-E admission.\n\n## Acceptance criteria (WP-2026-0101 / BADF-DEM-0088)\n- `examples/build-shadow-evidence.json` generated from history under the corpus rule above with `measured_on` = the `main` that includes #196: case classes `request-digest-bound`, `authority-replayed`, `typed-binding-recomputed` (≥2), `fresh-verification-replayed`, `dossier-not-on-ledger`; counts as measured; `non_coverage` naming C3/C4/C6/C7 and the pre-ledger WP-0010; `runner_citations` for the #190/#193/#196 runs.\n- `tests/test_badf_build_shadow.py` recomputes every case from the object store with the real tools (digest recomputation at the landed tree, `content_tree`, the demand record) and **refuses a tampered record** (wrong digest verdict, wrong tree, a case that cannot be recomputed offline); thresholds at the measured counts.\n- `skills/badf-build/evidence/shadow-evidence.md` — honest first sentence, the measurement table, non-coverage named, why the root stays `VALIDATED` (admission is BLD-E, the operator's decision — pre-authorized on #188 but still evidence-gated).\n- Registry `badf-build` `VALIDATED → SHADOWED` (digest unchanged); doctrine section; DEM export; own composition record + typed self-dossier; reconciles the land-time-current WP. **No gate change, no schema change** (ladder-internal).\n\n## Tests\n- `test_shadow_record_is_well_formed_and_names_non_coverage` · `test_every_request_is_digest_bound_at_its_landing` · `test_every_authority_case_replays_from_the_demand_record` · `test_typed_bindings_recompute` · `test_fresh_verification_verdicts_replay` · `test_tampered_shadow_record_is_refused` · `test_doc_names_every_case_and_gap_and_root_is_shadowed`.\n\n**Version tier:** patch (evidence + docs + tests + registry status). **Lean mode:** advisory.\n\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T16:40:32Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-BLD-D: shadow of badf-build on every landed G07 self-dossier, regenerated from history and recomputed by tests/test_badf_build_shadow.py with the real tools (artifact digests at the landed tree, demand records, content_tree); non-coverage C3/C4/C6/C7 (no historical corpus) and the pre-ledger WP-0010 declared; badf-build VALIDATED -> SHADOWED; admission is BLD-E."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index c572ba5..9dd08b3 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -298,7 +298,7 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "VALIDATED",
++      "status": "SHADOWED",
+       "digest": "sha256:6cc3266ecde8bf6ed14fc3b5ae3b1de38a42154242d9b7517ca6f0cdb38bf0f3"
+     },
+     {
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 65fe2cd..5999a80 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1423,6 +1423,25 @@ dossier level (target and staleness binding, quorum by change class, runtime cre
+ non-coverage, finding preservation across the dossier) — lean disabled; VER-D shadows on the G08 material
+ BADF has; VER-E is the operator's admission on that evidence. A verification ledger writer stays declared,
+ not built, until a runtime exists to write it.
++## badf-build → SHADOWED — the program's own builds, judged by the tools it built (`BADF-WP-0101` / WP-BLD-D, Issue #197 / GOV-0084)
++
++`badf-build` shadows on the one corpus BADF has: **67 landed work packages carrying a G07 self-dossier**
++(WP-2026-0011, WP-2026-0100), measured at `8f3d805` and recorded once in `examples/build-shadow-evidence.json`,
++which `tests/test_badf_build_shadow.py` recomputes from the object store on every run — artifact digests at the
++landed tree, the demand record, `content_tree` — and whose tampering it refuses. What history rendered:
++**67/67** requests digest-bound (no request ever pointed at nothing), **67/67** demands `AUTHORIZED` by a
++human (C1 would have admitted every one), **3/3** typed bindings recomputing `MATCH` (WP-2026-0098, WP-2026-0099, WP-2026-0100 — the last
++produced by VER-A under the same producer), and fresh verification honest about the pre-BLD-B era: 55 deferred,
++10 deferred with a composition record, 2 `PASS` — each behind a composed run, **0 without** (C5 replayed). One dossier
++(WP-2026-0010) predates the ledger's identity window and is declared as not placeable, not counted.
++
++**No contract gap surfaced — and the non-coverage is named, not implied.** C3 (scope containment), C4 (red
++before green / explicit exception), C6 (budget and stop) and C7 (delegation subset) have **no historical
++corpus**: nothing on the ledger ever declared `expected_surfaces`, `test_obligations`, a `RETRY`/`STOP` or a
++delegation; they are proven on scratch fixtures only, and no build controller has yet executed a Work Package
++through the workflow. That statement travels verbatim into the BLD-E admission: `ACTIVE` will mean "admitted
++on the program's own builds, with four controls proven only on scratch", and not more. `badf-build` advances
++`VALIDATED → SHADOWED`; no gate, schema or lifecycle change.
+ 
+ ## Discovery ≠ scope expansion
+ 
+diff --git a/examples/build-shadow-evidence.json b/examples/build-shadow-evidence.json
+new file mode 100644
+index 0000000..ee59561
+--- /dev/null
++++ b/examples/build-shadow-evidence.json
+@@ -0,0 +1,1766 @@
++{
++  "record": "build-shadow",
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0101",
++  "repository": "bstBizEra/badf",
++  "measured_on": "8f3d80548cc9804403ad61040fc5517d2a574541",
++  "measured_at": "2026-08-30T17:46:30Z",
++  "corpus": "every landed BADF work package carrying a G07 self-dossier on the measured revision -- the program's own builds, judged by the tools it built",
++  "cases": [
++    {
++      "case": "dossier-not-on-ledger",
++      "wp": "WP-2026-0010",
++      "verdict": "NOT_LANDED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0033",
++      "landed_as": "a711ef7a66e7b9628e5d3c02717d7958ad1947eb",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0033",
++      "landed_as": "a711ef7a66e7b9628e5d3c02717d7958ad1947eb",
++      "demand": "BADF-DEM-0020",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0033",
++      "landed_as": "a711ef7a66e7b9628e5d3c02717d7958ad1947eb",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0034",
++      "landed_as": "f59c5c2654ff86911f557b85f729f713a2ac8c9d",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0034",
++      "landed_as": "f59c5c2654ff86911f557b85f729f713a2ac8c9d",
++      "demand": "BADF-DEM-0021",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0034",
++      "landed_as": "f59c5c2654ff86911f557b85f729f713a2ac8c9d",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0035",
++      "landed_as": "d398e1011d31b6b9d299be3b10ce2db4ee014268",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0035",
++      "landed_as": "d398e1011d31b6b9d299be3b10ce2db4ee014268",
++      "demand": "BADF-DEM-0022",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0035",
++      "landed_as": "d398e1011d31b6b9d299be3b10ce2db4ee014268",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0036",
++      "landed_as": "30160d463e03bd57e40dbd18eb5cd227d1fd2392",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0036",
++      "landed_as": "30160d463e03bd57e40dbd18eb5cd227d1fd2392",
++      "demand": "BADF-DEM-0023",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0036",
++      "landed_as": "30160d463e03bd57e40dbd18eb5cd227d1fd2392",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0037",
++      "landed_as": "bcb9d6d1e36aabfe6d8daa6d668903010fd177ee",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0037",
++      "landed_as": "bcb9d6d1e36aabfe6d8daa6d668903010fd177ee",
++      "demand": "BADF-DEM-0024",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0037",
++      "landed_as": "bcb9d6d1e36aabfe6d8daa6d668903010fd177ee",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0038",
++      "landed_as": "e7ea929a2cf586fd3201667304220ebe761ea9fc",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0038",
++      "landed_as": "e7ea929a2cf586fd3201667304220ebe761ea9fc",
++      "demand": "BADF-DEM-0025",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0038",
++      "landed_as": "e7ea929a2cf586fd3201667304220ebe761ea9fc",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0039",
++      "landed_as": "39dc6d9aaff82785f350ff298ad9ca9c086c7200",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0039",
++      "landed_as": "39dc6d9aaff82785f350ff298ad9ca9c086c7200",
++      "demand": "BADF-DEM-0026",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0039",
++      "landed_as": "39dc6d9aaff82785f350ff298ad9ca9c086c7200",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0040",
++      "landed_as": "8896a37fc53af32ad690e36c55d9c5430994adff",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0040",
++      "landed_as": "8896a37fc53af32ad690e36c55d9c5430994adff",
++      "demand": "BADF-DEM-0027",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0040",
++      "landed_as": "8896a37fc53af32ad690e36c55d9c5430994adff",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0041",
++      "landed_as": "9c934efefa7a3cc7493b0e3ae42ae77cea37991a",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0041",
++      "landed_as": "9c934efefa7a3cc7493b0e3ae42ae77cea37991a",
++      "demand": "BADF-DEM-0028",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0041",
++      "landed_as": "9c934efefa7a3cc7493b0e3ae42ae77cea37991a",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0042",
++      "landed_as": "42520a66f164633dd1ff78cf8f5faa32b41fb9e1",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0042",
++      "landed_as": "42520a66f164633dd1ff78cf8f5faa32b41fb9e1",
++      "demand": "BADF-DEM-0029",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0042",
++      "landed_as": "42520a66f164633dd1ff78cf8f5faa32b41fb9e1",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0043",
++      "landed_as": "82d659ad0c7f68fc9c9978f920c75fa0e28f7c87",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0043",
++      "landed_as": "82d659ad0c7f68fc9c9978f920c75fa0e28f7c87",
++      "demand": "BADF-DEM-0030",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0043",
++      "landed_as": "82d659ad0c7f68fc9c9978f920c75fa0e28f7c87",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0044",
++      "landed_as": "a4ff5a8107b41340671fc7c254245a31518c82d9",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0044",
++      "landed_as": "a4ff5a8107b41340671fc7c254245a31518c82d9",
++      "demand": "BADF-DEM-0031",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0044",
++      "landed_as": "a4ff5a8107b41340671fc7c254245a31518c82d9",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0045",
++      "landed_as": "e8fa8ce2586769046872817791d7560a5ae78c58",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0045",
++      "landed_as": "e8fa8ce2586769046872817791d7560a5ae78c58",
++      "demand": "BADF-DEM-0032",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0045",
++      "landed_as": "e8fa8ce2586769046872817791d7560a5ae78c58",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0046",
++      "landed_as": "936169fd46de38cd4a035deaa0b53c7704d6d116",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0046",
++      "landed_as": "936169fd46de38cd4a035deaa0b53c7704d6d116",
++      "demand": "BADF-DEM-0033",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0046",
++      "landed_as": "936169fd46de38cd4a035deaa0b53c7704d6d116",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0047",
++      "landed_as": "c62c32a00d921e75822e74aebc0a33897a523641",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0047",
++      "landed_as": "c62c32a00d921e75822e74aebc0a33897a523641",
++      "demand": "BADF-DEM-0034",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0047",
++      "landed_as": "c62c32a00d921e75822e74aebc0a33897a523641",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0048",
++      "landed_as": "af1f23967d06c69ec0bbe1491c39022fe1729fa8",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0048",
++      "landed_as": "af1f23967d06c69ec0bbe1491c39022fe1729fa8",
++      "demand": "BADF-DEM-0035",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0048",
++      "landed_as": "af1f23967d06c69ec0bbe1491c39022fe1729fa8",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0049",
++      "landed_as": "4f80a406099c7c20c00b445af65eee06f620f0c0",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0049",
++      "landed_as": "4f80a406099c7c20c00b445af65eee06f620f0c0",
++      "demand": "BADF-DEM-0036",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0049",
++      "landed_as": "4f80a406099c7c20c00b445af65eee06f620f0c0",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0050",
++      "landed_as": "873acaa170f7b30a999e0c31108f0722ac7a0e69",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0050",
++      "landed_as": "873acaa170f7b30a999e0c31108f0722ac7a0e69",
++      "demand": "BADF-DEM-0037",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0050",
++      "landed_as": "873acaa170f7b30a999e0c31108f0722ac7a0e69",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0051",
++      "landed_as": "003afbd7fa954d37d1a8df9f98a035c5aafa87a2",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0051",
++      "landed_as": "003afbd7fa954d37d1a8df9f98a035c5aafa87a2",
++      "demand": "BADF-DEM-0038",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0051",
++      "landed_as": "003afbd7fa954d37d1a8df9f98a035c5aafa87a2",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0052",
++      "landed_as": "a51f1f7edf76b23ebf322a75d5b139009ec2cf2d",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0052",
++      "landed_as": "a51f1f7edf76b23ebf322a75d5b139009ec2cf2d",
++      "demand": "BADF-DEM-0039",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0052",
++      "landed_as": "a51f1f7edf76b23ebf322a75d5b139009ec2cf2d",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0053",
++      "landed_as": "e1da61ce35639c29eb67c614383a09eb7fe1e94e",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0053",
++      "landed_as": "e1da61ce35639c29eb67c614383a09eb7fe1e94e",
++      "demand": "BADF-DEM-0040",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0053",
++      "landed_as": "e1da61ce35639c29eb67c614383a09eb7fe1e94e",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0054",
++      "landed_as": "45b1a8c012031de349030379ac88883d122a853b",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0054",
++      "landed_as": "45b1a8c012031de349030379ac88883d122a853b",
++      "demand": "BADF-DEM-0041",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0054",
++      "landed_as": "45b1a8c012031de349030379ac88883d122a853b",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0055",
++      "landed_as": "10e7821d3c1ef7dd686e5a0adb700030d7bdd347",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0055",
++      "landed_as": "10e7821d3c1ef7dd686e5a0adb700030d7bdd347",
++      "demand": "BADF-DEM-0042",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0055",
++      "landed_as": "10e7821d3c1ef7dd686e5a0adb700030d7bdd347",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0056",
++      "landed_as": "bc9eb30451d8235bdcbb078fbe2faee4b7f75758",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0056",
++      "landed_as": "bc9eb30451d8235bdcbb078fbe2faee4b7f75758",
++      "demand": "BADF-DEM-0043",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0056",
++      "landed_as": "bc9eb30451d8235bdcbb078fbe2faee4b7f75758",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0057",
++      "landed_as": "2e46fe7071a9a1b8fdd802a660bf4f6d92416966",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0057",
++      "landed_as": "2e46fe7071a9a1b8fdd802a660bf4f6d92416966",
++      "demand": "BADF-DEM-0044",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0057",
++      "landed_as": "2e46fe7071a9a1b8fdd802a660bf4f6d92416966",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0058",
++      "landed_as": "73a2b173ea075a99e72d0b434947c2dc47bfb908",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0058",
++      "landed_as": "73a2b173ea075a99e72d0b434947c2dc47bfb908",
++      "demand": "BADF-DEM-0045",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0058",
++      "landed_as": "73a2b173ea075a99e72d0b434947c2dc47bfb908",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0059",
++      "landed_as": "27c9f1cf9369d5f495667de30c2b4a359ff56a51",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0059",
++      "landed_as": "27c9f1cf9369d5f495667de30c2b4a359ff56a51",
++      "demand": "BADF-DEM-0046",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0059",
++      "landed_as": "27c9f1cf9369d5f495667de30c2b4a359ff56a51",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0060",
++      "landed_as": "f9a345f35c8b9cb95f60ce39c0998e53460c3a6e",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0060",
++      "landed_as": "f9a345f35c8b9cb95f60ce39c0998e53460c3a6e",
++      "demand": "BADF-DEM-0047",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0060",
++      "landed_as": "f9a345f35c8b9cb95f60ce39c0998e53460c3a6e",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0061",
++      "landed_as": "467406f841edfe3e92a00706a989ad92cfc4c7f9",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0061",
++      "landed_as": "467406f841edfe3e92a00706a989ad92cfc4c7f9",
++      "demand": "BADF-DEM-0048",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0061",
++      "landed_as": "467406f841edfe3e92a00706a989ad92cfc4c7f9",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0062",
++      "landed_as": "a20df5ed8453d6e86093d5be1c022e94e7aa4d67",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0062",
++      "landed_as": "a20df5ed8453d6e86093d5be1c022e94e7aa4d67",
++      "demand": "BADF-DEM-0049",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0062",
++      "landed_as": "a20df5ed8453d6e86093d5be1c022e94e7aa4d67",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0063",
++      "landed_as": "18677311c87a1fab4e4e06de340faadba7ce8def",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0063",
++      "landed_as": "18677311c87a1fab4e4e06de340faadba7ce8def",
++      "demand": "BADF-DEM-0050",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0063",
++      "landed_as": "18677311c87a1fab4e4e06de340faadba7ce8def",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0064",
++      "landed_as": "c09d3701a2d2dd9623b98a13809aa2a63df61e76",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0064",
++      "landed_as": "c09d3701a2d2dd9623b98a13809aa2a63df61e76",
++      "demand": "BADF-DEM-0051",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0064",
++      "landed_as": "c09d3701a2d2dd9623b98a13809aa2a63df61e76",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0065",
++      "landed_as": "5fac18d795efefac7e86ca2df7af6ffa2227ac3c",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0065",
++      "landed_as": "5fac18d795efefac7e86ca2df7af6ffa2227ac3c",
++      "demand": "BADF-DEM-0052",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0065",
++      "landed_as": "5fac18d795efefac7e86ca2df7af6ffa2227ac3c",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0066",
++      "landed_as": "b1e0f5aebde56a18f02a3ba7cead25d34ee270d0",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0066",
++      "landed_as": "b1e0f5aebde56a18f02a3ba7cead25d34ee270d0",
++      "demand": "BADF-DEM-0053",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0066",
++      "landed_as": "b1e0f5aebde56a18f02a3ba7cead25d34ee270d0",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0067",
++      "landed_as": "8673d9a3292d304968c4c8bc15b9a6cd4d64b031",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0067",
++      "landed_as": "8673d9a3292d304968c4c8bc15b9a6cd4d64b031",
++      "demand": "BADF-DEM-0054",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0067",
++      "landed_as": "8673d9a3292d304968c4c8bc15b9a6cd4d64b031",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0068",
++      "landed_as": "c04981dffca5a9b65269350029cf49618929962b",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0068",
++      "landed_as": "c04981dffca5a9b65269350029cf49618929962b",
++      "demand": "BADF-DEM-0055",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0068",
++      "landed_as": "c04981dffca5a9b65269350029cf49618929962b",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0069",
++      "landed_as": "0b2fd527c4e53b7c5b142de11c71438bea6b17b7",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0069",
++      "landed_as": "0b2fd527c4e53b7c5b142de11c71438bea6b17b7",
++      "demand": "BADF-DEM-0056",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0069",
++      "landed_as": "0b2fd527c4e53b7c5b142de11c71438bea6b17b7",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0070",
++      "landed_as": "0343c8e96740f97fdfe54f7b29b574e296c559a2",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0070",
++      "landed_as": "0343c8e96740f97fdfe54f7b29b574e296c559a2",
++      "demand": "BADF-DEM-0057",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0070",
++      "landed_as": "0343c8e96740f97fdfe54f7b29b574e296c559a2",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0071",
++      "landed_as": "aba7de3bd8028f99ee6c4f78efc6fcda2111fca1",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0071",
++      "landed_as": "aba7de3bd8028f99ee6c4f78efc6fcda2111fca1",
++      "demand": "BADF-DEM-0058",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0071",
++      "landed_as": "aba7de3bd8028f99ee6c4f78efc6fcda2111fca1",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0072",
++      "landed_as": "9cf4b13bd3c56d860c517f558ac7c53dc6316bf2",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0072",
++      "landed_as": "9cf4b13bd3c56d860c517f558ac7c53dc6316bf2",
++      "demand": "BADF-DEM-0059",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0072",
++      "landed_as": "9cf4b13bd3c56d860c517f558ac7c53dc6316bf2",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0074",
++      "landed_as": "dc6b608ebea7aee2097b050883f0a0fe9ce9ed6c",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0074",
++      "landed_as": "dc6b608ebea7aee2097b050883f0a0fe9ce9ed6c",
++      "demand": "BADF-DEM-0061",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0074",
++      "landed_as": "dc6b608ebea7aee2097b050883f0a0fe9ce9ed6c",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0075",
++      "landed_as": "f1a0a5c9f7060a4bb9b18aa3007e0cfa00722f69",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0075",
++      "landed_as": "f1a0a5c9f7060a4bb9b18aa3007e0cfa00722f69",
++      "demand": "BADF-DEM-0062",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0075",
++      "landed_as": "f1a0a5c9f7060a4bb9b18aa3007e0cfa00722f69",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0076",
++      "landed_as": "5aaeb62bb7029a00b487ff9746acd791d5235373",
++      "evidence_bound": 5,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0076",
++      "landed_as": "5aaeb62bb7029a00b487ff9746acd791d5235373",
++      "demand": "BADF-DEM-0063",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0076",
++      "landed_as": "5aaeb62bb7029a00b487ff9746acd791d5235373",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": true,
++      "verdict": "NOT_RUN_DEFERRED_WITH_RECORD"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0077",
++      "landed_as": "1b80d7c9d20e1f39c6287aa033904e6cbff17dc3",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0077",
++      "landed_as": "1b80d7c9d20e1f39c6287aa033904e6cbff17dc3",
++      "demand": "BADF-DEM-0064",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0077",
++      "landed_as": "1b80d7c9d20e1f39c6287aa033904e6cbff17dc3",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0078",
++      "landed_as": "2d080e059102afa485696a1a3ff1fa290240db36",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0078",
++      "landed_as": "2d080e059102afa485696a1a3ff1fa290240db36",
++      "demand": "BADF-DEM-0065",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0078",
++      "landed_as": "2d080e059102afa485696a1a3ff1fa290240db36",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0079",
++      "landed_as": "928fc6bca7cbf572783feb699bd559052176721e",
++      "evidence_bound": 5,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0079",
++      "landed_as": "928fc6bca7cbf572783feb699bd559052176721e",
++      "demand": "BADF-DEM-0066",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0079",
++      "landed_as": "928fc6bca7cbf572783feb699bd559052176721e",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": true,
++      "verdict": "NOT_RUN_DEFERRED_WITH_RECORD"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0080",
++      "landed_as": "74282a4f21405378ccb84f7dace7b58aac5af2d9",
++      "evidence_bound": 5,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0080",
++      "landed_as": "74282a4f21405378ccb84f7dace7b58aac5af2d9",
++      "demand": "BADF-DEM-0067",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0080",
++      "landed_as": "74282a4f21405378ccb84f7dace7b58aac5af2d9",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": true,
++      "verdict": "NOT_RUN_DEFERRED_WITH_RECORD"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0081",
++      "landed_as": "605f97fe12b419072f7bc9e254d5945e11ffb4db",
++      "evidence_bound": 5,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0081",
++      "landed_as": "605f97fe12b419072f7bc9e254d5945e11ffb4db",
++      "demand": "BADF-DEM-0068",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0081",
++      "landed_as": "605f97fe12b419072f7bc9e254d5945e11ffb4db",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": true,
++      "verdict": "NOT_RUN_DEFERRED_WITH_RECORD"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0082",
++      "landed_as": "78eab75afbeeb5275db7fc6227fc6d302073ab6e",
++      "evidence_bound": 5,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0082",
++      "landed_as": "78eab75afbeeb5275db7fc6227fc6d302073ab6e",
++      "demand": "BADF-DEM-0069",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0082",
++      "landed_as": "78eab75afbeeb5275db7fc6227fc6d302073ab6e",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": true,
++      "verdict": "NOT_RUN_DEFERRED_WITH_RECORD"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0083",
++      "landed_as": "eb9f0c58b0beb3334444695602bc6c6688875a45",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0083",
++      "landed_as": "eb9f0c58b0beb3334444695602bc6c6688875a45",
++      "demand": "BADF-DEM-0070",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0083",
++      "landed_as": "eb9f0c58b0beb3334444695602bc6c6688875a45",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0084",
++      "landed_as": "c7b5c392ee94ad6ca045e992d4dfc622266618f4",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0084",
++      "landed_as": "c7b5c392ee94ad6ca045e992d4dfc622266618f4",
++      "demand": "BADF-DEM-0071",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0084",
++      "landed_as": "c7b5c392ee94ad6ca045e992d4dfc622266618f4",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0085",
++      "landed_as": "5b6cd5284ec2d0014e28fa59018075fedf7bbbad",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0085",
++      "landed_as": "5b6cd5284ec2d0014e28fa59018075fedf7bbbad",
++      "demand": "BADF-DEM-0072",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0085",
++      "landed_as": "5b6cd5284ec2d0014e28fa59018075fedf7bbbad",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0086",
++      "landed_as": "8a753cb2689ada8774d16755f0a422541784939c",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0086",
++      "landed_as": "8a753cb2689ada8774d16755f0a422541784939c",
++      "demand": "BADF-DEM-0073",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0086",
++      "landed_as": "8a753cb2689ada8774d16755f0a422541784939c",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0087",
++      "landed_as": "fc9e727db9f8522b7e840120a011bec97066b838",
++      "evidence_bound": 5,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0087",
++      "landed_as": "fc9e727db9f8522b7e840120a011bec97066b838",
++      "demand": "BADF-DEM-0074",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0087",
++      "landed_as": "fc9e727db9f8522b7e840120a011bec97066b838",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": true,
++      "verdict": "NOT_RUN_DEFERRED_WITH_RECORD"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0088",
++      "landed_as": "3967b23b674d7935146d1e810e73d6ae136e0dbe",
++      "evidence_bound": 5,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0088",
++      "landed_as": "3967b23b674d7935146d1e810e73d6ae136e0dbe",
++      "demand": "BADF-DEM-0075",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0088",
++      "landed_as": "3967b23b674d7935146d1e810e73d6ae136e0dbe",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": true,
++      "verdict": "NOT_RUN_DEFERRED_WITH_RECORD"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0089",
++      "landed_as": "914309bedb34eb1c1c9922dac85e1fe75c7d8d86",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0089",
++      "landed_as": "914309bedb34eb1c1c9922dac85e1fe75c7d8d86",
++      "demand": "BADF-DEM-0076",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0089",
++      "landed_as": "914309bedb34eb1c1c9922dac85e1fe75c7d8d86",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0090",
++      "landed_as": "c1840a7ff0148954d2e5a2604fe5204a6fc15896",
++      "evidence_bound": 5,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0090",
++      "landed_as": "c1840a7ff0148954d2e5a2604fe5204a6fc15896",
++      "demand": "BADF-DEM-0077",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0090",
++      "landed_as": "c1840a7ff0148954d2e5a2604fe5204a6fc15896",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": true,
++      "verdict": "NOT_RUN_DEFERRED_WITH_RECORD"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0091",
++      "landed_as": "ccc0c711b891fb0cc704d1aea09946e032b5d471",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0091",
++      "landed_as": "ccc0c711b891fb0cc704d1aea09946e032b5d471",
++      "demand": "BADF-DEM-0078",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0091",
++      "landed_as": "ccc0c711b891fb0cc704d1aea09946e032b5d471",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0092",
++      "landed_as": "14761b18b12111d37ef234619461d136bf8bd1eb",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0092",
++      "landed_as": "14761b18b12111d37ef234619461d136bf8bd1eb",
++      "demand": "BADF-DEM-0079",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0092",
++      "landed_as": "14761b18b12111d37ef234619461d136bf8bd1eb",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0093",
++      "landed_as": "7547223941784022bb1a6737ea8c5db8b8395bea",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0093",
++      "landed_as": "7547223941784022bb1a6737ea8c5db8b8395bea",
++      "demand": "BADF-DEM-0080",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0093",
++      "landed_as": "7547223941784022bb1a6737ea8c5db8b8395bea",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0094",
++      "landed_as": "4deb094052d7512766cfa2f99058ec916195b31c",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0094",
++      "landed_as": "4deb094052d7512766cfa2f99058ec916195b31c",
++      "demand": "BADF-DEM-0081",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0094",
++      "landed_as": "4deb094052d7512766cfa2f99058ec916195b31c",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0095",
++      "landed_as": "d4b8c4a4fe5e92bf5362f963cb835c6628445957",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0095",
++      "landed_as": "d4b8c4a4fe5e92bf5362f963cb835c6628445957",
++      "demand": "BADF-DEM-0082",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0095",
++      "landed_as": "d4b8c4a4fe5e92bf5362f963cb835c6628445957",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0096",
++      "landed_as": "cf431fafd3394bd7d529eea72a8e599203f3915a",
++      "evidence_bound": 5,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0096",
++      "landed_as": "cf431fafd3394bd7d529eea72a8e599203f3915a",
++      "demand": "BADF-DEM-0083",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0096",
++      "landed_as": "cf431fafd3394bd7d529eea72a8e599203f3915a",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": true,
++      "verdict": "NOT_RUN_DEFERRED_WITH_RECORD"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0097",
++      "landed_as": "d485931ddd971492a245c90ee3e6131389388b4f",
++      "evidence_bound": 4,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0097",
++      "landed_as": "d485931ddd971492a245c90ee3e6131389388b4f",
++      "demand": "BADF-DEM-0084",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0097",
++      "landed_as": "d485931ddd971492a245c90ee3e6131389388b4f",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": false,
++      "verdict": "NOT_RUN_DEFERRED"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0098",
++      "landed_as": "6814a244b3ac7850ef2165f39e24cd685261cba8",
++      "evidence_bound": 5,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "typed-binding-recomputed",
++      "wp": "WP-2026-0098",
++      "landed_as": "6814a244b3ac7850ef2165f39e24cd685261cba8",
++      "bound_content_tree": "ba8e242ae515d78ac57f3e0f30cdc3df2a3201f8",
++      "landed_content_tree": "ba8e242ae515d78ac57f3e0f30cdc3df2a3201f8",
++      "changed_paths": 11,
++      "verdict": "MATCH"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0098",
++      "landed_as": "6814a244b3ac7850ef2165f39e24cd685261cba8",
++      "demand": "BADF-DEM-0085",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0098",
++      "landed_as": "6814a244b3ac7850ef2165f39e24cd685261cba8",
++      "unit_test_outcome": "PASS",
++      "composition_record": true,
++      "verdict": "PASS_WITH_RECORD"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0099",
++      "landed_as": "8f3d80548cc9804403ad61040fc5517d2a574541",
++      "evidence_bound": 5,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "typed-binding-recomputed",
++      "wp": "WP-2026-0099",
++      "landed_as": "8f3d80548cc9804403ad61040fc5517d2a574541",
++      "bound_content_tree": "ec92ce19c1abfb41f6cd0c7a093292765f3915a1",
++      "landed_content_tree": "ec92ce19c1abfb41f6cd0c7a093292765f3915a1",
++      "changed_paths": 13,
++      "verdict": "MATCH"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0099",
++      "landed_as": "8f3d80548cc9804403ad61040fc5517d2a574541",
++      "demand": "BADF-DEM-0086",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0099",
++      "landed_as": "8f3d80548cc9804403ad61040fc5517d2a574541",
++      "unit_test_outcome": "PASS",
++      "composition_record": true,
++      "verdict": "PASS_WITH_RECORD"
++    },
++    {
++      "case": "request-digest-bound",
++      "wp": "WP-2026-0100",
++      "landed_as": "e1423ad43b63491292c983435fae4bff11185cde",
++      "evidence_bound": 5,
++      "mismatches": [],
++      "verdict": "BOUND"
++    },
++    {
++      "case": "typed-binding-recomputed",
++      "wp": "WP-2026-0100",
++      "landed_as": "e1423ad43b63491292c983435fae4bff11185cde",
++      "bound_content_tree": "672da1efe145a9ff8e3b89e1b13899b6f086e9e8",
++      "landed_content_tree": "672da1efe145a9ff8e3b89e1b13899b6f086e9e8",
++      "changed_paths": 22,
++      "verdict": "MATCH"
++    },
++    {
++      "case": "authority-replayed",
++      "wp": "WP-2026-0100",
++      "landed_as": "e1423ad43b63491292c983435fae4bff11185cde",
++      "demand": "BADF-DEM-0087",
++      "status": "AUTHORIZED",
++      "principal_type": "human",
++      "verdict": "AUTHORIZED_HUMAN"
++    },
++    {
++      "case": "fresh-verification-replayed",
++      "wp": "WP-2026-0100",
++      "landed_as": "e1423ad43b63491292c983435fae4bff11185cde",
++      "unit_test_outcome": "NOT_RUN",
++      "composition_record": true,
++      "verdict": "NOT_RUN_DEFERRED_WITH_RECORD"
++    }
++  ],
++  "counts": {
++    "dossier-not-on-ledger:NOT_LANDED": 1,
++    "request-digest-bound:BOUND": 67,
++    "authority-replayed:AUTHORIZED_HUMAN": 67,
++    "fresh-verification-replayed:NOT_RUN_DEFERRED": 55,
++    "fresh-verification-replayed:NOT_RUN_DEFERRED_WITH_RECORD": 10,
++    "typed-binding-recomputed:MATCH": 3,
++    "fresh-verification-replayed:PASS_WITH_RECORD": 2
++  },
++  "non_coverage": [
++    "C3 scope containment (BLD-I04): no landed work package declared expected_surfaces; the planned-vs-actual comparison and the discovery_allowance path are proven only on scratch fixtures (tests/test_badf_build_controls.py, tests/test_badf_build_evidence.py).",
++    "C4 red before green / explicit exception (BLD-I07/I08): no landed work package declared test_obligations and no tdd_exception was ever declared; red observations exist on the ledger only from WP-2026-0098 on (failing-first.txt). Scratch-proven only.",
++    "C6 budget and stop (BLD-I11..I13): the ledgers on the ledger (WP-2026-0098, 0099, 0100) carry no RETRY and no STOP event; exhaustion and stop dominance are scratch-proven only.",
++    "C7 delegation subset (BLD-I10): no build/session.json on the ledger carries delegations; scratch-proven only.",
++    "WP-2026-0010: its G07 dossier predates the ledger's identity window and cannot be placed on a landing (dossier-not-on-ledger, declared).",
++    "No build controller has yet executed a Work Package through badf-build's workflow (CLAIM -> ... -> HANDOFF); the shadow judges the evidence BADF's self-dossiers produced, not a controller's run. The first real project, or the first build executed under the contract, is where C3/C4/C6/C7 meet real conditions."
++  ],
++  "runner_citations": [
++    {
++      "run_id": 33301968905,
++      "pr": 190,
++      "inspectors": [
++        "git-baseline: head_kind detached",
++        "repo: PASS",
++        "composed-tree: BADF COMPOSE PASS (BLD-A freeze)"
++      ]
++    },
++    {
++      "run_id": 33319882660,
++      "pr": 193,
++      "inspectors": [
++        "git-baseline: head_kind detached",
++        "repo: PASS validating the first typed G07 dossier",
++        "composition: CURRENT (content tree ba8e242, base d485931)",
++        "composed-tree: 930 tests OK"
++      ]
++    },
++    {
++      "run_id": 33325111196,
++      "pr": 196,
++      "inspectors": [
++        "git-baseline: head_kind detached",
++        "repo: PASS with three authors' gate changes (walker, VER-A, C1..C7)",
++        "composition: CURRENT (content tree ec92ce1, base e1423ad)",
++        "composed-tree: 947 tests OK"
++      ]
++    }
++  ]
++}
+diff --git a/skills/badf-build/evidence/shadow-evidence.md b/skills/badf-build/evidence/shadow-evidence.md
+new file mode 100644
+index 0000000..8b1d3d2
+--- /dev/null
++++ b/skills/badf-build/evidence/shadow-evidence.md
+@@ -0,0 +1,53 @@
++# Shadow evidence (`BADF-WP-0101`, Issue #197 / GOV-0084)
++
++**What is real and what is only declared — first sentence, as the contract requires.** Every case below is
++real BADF history — the program's own builds, judged by the tools it built — recomputed from the object
++store by `tests/test_badf_build_shadow.py` on every run; the controls history could **not** exercise
++(C3, C4, C6, C7 — nothing on the ledger ever declared the fields they judge) are listed under non-coverage,
++not implied to have passed.
++
++`badf-build` shadows on the one corpus BADF has: **67 landed work packages carrying a G07 self-dossier**
++(WP-2026-0011 … WP-2026-0100), measured at `8f3d805`. It is recorded once, in
++`examples/build-shadow-evidence.json`, and re-derived on every CI run and inside every composed tree.
++
++## Measurement
++
++| Case class | Real history | What the contract had to represent | Outcome |
++| :--- | :--- | :--- | :--- |
++| `request-digest-bound` (67) | every evidence object every landed dossier indexes | BLD-B / BLD-I16: a request cannot point at nothing — each artifact's digest recomputes at the landed tree | **67/67 `BOUND`**, 0 mismatches |
++| `authority-replayed` (67) | each work package's demand as recorded on `main` | C1 / BLD-I03: `AUTHORIZED` by a **human** | **67/67 `AUTHORIZED_HUMAN`** |
++| `typed-binding-recomputed` (3) | every dossier produced by the BLD-B producer (WP-2026-0098, WP-2026-0099, WP-2026-0100 — the last is VER-A's, produced under the same producer) | BLD-I02 / C2: the bound content tree equals the landed content tree | **3/3 `MATCH`** |
++| `fresh-verification-replayed` (67) | each dossier's unit-test outcome against its composition record | C5 / BLD-I09: a `PASS` needs the composed-tree run | 55 `NOT_RUN_DEFERRED`, 10 `NOT_RUN_DEFERRED_WITH_RECORD`, 2 `PASS_WITH_RECORD`, **0 `PASS_WITHOUT_RECORD`** |
++| `dossier-not-on-ledger` (1) | WP-2026-0010 — a G07 dossier from before the ledger's identity window | the ledger is the landing authority; a dossier it cannot place is declared, not counted | `NOT_LANDED` (declared) |
++| runner citations (3 runs) | CI runs 33301968905, 33319882660, 33325111196 (PRs #190, #193, #196) | BLD-A…C on real infrastructure: detached checkout, `repo` PASS validating typed dossiers, composed-tree verification | detached · `repo` PASS · `BADF COMPOSE PASS` |
++
++**Result: no contract gap surfaced under real conditions.** 67 builds, every request digest-bound,
++every demand human-authorized, every typed binding exact, and no unit-test `PASS` ever claimed without the
++composed-tree run behind it — history already obeyed the controls the gate now enforces.
++
++## Non-coverage (named, not implied)
++
++- **C3 scope containment** — no landed work package declared `expected_surfaces`; the planned-vs-actual
++  comparison and the `discovery_allowance` path are proven by `tests/test_badf_build_controls.py` and
++  `test_badf_build_evidence.py` on scratch fixtures only.
++- **C4 red before green / explicit exception** — no landed work package declared `test_obligations`; red
++  observations exist on the ledger only from WP-2026-0098 on (`failing-first.txt`), and no `tdd_exception`
++  was ever declared. Scratch-proven only.
++- **C6 budget and stop** — one build ledger existed at measurement (WP-2026-0098), with no `RETRY` and no
++  `STOP` event; exhaustion and stop dominance are scratch-proven only.
++- **C7 delegation subset** — no `build/session.json` on the ledger carries `delegations`; scratch-proven only.
++- **WP-2026-0010** — its G07 dossier predates the ledger's identity window and cannot be placed on a landing.
++- **Runner-side controls on a real build controller** — no agent has yet executed a Work Package through
++  `badf-build`'s workflow (CLAIM → … → HANDOFF); the shadow judges the *evidence* BADF's self-dossiers
++  produced, not a controller's run. The first real project (or the first build executed under the
++  contract) is where C3/C4/C6/C7 meet real conditions.
++
++## Why the root is `SHADOWED`, not `ACTIVE`
++
++`badf-build` is a declarative router whose implementation is the typed G07 evidence producer and the
++seven controls in `badf_gate.py` (BLD-B, BLD-C) and their failing-first and mutation suites; its shadow is
++this record. Advancing the family is the **operator's admission decision** — pre-authorized for the ladder
++on #188, still taken on evidence at **BLD-E** — and the admission must carry the non-coverage above
++verbatim: `ACTIVE` will mean "admitted on sixty-five self-builds, with four controls proven only on
++scratch", not more. Nothing in this shadow affects a gate: no registry status change beyond `SHADOWED`,
++no lifecycle change, no new control.
+diff --git a/tests/test_badf_build_contract.py b/tests/test_badf_build_contract.py
+index 9f0c4ac..daeca6c 100644
+--- a/tests/test_badf_build_contract.py
++++ b/tests/test_badf_build_contract.py
+@@ -88,11 +88,11 @@ class BadfBuildContractTests(unittest.TestCase):
+             self.assertIn(token, text, token)
+         self.assertIn("not automatically", read("self-review.md").lower())
+ 
+-    def test_registry_pin_is_validated_and_tool_empty(self):
++    def test_registry_pin_is_shadowed_and_tool_empty(self):
+         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
+         entries = [e for e in registry["skills"] if e.get("name") == "badf-build"]
+         self.assertEqual(1, len(entries)); entry = entries[0]
+-        self.assertEqual("VALIDATED", entry["status"]); self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])  # BLD-B
++        self.assertEqual("SHADOWED", entry["status"]); self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])  # BLD-B
+         self.assertEqual("skills/badf-build/SKILL.md", entry["source"])
+         self.assertEqual("sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest(), entry["digest"])
+ 
+diff --git a/tests/test_badf_build_shadow.py b/tests/test_badf_build_shadow.py
+new file mode 100644
+index 0000000..e466c41
+--- /dev/null
++++ b/tests/test_badf_build_shadow.py
+@@ -0,0 +1,113 @@
++"""badf-build BLD-D (BADF-WP-0101, #197): the shadow of badf-build on every G07 self-dossier BADF
++has landed. The record in examples/build-shadow-evidence.json is generated once from history and
++RECOMPUTED here on every run with the real tools -- artifact digests at the landed tree, the demand
++record, content_tree -- so it cannot drift from the object store; a tampered record is refused; a
++control with no historical corpus is declared non-coverage, never implied.
++"""
++import hashlib
++import json
++import subprocess
++import sys
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++SHADOW = gate.ROOT / "examples/build-shadow-evidence.json"
++DOC = gate.ROOT / "skills/badf-build/evidence/shadow-evidence.md"
++ALLOWED_CASES = {"request-digest-bound", "authority-replayed", "typed-binding-recomputed", "fresh-verification-replayed", "dossier-not-on-ledger"}
++
++
++def load_shadow() -> dict:
++    return json.loads(SHADOW.read_text(encoding="utf-8"))
++
++
++def cases(kind: str) -> list:
++    return [c for c in load_shadow()["cases"] if c["case"] == kind]
++
++
++def show(rev: str, path: str) -> bytes | None:
++    r = subprocess.run(["git", "-C", str(gate.ROOT), "show", f"{rev}:{path}"], capture_output=True)
++    return r.stdout if r.returncode == 0 else None
++
++
++class BuildShadowTests(unittest.TestCase):
++    def test_shadow_record_is_well_formed_and_names_non_coverage(self):
++        s = load_shadow()
++        self.assertEqual(s["record"], "build-shadow"); self.assertEqual(s["repository"], gate.self_repository())
++        self.assertTrue(s["cases"]); self.assertTrue(s["non_coverage"])
++        for c in s["cases"]:
++            self.assertIn(c["case"], ALLOWED_CASES, f"{c['case']}: a case that cannot be recomputed offline belongs in non_coverage"); self.assertIn("verdict", c)
++        for gap in ("C3", "C4", "C6", "C7", "WP-2026-0010"):
++            self.assertTrue(any(gap in n for n in s["non_coverage"]), f"non_coverage must name {gap}")
++
++    def test_every_request_is_digest_bound_at_its_landing(self):
++        landings = gate.ledger_landings(); seen = cases("request-digest-bound"); self.assertGreaterEqual(len(seen), 66)
++        for c in seen:
++            with self.subTest(wp=c["wp"]):
++                self.assertEqual(landings[c["wp"]][-1], c["landed_as"])
++                dossier = json.loads(show(c["landed_as"], f"work/{c['wp']}/gate-dossier.G07.json"))
++                bad = []
++                for item in dossier["evidence"]:
++                    ev = json.loads(show(c["landed_as"], item["path"])); art = show(c["landed_as"], ev["artifact"])
++                    if art is None or "sha256:" + hashlib.sha256(art).hexdigest() != ev["digest"]: bad.append(item["type"])
++                self.assertEqual((c["verdict"], c["mismatches"]), ("BOUND" if not bad else "MISMATCH", bad))
++
++    def test_every_authority_case_replays_from_the_demand_record(self):
++        seen = cases("authority-replayed"); self.assertGreaterEqual(len(seen), 66)
++        for c in seen:
++            with self.subTest(wp=c["wp"]):
++                dem = json.loads((gate.ROOT / "badf/demands" / f"{c['demand']}.json").read_text(encoding="utf-8"))
++                ht = (dem.get("authorized_by") or {}).get("principal_type")
++                expected = "AUTHORIZED_HUMAN" if (dem.get("status") == "AUTHORIZED" and ht == "human") else ("CLOSED_DEMAND" if dem.get("status") == "RESOLVED" and ht == "human" else "NOT_AUTHORIZED")
++                self.assertEqual((c["status"], c["principal_type"], c["verdict"]), (dem.get("status"), ht, expected))
++
++    def test_typed_bindings_recompute_from_the_object_store(self):
++        seen = cases("typed-binding-recomputed"); self.assertGreaterEqual(len(seen), 2)
++        for c in seen:
++            with self.subTest(wp=c["wp"]):
++                b = json.loads(show(c["landed_as"], f"work/{c['wp']}/evidence/G07/source-change.json"))["binding"]
++                landed = gate.content_tree(gate.ROOT, c["wp"], c["landed_as"])
++                self.assertEqual((b["content_tree"], landed, c["verdict"]), (c["bound_content_tree"], c["landed_content_tree"], "MATCH"))
++                self.assertEqual(landed, b["content_tree"])
++
++    def test_fresh_verification_verdicts_replay(self):
++        seen = cases("fresh-verification-replayed"); self.assertGreaterEqual(len(seen), 66)
++        self.assertFalse([c for c in seen if c["verdict"] == "PASS_WITHOUT_RECORD"], "a unit-test PASS without a composition record would be a C5 violation in history")
++        for c in seen:
++            with self.subTest(wp=c["wp"]):
++                ut = json.loads(show(c["landed_as"], f"work/{c['wp']}/evidence/G07/unit-test.json")) if show(c["landed_as"], f"work/{c['wp']}/evidence/G07/unit-test.json") else {}
++                has_rec = show(c["landed_as"], f"work/{c['wp']}/evidence/G07/composition-record.json") is not None
++                expected = ("PASS_WITH_RECORD" if has_rec else "PASS_WITHOUT_RECORD") if ut.get("outcome") == "PASS" else ("NOT_RUN_DEFERRED" + ("_WITH_RECORD" if has_rec else ""))
++                self.assertEqual((c["unit_test_outcome"], c["composition_record"], c["verdict"]), (ut.get("outcome", "?"), has_rec, expected))
++
++    def test_tampered_shadow_record_is_refused(self):
++        s = load_shadow()
++        bad = json.loads(json.dumps(s)); v = next(c for c in bad["cases"] if c["case"] == "typed-binding-recomputed"); v["landed_content_tree"] = "0" * 40
++        with self.assertRaises(AssertionError):
++            for c in bad["cases"]:
++                if c["case"] == "typed-binding-recomputed": assert gate.content_tree(gate.ROOT, c["wp"], c["landed_as"]) == c["landed_content_tree"]
++        bad = json.loads(json.dumps(s)); v = next(c for c in bad["cases"] if c["case"] == "request-digest-bound"); v["verdict"] = "MISMATCH"; v["mismatches"] = ["source-change:digest"]
++        with self.assertRaises(AssertionError):
++            for c in bad["cases"]:
++                if c["case"] == "request-digest-bound" and c["wp"] == v["wp"]:
++                    dossier = json.loads(show(c["landed_as"], f"work/{c['wp']}/gate-dossier.G07.json")); ok = all(show(c["landed_as"], json.loads(show(c["landed_as"], i["path"]))["artifact"]) is not None for i in dossier["evidence"])
++                    assert (c["verdict"] == "BOUND") == ok
++        bad = json.loads(json.dumps(s)); bad["cases"].append({"case": "delegation-replayed", "wp": "WP-2026-0001", "verdict": "SUBSET"})
++        with self.assertRaises(AssertionError):
++            for c in bad["cases"]: assert c["case"] in ALLOWED_CASES
++
++    def test_doc_names_every_case_and_gap_and_root_is_shadowed(self):
++        text = DOC.read_text(encoding="utf-8")
++        for token in ("request-digest-bound", "authority-replayed", "typed-binding-recomputed", "fresh-verification-replayed", "dossier-not-on-ledger",
++                      "non-coverage", "C3", "C4", "C6", "C7", "WP-2026-0010", "SHADOWED", "BLD-E", "admission", "run"):
++            self.assertIn(token, text, token)
++        reg = gate.load_json(gate.ROOT / "badf/skill-registry.json"); by = {s["name"]: s for s in reg["skills"]}
++        self.assertEqual(by["badf-build"]["status"], "SHADOWED")
++        self.assertEqual(hashlib.sha256((gate.ROOT / by["badf-build"]["source"]).read_bytes()).hexdigest(), by["badf-build"]["digest"][7:])
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0103/work-package.json b/work/WP-2026-0103/work-package.json
+index e6fd839..e28e735 100644
+--- a/work/WP-2026-0103/work-package.json
++++ b/work/WP-2026-0103/work-package.json
+@@ -51,11 +51,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "e1423ad"
++    "base_revision": "e1423ad",
++    "landed_content_tree": "eeb7b820e35cc4ae93140da067a9b701466b72cc",
++    "composition_verified": true,
++    "landed_as": "dcbcc54cc8f629ab5c0a98e08ddf7ba967c6562f"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-VER-B of the badf-engineering-verification program (#195 A->E authorization; approval recorded on #200). Shared surface (badf_gate.py + schemas) -> QA + REV by BARCHI-1. Resolves #200 / GOV-0086. Engineered by BARCHI-3 under /loop. Reconciles the land-time-current WP at landing."
+ }
