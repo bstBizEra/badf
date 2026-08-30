@@ -169,13 +169,13 @@ class RefusalAndPropertyTests(_Scratch):
 
 
 class GitRecoverySubskillTests(unittest.TestCase):
-    def test_git_recovery_subskill_registered_and_root_stays_designed(self):
+    def test_git_recovery_subskill_registered_and_root_is_active(self):
         reg = gate.load_json(gate.ROOT / "badf/skill-registry.json"); by = {s["name"]: s for s in reg["skills"]}
         self.assertIn("git-recovery", by); entry = by["git-recovery"]
         self.assertEqual(entry["source"], "skills/badf-git/subskills/git-recovery/SKILL.md")
         self.assertEqual((entry["status"], entry["risk_class"], entry["allowed_tools"]), ("IMPLEMENTED", "C1", []))
         self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
-        self.assertEqual(by["badf-git"]["status"], "DESIGNED")
+        self.assertEqual(by["badf-git"]["status"], "ACTIVE")
         text = (gate.ROOT / entry["source"]).read_text(encoding="utf-8")
         self.assertIn("badf/skill-registry.json", text); self.assertNotIn("Status: `", text)
         for token in ("PRESERVE", "git-recovery", "--preserve", "refs/recovery/", "RECOVERY_REQUIRED", "git revert", "reflog", "stash create"):

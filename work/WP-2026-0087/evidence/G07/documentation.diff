@@ -1,0 +1,37 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 88e2b5b..398559a 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1092,6 +1092,32 @@ files; evidence is not contract). The calibration surfaced one harness limitatio
+ the composed world judges a candidate with the *base's* `tests/`, so a PR that changes a guard cannot
+ be green inside `test_badf_git_composition` — filed as #160 (GOV-0064).
+ 
++## badf-git → ACTIVE — GIT-J admission (`BADF-WP-0087`, Issue #169 / GOV-0069)
++
++`badf-git` is admitted `DESIGNED → ACTIVE` by **registry status flip only**: `digest`
++`sha256:17ea1e41…` is the freeze value and `SKILL.md` is untouched, so the contract admitted is the
++contract frozen at GIT-A. The authorization is the operator's decision recorded on #169
++(comment 5467417478) — rung 6 `APPROVED` of `docs/07`, owner approval proportional to a family that
++holds **no tools** (`allowed_tools: []`) and grants **no authority**. Every rung below was met on `main`
++before the flip: six `IMPLEMENTED` subskills (GIT-C…H, failing-first + mutation suites), deterministic
++inspector tests in CI on every PR (`VALIDATED`), and the GIT-I shadow recomputed from real history at
++`78eab75` (`SHADOWED`, `examples/git-shadow-evidence.json` + `skills/badf-git/evidence/shadow-evidence.md`).
++
++**Activation changes what the family *is*, not what it *may do*.** `GIT_CAPABILITY != GIT_AUTHORITY`
++holds after the flip exactly as before it: no `scripts/badf_git.py`, no `schemas/git.schema.json`, no
++mutation path, `badf_gate.py` the sole gate authority, and the human still merges (BADF-MAIN-001). The
++eight registry pins in the badf-git test modules (contract, baseline, staleness, composition, integration,
++recovery, release, shadow) move to `ACTIVE` with the truth; the contract-surface guard is unchanged. The six subskills stay `IMPLEMENTED` — family = capability admission, subskill =
++implementation status (the `badf-research` precedent, WP-0058; the registry-only flip is the
++`badf-solution-design` precedent, WP-0077).
++
++**ACTIVE does not erase the declared non-coverage.** The shadow's gaps stand as written: rewrite verdicts
++(`STALE_EVIDENCE`) exercised only synthetically; the recovery inventory on real dirty state observed, not
++committed; branch-name conformance of landed heads API-observed; no signed tag; the composed-world harness
++limitation #160 (GOV-0064) — the composition fixtures judge a candidate with the base's `tests/`. The
++shadow record is measured at `605f97f`; landings after it (WP-0082 itself, WP-0083…0086) are not in it —
++a re-shadow is a later work package, not a condition of this admission.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

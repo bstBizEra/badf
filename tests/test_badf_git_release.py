@@ -166,13 +166,13 @@ class ReleasePropertyTests(_Scratch):
 
 
 class ReleaseVersioningSubskillTests(unittest.TestCase):
-    def test_release_versioning_subskill_registered_and_root_stays_designed(self):
+    def test_release_versioning_subskill_registered_and_root_is_active(self):
         reg = gate.load_json(gate.ROOT / "badf/skill-registry.json"); by = {s["name"]: s for s in reg["skills"]}
         self.assertIn("release-versioning", by); entry = by["release-versioning"]
         self.assertEqual(entry["source"], "skills/badf-git/subskills/release-versioning/SKILL.md")
         self.assertEqual((entry["status"], entry["risk_class"], entry["allowed_tools"]), ("IMPLEMENTED", "C1", []))
         self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest())
-        self.assertEqual(by["badf-git"]["status"], "DESIGNED")
+        self.assertEqual(by["badf-git"]["status"], "ACTIVE")
         text = (gate.ROOT / entry["source"]).read_text(encoding="utf-8")
         self.assertIn("badf/skill-registry.json", text); self.assertNotIn("Status: `", text)
         for token in ("TAG_EXISTS != RELEASE_AUTHORIZED", "git-release-check", "git-release-record", "badf/releases/", "MAJOR", "MINOR", "PATCH", "BADF-BASELINE-", "vX.Y.Z", "never"):

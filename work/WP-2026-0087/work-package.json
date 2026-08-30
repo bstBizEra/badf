@@ -1,0 +1,59 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0087",
+  "title": "GIT-J: admit badf-git DESIGNED -> ACTIVE (operator admission #169; registry status flip only)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0074",
+  "repository": "bstBizEra/badf",
+  "objective": "Advance the badf-git family root DESIGNED -> ACTIVE on the operator's admission decision recorded on #169, now that every ladder rung below ACTIVE is objectively met on main (six IMPLEMENTED subskills with failing-first + mutation suites; deterministic inspector tests in CI; GIT-I shadow evidence landed at 78eab75). Registry status flip only: digest sha256:17ea1e41... and SKILL.md unchanged, allowed_tools stays [], no scripts/badf_git.py, no schema -- activation grants no Git authority (GIT_CAPABILITY != GIT_AUTHORITY). The eight DESIGNED test pins move to ACTIVE; a doctrine section records the authorization, the evidence SHA, the declared non-coverage and #160.",
+  "business_value": "An ACTIVE badf-git family is the pinned, admitted Git contract every BADF work package is integrated under: the identity rule, composition binding, staleness, recovery and release inspectors stop being 'designed' and become the family's admitted behaviour, with the digest frozen and no authority granted.",
+  "in_scope": [
+    "badf/skill-registry.json: badf-git status DESIGNED -> ACTIVE (digest unchanged; SKILL.md untouched)",
+    "tests/test_badf_git_activation.py (failing-first): root ACTIVE with the frozen digest; activation grants no authority; six subskills stay IMPLEMENTED; doctrine cites the authorization and every non-coverage item",
+    "eight registry pins DESIGNED -> ACTIVE (renamed ..._root_is_active / ..._is_active_...) in test_badf_git_{contract,baseline,staleness,composition,integration,recovery,release,shadow}.py",
+    "docs/governance/GITHUB_CONTROL_PLANE.md doctrine section: the admission, its operator authorization (#169), the GIT-I evidence SHA 78eab75, non-coverage that ACTIVE does not erase, #160",
+    "badf/demands/BADF-DEM-0074.json; own composition record + G07 self-dossier; reconcile WP-2026-0088 (landed 3967b23)"
+  ],
+  "out_of_scope": [
+    "any change to badf_gate.py, badf_compose.py, the CI workflow, the eight contract references or the subskill SKILL.md files",
+    "fixing #160 (harness) -- its own work package",
+    "regenerating the shadow record to include later landings -- a later work package (re-shadow)",
+    "advancing the six subskills off IMPLEMENTED (they are the active family's components)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "registry: badf-git ACTIVE, digest == sha256(skills/badf-git/SKILL.md) == the GIT-A freeze value; allowed_tools == []; risk_class C1",
+    "no scripts/badf_git.py, no schemas/git.schema.json; test_contract_surface_is_declarative_only unchanged",
+    "tests/test_badf_git_activation.py green after the flip, failing-first before (captured); the eight pins green and renamed ..._root_is_active",
+    "doctrine section names #169 (comment 5467417478), 78eab75, the frozen digest, every non-coverage item, #160 and the deferred re-shadow",
+    "CI green on the composed tree; QA comment by BARCHI-1 and a REV verdict on the PR before merge"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_git_activation.py",
+    "the eight registry pins in tests/test_badf_git_{baseline,staleness,composition,integration,recovery,release,shadow}.py"
+  ],
+  "evidence": [
+    "failing-first run (11 red)",
+    "green run after the flip",
+    "registry mutation check (status reverted / digest tampered / tool granted -> red)",
+    "compose output incl. composition record",
+    "G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "3967b23"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-J per GTGM v0.1 section 17, after GIT-I (WP-2026-0082 / 78eab75). Governance-only WP (registry status + test pins + doctrine; empty gate diff). Resolves #169 / GOV-0069 on the operator's admission recorded there. Reconciles WP-2026-0088 (composition_verified true). Grants no authority even ACTIVE. Engineered by BARCHI-2; QA by BARCHI-1 and a REV verdict required before merge."
+}

@@ -191,7 +191,7 @@ class GitBaselineOnThisCheckoutTests(unittest.TestCase):
         self.assertIn(rec["worktree"]["head_kind"], ("branch", "detached"))
         self.assertEqual(rec["repository"]["name"], gate.self_repository())
 
-    def test_repository_state_subskill_registered_and_root_stays_designed(self):
+    def test_repository_state_subskill_registered_and_root_is_active(self):
         reg = gate.load_json(gate.ROOT / "badf/skill-registry.json")
         by = {s["name"]: s for s in reg["skills"]}
         self.assertIn("repository-state", by)
@@ -200,7 +200,7 @@ class GitBaselineOnThisCheckoutTests(unittest.TestCase):
         self.assertEqual((entry["status"], entry["risk_class"], entry["allowed_tools"]), ("IMPLEMENTED", "C1", []))
         digest = "sha256:" + hashlib.sha256((gate.ROOT / entry["source"]).read_bytes()).hexdigest()
         self.assertEqual(entry["digest"], digest)
-        self.assertEqual(by["badf-git"]["status"], "DESIGNED")
+        self.assertEqual(by["badf-git"]["status"], "ACTIVE")
         text = (gate.ROOT / entry["source"]).read_text(encoding="utf-8")
         self.assertIn("badf/skill-registry.json", text); self.assertNotIn("Status: `", text)
         self.assertIn("git-baseline", text); self.assertIn("GIT-O0", text)
