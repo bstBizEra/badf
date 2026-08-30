@@ -9,6 +9,7 @@ schema, no lifecycle change. These tests guard that declarative surface.
 """
 import hashlib
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -105,6 +106,27 @@ class BadfBuildContractTests(unittest.TestCase):
                       "agent ruling as authority", "autonomous scope expansion", "branch finish as merge permission",
                       "self-review as independent G08 assurance"):
             self.assertIn(token, ext, token)
+
+    # WP-2026-0109 / #219 -- badf-build's Boundary block named `badf-verification (G08)`, absent from the registry.
+    def test_every_family_named_in_the_surface_resolves_in_the_registry(self):
+        # Non-family badf-* tokens. Keep this set minimal: every entry is a hole in the guard.
+        #   "badf-sa" -- slug of the sibling BST-SA organism repo, never a skill family. Defensive
+        #                only: it does not currently appear anywhere under skills/badf-build/.
+        NON_FAMILY = {"badf-sa"}
+        known = {e.get("name") for e in json.loads(REGISTRY.read_text(encoding="utf-8"))["skills"]}
+        found = {}
+        for path in sorted((ROOT / "skills" / "badf-build").rglob("*.md")):
+            for raw in re.findall(r"badf-[a-z0-9-]+", path.read_text(encoding="utf-8")):
+                # "badf-git," / "badf-build." never enter the match (the class excludes punctuation);
+                # a trailing hyphen can, and a path "badf-build/references/x.md" already stops at "/".
+                token = raw.rstrip("-")
+                if token in NON_FAMILY:
+                    continue
+                found.setdefault(token, set()).add(str(path.relative_to(ROOT)))
+        unresolved = {t: sorted(f) for t, f in found.items() if t not in known}
+        self.assertEqual({}, unresolved, "badf-* families named in the badf-build surface but absent from "
+                         + f"{REGISTRY.relative_to(ROOT)}: "
+                         + "; ".join(f"{t} named in {', '.join(files)}" for t, files in sorted(unresolved.items())))
 
 
 if __name__ == "__main__":

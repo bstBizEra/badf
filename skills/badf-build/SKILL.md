@@ -26,12 +26,12 @@ AUTHOR REVIEW ≠ INDEPENDENT ASSURANCE
 ## Boundary
 
 ```text
-badf-implementation-plan   decides HOW authorized work is decomposed
-badf-build                 performs the authorized mutation
-badf-verification (G08)    independently verifies the result
-badf-git                   governs repository topology / integration
-BADF gate                  evaluates evidence
-Authority                  permits lifecycle transition
+badf-implementation-plan             decides HOW authorized work is decomposed
+badf-build                           performs the authorized mutation
+badf-engineering-verification (G08)  independently verifies the result
+badf-git                             governs repository topology / integration
+BADF gate                            evaluates evidence
+Authority                            permits lifecycle transition
 ```
 
 ```text

@@ -49,11 +49,14 @@
     "reversible": true,
     "method": "revert the squash commit via PR; the registry returns to SHADOWED and the controls keep enforcing"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "8de88d5"
+    "base_revision": "8de88d5",
+    "landed_content_tree": "6b2999b8167508596ad48fb2878edbf1562177e4",
+    "composition_verified": true,
+    "landed_as": "d292801646bfe3cb237f153c53baf20208c57229"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-VER-E of the badf-engineering-verification program -- the final rung. The A->E authorization on #195 explicitly did NOT pre-grant this admission; the operator was asked on #214 with the HOLD alternative stated and decided ACTIVATE. Resolves #214 / GOV-0092. QA + REV by BADF-QA (bst-sa-5b) and BADF-REV (bst-sa-f0). Engineered by BARCHI-3 under /loop."
 }

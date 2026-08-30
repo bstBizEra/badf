@@ -1,0 +1,6 @@
+python3 -m unittest tests.test_badf_build_contract tests.test_badf_build_activation tests.test_badf_build_shadow
+.....................
+----------------------------------------------------------------------
+Ran 21 tests in 84.545s
+
+OK
