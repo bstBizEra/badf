@@ -1,0 +1,42 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index ae6d34f..92a4955 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1286,6 +1286,37 @@ the downstream code control (IMP-C3, `check_nfr`) emits its message; the refusal
+ layer moved (the three affected G02/G06 test needles were widened to `a number` / `integer`, matching
+ both layers — the code controls stay as defense-in-depth). change_class **C1** (shared control surface)
+ → independent review. Patch tier. Registry unchanged (no capability advances).
++## badf-build → IMPLEMENTED — typed G07 evidence, the self-dossier extended, the build ledger (`BADF-WP-0098` / WP-BLD-B, Issue #191 / GOV-0081)
++
++Before this rung BADF's own G07 evidence was produced but not *judgeable*: `source_revision: "HEAD"`
++instead of a revision, `unit-test` a `NOT_RUN` placeholder deferred to compose, no changed-path list
++and no planned-vs-actual surface, a `py_compile` "build" with no environment identity. BLD-B keeps the
++**one** producer — `badf_gate.py self-dossier` (BLD-I18) — and makes its four objects exact (BLD-I16):
++
++- **Typed schemas** `schemas/{source-change,build,unit-test,documentation}.schema.json` specialize
++  `evidence.schema.json` with a closed `binding` object. `source-change` binds `base_sha`, `head_sha`,
++  the **content tree** (the durable identity of a squash-landed change — a branch SHA is unreachable on
++  a fresh runner, as GIT-E learned), `changed_paths`, `change_digest`, the declared `expected_surfaces`
++  and the **`unexpected_paths`** outside them; `build` binds command, cwd, python/platform identity,
++  exit code and artifact digests; `unit-test` binds the author's run log (`Ran N tests`, OK/FAILED),
++  per-module obligations with **red and green observed** (a `failing-first.txt` and the log, digest-bound)
++  and names the composed-tree gate as the fresh authoritative run (BLD-I09); `documentation` answers
++  what changed, whether a contract or behavior changed, and **what was not updated and why**.
++- **Scope containment at packaging time (BLD-I04).** With `expected_surfaces` declared, an out-of-surface
++  path is listed and the request is held with condition C-2 naming it — refused or re-authorized, never
++  absorbed; without a declaration the dossier says so as non-coverage rather than staying silent.
++- **A failing log refuses assembly.** The producer will not bind a `FAILED` run into a request; absent a
++  log the object is honestly `NOT_RUN`.
++- **Validation on both sides.** The producer runs `check_schema` before writing each typed object; a
++  `HUMAN_REQUIRED` request with a malformed binding is refused on the dossier; on a passing dossier the
++  G07 `EVIDENCE_RULES` open the artifact and require the binding to agree with it (paths in the diff,
++  counts in the log, exit code in the build transcript). Generic objects stay admissible — additive.
++- **The build ledger** `work/<WP>/build/progress.jsonl` records `START · BASELINE · VERIFY · HANDOFF`
++  as hash-chained `run-ledger-event` records with `session.json` beside it; `badf_gate.py build-ledger
++  <WP>` verifies the chain read-only. **No verdict reads it** — it is recovery and evidence.
++
++The dossier's `source_revision` semantics are untouched; `lifecycle.json` and the G07 type list are
++untouched. `badf-build` advances `DESIGNED → IMPLEMENTED` with its digest unchanged.
+ 
+ ## Discovery ≠ scope expansion
+ 

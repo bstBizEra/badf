@@ -1,0 +1,1453 @@
+diff --git a/badf/demands/BADF-DEM-0085.json b/badf/demands/BADF-DEM-0085.json
+new file mode 100644
+index 0000000..a744375
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0085.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0085",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 191,
++    "url": "https://github.com/bstBizEra/badf/issues/191",
++    "exported_at": "2026-08-30T14:41:26Z",
++    "body_digest": "sha256:067561fa0656fbb4de902f42bde53eb0f0df1964aa35ed550845ce428db4854c"
++  },
++  "title": "GOV-0081: WP-BLD-B — G07 evidence schemas (source-change/build/unit-test/documentation) + self-dossier extension + build ledger; badf-build → IMPLEMENTED",
++  "problem": "🧠 **ARCHI (BARCHI-2)** — plan for WP-BLD-B: G07 evidence schemas + self-dossier extension + build ledger (`badf-build` → `IMPLEMENTED`)\n\n## Stage-Gate\n- **Stage:** 4 prototype → the first executable substrate of the frozen contract, on BADF's own Work Packages.\n- **Decision:** Continue — rung B of the operator-authorized ladder (#188).\n- **Over-engineering risk:** a second producer of G07 evidence, or a `scripts/badf_build.py`. Refused (BLD-I18): the canonical producer is `badf_gate.py self-dossier` and this WP **extends** it; schemas specialize the existing `evidence.schema.json`, they do not replace it.\n- **Glossary stage(s):** 7 build; G08 untouched.\n\n## Observed (the gap, measured on `main`)\n`self_dossier()` already emits the four G07 objects for every BADF WP, but as weak instances: `source_revision: \"HEAD\"` (not an exact SHA — violates BLD-I16), `unit-test` is `NOT_RUN` / `deferred-to-compose` with a placeholder artifact (no red/green, counts or command — BLD-I07/I09 have no evidence object), `source-change` binds a diff digest but **no base/head SHA pair, no changed-path list, no expected-surface comparison** (BLD-I04 has nothing to judge), `build` is `py_compile` with `toolchain.version: \"1\"` (no environment identity), `documentation` answers \"what docs changed\" but not \"what was NOT updated and why\". No `schemas/{source-change,build,unit-test,documentation}.schema.json` exist. No build ledger exists.\n\n## Acceptance criteria (WP-2026-0098 / BADF-DEM-0085)\n- **Four schemas** `schemas/source-change.schema.json`, `build.schema.json`, `unit-test.schema.json`, `documentation.schema.json` — each a *specialization* of `evidence.schema.json` (same required core; `evidence_type` const; a typed `binding` object carrying the G07 contract fields from `references/g07-contract.md`: source-change → `base_sha`, `head_sha`, `changed_paths`, `change_digest`, `expected_surfaces`, `unexpected_paths`; build → `command`, `cwd`, `environment` (python/os identity), `exit_code`, `artifacts[{ref,digest}]`, `non_coverage`; unit-test → `obligations[{id, acceptance_ref, seam, red{observed,ref}, green{observed,ref}}]`, `command`, `result`, `tests_run`, `failures`, `coverage_scope`; documentation → `changed`, `contract_changed`, `behavior_changed`, `required_updates`, `not_updated_with_reason`). Additive: existing generic objects on `main` stay valid under `evidence.schema.json`; the typed schema binds only objects that declare `binding`.\n- **`self_dossier` extension (the canonical producer, BLD-I18):** binds exact `base_sha`/`head_sha` and `changed_paths`; computes the **expected-surface comparison** from the WP's optional `expected_surfaces` (WP-IMP-B field) — absent → declared `non_coverage`, present → `unexpected_paths` listed and the dossier `HELD` with reason when non-empty (BLD-I04, at packaging time); `build` records python/OS identity; `unit-test` binds the WP's `tests` modules and an author-supplied run log (`evidence/G07/unit-test.txt`) parsed for `Ran N tests … OK|FAILED` with the log's digest, `outcome` from the parse, and the composed-tree gate named as the fresh authoritative run (BLD-I09) — never `NOT_RUN` when a log is present; `documentation` gains `not_updated_with_reason` from the WP record's `documentation` note or declared non-coverage.\n- **`validate_evidence`** applies the typed schema when `binding` is present (`check_schema(<type>)`), so a malformed binding fails the dossier; generic objects unaffected.\n- **Build ledger** `work/<WP>/build/{session.json, progress.jsonl, decisions.jsonl}` — schema `schemas/build-ledger-event.schema.json` (or reuse of `run-ledger-event.schema.json` if its contract fits — decided at plan time by inspection, stated in the PR); `self-dossier` appends `START/BASELINE/VERIFY/HANDOFF` events for its own run; the ledger is recovery/evidence, never authority (no gate reads it for a verdict).\n- **Registry:** `badf-build` `DESIGNED → IMPLEMENTED`, digest re-pinned only if `SKILL.md` changes (it should not).\n- **No** `scripts/badf_build.py`; no lifecycle change; `content_tree`/composition record semantics unchanged (the ledger lives under `work/<WP>/`, already excluded).\n\n## Tests (`tests/test_badf_build_evidence.py`, failing-first)\n- `test_four_schemas_specialize_evidence_schema` — required core ⊇ evidence.schema required; `evidence_type` const per file.\n- `test_self_dossier_binds_exact_shas_and_changed_paths` — scratch WP: `base_sha`/`head_sha` are 40-hex and equal `git rev-parse`; `changed_paths` equals `git diff --name-only` minus `work/<WP>/` and the lockfile.\n- `test_expected_surface_comparison` — WP with `expected_surfaces` and one out-of-surface path → `unexpected_paths` non-empty and dossier `HELD` with the BLD-I04 reason; without `expected_surfaces` → `non_coverage` declared.\n- `test_unit_test_binding_parses_run_log` — log `Ran 12 tests … OK` → `tests_run 12`, `outcome PASS`, digest bound; `FAILED (failures=1)` → `outcome FAIL`; absent log → `NOT_RUN` with reason.\n- `test_build_records_environment_identity`; `test_documentation_not_updated_with_reason`.\n- `test_typed_binding_is_validated` — a malformed `binding` fails `dossier` with the schema's message; a generic object still passes.\n- `test_ledger_events_are_appended_and_never_read_for_verdict`.\n- Existing `test_badf_self_dossier` / `test_badf_reconcile` / composition & integration fixtures stay green (they carry `work/` and `schemas/`).\n- Mutation: each new control's refusal disabled one at a time → its test red.\n\n## Out of scope\n- Deterministic controls beyond packaging-time surface comparison (authority-before-mutation, red-before-green enforcement, budget/stop, delegation subset) — **BLD-C**. Shadow — BLD-D. Admission — BLD-E.\n- Running the unit tests inside `self-dossier` (the composed-tree gate is the fresh run; the self-dossier binds the author's log and the gate's result).\n\n**Version tier:** minor (new schemas + producer extension, backward-compatible). **Lean mode:** enforced (schemas additive; no new tool). QA + REV: BARCHI-1 (shared surface).\n\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T14:41:26Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-BLD-B: four typed G07 evidence schemas (source-change/build/unit-test/documentation) specializing evidence.schema.json; self_dossier extended to bind exact base/head SHAs + content tree + changed paths + expected-surface comparison (BLD-I04/I16), the author's unit-test log (BLD-I07/I09), build environment identity and documentation non-update reasons; typed bindings validated at production and on the dossier; hash-chained build ledger (run-ledger-event records) never read for a verdict. badf-build DESIGNED -> IMPLEMENTED."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 9279d07..24ca24d 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -298,7 +298,7 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "DESIGNED",
++      "status": "IMPLEMENTED",
+       "digest": "sha256:6cc3266ecde8bf6ed14fc3b5ae3b1de38a42154242d9b7517ca6f0cdb38bf0f3"
+     }
+   ]
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index ae6d34f..92a4955 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1286,6 +1286,37 @@ the downstream code control (IMP-C3, `check_nfr`) emits its message; the refusal
+ layer moved (the three affected G02/G06 test needles were widened to `a number` / `integer`, matching
+ both layers — the code controls stay as defense-in-depth). change_class **C1** (shared control surface)
+ → independent review. Patch tier. Registry unchanged (no capability advances).
++## badf-build → IMPLEMENTED — typed G07 evidence, the self-dossier extended, the build ledger (`BADF-WP-0098` / WP-BLD-B, Issue #191 / GOV-0081)
++
++Before this rung BADF's own G07 evidence was produced but not *judgeable*: `source_revision: "HEAD"`
++instead of a revision, `unit-test` a `NOT_RUN` placeholder deferred to compose, no changed-path list
++and no planned-vs-actual surface, a `py_compile` "build" with no environment identity. BLD-B keeps the
++**one** producer — `badf_gate.py self-dossier` (BLD-I18) — and makes its four objects exact (BLD-I16):
++
++- **Typed schemas** `schemas/{source-change,build,unit-test,documentation}.schema.json` specialize
++  `evidence.schema.json` with a closed `binding` object. `source-change` binds `base_sha`, `head_sha`,
++  the **content tree** (the durable identity of a squash-landed change — a branch SHA is unreachable on
++  a fresh runner, as GIT-E learned), `changed_paths`, `change_digest`, the declared `expected_surfaces`
++  and the **`unexpected_paths`** outside them; `build` binds command, cwd, python/platform identity,
++  exit code and artifact digests; `unit-test` binds the author's run log (`Ran N tests`, OK/FAILED),
++  per-module obligations with **red and green observed** (a `failing-first.txt` and the log, digest-bound)
++  and names the composed-tree gate as the fresh authoritative run (BLD-I09); `documentation` answers
++  what changed, whether a contract or behavior changed, and **what was not updated and why**.
++- **Scope containment at packaging time (BLD-I04).** With `expected_surfaces` declared, an out-of-surface
++  path is listed and the request is held with condition C-2 naming it — refused or re-authorized, never
++  absorbed; without a declaration the dossier says so as non-coverage rather than staying silent.
++- **A failing log refuses assembly.** The producer will not bind a `FAILED` run into a request; absent a
++  log the object is honestly `NOT_RUN`.
++- **Validation on both sides.** The producer runs `check_schema` before writing each typed object; a
++  `HUMAN_REQUIRED` request with a malformed binding is refused on the dossier; on a passing dossier the
++  G07 `EVIDENCE_RULES` open the artifact and require the binding to agree with it (paths in the diff,
++  counts in the log, exit code in the build transcript). Generic objects stay admissible — additive.
++- **The build ledger** `work/<WP>/build/progress.jsonl` records `START · BASELINE · VERIFY · HANDOFF`
++  as hash-chained `run-ledger-event` records with `session.json` beside it; `badf_gate.py build-ledger
++  <WP>` verifies the chain read-only. **No verdict reads it** — it is recovery and evidence.
++
++The dossier's `source_revision` semantics are untouched; `lifecycle.json` and the G07 type list are
++untouched. `badf-build` advances `DESIGNED → IMPLEMENTED` with its digest unchanged.
+ 
+ ## Discovery ≠ scope expansion
+ 
+diff --git a/schemas/build.schema.json b/schemas/build.schema.json
+new file mode 100644
+index 0000000..5778b2b
+--- /dev/null
++++ b/schemas/build.schema.json
+@@ -0,0 +1,186 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "$id": "https://badf.bizera.local/schemas/build.schema.json",
++  "title": "BADF G07 evidence: build (typed binding, BLD-B / BADF-WP-0098)",
++  "type": "object",
++  "required": [
++    "schema_version",
++    "id",
++    "work_package_id",
++    "gate",
++    "claim",
++    "evidence_type",
++    "producer",
++    "source_revision",
++    "target",
++    "toolchain",
++    "operation",
++    "started_at",
++    "completed_at",
++    "outcome",
++    "artifact",
++    "digest",
++    "binding"
++  ],
++  "properties": {
++    "schema_version": {
++      "const": "1.0.0"
++    },
++    "id": {
++      "type": "string",
++      "pattern": "^EVD-[A-Za-z0-9._-]+$"
++    },
++    "work_package_id": {
++      "type": "string",
++      "pattern": "^WP-[A-Za-z0-9._-]+$"
++    },
++    "gate": {
++      "type": "string",
++      "pattern": "^G(0[0-9]|1[0-4])$"
++    },
++    "claim": {
++      "type": "string",
++      "minLength": 1
++    },
++    "evidence_type": {
++      "enum": [
++        "build"
++      ]
++    },
++    "producer": {
++      "type": "object",
++      "required": [
++        "id",
++        "type"
++      ],
++      "properties": {
++        "id": {
++          "type": "string",
++          "minLength": 1
++        },
++        "type": {
++          "enum": [
++            "human",
++            "agent",
++            "service",
++            "controller"
++          ]
++        }
++      }
++    },
++    "source_revision": {
++      "type": "string",
++      "minLength": 1
++    },
++    "target": {
++      "type": "string",
++      "minLength": 1
++    },
++    "toolchain": {
++      "type": "object",
++      "required": [
++        "name",
++        "version"
++      ]
++    },
++    "operation": {
++      "type": "string",
++      "minLength": 1
++    },
++    "started_at": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "completed_at": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "outcome": {
++      "enum": [
++        "PASS",
++        "FAIL",
++        "BLOCKED",
++        "NOT_RUN",
++        "NOT_APPLICABLE"
++      ]
++    },
++    "artifact": {
++      "type": "string",
++      "minLength": 1
++    },
++    "digest": {
++      "type": "string",
++      "pattern": "^sha256:[a-f0-9]{64}$"
++    },
++    "composition": {
++      "type": "object"
++    },
++    "sanitization": {
++      "type": "string"
++    },
++    "binding": {
++      "type": "object",
++      "required": [
++        "command",
++        "cwd",
++        "environment",
++        "exit_code",
++        "artifacts",
++        "non_coverage"
++      ],
++      "properties": {
++        "command": {
++          "type": "string"
++        },
++        "cwd": {
++          "type": "string"
++        },
++        "environment": {
++          "type": "object",
++          "required": [
++            "python",
++            "platform"
++          ],
++          "properties": {
++            "python": {
++              "type": "string"
++            },
++            "platform": {
++              "type": "string"
++            }
++          }
++        },
++        "exit_code": {
++          "type": "integer"
++        },
++        "artifacts": {
++          "type": "array",
++          "items": {
++            "type": "object",
++            "required": [
++              "ref",
++              "digest"
++            ],
++            "properties": {
++              "ref": {
++                "type": "string"
++              },
++              "digest": {
++                "type": "string",
++                "pattern": "^sha256:[0-9a-f]{64}$"
++              }
++            },
++            "additionalProperties": false
++          }
++        },
++        "non_coverage": {
++          "type": "array",
++          "items": {
++            "type": "string"
++          }
++        }
++      },
++      "additionalProperties": false
++    }
++  }
++}
+diff --git a/schemas/documentation.schema.json b/schemas/documentation.schema.json
+new file mode 100644
+index 0000000..0ce5357
+--- /dev/null
++++ b/schemas/documentation.schema.json
+@@ -0,0 +1,156 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "$id": "https://badf.bizera.local/schemas/documentation.schema.json",
++  "title": "BADF G07 evidence: documentation (typed binding, BLD-B / BADF-WP-0098)",
++  "type": "object",
++  "required": [
++    "schema_version",
++    "id",
++    "work_package_id",
++    "gate",
++    "claim",
++    "evidence_type",
++    "producer",
++    "source_revision",
++    "target",
++    "toolchain",
++    "operation",
++    "started_at",
++    "completed_at",
++    "outcome",
++    "artifact",
++    "digest",
++    "binding"
++  ],
++  "properties": {
++    "schema_version": {
++      "const": "1.0.0"
++    },
++    "id": {
++      "type": "string",
++      "pattern": "^EVD-[A-Za-z0-9._-]+$"
++    },
++    "work_package_id": {
++      "type": "string",
++      "pattern": "^WP-[A-Za-z0-9._-]+$"
++    },
++    "gate": {
++      "type": "string",
++      "pattern": "^G(0[0-9]|1[0-4])$"
++    },
++    "claim": {
++      "type": "string",
++      "minLength": 1
++    },
++    "evidence_type": {
++      "enum": [
++        "documentation"
++      ]
++    },
++    "producer": {
++      "type": "object",
++      "required": [
++        "id",
++        "type"
++      ],
++      "properties": {
++        "id": {
++          "type": "string",
++          "minLength": 1
++        },
++        "type": {
++          "enum": [
++            "human",
++            "agent",
++            "service",
++            "controller"
++          ]
++        }
++      }
++    },
++    "source_revision": {
++      "type": "string",
++      "minLength": 1
++    },
++    "target": {
++      "type": "string",
++      "minLength": 1
++    },
++    "toolchain": {
++      "type": "object",
++      "required": [
++        "name",
++        "version"
++      ]
++    },
++    "operation": {
++      "type": "string",
++      "minLength": 1
++    },
++    "started_at": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "completed_at": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "outcome": {
++      "enum": [
++        "PASS",
++        "FAIL",
++        "BLOCKED",
++        "NOT_RUN",
++        "NOT_APPLICABLE"
++      ]
++    },
++    "artifact": {
++      "type": "string",
++      "minLength": 1
++    },
++    "digest": {
++      "type": "string",
++      "pattern": "^sha256:[a-f0-9]{64}$"
++    },
++    "composition": {
++      "type": "object"
++    },
++    "sanitization": {
++      "type": "string"
++    },
++    "binding": {
++      "type": "object",
++      "required": [
++        "changed",
++        "contract_changed",
++        "behavior_changed",
++        "required_updates",
++        "not_updated_with_reason"
++      ],
++      "properties": {
++        "changed": {
++          "type": "array",
++          "items": {
++            "type": "string"
++          }
++        },
++        "contract_changed": {
++          "type": "boolean"
++        },
++        "behavior_changed": {
++          "type": "boolean"
++        },
++        "required_updates": {
++          "type": "array",
++          "items": {
++            "type": "string"
++          }
++        },
++        "not_updated_with_reason": {
++          "type": "string"
++        }
++      },
++      "additionalProperties": false
++    }
++  }
++}
+diff --git a/schemas/source-change.schema.json b/schemas/source-change.schema.json
+new file mode 100644
+index 0000000..c47afce
+--- /dev/null
++++ b/schemas/source-change.schema.json
+@@ -0,0 +1,184 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "$id": "https://badf.bizera.local/schemas/source-change.schema.json",
++  "title": "BADF G07 evidence: source-change (typed binding, BLD-B / BADF-WP-0098)",
++  "type": "object",
++  "required": [
++    "schema_version",
++    "id",
++    "work_package_id",
++    "gate",
++    "claim",
++    "evidence_type",
++    "producer",
++    "source_revision",
++    "target",
++    "toolchain",
++    "operation",
++    "started_at",
++    "completed_at",
++    "outcome",
++    "artifact",
++    "digest",
++    "binding"
++  ],
++  "properties": {
++    "schema_version": {
++      "const": "1.0.0"
++    },
++    "id": {
++      "type": "string",
++      "pattern": "^EVD-[A-Za-z0-9._-]+$"
++    },
++    "work_package_id": {
++      "type": "string",
++      "pattern": "^WP-[A-Za-z0-9._-]+$"
++    },
++    "gate": {
++      "type": "string",
++      "pattern": "^G(0[0-9]|1[0-4])$"
++    },
++    "claim": {
++      "type": "string",
++      "minLength": 1
++    },
++    "evidence_type": {
++      "enum": [
++        "source-change"
++      ]
++    },
++    "producer": {
++      "type": "object",
++      "required": [
++        "id",
++        "type"
++      ],
++      "properties": {
++        "id": {
++          "type": "string",
++          "minLength": 1
++        },
++        "type": {
++          "enum": [
++            "human",
++            "agent",
++            "service",
++            "controller"
++          ]
++        }
++      }
++    },
++    "source_revision": {
++      "type": "string",
++      "minLength": 1
++    },
++    "target": {
++      "type": "string",
++      "minLength": 1
++    },
++    "toolchain": {
++      "type": "object",
++      "required": [
++        "name",
++        "version"
++      ]
++    },
++    "operation": {
++      "type": "string",
++      "minLength": 1
++    },
++    "started_at": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "completed_at": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "outcome": {
++      "enum": [
++        "PASS",
++        "FAIL",
++        "BLOCKED",
++        "NOT_RUN",
++        "NOT_APPLICABLE"
++      ]
++    },
++    "artifact": {
++      "type": "string",
++      "minLength": 1
++    },
++    "digest": {
++      "type": "string",
++      "pattern": "^sha256:[a-f0-9]{64}$"
++    },
++    "composition": {
++      "type": "object"
++    },
++    "sanitization": {
++      "type": "string"
++    },
++    "binding": {
++      "type": "object",
++      "required": [
++        "base_sha",
++        "head_sha",
++        "content_tree",
++        "changed_paths",
++        "change_digest",
++        "expected_surfaces",
++        "unexpected_paths"
++      ],
++      "properties": {
++        "base_sha": {
++          "type": "string",
++          "pattern": "^[0-9a-f]{40}$"
++        },
++        "head_sha": {
++          "type": "string",
++          "pattern": "^[0-9a-f]{40}$"
++        },
++        "content_tree": {
++          "type": "string",
++          "pattern": "^[0-9a-f]{40}$"
++        },
++        "changed_paths": {
++          "type": "array",
++          "items": {
++            "type": "string"
++          }
++        },
++        "change_digest": {
++          "type": "string",
++          "pattern": "^sha256:[0-9a-f]{64}$"
++        },
++        "expected_surfaces": {
++          "type": "object",
++          "required": [
++            "declared",
++            "files"
++          ],
++          "properties": {
++            "declared": {
++              "type": "boolean"
++            },
++            "files": {
++              "type": "array",
++              "items": {
++                "type": "string"
++              }
++            }
++          },
++          "additionalProperties": false
++        },
++        "unexpected_paths": {
++          "type": "array",
++          "items": {
++            "type": "string"
++          }
++        }
++      },
++      "additionalProperties": false
++    }
++  }
++}
+diff --git a/schemas/unit-test.schema.json b/schemas/unit-test.schema.json
+new file mode 100644
+index 0000000..34c486b
+--- /dev/null
++++ b/schemas/unit-test.schema.json
+@@ -0,0 +1,237 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "$id": "https://badf.bizera.local/schemas/unit-test.schema.json",
++  "title": "BADF G07 evidence: unit-test (typed binding, BLD-B / BADF-WP-0098)",
++  "type": "object",
++  "required": [
++    "schema_version",
++    "id",
++    "work_package_id",
++    "gate",
++    "claim",
++    "evidence_type",
++    "producer",
++    "source_revision",
++    "target",
++    "toolchain",
++    "operation",
++    "started_at",
++    "completed_at",
++    "outcome",
++    "artifact",
++    "digest",
++    "binding"
++  ],
++  "properties": {
++    "schema_version": {
++      "const": "1.0.0"
++    },
++    "id": {
++      "type": "string",
++      "pattern": "^EVD-[A-Za-z0-9._-]+$"
++    },
++    "work_package_id": {
++      "type": "string",
++      "pattern": "^WP-[A-Za-z0-9._-]+$"
++    },
++    "gate": {
++      "type": "string",
++      "pattern": "^G(0[0-9]|1[0-4])$"
++    },
++    "claim": {
++      "type": "string",
++      "minLength": 1
++    },
++    "evidence_type": {
++      "enum": [
++        "unit-test"
++      ]
++    },
++    "producer": {
++      "type": "object",
++      "required": [
++        "id",
++        "type"
++      ],
++      "properties": {
++        "id": {
++          "type": "string",
++          "minLength": 1
++        },
++        "type": {
++          "enum": [
++            "human",
++            "agent",
++            "service",
++            "controller"
++          ]
++        }
++      }
++    },
++    "source_revision": {
++      "type": "string",
++      "minLength": 1
++    },
++    "target": {
++      "type": "string",
++      "minLength": 1
++    },
++    "toolchain": {
++      "type": "object",
++      "required": [
++        "name",
++        "version"
++      ]
++    },
++    "operation": {
++      "type": "string",
++      "minLength": 1
++    },
++    "started_at": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "completed_at": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "outcome": {
++      "enum": [
++        "PASS",
++        "FAIL",
++        "BLOCKED",
++        "NOT_RUN",
++        "NOT_APPLICABLE"
++      ]
++    },
++    "artifact": {
++      "type": "string",
++      "minLength": 1
++    },
++    "digest": {
++      "type": "string",
++      "pattern": "^sha256:[a-f0-9]{64}$"
++    },
++    "composition": {
++      "type": "object"
++    },
++    "sanitization": {
++      "type": "string"
++    },
++    "binding": {
++      "type": "object",
++      "required": [
++        "obligations",
++        "command",
++        "result",
++        "tests_run",
++        "failures",
++        "coverage_scope",
++        "fresh_run"
++      ],
++      "properties": {
++        "obligations": {
++          "type": "array",
++          "items": {
++            "type": "object",
++            "required": [
++              "id",
++              "seam",
++              "red",
++              "green"
++            ],
++            "properties": {
++              "id": {
++                "type": "string"
++              },
++              "acceptance_ref": {
++                "type": "string"
++              },
++              "seam": {
++                "type": "object",
++                "required": [
++                  "type",
++                  "ref"
++                ],
++                "properties": {
++                  "type": {
++                    "type": "string"
++                  },
++                  "ref": {
++                    "type": "string"
++                  }
++                },
++                "additionalProperties": false
++              },
++              "red": {
++                "type": "object",
++                "required": [
++                  "observed"
++                ],
++                "properties": {
++                  "observed": {
++                    "type": "boolean"
++                  },
++                  "ref": {
++                    "type": "string"
++                  },
++                  "digest": {
++                    "type": "string",
++                    "pattern": "^sha256:[0-9a-f]{64}$"
++                  }
++                },
++                "additionalProperties": false
++              },
++              "green": {
++                "type": "object",
++                "required": [
++                  "observed"
++                ],
++                "properties": {
++                  "observed": {
++                    "type": "boolean"
++                  },
++                  "ref": {
++                    "type": "string"
++                  },
++                  "digest": {
++                    "type": "string",
++                    "pattern": "^sha256:[0-9a-f]{64}$"
++                  }
++                },
++                "additionalProperties": false
++              }
++            },
++            "additionalProperties": false
++          }
++        },
++        "command": {
++          "type": "string"
++        },
++        "result": {
++          "enum": [
++            "PASS",
++            "FAIL",
++            "NOT_RUN"
++          ]
++        },
++        "tests_run": {
++          "type": "integer"
++        },
++        "failures": {
++          "type": "integer"
++        },
++        "coverage_scope": {
++          "type": "array",
++          "items": {
++            "type": "string"
++          }
++        },
++        "fresh_run": {
++          "type": "string"
++        }
++      },
++      "additionalProperties": false
++    }
++  }
++}
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 9351e7a..4b70907 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -12,6 +12,8 @@ import json
+ import re
+ import sys
+ import tempfile
++import fnmatch
++import platform
+ from datetime import datetime, timezone
+ from pathlib import Path
+ from typing import Any
+@@ -1516,6 +1518,65 @@ def check_rollback_plan(artifact: Path, dossier: dict[str, Any], evidence: dict[
+         raise ValidationError("rollback-plan: no stop_conditions; a rollback plan states when to stop (G06: stop conditions executable)")
+ 
+ 
++
++# ---- badf-build BLD-B (BADF-WP-0098, #191): typed G07 evidence bindings ----
++# The self-dossier is the canonical producer of G07 evidence for BADF's own work (BLD-I18);
++# these helpers make its four objects EXACT (BLD-I16) and judgeable (BLD-I04/I07/I09).
++
++def _surface_match(path: str, pattern: str) -> bool:
++    """Does a changed path fall inside one declared expected-surface pattern?
++    `dir/**` is a prefix; other globs are fnmatch (where `*` may cross `/`)."""
++    if pattern.endswith("/**"):
++        return path.startswith(pattern[:-2])
++    return path == pattern or fnmatch.fnmatchcase(path, pattern.replace("**", "*"))
++
++
++def _parse_unittest_log(text: str) -> tuple[str, int, int]:
++    """(result, tests_run, failures) from a unittest transcript: `Ran N tests` and OK/FAILED."""
++    m = re.search(r"^Ran (\d+) tests?", text, re.M)
++    ran = int(m.group(1)) if m else 0
++    fm = re.search(r"^FAILED \((.*)\)", text, re.M)
++    if fm:
++        counts = [int(x) for x in re.findall(r"=(\d+)", fm.group(1))]
++        return "FAIL", ran, (sum(counts) if counts else 1)
++    if re.search(r"^OK", text, re.M):
++        return "PASS", ran, 0
++    return "NOT_RUN", ran, 0
++
++
++def _diff_paths(text: str) -> list[str]:
++    return sorted({m.group(1) for m in re.finditer(r"^diff --git a/(\S+) b/", text, re.M)})
++
++
++def check_g07_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    """EVIDENCE_RULES entry for the four G07 types: a typed `binding`, when present, must
++    conform to schemas/<type>.schema.json AND agree with the artifact it binds -- the gate
++    opens the artifact; a binding is not evidence of itself. Generic objects (no binding)
++    stay admissible: the typed form is additive (BLD-B)."""
++    if "binding" not in evidence:
++        return
++    kind = evidence["evidence_type"]
++    check_schema(kind, evidence)
++    b = evidence["binding"]
++    label = f"evidence {evidence.get('id', kind)}"
++    if kind == "source-change":
++        paths = _diff_paths(artifact.read_text(encoding="utf-8", errors="replace"))
++        if sorted(b["changed_paths"]) != paths:
++            raise ValidationError(f"{label}: binding.changed_paths {sorted(b['changed_paths'])} do not equal the paths in the diff artifact {paths}")
++        if b["change_digest"] != evidence["digest"]:
++            raise ValidationError(f"{label}: binding.change_digest does not equal the artifact digest")
++    elif kind == "unit-test" and b["result"] != "NOT_RUN":
++        result, ran, failures = _parse_unittest_log(artifact.read_text(encoding="utf-8", errors="replace"))
++        if (result, ran, failures) != (b["result"], b["tests_run"], b["failures"]):
++            raise ValidationError(f"{label}: binding ({b['result']}, {b['tests_run']}, {b['failures']}) does not equal the log ({result}, {ran}, {failures})")
++    elif kind == "build":
++        m = re.search(r"-> exit (\d+)", artifact.read_text(encoding="utf-8", errors="replace"))
++        if not m:
++            raise ValidationError(f"{label}: the build artifact carries no `-> exit N` line, so binding.exit_code {b['exit_code']} cannot be verified against it (BLD-I16: build evidence is exact, never best-effort)")
++        if int(m.group(1)) != b["exit_code"]:
++            raise ValidationError(f"{label}: binding.exit_code {b['exit_code']} does not equal the recorded exit {m.group(1)}")
++
++
+ EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_criteria, "product-approval": check_product_approval,
+                   "requirements": check_requirements, "nfr": check_nfr, "traceability": check_traceability,
+                   "definition-of-ready": check_definition_of_ready,
+@@ -1528,6 +1589,8 @@ EVIDENCE_RULES = {"prd": check_prd, "acceptance-criteria": check_acceptance_crit
+                   "work-breakdown": check_work_breakdown, "test-plan": check_test_plan,
+                   "release-plan": check_release_plan, "rollback-plan": check_rollback_plan}
+ 
++EVIDENCE_RULES.update({t: check_g07_binding for t in ("source-change", "build", "unit-test", "documentation")})
++
+ 
+ def validate_evidence(path: Path, dossier: dict[str, Any], expected_type: str) -> None:
+     evidence = load_json(path)
+@@ -2994,6 +3057,64 @@ def _diff_bytes(*args: str) -> bytes:
+     return r.stdout
+ 
+ 
++
++# ---- badf-build BLD-B: the build ledger (recovery and evidence, never authority) ----
++BUILD_LEDGER = "build/progress.jsonl"
++
++
++def _event_hash(event: dict[str, Any]) -> str:
++    body = {k: v for k, v in event.items() if k != "event_hash"}
++    return "sha256:" + hashlib.sha256(json.dumps(body, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
++
++
++def append_build_event(wp_id: str, step: str, outcome: str, note: str) -> dict[str, Any]:
++    """Append one hash-chained run-ledger event to work/<WP>/build/progress.jsonl.
++    Nothing reads the ledger for a verdict; it exists so a resumed or compacted
++    session cannot redispatch finished work and so the build's transitions are evidence."""
++    path = ROOT / "work" / wp_id / BUILD_LEDGER
++    path.parent.mkdir(parents=True, exist_ok=True)
++    prev_hash, seq = GENESIS_HASH, 1
++    if path.is_file():
++        lines = [l for l in path.read_text(encoding="utf-8").splitlines() if l.strip()]
++        if lines:
++            last = json.loads(lines[-1]); prev_hash = last["event_hash"]; seq = int(last["sequence"]) + 1
++    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
++    event = {"event_id": f"EVT-{wp_id}-{seq:04d}", "workflow_id": wp_id, "sequence": seq, "step": step, "outcome": outcome,
++             "actor": {"id": "badf-self-dossier", "type": "controller"}, "recorded_at": now, "note": note,
++             "previous_event_hash": prev_hash}
++    event["event_hash"] = _event_hash(event)
++    with path.open("a", encoding="utf-8") as fh:
++        fh.write(json.dumps(event, sort_keys=True) + "\n")
++    return event
++
++
++def verify_build_ledger(wp_id: str) -> str:
++    """`badf_gate.py build-ledger <WP>`: read-only chain verification of the build ledger.
++    Exit 0 when every event's hash recomputes and links to its predecessor; 1 otherwise.
++    The dossier verdict never consults this."""
++    m = WP_ID_FORMS.match(wp_id.strip())
++    if not m:
++        raise ValidationError(f"{wp_id!r} is not a work package id")
++    wp_id = f"{WP_NAMESPACE}{m.group(1)}"
++    path = ROOT / "work" / wp_id / BUILD_LEDGER
++    if not path.is_file():
++        raise ValidationError(f"{wp_id} has no build ledger at work/{wp_id}/{BUILD_LEDGER}")
++    prev, count = GENESIS_HASH, 0
++    for n, line in enumerate((l for l in path.read_text(encoding="utf-8").splitlines() if l.strip()), 1):
++        event = json.loads(line)
++        for k in ("event_id", "workflow_id", "sequence", "step", "outcome", "actor", "recorded_at", "previous_event_hash", "event_hash"):
++            if k not in event:
++                raise ValidationError(f"build ledger chain broken at line {n}: missing {k}")
++        if event["workflow_id"] != wp_id or int(event["sequence"]) != n:
++            raise ValidationError(f"build ledger chain broken at line {n}: sequence/workflow mismatch")
++        if event["previous_event_hash"] != prev:
++            raise ValidationError(f"build ledger chain broken at line {n}: previous_event_hash does not link")
++        if event["event_hash"] != _event_hash(event):
++            raise ValidationError(f"build ledger chain broken at line {n}: event_hash does not recompute (tampered)")
++        prev = event["event_hash"]; count = n
++    return f"BADF BUILD-LEDGER PASS: {wp_id} {count} events, chain intact (recovery/evidence only; no verdict is derived from it)"
++
++
+ def self_dossier(wp_id: str) -> str:
+     """`badf_gate.py self-dossier <WP>`: assemble a G07 gate dossier for one of
+     BADF's OWN work packages, from measured evidence, as a HUMAN_REQUIRED
+@@ -3026,31 +3147,90 @@ def self_dossier(wp_id: str) -> str:
+     py = subprocess.run([sys.executable, "-m", "py_compile", "scripts/badf_gate.py", "scripts/badf_compose.py"],
+                         cwd=ROOT, capture_output=True, text=True)
+     build_txt = f"python -m py_compile scripts/badf_gate.py scripts/badf_compose.py -> exit {py.returncode}\n{py.stderr}"
++    # ---- BLD-B typed bindings (BADF-WP-0098): exactness lives here, not in source_revision ----
++    base_full = _git("rev-parse", base) or base
++    head_full = _git("rev-parse", "HEAD") or "HEAD"
++    names = sorted((_git("diff", "--name-only", f"{base}..HEAD", *exclude) or "").split())
++    ctree = content_tree(ROOT, wp_id, "HEAD")
++    surfaces = wp.get("expected_surfaces") or {}
++    patterns = [str(x) for x in (surfaces.get("files") or [])]
++    declared = bool(patterns)
++    unexpected = [n for n in names if declared and not any(_surface_match(n, pat) for pat in patterns)]
++    build_cmd = f"{sys.executable} -m py_compile scripts/badf_gate.py scripts/badf_compose.py"
++    build_binding = {"command": build_cmd, "cwd": ".", "environment": {"python": platform.python_version(), "platform": platform.platform()},
++                     "exit_code": py.returncode, "artifacts": [{"ref": r, "digest": sha256(ROOT / r)} for r in ("scripts/badf_gate.py", "scripts/badf_compose.py")],
++                     "non_coverage": []}
++    modules = [str(x).split()[0] for x in (wp.get("tests") or []) if str(x).strip()]
++    log_path = ev_dir / "unit-test.log"; ff_path = ev_dir / "failing-first.txt"
++    fresh_run = "scripts/badf_compose.py (the composed-tree gate) re-runs the suite on the tree that would land; CI is the fresh, authoritative run (BLD-I09)"
++    if log_path.is_file():
++        log_text = log_path.read_text(encoding="utf-8", errors="replace")
++        ut_result, ut_ran, ut_failures = _parse_unittest_log(log_text)
++        if ut_result == "FAIL":
++            raise ValidationError(f"{wp_id}: the author's unit-test log {log_path.name} reports FAILED ({ut_failures}); fix the tests before assembling -- a request must not bind a failing run (BLD-I09)")
++        if ut_result == "NOT_RUN":
++            raise ValidationError(f"{wp_id}: {log_path.name} carries no `Ran N tests` / OK transcript; bind a real unittest log")
++        first = log_text.strip().splitlines()[0] if log_text.strip() else ""
++        ut_command = first if first.startswith(("python", "uv ")) else f"{sys.executable} -m unittest " + " ".join(modules)
++        ut_outcome, ut_artifact_data, ut_artifact_name = "PASS", None, "unit-test.log"
++    else:
++        ut_result, ut_ran, ut_failures, ut_command = "NOT_RUN", 0, 0, "deferred-to-compose"
++        ut_outcome, ut_artifact_name = "NOT_RUN", "unit-test.txt"
++        ut_artifact_data = (b"Unit tests are executed by the composed-tree gate (scripts/badf_compose.py) on the tree that would land. "
++                            b"This dossier is a REQUEST; its test evidence is the PR's BADF COMPOSE PASS transcript, not a run by this tool.\n")
++    red_obs = ff_path.is_file()
++    obligations = [{"id": f"TEST-{i + 1:03d}", "seam": {"type": "module", "ref": m},
++                    "red": ({"observed": True, "ref": f"work/{wp_id}/evidence/G07/failing-first.txt", "digest": sha256(ff_path)} if red_obs else {"observed": False}),
++                    "green": ({"observed": True, "ref": f"work/{wp_id}/evidence/G07/unit-test.log", "digest": sha256(log_path)} if log_path.is_file() else {"observed": False})}
++                   for i, m in enumerate(modules)]
++    unit_binding = {"obligations": obligations, "command": ut_command, "result": ut_result, "tests_run": ut_ran, "failures": ut_failures,
++                    "coverage_scope": modules, "fresh_run": fresh_run}
++    doc_changed = [n for n in names if n.startswith("docs/") or n in ("README.md", "AGENTS.md")]
++    contract_changed = any(n.startswith("schemas/") or n in ("badf/lifecycle.json", "badf/skill-registry.json") for n in names)
++    behavior_changed = any(n.startswith("scripts/") for n in names)
++    doc_binding = {"changed": doc_changed, "contract_changed": contract_changed, "behavior_changed": behavior_changed,
++                   "required_updates": (["docs/ (behavior changed under scripts/ with no documentation change)"] if behavior_changed and not doc_changed else []),
++                   "not_updated_with_reason": str(wp.get("documentation_note") or ("no documentation changed in this work package" if not doc_changed else "documentation changed with the work package"))}
++    source_binding_partial = {"base_sha": base_full, "head_sha": head_full, "content_tree": ctree, "changed_paths": names,
++                              "expected_surfaces": {"declared": declared, "files": patterns}, "unexpected_paths": unexpected}
++    build_dir = wp_dir / "build"; build_dir.mkdir(parents=True, exist_ok=True)
++    (build_dir / "session.json").write_text(json.dumps({"work_package_id": wp_id, "producer": "badf-self-dossier", "started_at": now,
++                                                        "base_sha": base_full, "head_sha": head_full, "content_tree": ctree}, indent=2) + "\n", encoding="utf-8")
++    append_build_event(wp_id, "START", "OK", "self-dossier assembly started")
++    append_build_event(wp_id, "BASELINE", "OK", f"base {base_full[:12]} head {head_full[:12]} content tree {ctree[:12]}")
+ 
+     artifacts = {
+-        "source-change": (change, "git diff", "PASS", f"the change {wp_id} makes to this repository, outside its own directory and the lockfile"),
+-        "build": (build_txt.encode(), "py_compile", "PASS" if py.returncode == 0 else "FAIL", "the modules compile"),
+-        "unit-test": (b"Unit tests are executed by the composed-tree gate (scripts/badf_compose.py) on the tree that would land. "
+-                      b"This dossier is a REQUEST; its test evidence is the PR's BADF COMPOSE PASS transcript, not a run by this tool.\n",
+-                      "deferred-to-compose", "NOT_RUN", "unit tests run in the composed-tree gate, not here"),
+-        "documentation": (docs if docs else b"", "git diff", "PASS" if docs else "NOT_APPLICABLE", "the documentation this change carries"),
++        "source-change": (change, "git diff", "PASS", f"the change {wp_id} makes to this repository, outside its own directory and the lockfile", "source-change.diff", None),
++        "build": (build_txt.encode(), "py_compile", "PASS" if py.returncode == 0 else "FAIL", "the modules compile", "build.txt", build_binding),
++        "unit-test": (ut_artifact_data, ut_command if ut_result != "NOT_RUN" else "deferred-to-compose", ut_outcome,
++                      ("the author's unit-test run, bound; the composed-tree gate is the fresh run" if ut_result != "NOT_RUN" else "unit tests run in the composed-tree gate, not here"),
++                      ut_artifact_name, unit_binding),
++        "documentation": (docs if docs else b"", "git diff", "PASS" if docs else "NOT_APPLICABLE", "the documentation this change carries", "documentation.diff", doc_binding),
+     }
+     index, non_coverage = [], []
+     for t in SELF_G07_EVIDENCE:
+-        data, op, outcome, claim = artifacts[t]
+-        art = ev_dir / f"{t}.{'diff' if op == 'git diff' else 'txt'}"
+-        art.write_bytes(data)
++        data, op, outcome, claim, art_name, binding = artifacts[t]
++        art = ev_dir / art_name
++        if data is not None:
++            art.write_bytes(data)
+         rel_art = f"work/{wp_id}/evidence/G07/{art.name}"
+         rec = {"schema_version": "1.0.0", "id": f"EVD-{wp_id}-G07-{t}", "work_package_id": wp_id, "gate": "G07",
+                "claim": claim, "evidence_type": t, "producer": {"id": "badf-self-dossier", "type": "controller"},
+                "source_revision": "HEAD", "target": f"{self_repository()}:main",
+-               "toolchain": {"name": op, "version": "1"}, "operation": op,
++               "toolchain": {"name": op if len(op) < 40 else "unittest", "version": "1"}, "operation": op,
+                "started_at": now, "completed_at": now, "outcome": outcome,
+                "artifact": rel_art, "digest": sha256(art)}
++        if t == "source-change":
++            binding = dict(source_binding_partial, change_digest=rec["digest"])
++        rec["binding"] = binding
++        check_schema(t, rec)   # production-time conformance: the producer refuses to write a malformed binding
+         (ev_dir / f"{t}.json").write_text(json.dumps(rec, indent=2) + "\n", encoding="utf-8")
+         index.append({"type": t, "path": f"work/{wp_id}/evidence/G07/{t}.json"})
+         if outcome == "NOT_APPLICABLE":
+             non_coverage.append({"evidence_type": t, "reason": "no documentation changed in this work package", "declared_by": "badf-self-dossier"})
++    if not declared:
++        non_coverage.append({"evidence_type": "source-change", "reason": "expected_surfaces not declared on the work package; surface containment is not measurable (BLD-I04)", "declared_by": "badf-self-dossier"})
++    append_build_event(wp_id, "VERIFY", "OK" if ut_result == "PASS" else ut_result, f"unit-test {ut_result}: ran {ut_ran}, failures {ut_failures}; build exit {py.returncode}")
+     record = ev_dir / "composition-record.json"
+     if record.is_file():
+         # GIT-E (BADF-WP-0076): the composition claim written by `badf_compose.py --record`
+@@ -3073,19 +3253,29 @@ def self_dossier(wp_id: str) -> str:
+                  "owner": "engineering_owner",
+                  "closure_predicate": "a distinct human independent_reviewer records an approval, or the deviation is accepted in a decision record",
+                  "closure_authority": "quality_authority"}
++    conditions = [condition]
++    held_extra = ""
++    if unexpected:
++        conditions.append({"condition_id": "C-2",
++                           "statement": f"BLD-I04 scope containment: {len(unexpected)} changed path(s) fall outside the declared expected_surfaces: {', '.join(unexpected)}",
++                           "status": "OPEN", "severity": "Major", "blocking_scope": "G07", "owner": "engineering_owner",
++                           "closure_predicate": "planning amends expected_surfaces to admit the paths, or the change is reverted to the declared surface",
++                           "closure_authority": "quality_authority"})
++        held_extra = f" Unexpected paths outside expected_surfaces: {', '.join(unexpected)} (BLD-I04) -- refused or re-authorized, never absorbed."
+     dossier = {
+         "schema_version": "1.0.0", "id": f"DOS-{wp_id}-G07-v1", "work_package_id": wp_id, "gate": "G07",
+         "policy_epoch": load_json(ROOT / "badf/lifecycle.json")["policy_epoch"],
+         "source_revision": "HEAD", "target": f"{self_repository()}:main",
+         "change_class": expect_str(wp.get("change_class"), f"{wp_id}.change_class"),
+         "author": "badf-self-dossier", "author_type": "controller",
+-        "evidence": index, "approvals": [], "conditions": [condition], "non_coverage": non_coverage,
++        "evidence": index, "approvals": [], "conditions": conditions, "non_coverage": non_coverage,
+         "exceptions": [], "risks": [], "council": None,
+         "disposition": "HUMAN_REQUIRED", "created_at": now,
+         "held_because": f"BADF's own work package {wp_id} at G07: evidence prepared and digest-bound; the independent-reviewer "
+-                        f"condition C-1 is open under a single collaborator; a human merges. The tool binds evidence, it does not approve.",
++                        f"condition C-1 is open under a single collaborator; a human merges. The tool binds evidence, it does not approve." + held_extra,
+     }
+     (wp_dir / "gate-dossier.G07.json").write_text(json.dumps(dossier, indent=2) + "\n", encoding="utf-8")
++    append_build_event(wp_id, "HANDOFF", "OK", "G07 dossier assembled, disposition HUMAN_REQUIRED")
+     write_lockfile()
+     return (f"BADF SELF-DOSSIER: {wp_id} G07 assembled, disposition HUMAN_REQUIRED; "
+             f"source-change {len(change)} bytes bound to {base[:7]}..HEAD; a human merges. "
+@@ -3526,6 +3716,8 @@ def validate_dossier(dossier_path: Path) -> str:
+             artifact = safe_repo_path(ev["artifact"], f"evidence {ev_path} artifact")
+             if ev["digest"] != sha256(artifact):
+                 raise ValidationError(f"evidence {ev_path} artifact digest mismatch")
++            if "binding" in ev:
++                check_schema(ev["evidence_type"], ev)   # BLD-B: a request cannot carry a malformed typed binding
+         return rendered
+     for evidence_type, path_value in indexed.items():
+         validate_evidence(safe_repo_path(path_value, "evidence path"), dossier, evidence_type)
+@@ -4111,6 +4303,9 @@ def main() -> int:
+     init_parser.add_argument("intent", type=Path)
+     rec_parser = subparsers.add_parser("reconcile", help="write a landed work package's corroborated landing from the ledger; refuses otherwise")
+     rec_parser.add_argument("work_package")
++    bl_parser = subparsers.add_parser("build-ledger", help="verify the hash-chained build ledger of one of BADF's own work packages (read-only; exit 0 intact, 1 broken)")
++    bl_parser.add_argument("wp_id")
++
+     self_parser = subparsers.add_parser("self-dossier", help="assemble a G07 dossier for one of BADF's own work packages from measured evidence (HUMAN_REQUIRED)")
+     self_parser.add_argument("work_package")
+     research_parser = subparsers.add_parser("research", help="validate a research record's record/source/claim controls (RSR-002)")
+@@ -4193,6 +4388,9 @@ def main() -> int:
+             return 0
+         elif args.command == "self-dossier":
+             print(self_dossier(args.work_package))
++        elif args.command == "build-ledger":
++            print(verify_build_ledger(args.wp_id))
++
+             return 0
+         elif args.command == "research":
+             print(validate_research_record(args.path))
+diff --git a/tests/test_badf_build_contract.py b/tests/test_badf_build_contract.py
+index 7b8f8a9..94be673 100644
+--- a/tests/test_badf_build_contract.py
++++ b/tests/test_badf_build_contract.py
+@@ -37,8 +37,8 @@ class BadfBuildContractTests(unittest.TestCase):
+         self.assertTrue(SKILL.is_file())
+         self.assertEqual(REFS, {p.name for p in REFERENCES.glob("*.md")})
+         self.assertFalse((ROOT / "scripts" / "badf_build.py").exists())  # BLD-I18: no second gate
+-        for pat in ("build*.json", "source-change*.json", "unit-test*.json", "documentation*.json"):
+-            self.assertEqual([], list((ROOT / "schemas").glob(pat)), f"{pat}: G07 evidence schemas are BLD-B, not the freeze")
++        for name in ("source-change", "build", "unit-test", "documentation"):  # BLD-B (WP-2026-0098): the typed G07 schemas exist from IMPLEMENTED on
++            self.assertTrue((ROOT / "schemas" / f"{name}.schema.json").is_file(), name)
+ 
+     def test_root_states_all_invariants_and_the_workflow(self):
+         text = SKILL.read_text(encoding="utf-8")
+@@ -88,11 +88,11 @@ class BadfBuildContractTests(unittest.TestCase):
+             self.assertIn(token, text, token)
+         self.assertIn("not automatically", read("self-review.md").lower())
+ 
+-    def test_registry_pin_is_designed_and_tool_empty(self):
++    def test_registry_pin_is_implemented_and_tool_empty(self):
+         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
+         entries = [e for e in registry["skills"] if e.get("name") == "badf-build"]
+         self.assertEqual(1, len(entries)); entry = entries[0]
+-        self.assertEqual("DESIGNED", entry["status"]); self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])
++        self.assertEqual("IMPLEMENTED", entry["status"]); self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])  # BLD-B
+         self.assertEqual("skills/badf-build/SKILL.md", entry["source"])
+         self.assertEqual("sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest(), entry["digest"])
+ 
+diff --git a/tests/test_badf_build_evidence.py b/tests/test_badf_build_evidence.py
+new file mode 100644
+index 0000000..a8b3519
+--- /dev/null
++++ b/tests/test_badf_build_evidence.py
+@@ -0,0 +1,213 @@
++"""badf-build BLD-B (BADF-WP-0098, #191): G07 evidence schemas, the self-dossier
++extension that binds them, and the build ledger.
++
++The canonical producer of G07 evidence for BADF's own work packages is
++`badf_gate.py self-dossier` (BLD-I18: no second producer). This rung makes its
++four objects EXACT (BLD-I16): source-change binds base/head SHAs, the content tree,
++the changed paths and the expected-surface comparison (BLD-I04); build binds the
++command, environment identity and exit code; unit-test binds the author's run log
++(red/green, counts) and names the composed-tree gate as the fresh run (BLD-I09);
++documentation answers what was NOT updated and why. Typed bindings validate against
++schemas/<type>.schema.json at production time and on the dossier. The build ledger
++is hash-chained and never read for a verdict.
++"""
++import hashlib
++import json
++import os
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
++import badf_gate as gate  # noqa: E402
++from tests._scratch import seed_clone  # noqa: E402
++
++WP = "WP-2026-0998"
++G07 = ("source-change", "build", "unit-test", "documentation")
++
++
++class SchemaTests(unittest.TestCase):
++    def test_four_schemas_specialize_evidence_schema(self):
++        core = json.loads((gate.ROOT / "schemas/evidence.schema.json").read_text(encoding="utf-8"))
++        for t in G07:
++            p = gate.ROOT / "schemas" / f"{t}.schema.json"; self.assertTrue(p.is_file(), t)
++            s = json.loads(p.read_text(encoding="utf-8"))
++            self.assertTrue(set(core["required"]) <= set(s["required"]), f"{t}: must require the evidence core")
++            self.assertIn("binding", s["required"]); self.assertEqual([t], s["properties"]["evidence_type"]["enum"])
++            self.assertFalse(s["properties"]["binding"].get("additionalProperties", True), f"{t}: binding must be closed")
++
++
++class _SelfDossierScratch(unittest.TestCase):
++    """A scratch clone carrying this checkout (gate + schemas), one deliverable commit, one WP."""
++
++    def setUp(self):
++        self.tmp = tempfile.mkdtemp(); self.root = Path(self.tmp) / "badf"
++        self.base = seed_clone(self.root, carry_working_state=True)
++        self.env = {k: v for k, v in os.environ.items() if not k.startswith("BADF_")}
++        on_ledger = set(self.git("ls-tree", "-r", "--name-only", "origin/main", "--", "work/").splitlines())
++        for rec in list((self.root / "work").glob("WP-*/work-package.json")):
++            if rec.relative_to(self.root).as_posix() not in on_ledger:
++                shutil.rmtree(rec.parent)
++        for rec in list((self.root / "work").glob("WP-*/work-package.json")):
++            subprocess.run([sys.executable, "scripts/badf_gate.py", "reconcile", rec.parent.name], cwd=self.root, env=self.env, capture_output=True)
++        (self.root / "README.md").write_text((self.root / "README.md").read_text() + "\n<!-- WP-0998 deliverable -->\n")
++        self.git("add", "README.md"); self.commit("deliverable")
++        self.wp_dir = self.root / "work" / WP; self.wp_dir.mkdir(parents=True)
++        self.write_wp()
++        self.lock()
++
++    def write_wp(self, **extra):
++        rec = {"$schema": "../../schemas/work-package.schema.json", "schema_version": "1.0.0", "id": WP,
++               "title": "scratch build-evidence work package", "owner": "human_sponsor", "repository": "bstBizEra/badf",
++               "demand": "BADF-DEM-0001", "objective": "x", "business_value": "x", "in_scope": ["x"], "out_of_scope": ["y"],
++               "target_gate": "G07", "change_class": "C2", "data_classification": "internal",
++               "acceptance_criteria": ["x"], "permissions": ["write: bstBizEra/badf via PR"], "tests": ["tests/test_probe.py (3)"],
++               "evidence": ["source-change"], "rollback": {"reversible": True, "method": "revert"},
++               "status": "IN_PROGRESS", "external_target": {"repository": "bstBizEra/badf", "branch": "main", "base_revision": self.base}}
++        rec.update(extra)
++        (self.wp_dir / "work-package.json").write_text(json.dumps(rec, indent=2) + "\n")
++
++    def tearDown(self): shutil.rmtree(self.tmp, ignore_errors=True)
++    def git(self, *a): return subprocess.run(["git", "-C", str(self.root), "-c", "user.email=t@t", "-c", "user.name=t", *a], capture_output=True, text=True, check=True).stdout.strip()
++    def commit(self, msg): self.git("commit", "-q", "-m", msg)
++    def lock(self): subprocess.run([sys.executable, "scripts/badf_gate.py", "lock"], cwd=self.root, env=self.env, capture_output=True, check=True)
++    def gate_cmd(self, *args): return subprocess.run([sys.executable, "scripts/badf_gate.py", *args], cwd=self.root, env=self.env, capture_output=True, text=True)
++    def self_dossier(self):
++        r = self.gate_cmd("self-dossier", WP); return r
++    def evidence(self, t): return json.loads((self.wp_dir / "evidence/G07" / f"{t}.json").read_text(encoding="utf-8"))
++    def dossier(self): return json.loads((self.wp_dir / "gate-dossier.G07.json").read_text(encoding="utf-8"))
++
++
++class SourceChangeBindingTests(_SelfDossierScratch):
++    def test_self_dossier_binds_exact_shas_content_tree_and_changed_paths(self):
++        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        b = self.evidence("source-change")["binding"]
++        head = self.git("rev-parse", "HEAD"); base = self.git("rev-parse", self.base)
++        self.assertEqual((b["base_sha"], b["head_sha"]), (base, head))
++        self.assertEqual(b["content_tree"], gate.content_tree(self.root, WP, "HEAD"))
++        self.assertEqual(b["changed_paths"], ["README.md"])
++        self.assertEqual(b["change_digest"], self.evidence("source-change")["digest"])
++
++    def test_without_expected_surfaces_non_coverage_is_declared(self):
++        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        b = self.evidence("source-change")["binding"]
++        self.assertFalse(b["expected_surfaces"]["declared"]); self.assertEqual(b["unexpected_paths"], [])
++        self.assertTrue(any("expected_surfaces" in n["reason"] for n in self.dossier()["non_coverage"]), "undeclared surface must be non-coverage, not silence")
++
++    def test_expected_surface_comparison_declares_unexpected_paths_and_holds(self):
++        (self.root / "docs" / "probe-0998.md").write_text("probe\n", encoding="utf-8")
++        self.git("add", "docs/probe-0998.md"); self.commit("out of surface")
++        self.write_wp(expected_surfaces={"files": ["README.md"]}); self.lock()
++        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        b = self.evidence("source-change")["binding"]
++        self.assertTrue(b["expected_surfaces"]["declared"]); self.assertEqual(b["unexpected_paths"], ["docs/probe-0998.md"])
++        d = self.dossier(); cond = [c for c in d["conditions"] if "BLD-I04" in c["statement"]]
++        self.assertEqual(1, len(cond)); self.assertIn("docs/probe-0998.md", d["held_because"])
++        self.assertEqual(self.gate_cmd("dossier", f"work/{WP}/gate-dossier.G07.json").returncode, 3)
++
++    def test_expected_surface_glob_admits_planned_paths(self):
++        (self.root / "docs" / "probe-0998.md").write_text("probe\n", encoding="utf-8")
++        self.git("add", "docs/probe-0998.md"); self.commit("in surface")
++        self.write_wp(expected_surfaces={"files": ["README.md", "docs/**"]}); self.lock()
++        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        self.assertEqual(self.evidence("source-change")["binding"]["unexpected_paths"], [])
++        self.assertFalse([c for c in self.dossier()["conditions"] if "BLD-I04" in c["statement"]])
++
++
++class UnitTestBuildDocumentationBindingTests(_SelfDossierScratch):
++    def test_unit_test_binding_parses_the_authors_log_and_names_the_fresh_run(self):
++        ev = self.wp_dir / "evidence/G07"; ev.mkdir(parents=True)
++        (ev / "unit-test.log").write_text("python3 -m unittest tests.test_probe\n...\nRan 12 tests in 0.5s\n\nOK\n", encoding="utf-8")
++        (ev / "failing-first.txt").write_text("Ran 12 tests in 0.4s\n\nFAILED (errors=12)\n", encoding="utf-8")
++        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        e = self.evidence("unit-test"); b = e["binding"]
++        self.assertEqual(e["outcome"], "PASS"); self.assertEqual((b["result"], b["tests_run"], b["failures"]), ("PASS", 12, 0))
++        self.assertIn("badf_compose", b["fresh_run"]); self.assertEqual(e["artifact"], f"work/{WP}/evidence/G07/unit-test.log")
++        self.assertEqual(b["obligations"][0]["seam"]["ref"], "tests/test_probe.py")
++        self.assertTrue(b["obligations"][0]["red"]["observed"]); self.assertTrue(b["obligations"][0]["green"]["observed"])
++
++    def test_failing_log_refuses_assembly_and_missing_log_is_not_run(self):
++        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        e = self.evidence("unit-test"); self.assertEqual((e["outcome"], e["binding"]["result"]), ("NOT_RUN", "NOT_RUN"))
++        (self.wp_dir / "evidence/G07/unit-test.log").write_text("Ran 3 tests in 0.1s\n\nFAILED (failures=1)\n", encoding="utf-8")
++        r = self.self_dossier(); self.assertNotEqual(r.returncode, 0); self.assertIn("FAILED", r.stdout + r.stderr)
++
++    def test_build_and_documentation_bindings(self):
++        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        b = self.evidence("build")["binding"]
++        self.assertEqual(b["exit_code"], 0); self.assertIn("py_compile", b["command"]); self.assertIn("python", b["environment"]); self.assertIn("platform", b["environment"])
++        self.assertTrue(all(a["digest"].startswith("sha256:") for a in b["artifacts"]))
++        d = self.evidence("documentation")["binding"]
++        # README.md is documentation by the producer's definition (docs/, README.md, AGENTS.md)
++        self.assertEqual(d["changed"], ["README.md"]); self.assertFalse(d["contract_changed"]); self.assertFalse(d["behavior_changed"])
++        self.assertEqual(d["required_updates"], []); self.assertTrue(d["not_updated_with_reason"])
++
++
++class TypedBindingValidationTests(_SelfDossierScratch):
++    def test_malformed_binding_is_refused_on_the_dossier_and_generic_objects_still_pass(self):
++        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        self.assertEqual(self.gate_cmd("dossier", f"work/{WP}/gate-dossier.G07.json").returncode, 3)
++        p = self.wp_dir / "evidence/G07/source-change.json"; e = json.loads(p.read_text()); e["binding"]["base_sha"] = "nope"
++        p.write_text(json.dumps(e, indent=2) + "\n"); self.lock()
++        r = self.gate_cmd("dossier", f"work/{WP}/gate-dossier.G07.json"); self.assertEqual(r.returncode, 1); self.assertIn("source-change", r.stdout + r.stderr)
++        e.pop("binding"); p.write_text(json.dumps(e, indent=2) + "\n"); self.lock()
++        self.assertEqual(self.gate_cmd("dossier", f"work/{WP}/gate-dossier.G07.json").returncode, 3, "a generic object (no binding) stays admissible")
++
++
++class BuildLedgerTests(_SelfDossierScratch):
++    def test_ledger_is_hash_chained_and_never_read_for_verdict(self):
++        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        ledger = self.wp_dir / "build/progress.jsonl"; self.assertTrue(ledger.is_file())
++        events = [json.loads(l) for l in ledger.read_text(encoding="utf-8").splitlines()]
++        self.assertEqual([e["step"] for e in events], ["START", "BASELINE", "VERIFY", "HANDOFF"])
++        self.assertTrue((self.wp_dir / "build/session.json").is_file())
++        self.assertEqual(self.gate_cmd("build-ledger", WP).returncode, 0)
++        events[2]["outcome"] = "TAMPERED"; ledger.write_text("".join(json.dumps(e) + "\n" for e in events), encoding="utf-8"); self.lock()
++        r = self.gate_cmd("build-ledger", WP); self.assertEqual(r.returncode, 1); self.assertIn("chain", (r.stdout + r.stderr).lower())
++        self.assertEqual(self.gate_cmd("dossier", f"work/{WP}/gate-dossier.G07.json").returncode, 3, "the ledger is never read for a verdict")
++
++
++class G07RuleTests(unittest.TestCase):
++    """The EVIDENCE_RULES entry for the G07 types (runs on PASS dossiers): a binding must agree with
++    the artifact the gate opens; a generic object (no binding) is left alone."""
++
++    def _evidence(self, kind, artifact_text, binding):
++        tmp = Path(tempfile.mkdtemp(prefix="badf-g07-rule-")); self.addCleanup(shutil.rmtree, tmp, True)
++        art = tmp / "artifact.txt"; art.write_text(artifact_text, encoding="utf-8")
++        ev = {"schema_version": "1.0.0", "id": f"EVD-{WP}-G07-{kind}", "work_package_id": WP, "gate": "G07", "claim": "x",
++              "evidence_type": kind, "producer": {"id": "t", "type": "controller"}, "source_revision": "HEAD", "target": "bstBizEra/badf:main",
++              "toolchain": {"name": "t", "version": "1"}, "operation": "t", "started_at": "2026-01-01T00:00:00Z", "completed_at": "2026-01-01T00:00:00Z",
++              "outcome": "PASS", "artifact": "x", "digest": gate.sha256(art)}
++        if binding is not None:
++            ev["binding"] = binding
++        return art, ev
++
++    def test_rule_refuses_a_binding_that_disagrees_with_the_artifact_and_ignores_generic_objects(self):
++        self.assertIn("source-change", gate.EVIDENCE_RULES); self.assertIn("unit-test", gate.EVIDENCE_RULES)
++        diff = "diff --git a/README.md b/README.md\n--- a/README.md\n+++ b/README.md\n"
++        sha = "0" * 40
++        good = {"base_sha": sha, "head_sha": sha, "content_tree": sha, "changed_paths": ["README.md"], "change_digest": None,
++                "expected_surfaces": {"declared": False, "files": []}, "unexpected_paths": []}
++        art, ev = self._evidence("source-change", diff, dict(good)); ev["binding"]["change_digest"] = ev["digest"]
++        gate.check_g07_binding(art, {}, ev)  # agrees: no error
++        art, ev = self._evidence("source-change", diff, dict(good, changed_paths=["docs/other.md"])); ev["binding"]["change_digest"] = ev["digest"]
++        with self.assertRaises(gate.ValidationError): gate.check_g07_binding(art, {}, ev)
++        art, ev = self._evidence("unit-test", "Ran 12 tests in 0.1s\n\nOK\n", {"obligations": [], "command": "x", "result": "PASS", "tests_run": 11, "failures": 0, "coverage_scope": [], "fresh_run": "x"})
++        with self.assertRaises(gate.ValidationError): gate.check_g07_binding(art, {}, ev)
++        art, ev = self._evidence("source-change", diff, None)
++        gate.check_g07_binding(art, {}, ev)  # generic object: additive, untouched
++        # BLD-I16: a build binding is verified against the transcript or refused -- never best-effort
++        bb = {"command": "x", "cwd": ".", "environment": {"python": "3", "platform": "p"}, "exit_code": 0, "artifacts": [], "non_coverage": []}
++        art, ev = self._evidence("build", "py_compile ... -> exit 0\n", dict(bb)); gate.check_g07_binding(art, {}, ev)
++        art, ev = self._evidence("build", "py_compile ... -> exit 1\n", dict(bb))
++        with self.assertRaises(gate.ValidationError): gate.check_g07_binding(art, {}, ev)
++        art, ev = self._evidence("build", "no exit line here\n", dict(bb))
++        with self.assertRaises(gate.ValidationError): gate.check_g07_binding(art, {}, ev)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0097/work-package.json b/work/WP-2026-0097/work-package.json
+index 6c39b56..03ef85a 100644
+--- a/work/WP-2026-0097/work-package.json
++++ b/work/WP-2026-0097/work-package.json
+@@ -47,11 +47,13 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR (walker returns to the pre-#171 lax behavior)"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "cf431fa"
++    "base_revision": "cf431fa",
++    "composition_verified": false,
++    "landed_as": "d485931ddd971492a245c90ee3e6131389388b4f"
+   },
+   "note": "Shared-surface change (core check_schema walker) -> BARCHI-2 independent review (change_class C1). Patch tier. Audit-first satisfied before coding. Ids WP-0097/DEM-0084/GOV-0080 (yielded 0096/DEM-0083/GOV-0079 to BARCHI-2's BLD-A). Rebased onto cf431fa after BLD-A (WP-0096) landed; reconciles WP-2026-0096. Lands IN_PROGRESS by design; next WP reconciles it."
+ }
