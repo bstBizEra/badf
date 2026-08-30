@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.0.0",
+  "id": "VR-WP-2026-0101-PR202",
+  "work_package_id": "WP-2026-0101",
+  "gate": "G08",
+  "target": {
+    "source_revision": "af43e496f1ba2136e9b6079c3e30a46096c7bac8",
+    "target_base_sha": "dcbcc54cc8f629ab5c0a98e08ddf7ba967c6562f",
+    "expected_content_tree": "6e45715784b8daf486e45b8de0a2e2fda0c6210a",
+    "sealed_input_digest": "sha256:1d074a6763f09df257b12912cfcd1b623ff87bc411d5f2830525e882e56074d7"
+  },
+  "change_class": "C2",
+  "lenses_routed": [
+    "correctness",
+    "quality/test"
+  ],
+  "ballots": [
+    {
+      "ballot_id": "BALLOT-5470510051",
+      "reviewer": "BARCHI-1",
+      "principal_type": "agent",
+      "reviewer_run_id": "5470510051",
+      "sealed_input_digest": "sha256:1d074a6763f09df257b12912cfcd1b623ff87bc411d5f2830525e882e56074d7",
+      "verdict": "APPROVE",
+      "finding_ids": [],
+      "non_coverage": [
+        {
+          "surface": "encoding",
+          "reason": "RECONSTRUCTED from PR #202 comment 5470510051; the reviewer posted a prose verdict, not this record"
+        }
+      ]
+    }
+  ],
+  "independence": {
+    "reviewer_run_id": "5470510051",
+    "author_run_id": "barchi-2-build-session",
+    "same_execution": false,
+    "sealed_input_digest": "sha256:1d074a6763f09df257b12912cfcd1b623ff87bc411d5f2830525e882e56074d7",
+    "prior_findings_visible": false,
+    "author_reasoning_visible": false,
+    "cross_pass_communication_before_ballot": false,
+    "target_digest_equal": true,
+    "conflicts_of_interest": []
+  },
+  "findings": [],
+  "synthesis": {
+    "withdrawn": [],
+    "downgraded": []
+  },
+  "evidence_index": [],
+  "matrix": [
+    {
+      "claim_ref": "BLD-D: shadow on 67 landed self-dossiers",
+      "change_ref": "af43e496f1ba2136e9b6079c3e30a46096c7bac8",
+      "review_refs": [
+        "BALLOT-5470510051"
+      ],
+      "integration_refs": [],
+      "contract_refs": [],
+      "composed_refs": [],
+      "result": "PARTIAL"
+    }
+  ],
+  "non_coverage": [
+    {
+      "surface": "encoding provenance",
+      "reason": "RECONSTRUCTED from PR #202 comment 5470510051 (head af43e49, ladder-internal); real comment id and check-run 99300701682 cited"
+    },
+    {
+      "surface": "stated probes",
+      "reason": "NOT encoded as findings -- a passed probe is not a defect (VER-I03); this deviates from the #207 plan text ('probes as INFO findings') deliberately and is declared here; the probes remain in the cited public comment"
+    },
+    {
+      "surface": "council quorum",
+      "reason": "single-reviewer verdict, exactly as posted; no council was convened (pre-BADF-QA/REV arrangement, deviation recorded)"
+    },
+    {
+      "surface": "composed observation",
+      "reason": "no composed-tree observation encoded from prose; matrix rows PARTIAL by construction"
+    }
+  ],
+  "authority": {
+    "verification_authority": false
+  },
+  "recorded_at": "2026-08-30T19:05:31Z"
+}

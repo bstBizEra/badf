@@ -1,0 +1,57 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0106",
+  "title": "WP-VER-D: shadow the G08 verification controls on the material BADF has (badf-engineering-verification -> SHADOWED)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0093",
+  "repository": "bstBizEra/badf",
+  "objective": "Measure the VER-B/C substrate on what exists: (1) historical-generic-dossier -- WP-2026-0010, the only real G08 dossier, replays UNTOUCHED through check_g08_binding and check_g08_dossier (the additive proof, measured); (2) real-review-encoded -- BARCHI-1's real verdict arc (#196 Request-Changes with the synthetic-id collision as a genuine OPEN MAJOR finding -> Approved on 23866e7 with it RESOLVED and the WP-2026-9999 sentinel as resolution evidence; #201; #202; #205) as five RECONSTRUCTED single-reviewer verification records under the encoded reviewer's own honesty conditions (one ballot, real comment id as reviewer_run_id, sealed digest RECONSTRUCTED, no council claimed, non-coverage verbatim, matrix PARTIAL), each accepted by badf_gate.py verify and refused when tampered; (3) representative-typed-dossier -- 12 fixtures spanning the outcome space, 10 injected defects each refused by the control that owns it (C1..C7 all load-bearing), 2 clean admitted. Metrics measured; reviewer correlation NOT_MEASURABLE_ONE_SEAT declared; COI disclosed with BARCHI-2 co-reviewing the encoding class. No gate, schema or lifecycle change.",
+  "business_value": "A control suite that has only ever refused its own unit fixtures proves less than one measured against the program's real history: the one real dossier it must not touch, the real finding-and-rework arc it must preserve, and defects injected across every control. This is the SHADOWED evidence VER-E's operator admission stands on.",
+  "in_scope": [
+    "examples/verification-shadow-evidence.json (18 cases, metrics, runner citations, non-coverage) recomputed on every run",
+    "examples/verification-record-pr196-request-changes|pr196-approved|pr201|pr202|pr205.json (RECONSTRUCTED single-reviewer records, real comment ids cited)",
+    "tests/test_badf_verification_shadow.py (7, failing-first); rung flips (contract test SHADOWED; controls test floor)",
+    "skills/badf-engineering-verification/evidence/shadow-evidence.md (honest first sentence, measurement, metrics, non-coverage, COI)",
+    "badf/skill-registry.json: VALIDATED -> SHADOWED (SKILL.md untouched, digest unchanged); lockfile re-signed",
+    "GITHUB_CONTROL_PLANE.md doctrine section; badf/demands/BADF-DEM-0093.json; own composition record + typed G07 self-dossier; reconcile the land-time-current WP"
+  ],
+  "out_of_scope": [
+    "admission (VER-E: operator decision on this evidence); any change to badf_gate.py, schemas/, lifecycle.json, badf_compose.py or CI; a reviewer executor; badf-security-assurance; the real typed re-shadow (deferred issue at close-out, trigger = first project G08 with typed objects)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the shadow record is recomputed from the repository by the tests: WP-2026-0010 UNTOUCHED; 5/5 encoded records verify and refuse tampering (digest, erased finding, VERIFIED without composed); 10/10 injected defects refused with every control owning >=1; 2/2 clean admitted; metrics equal the recomputed counts",
+    "the #196 arc is honest: Request-Changes record carries the OPEN MAJOR synthetic-id finding; the Approved record carries it RESOLVED; erasing it is refused (VER-I12)",
+    "every encoded record is single-reviewer (one ballot), cites the real comment id, and declares RECONSTRUCTED provenance in its own non_coverage",
+    "registry SHADOWED with the SKILL.md digest unchanged; no gate/schema/lifecycle diff",
+    "tests failing-first (7 errors) then green; existing verification/controls/contract suites green; CI green on the composed tree; BARCHI-2 co-review of the encoding class + BARCHI-1 verdict (COI disclosed)"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_verification_shadow.py (7)",
+    "tests/test_badf_verification_controls.py (11, floor flip)",
+    "tests/test_badf_engineering_verification_contract.py (9, rung flip)"
+  ],
+  "evidence": [
+    "failing-first run (7 errors)",
+    "green run (7)",
+    "compose output incl. composition record",
+    "G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "5b428f7"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-VER-D of the badf-engineering-verification program (#195 A->E authorization; approval + adopted encoding conditions on #207). Ladder-internal -- lands under the standing evidence bar after BARCHI-2's encoding co-review and BARCHI-1's (COI-disclosed) verdict. Resolves #207 / GOV-0089. Engineered by BARCHI-3 under /loop. Reconciles the land-time-current WP at landing."
+}
