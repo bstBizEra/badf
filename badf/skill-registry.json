@@ -300,6 +300,16 @@
       "allowed_tools": [],
       "status": "IMPLEMENTED",
       "digest": "sha256:6cc3266ecde8bf6ed14fc3b5ae3b1de38a42154242d9b7517ca6f0cdb38bf0f3"
+    },
+    {
+      "name": "badf-engineering-verification",
+      "source": "skills/badf-engineering-verification/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [],
+      "status": "DESIGNED",
+      "digest": "sha256:5c68c9c629ef8854600f4e8024bb095833ae4671e9c38b8d48724aadcf57bcad"
     }
   ]
 }

@@ -1,0 +1,61 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0100",
+  "title": "WP-VER-A: freeze badf-engineering-verification capability contract (G08 two-plane verification; DESIGNED, thin router, no second gate)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0087",
+  "repository": "bstBizEra/badf",
+  "objective": "Freeze the badf-engineering-verification contract as a declarative router over two planes: the Reviewer plane (docs/03 Reviewer -- isolated, defect-first, read-only, sealed lens passes that PROPOSE findings) and the Verifier plane (docs/03 Verifier -- an approved runtime that OBSERVES integration, contract and composed-tree facts); schemas normalize PROPOSED/OBSERVED artifacts into CANONICAL evidence, the canonical gate evaluates, quality_authority decides. Reuses what BADF has instead of inventing: composition-verification's expected_content_tree + git-staleness CURRENT as the target binding (no new composed-identity field), docs/03's five council verdicts, the evidence outcome enum for contract results (INDETERMINATE -> BLOCKED, never PASS), the architecture-assurance finding item extended with lens/reporters, badf_compose.py as the composed run (BLD-I09), run-ledger-event records, check_non_coverage extended per artifact. Security lens routed to badf-security-assurance (named, not built) with declared non-coverage; independence execution-level with the single-collaborator deviation carried. Adapts Codex review-agent, Apache Magpie and qa-tester as REFERENCE only, rejecting their authority semantics. VER-I01..I20 frozen; no runtime, no validator, no schema, no lifecycle change, no gate change.",
+  "business_value": "Every AI reviewer can say LGTM and every CI can go green; BADF needs a G08 whose review cannot impersonate observation, whose observation cannot impersonate approval, whose empty finding set cannot serialize as correctness, and whose evidence binds the tree that will actually land. The freeze makes that contract the thing later rungs implement, enforce and shadow, instead of an opinion.",
+  "in_scope": [
+    "skills/badf-engineering-verification/SKILL.md -- thin router: fundamental rule, the two planes in docs/03 vocabulary, boundary (build/verification/git/ASSURE/security-assurance/gate/authority), authority split, BIND->SEAL->REVIEW->OBSERVE->NORMALIZE->MATRIX->DECLARE NON-COVERAGE->PACKAGE->HANDOFF, routing table, VER-I01..I20 verbatim, doctrine block; status points to the registry, never hardcoded",
+    "skills/badf-engineering-verification/references/: g08-contract, target-binding, review-contract, independence, review-lenses, finding-contract, integration-test-contract, contract-test-contract, composed-tree-contract, runtime-observation, evidence-normalization, verification-matrix, non-coverage, g08-g09-boundary, acceptance, external-methodology (16)",
+    "badf/skill-registry.json: register badf-engineering-verification DESIGNED, C1, allowed_tools=[], real digest; lockfile re-signed",
+    "tests/test_badf_engineering_verification_contract.py: declarative surface (16 refs, no scripts/badf_engineering_verification.py, no typed G08 schema yet), invariants + workflow + five fundamental-rule tokens, reviewer output is findings not PASS (docs/03 verdicts, assurance finding fields, synthesis MAY/MUST NOT), vocabularies reconciled (contract results onto the outcome enum; INDETERMINATE never PASS; PROPOSED/OBSERVED/CANONICAL; never-agent producer), routes name only existing targets (composition-verification, commit-integrity, badf-architecture in the registry; badf-security-assurance named-not-built), execution-level independence + deviation carried, no lifecycle change and no G08 gate rule at A, DESIGNED pin, no hardcoded status, external methodology REFERENCE/ADAPT with REJECT list and not-independently-fetched disclosure",
+    "GITHUB_CONTROL_PLANE.md doctrine section; badf/demands/BADF-DEM-0087.json; own composition record + G07 self-dossier; reconcile the land-time-current WP (WP-2026-0098)"
+  ],
+  "out_of_scope": [
+    "scripts/badf_engineering_verification.py or any second validator/gate/reviewer/test executor (VER-I20)",
+    "typed G08 schemas, the finding record, the verification matrix artifact, the verification run ledger, a badf_gate.py verify subcommand (VER-B)",
+    "deterministic G08 controls in badf_gate.py (VER-C); shadow (VER-D); admission (VER-E)",
+    "any change to lifecycle.json G07/G08/G09 required_evidence, EVIDENCE_RULES, badf_compose.py or the CI workflow",
+    "badf-security-assurance itself; the badf-verification alias at badf-build/SKILL.md:31 (reconciled at badf-build's next re-pin); any edit to badf-build, badf-git, badf-architecture or badf-security-design files",
+    "registering subskills (only when a rung needs them)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the declarative surface is exactly SKILL.md + 16 references; no scripts/badf_engineering_verification.py; no schemas/independent-review|integration-test|contract-test|composed-tree-test.schema.json",
+    "SKILL.md states VER-I01..I20, the nine-stage workflow, AGENT OUTPUT = DRAFT, NO FINDINGS != CORRECTNESS, SOURCE_HEAD_GREEN != COMPOSED_VERIFIED, G08 != G09, VERIFICATION != APPROVAL, and names badf-security-assurance as named, not built",
+    "review output is findings + non_coverage + completion with docs/03's five verdicts (NEVER A BARE PASS); the finding item reuses the architecture-assurance fields; contract results map onto the evidence outcome enum with INDETERMINATE -> BLOCKED",
+    "badf-engineering-verification registered DESIGNED, C1, allowed_tools [], digest == sha256(SKILL.md); SKILL.md points to the registry for status",
+    "lifecycle.json G07/G08/G09 evidence lists unchanged; EVIDENCE_RULES carries no G08 type; external methodology recorded as REFERENCE/ADAPT with the REJECT list and the not-independently-fetched disclosure; no vendored executable",
+    "tests/test_badf_engineering_verification_contract.py failing-first before the files exist, green after; CI green on the composed tree"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_engineering_verification_contract.py (9)"
+  ],
+  "evidence": [
+    "failing-first run",
+    "green run",
+    "registry mutation (status/digest/tool/risk class) against the contract test",
+    "compose output incl. composition record",
+    "G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "6814a24"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-VER-A of the badf-engineering-verification program (operator design directive 2026-08-30; approval + A->E authorization on #195, VER-E admission not taken in advance). Governance-only WP: skill files + registry + tests + doctrine; empty gate diff. Resolves #195 / GOV-0083. Engineered by BARCHI-3 under /loop ('proceed according to the scope from WP-VER-A to WP-VER-E'); ladder-internal (no shared surface) -- lands under the standing evidence bar. Reconciles WP-2026-0098."
+}

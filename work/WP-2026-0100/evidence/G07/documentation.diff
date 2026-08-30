@@ -1,0 +1,55 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 92a4955..474b22e 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1318,6 +1318,50 @@ and no planned-vs-actual surface, a `py_compile` "build" with no environment ide
+ The dossier's `source_revision` semantics are untouched; `lifecycle.json` and the G07 type list are
+ untouched. `badf-build` advances `DESIGNED → IMPLEMENTED` with its digest unchanged.
+ 
++## badf-engineering-verification — G08 capability contract freeze (`BADF-WP-0100` / WP-VER-A, Issue #195 / GOV-0083)
++
++`badf-engineering-verification` is frozen `DESIGNED` as the capability after `badf-build` reached
++`IMPLEMENTED`: the build performs the authorized mutation and hands off (BLD-I17); **this skill
++independently challenges what changed**; `badf-git` composes and integrates; the canonical gate evaluates
++the four G08 evidence types; `quality_authority` permits the transition. The freeze is a thin router
++(`SKILL.md`) with twenty invariants **VER-I01…I20** and sixteen references, registered C1 with no tools —
++no runtime, no reviewer executor, no `scripts/badf_engineering_verification.py` (VER-I20: deterministic
++G08 semantics stay in `badf_gate.py`), no schema, no lifecycle change, no gate change.
++
++**Two planes, in BADF's own vocabulary.** docs/03 already defines the **Reviewer** (independent bounded
++review, declares non-coverage) and the **Verifier** (executes deterministic tests independently of the
++author). G08 is the seam between them: the Reviewer plane *proposes* findings through isolated,
++defect-first, read-only, sealed lens passes; the Verifier plane *observes* integration, contract and
++composed-tree facts through an approved runtime; schemas normalize; the gate evaluates; authority decides.
++`AGENT OUTPUT = DRAFT` · `NO FINDINGS ≠ CORRECTNESS` · `SOURCE_HEAD_GREEN ≠ COMPOSED_VERIFIED` ·
++`G08 ≠ G09` · `VERIFICATION ≠ APPROVAL`.
++
++**What it reuses instead of inventing.** Target identity is the committed git-composition record's
++`expected_content_tree` plus a `git-staleness` verdict of `CURRENT` — no new composed-identity field.
++Reviewer verdicts are docs/03's five; contract results map onto the evidence `outcome` enum
++(`INDETERMINATE → BLOCKED`, never a pass); the finding item is the architecture-assurance finding
++extended with lens and reporters; the composed run is `badf_compose.py` (already the fresh run, BLD-I09);
++verification run events are `run-ledger-event` records; per-artifact non-coverage extends the
++dossier-level `check_non_coverage`. Three **artifact** states — `PROPOSED / OBSERVED / CANONICAL` — name the
++distinction between an agent's draft, a runtime's observation and a digest-bound, lockfile-signed object;
++they are not the §10 memory labels.
++
++**What it refuses.** A security *lens* is security assurance and belongs to `badf-security-assurance`
++(named, not built): every G08 review declares it as non-coverage rather than absorbing it, while a
++security-*kind* finding from any lens remains a finding. Independence is an execution-level contract
++(distinct run, sealed-input digest, no prior findings, no author reasoning, no cross-pass communication
++before the ballot); the account-level reviewer ≠ author gap under a single collaborator stays the carried
++OPEN condition — a banner never satisfies it. Codex `review-agent`, Apache Magpie and `qa-tester` are
++adapted as REFERENCE only; an AI verdict as approval, all-green as coverage, an agent-reported result as an
++observation, and an external tool's ruling as authority are rejected.
++
++**Ladder:** VER-B adds the four typed G08 schemas, the finding record, the verification matrix, the run
++ledger and a `badf_gate.py verify` subcommand; VER-C adds deterministic G08 controls to the gate (lean
++disabled); VER-D shadows on WP-2026-0010's G08 dossier and BADF's own review history with known and
++injected defects; VER-E is the operator's admission on that evidence. No findings does not mean
++correctness; passing tests do not mean coverage; source-head success does not mean composed-result safety;
++G08 does not replace G09.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
