@@ -1,0 +1,30 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 2936101..d4a3a38 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1171,6 +1171,25 @@ because the walker does not type-check non-object types (#171 / GOV-0071) and `p
+ already trusts nothing structurally. No `lifecycle.json` change, no new gate, no
+ `scripts/badf_implementation_plan.py`. Registry `DESIGNED → IMPLEMENTED`.
+ 
++## badf-implementation-plan → VALIDATED — the G06 planning controls (`BADF-WP-0093` / WP-IMP-C, Issue #181 / GOV-0075)
++
++WP-IMP-B gave the WP record its schema; WP-IMP-C puts the deterministic controls where the **gate actually
++enforces** — the `work-breakdown` artifact (`check_work_breakdown`), the master WP DAG the gate already
++validates (§11). A material finding grounds the placement: `check_schema("work-package", …)` is never
++called anywhere in the gate — the WP record schema is the human-readable contract (test-validated), while
++the `work-breakdown` is the machine-enforced projection. Five controls join the existing acyclic check,
++each fires only when its optional per-task field is present (so a minimal `id`/`description`/`depends_on`
++task is unaffected), and each is mutation-killed: **IMP-C1** (IMP-I07) a task's `authority_requirement`
++cannot omit a role the authority matrix requires for its `change_class` — the plan cannot reduce
++authority; **IMP-C2** (IMP-I09) every `acceptance` claim carries a `test_obligation` claiming it; **IMP-C3**
++(IMP-I11) a declared `execution_budget` has a positive-integer `max_attempts` — a **code** check, because
++the walker does not type-check non-object types (#171) and even rejects `True` (a Python int); **IMP-C4**
++(IMP-I12) a declared `stop_conditions` names at least one; **IMP-C5** (IMP-I06) `composition_after`
++resolves to real tasks and is acyclic, kept **separate** from `depends_on` (blocking ≠ landing order). The
++`work-breakdown` schema gains these as **optional** task fields (`additionalProperties:false` stays), so
++the existing minimal example and every record still validate. No `lifecycle.json` change, no new gate
++command, no `scripts/badf_implementation_plan.py`. Registry `IMPLEMENTED → VALIDATED`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
