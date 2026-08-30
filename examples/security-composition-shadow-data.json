@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-SHADOW-PRIVACY",
+  "architecture_baseline": "ARCH-1.0.0",
+  "solution_baseline": "SOL-1.0.0",
+  "threats": [
+    {
+      "security_id": "SEC-THR-001",
+      "source": {
+        "data_flow_refs": [
+          "DF-pii-export"
+        ],
+        "requirement_refs": [
+          "NFR-privacy-01"
+        ]
+      },
+      "disposition": "controlled",
+      "control_refs": [
+        "CTRL-field-encryption"
+      ],
+      "security_requirement_refs": [
+        "SEC-REQ-010"
+      ],
+      "verification_refs": [
+        "SEC-TEST-010"
+      ],
+      "residual_risk": "MITIGATED"
+    },
+    {
+      "security_id": "SEC-THR-002",
+      "source": {
+        "data_flow_refs": [
+          "DF-audit-log"
+        ],
+        "trust_boundary_refs": [
+          "TB-02"
+        ]
+      },
+      "disposition": "controlled",
+      "control_refs": [
+        "CTRL-audit-tamper-resistance"
+      ],
+      "security_requirement_refs": [
+        "SEC-REQ-011"
+      ],
+      "verification_refs": [
+        "SEC-TEST-011"
+      ],
+      "residual_risk": "DEFERRED"
+    },
+    {
+      "security_id": "SEC-THR-003",
+      "source": {
+        "requirement_refs": [
+          "REQ-retention-01"
+        ]
+      },
+      "disposition": "deferred",
+      "security_requirement_refs": [
+        "SEC-REQ-012"
+      ]
+    }
+  ]
+}

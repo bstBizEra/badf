@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-SHADOW-PAYMENTS",
+  "architecture_baseline": "ARCH-1.0.0",
+  "solution_baseline": "SOL-1.0.0",
+  "threats": [
+    {
+      "security_id": "SEC-THR-001",
+      "source": {
+        "architecture_refs": [
+          "TB-03"
+        ],
+        "solution_refs": [
+          "API-017",
+          "ACT-payment-create"
+        ]
+      },
+      "disposition": "controlled",
+      "control_refs": [
+        "CTRL-step-up-auth"
+      ],
+      "security_requirement_refs": [
+        "SEC-REQ-001"
+      ],
+      "verification_refs": [
+        "SEC-TEST-001"
+      ],
+      "residual_risk": "MITIGATED"
+    },
+    {
+      "security_id": "SEC-THR-002",
+      "source": {
+        "solution_refs": [
+          "API-017"
+        ],
+        "data_flow_refs": [
+          "DF-account"
+        ]
+      },
+      "disposition": "controlled",
+      "control_refs": [
+        "CTRL-ownership-authz"
+      ],
+      "security_requirement_refs": [
+        "SEC-REQ-002"
+      ],
+      "verification_refs": [
+        "SEC-TEST-002"
+      ],
+      "residual_risk": "MITIGATED"
+    },
+    {
+      "security_id": "SEC-THR-003",
+      "source": {
+        "solution_refs": [
+          "API-017"
+        ],
+        "requirement_refs": [
+          "REQ-021"
+        ]
+      },
+      "disposition": "controlled",
+      "control_refs": [
+        "CTRL-idempotency-replay"
+      ],
+      "security_requirement_refs": [
+        "SEC-REQ-003"
+      ],
+      "verification_refs": [
+        "TEST-SEC-031"
+      ],
+      "residual_risk": "MITIGATED"
+    },
+    {
+      "security_id": "SEC-THR-004",
+      "source": {
+        "architecture_refs": [
+          "EXT-payment-provider"
+        ],
+        "trust_boundary_refs": [
+          "TB-05"
+        ]
+      },
+      "disposition": "pending-authority",
+      "security_requirement_refs": [
+        "SEC-REQ-004"
+      ],
+      "residual_risk": "ACCEPTED-PENDING-AUTHORITY"
+    }
+  ]
+}

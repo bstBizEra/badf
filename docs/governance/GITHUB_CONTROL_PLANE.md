@@ -1027,6 +1027,25 @@ digest binding, and the semantic resolution of every ref against the architectur
 stay **deferred**, honestly, until those artifacts exist. No new invariant, no `lifecycle.json` change, no
 second validator (SEC-I15). Registry `IMPLEMENTED → VALIDATED`.
 
+## badf-security-design → SHADOWED — representative calibration (`BADF-WP-0085` / WP-SEC-D, Issue #164 / GOV-0066)
+
+`SHADOWED` means the controls were run against cases and behaved. `badf-research` and `badf-architecture`
+shadowed on **real** BADF history; `badf-security-design` — like `badf-solution-design` before it — has
+**no real security-composition matrices yet** (BADF has no UX/API/authorization/threat surface of its own
+to model), so the shadow is **REPRESENTATIVE**, and the evidence (`references/shadow-evidence.md`) says so
+in its first section: a real re-shadow is owed the first time a project actually uses the skill. The
+calibration ran the `security` command over representative matrices: **all seven defect classes refused**
+(empty · duplicate id · no-provenance · controlled-no-control · controlled-no-verification ·
+residual-incoherence · bare-`ACCEPTED`); **zero false positives** on three clean matrices — including the
+data/privacy matrix's **`deferred`** row, the false-positive check that proves SEC-C03/C04 are
+disposition-scoped (a threat not yet controlled needs neither a control nor a verification) and SEC-C05 is
+one-directional. And it **declares its non-coverage**: the external-artifact seams (full SEC-I04
+bidirectional against a real sec-req registry, SEC-I01 exact-baseline digest binding, and the semantic
+resolution of every ref) are not exercised — they need adapters that do not exist. Two committed shadow
+matrices (`examples/security-composition-shadow-api.json`, `-data.json`) are validated in CI. No
+`lifecycle.json` change, no new control, no second validator. Registry `VALIDATED → SHADOWED`;
+`APPROVED`/`ACTIVE` remain the operator's admission decision.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

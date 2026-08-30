@@ -25,6 +25,7 @@ REFS = {
     "privacy-contract.md", "abuse-case-contract.md", "api-security-contract.md",
     "iam-security-contract.md", "supply-chain-contract.md", "ai-agent-security-contract.md",
     "normalization.md", "traceability.md", "acceptance.md", "external-methodology.md",
+    "shadow-evidence.md",  # WP-SEC-D shadow calibration
 }
 
 

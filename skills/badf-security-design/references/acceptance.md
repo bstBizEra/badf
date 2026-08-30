@@ -13,9 +13,9 @@ contract first, prove it later, in separate WPs. **Do not build every specialist
 | :--- | :--- | :--- |
 | WP-SEC-A | root `SKILL.md` + references: G05 mapping, routing, specialist boundaries, architecture/solution-design interfaces, threat/control/risk model, normalization contract, OWASP dispositions, SEC-I01…I15, admission criteria | `DESIGNED` |
 | WP-SEC-B | the `security-composition` matrix schema + the `security` gate command with structural controls (no-empty · SEC-C01 unique · SEC-C02 provenance · SEC-C03 controlled-has-control · SEC-I12 residual-risk-not-accepted by schema); see `traceability.md` | `IMPLEMENTED` |
-| **WP-SEC-C** | matrix-internal cross-artifact **seam** controls: SEC-C04 (a `controlled` threat is verified, SEC-I04 downstream) + SEC-C05 (residual-risk ↔ disposition coherence, SEC-I12); external-artifact seams (full SEC-I04 bidirectional, SEC-I01 baseline binding, semantic resolution) deferred | `VALIDATED` |
-| WP-SEC-D | historical / representative security-design shadow calibration | `SHADOWED` |
-| WP-SEC-E | independent admission | `ACTIVE` |
+| WP-SEC-C | matrix-internal cross-artifact **seam** controls: SEC-C04 (a `controlled` threat is verified, SEC-I04 downstream) + SEC-C05 (residual-risk ↔ disposition coherence, SEC-I12); external-artifact seams (full SEC-I04 bidirectional, SEC-I01 baseline binding, semantic resolution) deferred | `VALIDATED` |
+| **WP-SEC-D** | **representative** shadow calibration (no real security-composition matrices exist yet; real re-shadow owed on first real use); see `shadow-evidence.md` | `SHADOWED` |
+| WP-SEC-E | operator admission on the representative shadow (caveat preserved; real re-shadow tracked) → registry activation | `ACTIVE` |
 
 ## WP-SEC-A boundaries (no scope creep)
 
