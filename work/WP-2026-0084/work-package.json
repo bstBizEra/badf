@@ -1,0 +1,54 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0084",
+  "title": "WP-SEC-C: cross-artifact seam controls SEC-C04/C05 (badf-security-design -> VALIDATED)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0071",
+  "repository": "bstBizEra/badf",
+  "objective": "Advance badf-security-design IMPLEMENTED -> VALIDATED by adding the matrix-internal cross-artifact seam controls to validate_security_composition, each earned failing-first + mutation-killed: SEC-C04 (SEC-I04 downstream traceability) a controlled threat carries >=1 verification_refs; SEC-C05 (SEC-I12/I03 disposition<->residual coherence) residual_risk == ACCEPTED-PENDING-AUTHORITY requires disposition == pending-authority. Mirrors WP-SOL-C: matrix-internal seams enforced, external-artifact/semantic seams deferred. One record in the canonical gate, not a second validator (SEC-I15); no new invariant; no lifecycle change.",
+  "business_value": "VALIDATED means the seam coherence a matrix can be judged on alone is deterministically enforced: a controlled threat that is never verified, or a residual-risk claim that bypasses the authority disposition, is refused at the gate rather than caught in review. Baking SEC-I12 coherence into the matrix (residual ACCEPTED-PENDING <=> pending-authority) keeps the self-accept prohibition honest end to end.",
+  "in_scope": [
+    "scripts/badf_gate.py: SEC-C04 (controlled -> >=1 verification_refs) + SEC-C05 (residual ACCEPTED-PENDING-AUTHORITY -> pending-authority disposition) in validate_security_composition",
+    "tests/test_badf_security_composition.py: failing-first per seam + disposition-scoping + one-directionality + registry VALIDATED",
+    "badf/skill-registry.json: badf-security-design IMPLEMENTED -> VALIDATED",
+    "skills/badf-security-design/references/traceability.md: enforcement-status table adds SEC-C04/C05",
+    "skills/badf-security-design/references/acceptance.md: ladder rung VALIDATED (registry is source of truth)",
+    "GITHUB_CONTROL_PLANE.md doctrine section; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "external-artifact/semantic seams: full SEC-I04 bidirectional against a sec-req registry, SEC-I01 baseline-digest binding, semantic ref resolution against arch/solution artifacts (need artifacts that don't exist -> deferred)",
+    "a new invariant, lifecycle.json change, second validator (SEC-I15), security-approval, specialist activation",
+    "WP-SEC-D (shadow) / WP-SEC-E (admission); security ASSURANCE (G08/G09); the badf-git program (BARCHI-2)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "`badf_gate.py security examples/security-composition.json` PASS (example satisfies both seams)",
+    "SEC-C04 refuses controlled-no-verification; SEC-C05 refuses ACCEPTED-PENDING on non-pending-authority; both mutation-killed; a deferred/blocked threat needs no verification",
+    "badf-security-design registered VALIDATED; lifecycle.json unchanged; no scripts/badf_security_design.py",
+    "tests pass; repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_security_composition.py",
+    "tests/test_badf_security_design_contract.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "eb9f0c5"
+  },
+  "note": "Lands IN_PROGRESS by design; next WP reconciles it. Adds 2 seam controls -> mutation-tested. Isolated worktree (badf-wt-secc, GIT-I04) parallel to BARCHI-2 GIT-I (#157/#161). Ids WP-0084/DEM-0071/GOV-0065 (0082/0069/0062=GIT-I, GOV-0064=#160). Reconciles WP-2026-0083 (composition_verified: false). Operator /loop 'proceed next steps until badf-security-design is active' 2026-08-30. Resolves #162."
+}
