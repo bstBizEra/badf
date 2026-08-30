@@ -1154,6 +1154,23 @@ ladder WP-IMP-A…E mirrors solution-design / security-design; per **#171** the 
 WP-IMP-B adds will be enforced by **code controls**, not by trusting the schema walker's type field.
 Registry `DESIGNED`.
 
+## badf-implementation-plan → IMPLEMENTED — the Work Package schema extension (`BADF-WP-0092` / WP-IMP-B, Issue #179 / GOV-0074)
+
+WP-IMP-A froze the contract; WP-IMP-B gives the **Governed Work Package** its richer shape by extending
+`schemas/work-package.schema.json` with the planning fields — `dependencies`, `source_baselines`,
+`expected_surfaces`, `authority_requirement`, `risk_factors`, `test_obligations`, `evidence_obligations`,
+`execution_budget`, `stop_conditions`, `composition` — **all optional**, so every one of the 76 existing
+records still validates (`repo` PASS on the branch and in the composed world). The extension is strictly
+additive: nothing enters `required`, `additionalProperties` stays absent (tightening it would reject
+`note` and the ledger keys), and it **documents** the two keys `reconcile_work_package` writes on every
+landing (`landed_content_tree`, `composition_verified`). The schema walker enforces what it can here —
+`enum` (an unknown `stop_condition` or `test_obligation.level` is refused), `pattern` (a dependency that
+is not a `WP-…` id is refused), nested `required` (an `execution_budget` without `max_attempts` is
+refused) — while the **type-checking, coverage and DAG-derivation controls are WP-IMP-C code controls**,
+because the walker does not type-check non-object types (#171 / GOV-0071) and `parse_composition_record`
+already trusts nothing structurally. No `lifecycle.json` change, no new gate, no
+`scripts/badf_implementation_plan.py`. Registry `DESIGNED → IMPLEMENTED`.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
