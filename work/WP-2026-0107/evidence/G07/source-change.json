@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0107-G07-source-change",
+  "work_package_id": "WP-2026-0107",
+  "gate": "G07",
+  "claim": "the change WP-2026-0107 makes to this repository, outside its own directory and the lockfile",
+  "evidence_type": "source-change",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-08-30T22:06:12Z",
+  "completed_at": "2026-08-30T22:06:12Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0107/evidence/G07/source-change.diff",
+  "digest": "sha256:8043f6525d869f06ee006afd2aabbecf1a0fcbf69c7cf1cfa4e946cf5fa282c2",
+  "binding": {
+    "base_sha": "ce3c4587a43ad2a6c5e7aca568811f38d543dc78",
+    "head_sha": "05ceb865722256bbf484118c620d6c249ae1ae6f",
+    "content_tree": "4a53d4c6b084ac6d70c147b2c28f7f5a4c7fed55",
+    "changed_paths": [
+      "badf/demands/BADF-DEM-0094.json",
+      "badf/skill-registry.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "skills/badf-release-validation/SKILL.md",
+      "skills/badf-release-validation/references/acceptance.md",
+      "skills/badf-release-validation/references/candidate-binding.md",
+      "skills/badf-release-validation/references/class-independence.md",
+      "skills/badf-release-validation/references/environment-fidelity.md",
+      "skills/badf-release-validation/references/external-methodology.md",
+      "skills/badf-release-validation/references/findings-and-disposition.md",
+      "skills/badf-release-validation/references/g08-g09-g10-boundary.md",
+      "skills/badf-release-validation/references/g09-contract.md",
+      "skills/badf-release-validation/references/noncoverage.md",
+      "skills/badf-release-validation/references/performance-test.md",
+      "skills/badf-release-validation/references/quality-validation.md",
+      "skills/badf-release-validation/references/resilience-test.md",
+      "skills/badf-release-validation/references/routing.md",
+      "skills/badf-release-validation/references/runtime-evidence.md",
+      "skills/badf-release-validation/references/security-validation.md",
+      "skills/badf-release-validation/references/thresholds-and-oracles.md",
+      "skills/badf-release-validation/references/validation-obligations.md",
+      "tests/test_badf_release_validation_contract.py",
+      "work/WP-2026-0109/work-package.json"
+    ],
+    "expected_surfaces": {
+      "declared": false,
+      "files": []
+    },
+    "unexpected_paths": [],
+    "change_digest": "sha256:8043f6525d869f06ee006afd2aabbecf1a0fcbf69c7cf1cfa4e946cf5fa282c2"
+  }
+}

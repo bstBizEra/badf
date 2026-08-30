@@ -1,0 +1,42 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 45c9c9c..6a534b9 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1588,6 +1588,37 @@ it; 2 attempts of 3), and **C7** judged a real delegation. The build ledger reco
+ `START · BASELINE · RED · RETRY · GREEN · VERIFY · HANDOFF`. #212 (the deferred real-conditions
+ re-shadow) now has its first real case; discharging #212 remains its own work package.
+ 
++## badf-release-validation — G09 independent pre-release validation router freeze (`BADF-WP-0107` / WP-VAL-A, Issue #209 / GOV-0090)
++
++`badf-release-validation` is frozen (DESIGNED) as the **G09 independent pre-release validation
++orchestrator** — a risk-routed evidence federation that takes the exact G08-verified candidate and
++attempts to disqualify it across four **independent** validation classes (quality · security ·
++performance · resilience), normalizing the observed evidence into the four G09 evidence types the
++lifecycle already names (`quality-validation` · `security-validation` · `performance-test` ·
++`resilience-test`). It **composes** those existing types — it adds **no fifth `release-validation`
++type, no `scripts/badf_release_validation.py`, no schema, no `lifecycle.json` change** (VAL-I20: the
++deterministic G09 semantics arrive inside the canonical `badf_gate.py` at WP-VAL-C, never a competing
++validator).
++
++The boundary it defends: G09 is `quality_authority`-owned and establishes **pre-release validation
++evidence only** — it does **not** issue UAT, release readiness, go/no-go, deployment or production
++claims; **G10** (`release_authority`) owns release readiness and stays untouched. Frozen invariants
++**VAL-I01…VAL-I20**: exact-candidate binding (I01, `MIXED_CANDIDATE_EVIDENCE → REFUSE`), risk-derived
++routing not "run all QA" (I02), class independence (I03) and no class substitution (I13, one runtime
++result cannot fill several evidence slots), runtime observation with an oracle **outside** the agent
++(I04) with agent output draft-until-bound (I05), thresholds pre-existing outcomes (I06,
++`measurement ≠ PASS`), environment provenance + declared deviation (I07/I08, `staging PASS ≠ production
++proven`), security-validation ≠ risk acceptance (I09), resilience hypothesis-driven with observed
++recovery (I11/I12), a **conjunctive** G09 dossier where a security blocker cannot be outvoted (I14),
++mandatory non-coverage (I15), explicit flake policy (I16), and the gate separations G08≠G09 (I17),
++G09≠G10 (I18), G09≠G12 (I19). External sources are **adapt-not-authority**: `petrkindlmann/qa-skills`
++(taxonomy/adapters; its `release-readiness` is G10, not G09), Grafana `k6` (performance methodology),
++OWASP Secure Agent Playbook (primary security methodology); scanners/runtimes are observation
++producers, never authority. Ladder-internal at this rung (SKILL + 17 references, no gate/schema);
++WP-VAL-B (typed G09 evidence contracts) and WP-VAL-C (canonical deterministic controls) are
++shared-surface and go to BADF-QA + BADF-REV. Authored by BARCHI-1 as Senior ARCH & ENGIN. Registry
++`badf-release-validation: DESIGNED`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
