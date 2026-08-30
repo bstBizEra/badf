@@ -1,0 +1,51 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0082",
+  "title": "GIT-I shadow calibration on real BADF history: a recomputed git-shadow record (4/4 landings match, 11 no-record landings honest, 14/14 identities conform, SOURCE_ADVANCED and RELEASE_BOUND replayed), gaps declared; root stays DESIGNED for GIT-J",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0069",
+  "repository": "bstBizEra/badf",
+  "objective": "Turn this program's own integration history -- every badf-git work package was integrated through the tools it was building -- into committed, recomputed shadow evidence. examples/git-shadow-evidence.json lists every case with the verdict the tool renders: the 4 record-bearing landings (landed content tree == expected_content_tree), the 11 landings without a record (composition_verified: false, honestly), the 14 identity-conforming first-parent landings, the SOURCE_ADVANCED staleness case between the GIT-F and GIT-G landings, the RELEASE_BOUND baseline, and the CI runner citations; tests/test_badf_git_shadow.py recomputes every case from the object store with the real tools (content_tree on each landing, the identity rule on each squash, git_staleness in a scratch clone, git_release_check) and refuses a tampered record or a case that cannot be recomputed offline. evidence/shadow-evidence.md carries the measurement table, the declared non-coverage (rewrite verdicts synthetic-only; recovery on real dirty state observed not committed; branch-name conformance API-observed; tag signing absent) and why the root stays DESIGNED: advancing the family is the operator's admission decision (GIT-J). No registry status change, no lifecycle change, no new control, no new tool.",
+  "business_value": "SHADOWED means the controls were run against real cases and behaved. badf-git's synthetic proofs are strong, but the strongest evidence is the history that actually happened: rebases under a moving main, stale claims refused and recomputed, landings verified. Recording it once and recomputing it on every run makes the admission decision (GIT-J) rest on measured history that cannot drift -- GTGM v0.1 section 17 (GIT-I).",
+  "in_scope": [
+    "examples/git-shadow-evidence.json (the git-shadow record: 4 + 11 + 14 + 1 + 1 cases, runner citations, non_coverage)",
+    "tests/test_badf_git_shadow.py (8 tests recomputing every case with the real tools; tamper refusal)",
+    "skills/badf-git/evidence/shadow-evidence.md; GITHUB_CONTROL_PLANE.md doctrine section; own composition record + G07 self-dossier; lockfile re-signed",
+    "placement: the calibration note lives at skills/badf-git/evidence/shadow-evidence.md, outside the frozen references/ contract surface; test_contract_surface_is_declarative_only keeps its eight contract references untouched (evidence is not contract); the composed world always judges a candidate with the base's tests/, filed as its own harness issue"
+  ],
+  "out_of_scope": [
+    "advancing badf-git to SHADOWED/APPROVED/ACTIVE -- GIT-J, the operator's admission decision",
+    "reconstructing force-pushed heads to replay rewrite verdicts (gone from origin; the synthetic proofs stand and the gap is declared); any new control, tool, schema, workflow step or authority; the remote-workspace mode (#133)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the shadow record validates structurally and every case is recomputed from history: 4/4 landings MATCH, 11/11 no-record landings have no record in their landed tree, 14/14 identities conform, the staleness case renders SOURCE_ADVANCED through git_staleness, the baseline renders RELEASE_BOUND through git_release_check",
+    "a tampered record (wrong tree, wrong verdict, non-recomputable case) is refused by the tests",
+    "shadow-evidence.md names every case class, every non-coverage item and the CI run ids; badf-git root stays DESIGNED; no change to lifecycle, badf_gate.py, badf_compose.py, schemas, workflow or authority; repo clean; compose green (the shadow tests run inside the composed world)"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_git_shadow.py"
+  ],
+  "evidence": [
+    "failing-first run",
+    "shadow record recomputation",
+    "compose output incl. composition: CURRENT"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "8a753cb"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-I per GTGM v0.1 section 17, after GIT-H (WP-2026-0086 / 8a753cb). Resolves #157 / GOV-0062. Reconciles WP-2026-0086 (composition_verified true). Engineered by BARCHI-2 in a linked worktree under the operator's /loop ('proceed on your call')."
+}
