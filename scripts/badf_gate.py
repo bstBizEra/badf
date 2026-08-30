@@ -2349,6 +2349,19 @@ def check_schema(name: str, inst: Any) -> None:
                 if key in val:
                     walk(sub, val[key], f"{where}.{key}" if where else key)
             return
+        # scalar/array type conformance: a declared type must match the JSON type
+        # (bool is a Python int subclass, so integer/number exclude it explicitly)
+        t = spec.get("type")
+        if t == "array" and not isinstance(val, list):
+            raise ValidationError(f"{name}: {label} must be an array, got {type(val).__name__}")
+        if t == "string" and not isinstance(val, str):
+            raise ValidationError(f"{name}: {label} must be a string, got {type(val).__name__}")
+        if t == "boolean" and not isinstance(val, bool):
+            raise ValidationError(f"{name}: {label} must be a boolean, got {type(val).__name__}")
+        if t == "integer" and (not isinstance(val, int) or isinstance(val, bool)):
+            raise ValidationError(f"{name}: {label} must be an integer, got {type(val).__name__}")
+        if t == "number" and (not isinstance(val, (int, float)) or isinstance(val, bool)):
+            raise ValidationError(f"{name}: {label} must be a number, got {type(val).__name__}")
         if "enum" in spec and val not in spec["enum"]:
             raise ValidationError(f"{name}: {label}={val!r} is not one of {spec['enum']}")
         if "pattern" in spec and isinstance(val, str) and not re.fullmatch(spec["pattern"], val):

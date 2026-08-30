@@ -1,0 +1,265 @@
+diff --git a/badf/demands/BADF-DEM-0084.json b/badf/demands/BADF-DEM-0084.json
+new file mode 100644
+index 0000000..2944d0f
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0084.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0084",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 189,
++    "url": "https://github.com/bstBizEra/badf/issues/189",
++    "exported_at": "2026-08-30T14:00:01Z",
++    "body_digest": "sha256:ba88469216cd8099f2a3f926b10f4df351037995978dfa20b8fa67e1105436d7"
++  },
++  "title": "GOV-0080: enforce scalar/array type conformance in check_schema walker (closes #171)",
++  "problem": "🧠 **ARCHI (BARCHI-1)** — Enforce scalar/array type conformance in the `check_schema` walker\n\n## Context\n\n`badf_gate.py check_schema` (the JSON-schema-lite walker) enforces `required`, `enum`,\n`pattern`, `additionalProperties: false`, and the object-must-be-a-mapping rule — but it\ndoes **not** refuse a value whose JSON type mismatches a scalar/array `type` declaration\n(`array` given an object is silently skipped; `string`/`number`/`integer`/`boolean` are\nnever type-checked). Discovered under WP-IMP-0 and tracked as #171 (GOV-0071). The typed\nplanning fields the G06 ladder added (`execution_budget`, `stop_conditions`, `dependencies`,\n…) are declared but only value-checked by code controls; a malformed *type* would pass the\nschema layer. This closes the gap for **all ~25 gate-validated artifacts at once** (Option 1\nfrom #171), rather than sprinkling per-field code controls.\n\n## Change class / authority / tier\n\n- **change_class: C1** (shared control surface: the core `check_schema` walker).\n  Required roles: engineering_owner + independent_reviewer (**BARCHI-2**, shared surface).\n- **Version tier: patch** (`0.0.X`) — bug fix to an existing gate control; no new public API.\n- DEV Glossary stage: gate hardening (existing G00–G06 enforcement surface).\n\n## Audit-first (done at plan time — the safety gate)\n\nApplied the strict walker to the tree at `d4b8c4a` and ran `badf_gate.py repo`:\n**PASS** — zero governed records break. A `$schema`-scan of 89 records found only two\n*object* placeholders in `templates/gate-dossier.json`, which is **not** a `check_schema`\ntarget and which the existing walker already governs identically. So tightening the\nscalar/array types turns nothing on the ledger RED.\n\n## Acceptance criteria\n\n- `check_schema` refuses a value whose JSON type mismatches a declared `type` of\n  `array` / `string` / `integer` / `number` / `boolean`, at any depth.\n- `integer` and `number` **reject Python `bool`** (a bool is an int subclass) — and accept\n  genuine ints/floats.\n- No regression: `badf_gate.py repo` stays PASS on the full committed ledger + locked\n  examples (composed-tree suite green on CI).\n- Existing controls preserved: the IMP-C3 positive-integer control still rejects `0`/negative\n  `max_attempts` (the walker adds the type layer; the value layer stays).\n- The change is signed (`lock`) in the same diff.\n\n## Test list\n\n- `test_type_string_field_rejects_non_string`\n- `test_type_array_field_rejects_object` (the original silent-skip gap)\n- `test_type_integer_field_rejects_bool`\n- `test_type_integer_field_rejects_string`\n- `test_type_number_field_rejects_bool`\n- `test_type_boolean_field_rejects_non_bool`\n- `test_conforming_types_still_pass` (no false positives on valid records)\n- `test_repo_gate_passes_under_strict_walker` (ledger-wide regression guard)\n- (updated) `test_boolean_max_attempts_is_refused` — bool now refused at the schema layer\n\ndiscovered-by: #171 (GOV-0071) · delivered-by: BADF-WP-0097 · closes #171\n\n<!-- agent: architect -->\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T14:00:01Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-0097 closes #171 (GOV-0071): the check_schema walker now type-checks declared scalar/array types (array/string/integer/number/boolean), rejecting a JSON-type mismatch at any depth; integer/number exclude Python bool. Audit-first: repo PASS under the strict walker at d4b8c4a (zero governed records break). change_class C1 (shared surface: core walker) -> BARCHI-2 independent review. Patch tier. DEM-0084/GOV-0080/WP-0097. Rebased onto cf431fa after BLD-A landed; reconciles WP-2026-0096."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 40bc2b8..ae6d34f 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1260,6 +1260,33 @@ BLD-D shadows on every G07 self-dossier BADF has produced since WP-0030; BLD-E i
+ A successful build proves only that the authorized change was built and author-verified — never
+ "independently verified", "approved to merge", "approved to release" or "safe for production".
+ 
++## check_schema type conformance — closing the walker's type gap (`BADF-WP-0097`, Issue #189 / GOV-0080, closes #171)
++
++The `check_schema` walker is BADF's single structural authority for ~25 gate-validated artifacts
++(work-breakdown, test-plan, release-plan, rollback-plan, solution/security-composition, architecture,
++requirements, …). It enforced `required`, `enum`, `pattern`, `additionalProperties: false`, and the
++object-must-be-a-mapping rule — but it did **not** refuse a value whose JSON type mismatched a declared
++scalar/array `type`: an `array` given an object was silently skipped (the items loop is guarded by
++`isinstance(val, list)`), and `string` / `number` / `integer` / `boolean` were never type-checked
++(discovered under WP-IMP-0, tracked as **#171**). The typed planning fields the G06 ladder added
++(`execution_budget`, `stop_conditions`, `dependencies`, …) were therefore declared but not
++type-enforced at the schema layer.
++
++This WP adds deterministic **type conformance** for `array` / `string` / `integer` / `number` /
++`boolean`, at any depth — Option 1 from #171, closing the gap for **all governed artifacts at once**
++rather than sprinkling per-field code controls. Because a Python `bool` is an `int` subclass, `integer`
++and `number` **exclude bool explicitly**. The walker still deliberately ignores `minLength` / `minItems`
++/ `minimum` / `format` (out of #171's scope — non-emptiness and value bounds stay code controls, e.g.
++IMP-C3's positive-integer check, kept as defense-in-depth).
++
++**Audit-first** (the safety gate, run before coding): the strict walker was applied to the tree at
++`d4b8c4a` and `badf_gate.py repo` ran **PASS** — zero governed records break. One observed interaction:
++a bool `max_attempts` (and a non-numeric NFR `target.value`) is now refused at the schema layer *before*
++the downstream code control (IMP-C3, `check_nfr`) emits its message; the refusal is preserved, only the
++layer moved (the three affected G02/G06 test needles were widened to `a number` / `integer`, matching
++both layers — the code controls stay as defense-in-depth). change_class **C1** (shared control surface)
++→ independent review. Patch tier. Registry unchanged (no capability advances).
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index a25e63c..9351e7a 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -2349,6 +2349,19 @@ def check_schema(name: str, inst: Any) -> None:
+                 if key in val:
+                     walk(sub, val[key], f"{where}.{key}" if where else key)
+             return
++        # scalar/array type conformance: a declared type must match the JSON type
++        # (bool is a Python int subclass, so integer/number exclude it explicitly)
++        t = spec.get("type")
++        if t == "array" and not isinstance(val, list):
++            raise ValidationError(f"{name}: {label} must be an array, got {type(val).__name__}")
++        if t == "string" and not isinstance(val, str):
++            raise ValidationError(f"{name}: {label} must be a string, got {type(val).__name__}")
++        if t == "boolean" and not isinstance(val, bool):
++            raise ValidationError(f"{name}: {label} must be a boolean, got {type(val).__name__}")
++        if t == "integer" and (not isinstance(val, int) or isinstance(val, bool)):
++            raise ValidationError(f"{name}: {label} must be an integer, got {type(val).__name__}")
++        if t == "number" and (not isinstance(val, (int, float)) or isinstance(val, bool)):
++            raise ValidationError(f"{name}: {label} must be a number, got {type(val).__name__}")
+         if "enum" in spec and val not in spec["enum"]:
+             raise ValidationError(f"{name}: {label}={val!r} is not one of {spec['enum']}")
+         if "pattern" in spec and isinstance(val, str) and not re.fullmatch(spec["pattern"], val):
+diff --git a/tests/test_badf_g02.py b/tests/test_badf_g02.py
+index c0c3b34..f2b0b8b 100644
+--- a/tests/test_badf_g02.py
++++ b/tests/test_badf_g02.py
+@@ -130,13 +130,16 @@ class NfrRuleTests(G02Scratch):
+         nfr = self.artifact("nfr")
+         nfr["nfrs"][0]["target"]["value"] = "fast"
+         self.rewrite("nfr", nfr)
+-        self.refused("is not quantified")
++        # "a number" matches both the schema-layer message ("must be a number", since
++        # GOV-0080 the walker type-checks target.value) and the check_nfr code control
++        # ("... is not a number"); the NFR-quantified rule is enforced either way.
++        self.refused("a number")
+ 
+     def test_a_boolean_nfr_target_is_not_a_quantity(self):
+         nfr = self.artifact("nfr")
+         nfr["nfrs"][0]["target"]["value"] = True
+         self.rewrite("nfr", nfr)
+-        self.refused("is not quantified")
++        self.refused("a number")
+ 
+ 
+ class DefinitionOfReadyRuleTests(G02Scratch):
+diff --git a/tests/test_badf_g06_planning_controls.py b/tests/test_badf_g06_planning_controls.py
+index 33ac5ab..562f00d 100644
+--- a/tests/test_badf_g06_planning_controls.py
++++ b/tests/test_badf_g06_planning_controls.py
+@@ -58,9 +58,12 @@ class PlanningControlTests(G06PlanningControlsBase):
+         self.refuse(lambda w: w["tasks"][0]["execution_budget"].__setitem__("max_attempts", 0),
+                     "positive integer")
+ 
+-    def test_boolean_max_attempts_is_refused(self):  # IMP-C3: True is an int in python; must be rejected
++    def test_boolean_max_attempts_is_refused(self):  # True is an int in python; refused at the schema layer (GOV-0080)
++        # Since GOV-0080 the check_schema walker type-checks `integer`, so a bool max_attempts
++        # is refused at the schema layer ("must be an integer, got bool") before the IMP-C3
++        # positive-integer code control runs. The refusal is preserved; only the layer moved.
+         self.refuse(lambda w: w["tasks"][0]["execution_budget"].__setitem__("max_attempts", True),
+-                    "positive integer")
++                    "integer")
+ 
+     def test_empty_stop_conditions_is_refused(self):  # IMP-C4 / IMP-I12
+         self.refuse(lambda w: w["tasks"][0].__setitem__("stop_conditions", []),
+diff --git a/tests/test_badf_requirements_validation.py b/tests/test_badf_requirements_validation.py
+index 180076e..482935a 100644
+--- a/tests/test_badf_requirements_validation.py
++++ b/tests/test_badf_requirements_validation.py
+@@ -39,7 +39,10 @@ class CaseB_Rework(G02Scratch):
+         nfr = self.artifact("nfr")
+         nfr["nfrs"][0]["target"]["value"] = "fast"
+         self.rewrite("nfr", nfr)
+-        self.refused("is not quantified")
++        # "a number" matches both the schema-layer message (since GOV-0080 the walker
++        # type-checks target.value) and the check_nfr code control; a qualitative
++        # (non-numeric) NFR target is refused as rework either way.
++        self.refused("a number")
+ 
+ 
+ class CaseC_SecurityProvenance(G02Scratch):
+diff --git a/tests/test_badf_schema_type_enforcement.py b/tests/test_badf_schema_type_enforcement.py
+new file mode 100644
+index 0000000..c8dc818
+--- /dev/null
++++ b/tests/test_badf_schema_type_enforcement.py
+@@ -0,0 +1,90 @@
++"""check_schema scalar/array type conformance (BADF-WP-0097 / GOV-0080, closes #171).
++
++The JSON-schema-lite walker enforced required / enum / pattern / additionalProperties and
++the object-must-be-a-mapping rule, but did NOT refuse a value whose JSON type mismatched a
++declared scalar/array ``type``: an ``array`` given an object was silently skipped (the
++items loop is guarded by ``isinstance(val, list)``), and ``string`` / ``number`` /
++``integer`` / ``boolean`` were never type-checked. The typed planning fields the G06 ladder
++added (``execution_budget``, ``stop_conditions``, ``dependencies``, ...) were declared but
++only value-checked by code controls; a malformed *type* passed the schema layer (#171).
++
++These tests pin the type layer at any depth, using REAL committed examples so a false
++positive on a valid record fails loudly. ``bool`` is a Python ``int`` subclass, so
++``integer`` / ``number`` must reject it explicitly.
++"""
++import copy
++import json
++import sys
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++# work-breakdown carries array/string/integer/number typed fields;
++# architecture-assurance carries a boolean (authority.implementation_authority).
++WB = json.loads((gate.ROOT / "examples/work-breakdown-planned.json").read_text())
++AA = json.loads((gate.ROOT / "examples/architecture-assurance.json").read_text())
++
++
++class SchemaTypeEnforcementTests(unittest.TestCase):
++    def refuse(self, name, doc, needle):
++        with self.assertRaises(gate.ValidationError) as cm:
++            gate.check_schema(name, doc)
++        self.assertIn(needle, str(cm.exception))
++
++    # --- array: the original silent-skip gap (array given a non-list) ---
++    def test_type_array_field_rejects_object(self):
++        bad = copy.deepcopy(WB)
++        bad["tasks"][0]["acceptance"] = {"not": "a list"}
++        self.refuse("work-breakdown", bad, "must be an array")
++
++    def test_top_level_array_rejects_object(self):
++        bad = copy.deepcopy(WB)
++        bad["tasks"] = {"nope": 1}
++        self.refuse("work-breakdown", bad, "must be an array")
++
++    # --- string: a genuine `type: string` field (not an enum-only field, which
++    # the enum check would catch first) ---
++    def test_type_string_field_rejects_non_string(self):
++        bad = copy.deepcopy(WB)
++        bad["tasks"][0]["description"] = 123
++        self.refuse("work-breakdown", bad, "must be a string")
++
++    # --- integer (bool is an int subclass -> must still be rejected) ---
++    def test_type_integer_field_rejects_string(self):
++        bad = copy.deepcopy(WB)
++        bad["tasks"][0]["execution_budget"]["max_attempts"] = "3"
++        self.refuse("work-breakdown", bad, "must be an integer")
++
++    def test_type_integer_field_rejects_bool(self):
++        bad = copy.deepcopy(WB)
++        bad["tasks"][0]["execution_budget"]["max_attempts"] = True
++        self.refuse("work-breakdown", bad, "must be an integer")
++
++    # --- number (bool is an int subclass -> must still be rejected) ---
++    def test_type_number_field_rejects_bool(self):
++        bad = copy.deepcopy(WB)
++        bad["tasks"][0]["execution_budget"]["max_elapsed_minutes"] = True
++        self.refuse("work-breakdown", bad, "must be a number")
++
++    def test_type_number_field_accepts_int_and_float(self):
++        ok = copy.deepcopy(WB)
++        for v in (5, 5.5):
++            ok["tasks"][0]["execution_budget"]["max_elapsed_minutes"] = v
++            gate.check_schema("work-breakdown", ok)  # must not raise
++
++    # --- boolean ---
++    def test_type_boolean_field_rejects_non_bool(self):
++        bad = copy.deepcopy(AA)
++        bad["authority"]["implementation_authority"] = "false"
++        self.refuse("architecture-assurance", bad, "must be a boolean")
++
++    # --- no false positives: the real committed examples validate as-is ---
++    def test_conforming_examples_still_pass(self):
++        gate.check_schema("work-breakdown", WB)
++        gate.check_schema("architecture-assurance", AA)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0096/work-package.json b/work/WP-2026-0096/work-package.json
+index 8101784..7cc93d6 100644
+--- a/work/WP-2026-0096/work-package.json
++++ b/work/WP-2026-0096/work-package.json
+@@ -49,11 +49,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "d4b8c4a"
++    "base_revision": "d4b8c4a",
++    "landed_content_tree": "8467d106ec11664f305e1de85886960b9a6dc65d",
++    "composition_verified": true,
++    "landed_as": "cf431fafd3394bd7d529eea72a8e599203f3915a"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-BLD-A of the badf-build program (operator design directive 2026-08-30; approval + A->E authorization on #188). Governance-only WP: skill files + registry + tests + doctrine; empty gate diff. Resolves #188 / GOV-0079. Engineered by BARCHI-2 under /loop ('proceed on your call'); ladder-internal (no shared surface) -- lands under the standing evidence bar."
+ }
