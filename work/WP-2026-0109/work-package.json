@@ -47,11 +47,14 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "d292801"
+    "base_revision": "d292801",
+    "landed_content_tree": "ac1962f09b908a00a22fba99e4e8b7868f123bf7",
+    "composition_verified": true,
+    "landed_as": "ce3c4587a43ad2a6c5e7aca568811f38d543dc78"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Defect fix on badf-build's own surface, flagged by BARCHI-3 at VER-A and left for this seat. THE FIRST WORK PACKAGE EXECUTED THROUGH badf-build's WORKFLOW: declared expected_surfaces (C3), a unit test_obligation with red required (C4), an execution_budget (C6) and one delegated slice (C7) -- the controls the BLD-D shadow could only prove on scratch now meet real conditions. Resolves #219 / GOV-0095. Reconciles WP-2026-0108 (VER-E).",
   "expected_surfaces": {

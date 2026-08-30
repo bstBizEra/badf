@@ -1,0 +1,52 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0107",
+  "title": "WP-VAL-A: freeze the badf-release-validation capability contract (G09 independent pre-release validation router; DESIGNED)",
+  "owner": "engineering_owner",
+  "demand": "BADF-DEM-0094",
+  "repository": "bstBizEra/badf",
+  "objective": "Freeze badf-release-validation as the G09 independent pre-release validation ORCHESTRATOR (a risk-routed evidence federation over the four G09 evidence types the lifecycle already names), explicitly NOT a G10 release-readiness / go-no-go authority. G09 stays quality_authority-owned; G10 stays release_authority-owned; that split is untouched. The capability derives a validation-obligation set (quality / security / performance / resilience classes) from declared risk, changed surfaces, NFRs, threat model, security obligations and change class -- not a static 'run all QA' checklist. Each class carries its own risk hypothesis, method, oracle, execution identity, runtime result and non-coverage; approved runtimes establish observable facts; agent output is draft until validated and bound; every artifact binds the EXACT G08-verified candidate; the G09 dossier is conjunctive (a security blocker cannot be outvoted). Passing one class says nothing about another. Passing G09 establishes pre-release validation evidence -- not UAT, not operational readiness, not release authority. DESIGNED rung: SKILL.md + references only.",
+  "business_value": "G09 currently names four evidence types with no authoring capability to route, bind and normalize them. This freezes a strong model -- an evidence federation of independent validation disciplines against one immutable candidate, each with its own oracle/runtime/provenance/thresholds/findings/non-coverage -- so the later rungs can enforce it deterministically without a competing validator and without leaking G10 release authority into G09.",
+  "in_scope": [
+    "skills/badf-release-validation/SKILL.md (root: the G09 validation obligation router, VAL-I01..I20, the workflow, the G08/G09/G10/G12 boundaries, external adapt-not-authority disposition)",
+    "skills/badf-release-validation/references/ (17: g09-contract, candidate-binding, routing, validation-obligations, class-independence, quality-validation, security-validation, performance-test, resilience-test, runtime-evidence, thresholds-and-oracles, environment-fidelity, findings-and-disposition, noncoverage, g08-g09-g10-boundary, acceptance, external-methodology)",
+    "tests/test_badf_release_validation_contract.py (asserts VAL-I01..I20 by id, the obligation-router workflow, composes-existing-quartet/no-fifth-type, adapt-not-authority for the three external sources, the G08!=G09!=G10!=G12 boundaries, registry DESIGNED)",
+    "badf/skill-registry.json: badf-release-validation = DESIGNED (digest = sha256(SKILL.md))",
+    "docs/governance/GITHUB_CONTROL_PLANE.md doctrine section; reconcile WP-2026-0109; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "scripts/badf_release_validation.py, any schema, any lifecycle.json change (VAL-I20: no second gate; deterministic G09 semantics arrive in the canonical gate at WP-VAL-C, not here)",
+    "a fifth 'release-validation' lifecycle evidence type (compose the existing quartet: quality-validation, security-validation, performance-test, resilience-test)",
+    "any G10 release-readiness / go-no-go / operational-readiness authority (VAL-I18); any change to G09 (quality_authority) or G10 (release_authority) ownership"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "badf-release-validation registered DESIGNED; digest = sha256(SKILL.md); no scripts/badf_release_validation.py, no schema, no lifecycle.json change",
+    "contract test asserts all 20 invariants VAL-I01..I20 by id, the obligation-router workflow, composes-existing-G09-quartet / no fifth type, adapt-not-authority (qa-skills / Grafana k6 / OWASP), and the G08!=G09!=G10!=G12 boundaries",
+    "SKILL.md freezes: routing derives obligations from risk (not run-all-QA); class independence; exact-candidate binding; thresholds pre-exist outcomes; runtime observation with an oracle outside the agent; conjunctive G09 dossier; non-coverage mandatory",
+    "repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_release_validation_contract.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR (registry entry + skill removed)"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "ce3c458"
+  },
+  "note": "Ladder-internal DESIGNED contract freeze (SKILL + references, no gate/schema/lifecycle) -> no BADF-QA/BADF-REV review required at A; WP-VAL-B (typed G09 evidence schemas) and WP-VAL-C (deterministic gate controls) are shared-surface -> QA+REV by BADF-QA/BADF-REV. Authored by BARCHI-1 as Senior ARCH & ENGIN. Ids WP-0107/DEM-0094/GOV-0090. Rebased three times as the base moved under an open PR: bbec762 -> 8de88d5 (VER-D) -> d292801 (VER-E, a deliberate yield so an operator-authorized admission would not queue behind a contract freeze) -> ce3c458 (WP-0109). Reconciles WP-2026-0109; WP-2026-0104, 0106 and 0108 were already reconciled upstream. Each rebase costs a G07 regeneration because source-change.diff is base-bound. Delivery ladder WP-VAL-A(DESIGNED)->B(IMPLEMENTED)->C(VALIDATED)->D(SHADOWED)->E(quality_authority/operator admission ACTIVE)."
+}

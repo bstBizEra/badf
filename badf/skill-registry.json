@@ -310,6 +310,16 @@
       "allowed_tools": [],
       "status": "ACTIVE",
       "digest": "sha256:5c68c9c629ef8854600f4e8024bb095833ae4671e9c38b8d48724aadcf57bcad"
+    },
+    {
+      "name": "badf-release-validation",
+      "source": "skills/badf-release-validation/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [],
+      "status": "DESIGNED",
+      "digest": "sha256:675c59d561fea4c86726877ed3f23a0a9238371ffe95a8cb378298904fe48277"
     }
   ]
 }
