@@ -139,11 +139,35 @@ class MatrixInternalSeamTests(SecurityCompositionBase):
         self.admitted(rec)
 
 
+class ShadowCalibrationTests(SecurityCompositionBase):
+    """WP-SEC-D: the representative shadow matrices pass, and the shadow-evidence reference
+    labels itself REPRESENTATIVE (not real-project) and declares the external-artifact seams
+    it does NOT cover -- silence is not coverage."""
+
+    SHADOWS = ("security-composition-shadow-api.json", "security-composition-shadow-data.json")
+
+    def test_representative_shadow_matrices_pass(self):
+        for name in self.SHADOWS:
+            rec = json.loads((gate.ROOT / "examples" / name).read_text())
+            self.admitted(rec)
+
+    def test_shadow_evidence_declares_representative_caveat(self):
+        doc = (gate.ROOT / "skills/badf-security-design/references/shadow-evidence.md").read_text()
+        self.assertIn("REPRESENTATIVE", doc)
+        self.assertIn("no real security-composition matrices yet", doc)
+
+    def test_shadow_evidence_declares_noncoverage(self):
+        doc = (gate.ROOT / "skills/badf-security-design/references/shadow-evidence.md").read_text()
+        self.assertIn("non-coverage", doc.lower())
+        for seam in ("SEC-I04", "SEC-I01", "semantic"):
+            self.assertIn(seam, doc, f"{seam} not declared as non-covered")
+
+
 class RegistryStatusTests(unittest.TestCase):
-    def test_badf_security_design_is_registered_validated(self):  # WP-SEC-C advanced IMPLEMENTED -> VALIDATED
+    def test_badf_security_design_is_registered_shadowed(self):  # WP-SEC-D advanced VALIDATED -> SHADOWED
         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
         entry = next(e for e in reg["skills"] if e["name"] == "badf-security-design")
-        self.assertEqual(entry["status"], "VALIDATED")
+        self.assertEqual(entry["status"], "SHADOWED")
 
 
 if __name__ == "__main__":

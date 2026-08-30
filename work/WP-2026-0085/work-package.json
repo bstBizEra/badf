@@ -1,0 +1,56 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0085",
+  "title": "WP-SEC-D: representative shadow calibration (badf-security-design -> SHADOWED)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0072",
+  "repository": "bstBizEra/badf",
+  "objective": "Advance badf-security-design VALIDATED -> SHADOWED by running the `security` command retrospectively over representative threat matrices and recording the calibration: true positives (every structural + seam defect refused), zero false positives (clean matrices pass, incl. a disposition-scoped deferred row), declared non-coverage (external-artifact seams: full SEC-I04 bidirectional, SEC-I01 baseline binding, semantic resolution). Because BADF has no real security-composition matrices yet, the shadow is REPRESENTATIVE and labelled so; a real re-shadow is owed on first real use. Ship 2 committed representative shadow matrices (API/payment, data/privacy), a shadow-evidence reference, and advance the registry. Mirrors badf-solution-design WP-SOL-D.",
+  "business_value": "SHADOWED is the rung before APPROVED/ACTIVE. It proves the structural + seam controls behave across the outcome space and honestly bounds what they do NOT yet cover. Doing it on representative cases -- and saying plainly it is representative -- keeps the admission ladder truthful: the operator can hold APPROVED/ACTIVE for a real re-shadow rather than a synthetic one masquerading as production calibration.",
+  "in_scope": [
+    "skills/badf-security-design/references/shadow-evidence.md: the calibration (TP/FP/non-coverage) over representative matrices, explicitly REPRESENTATIVE-not-real, external-artifact non-coverage declared",
+    "examples/security-composition-shadow-api.json + security-composition-shadow-data.json (representative clean matrices) validated in CI",
+    "badf/skill-registry.json: badf-security-design VALIDATED -> SHADOWED",
+    "tests/test_badf_security_composition.py: shadow matrices pass; shadow-evidence carries the representative caveat + non-coverage; registry SHADOWED",
+    "tests/test_badf_security_design_contract.py: REFS set adds shadow-evidence.md",
+    "skills/badf-security-design/references/acceptance.md: ladder rung SHADOWED (registry is source of truth); .github/workflows/badf-gates.yml: the two shadow matrices",
+    "GITHUB_CONTROL_PLANE.md doctrine section; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "a real-project shadow (no real matrices exist yet -- deferred honestly to first real use)",
+    "the external-artifact seams (full SEC-I04 bidirectional, SEC-I01 baseline, semantic resolution)",
+    "APPROVED/ACTIVE (the loop's later operator-authorized admission); specialist activation; lifecycle.json change; second validator (SEC-I15)",
+    "security ASSURANCE (G08/G09); the badf-git program (BARCHI-2)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the representative shadow matrices render PASS via `security`",
+    "shadow-evidence.md records the TP defects (empty/dup/no-provenance/controlled-no-control/controlled-no-verification/residual-incoherence/bare-ACCEPTED), the FP-free clean passes, the declared non-coverage (SEC-I04/I01/semantic), and the REPRESENTATIVE caveat",
+    "badf-security-design registered SHADOWED; no scripts/badf_security_design.py; lifecycle.json unchanged",
+    "tests pass; repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_security_composition.py",
+    "tests/test_badf_security_design_contract.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "c7b5c39"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Shadow evidence + status advance; no new control (controls are WP-SEC-B/C), so no mutation. Isolated worktree (badf-wt-secd, GIT-I04) parallel to BARCHI-2 GIT-I (#157/#161). Ids WP-0085/DEM-0072/GOV-0066. Reconciles WP-2026-0084 (composition_verified: false). Shipped via operator /loop 'proceed next steps until badf-security-design is active'. Resolves #164."
+}

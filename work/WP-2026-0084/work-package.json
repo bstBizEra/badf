@@ -44,11 +44,13 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "eb9f0c5"
+    "base_revision": "eb9f0c5",
+    "composition_verified": false,
+    "landed_as": "c7b5c392ee94ad6ca045e992d4dfc622266618f4"
   },
   "note": "Lands IN_PROGRESS by design; next WP reconciles it. Adds 2 seam controls -> mutation-tested. Isolated worktree (badf-wt-secc, GIT-I04) parallel to BARCHI-2 GIT-I (#157/#161). Ids WP-0084/DEM-0071/GOV-0065 (0082/0069/0062=GIT-I, GOV-0064=#160). Reconciles WP-2026-0083 (composition_verified: false). Operator /loop 'proceed next steps until badf-security-design is active' 2026-08-30. Resolves #162."
 }
