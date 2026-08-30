@@ -1,0 +1,89 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0098-G07-unit-test",
+  "work_package_id": "WP-2026-0098",
+  "gate": "G07",
+  "claim": "the author's unit-test run, bound; the composed-tree gate is the fresh run",
+  "evidence_type": "unit-test",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "unittest",
+    "version": "1"
+  },
+  "operation": "python3 -m unittest tests.test_badf_build_evidence",
+  "started_at": "2026-08-30T15:30:12Z",
+  "completed_at": "2026-08-30T15:30:12Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0098/evidence/G07/unit-test.log",
+  "digest": "sha256:29a5de8fcb7da59f5989a443dd04228d5ecaf6462537cd40c985e720fbc492c8",
+  "binding": {
+    "obligations": [
+      {
+        "id": "TEST-001",
+        "seam": {
+          "type": "module",
+          "ref": "tests/test_badf_build_evidence.py"
+        },
+        "red": {
+          "observed": true,
+          "ref": "work/WP-2026-0098/evidence/G07/failing-first.txt",
+          "digest": "sha256:21a6855b3da3f1775acf1f75c0745c4b6184a1cdd7da819162e311b6268ef585"
+        },
+        "green": {
+          "observed": true,
+          "ref": "work/WP-2026-0098/evidence/G07/unit-test.log",
+          "digest": "sha256:29a5de8fcb7da59f5989a443dd04228d5ecaf6462537cd40c985e720fbc492c8"
+        }
+      },
+      {
+        "id": "TEST-002",
+        "seam": {
+          "type": "module",
+          "ref": "tests/test_badf_self_dossier.py"
+        },
+        "red": {
+          "observed": true,
+          "ref": "work/WP-2026-0098/evidence/G07/failing-first.txt",
+          "digest": "sha256:21a6855b3da3f1775acf1f75c0745c4b6184a1cdd7da819162e311b6268ef585"
+        },
+        "green": {
+          "observed": true,
+          "ref": "work/WP-2026-0098/evidence/G07/unit-test.log",
+          "digest": "sha256:29a5de8fcb7da59f5989a443dd04228d5ecaf6462537cd40c985e720fbc492c8"
+        }
+      },
+      {
+        "id": "TEST-003",
+        "seam": {
+          "type": "module",
+          "ref": "tests/test_badf_reconcile.py"
+        },
+        "red": {
+          "observed": true,
+          "ref": "work/WP-2026-0098/evidence/G07/failing-first.txt",
+          "digest": "sha256:21a6855b3da3f1775acf1f75c0745c4b6184a1cdd7da819162e311b6268ef585"
+        },
+        "green": {
+          "observed": true,
+          "ref": "work/WP-2026-0098/evidence/G07/unit-test.log",
+          "digest": "sha256:29a5de8fcb7da59f5989a443dd04228d5ecaf6462537cd40c985e720fbc492c8"
+        }
+      }
+    ],
+    "command": "python3 -m unittest tests.test_badf_build_evidence",
+    "result": "PASS",
+    "tests_run": 11,
+    "failures": 0,
+    "coverage_scope": [
+      "tests/test_badf_build_evidence.py",
+      "tests/test_badf_self_dossier.py",
+      "tests/test_badf_reconcile.py"
+    ],
+    "fresh_run": "scripts/badf_compose.py (the composed-tree gate) re-runs the suite on the tree that would land; CI is the fresh, authoritative run (BLD-I09)"
+  }
+}

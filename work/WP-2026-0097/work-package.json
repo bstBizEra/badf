@@ -47,11 +47,13 @@
     "reversible": true,
     "method": "revert the squash commit via PR (walker returns to the pre-#171 lax behavior)"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "cf431fa"
+    "base_revision": "cf431fa",
+    "composition_verified": false,
+    "landed_as": "d485931ddd971492a245c90ee3e6131389388b4f"
   },
   "note": "Shared-surface change (core check_schema walker) -> BARCHI-2 independent review (change_class C1). Patch tier. Audit-first satisfied before coding. Ids WP-0097/DEM-0084/GOV-0080 (yielded 0096/DEM-0083/GOV-0079 to BARCHI-2's BLD-A). Rebased onto cf431fa after BLD-A (WP-0096) landed; reconciles WP-2026-0096. Lands IN_PROGRESS by design; next WP reconciles it."
 }

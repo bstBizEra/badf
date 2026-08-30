@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0098-G07-source-change",
+  "work_package_id": "WP-2026-0098",
+  "gate": "G07",
+  "claim": "the change WP-2026-0098 makes to this repository, outside its own directory and the lockfile",
+  "evidence_type": "source-change",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-08-30T15:30:12Z",
+  "completed_at": "2026-08-30T15:30:12Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0098/evidence/G07/source-change.diff",
+  "digest": "sha256:e522666ae1b48060779e29cb3d900bd199c9f76baba023faeb5f8e47b8915c0d",
+  "binding": {
+    "base_sha": "d485931ddd971492a245c90ee3e6131389388b4f",
+    "head_sha": "0395ec40b5694e4a9ccafa626e79ed329ef9ddde",
+    "content_tree": "ba8e242ae515d78ac57f3e0f30cdc3df2a3201f8",
+    "changed_paths": [
+      "badf/demands/BADF-DEM-0085.json",
+      "badf/skill-registry.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "schemas/build.schema.json",
+      "schemas/documentation.schema.json",
+      "schemas/source-change.schema.json",
+      "schemas/unit-test.schema.json",
+      "scripts/badf_gate.py",
+      "tests/test_badf_build_contract.py",
+      "tests/test_badf_build_evidence.py",
+      "work/WP-2026-0097/work-package.json"
+    ],
+    "expected_surfaces": {
+      "declared": false,
+      "files": []
+    },
+    "unexpected_paths": [],
+    "change_digest": "sha256:e522666ae1b48060779e29cb3d900bd199c9f76baba023faeb5f8e47b8915c0d"
+  }
+}

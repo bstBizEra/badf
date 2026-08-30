@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://badf.bizera.local/schemas/unit-test.schema.json",
+  "title": "BADF G07 evidence: unit-test (typed binding, BLD-B / BADF-WP-0098)",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "work_package_id",
+    "gate",
+    "claim",
+    "evidence_type",
+    "producer",
+    "source_revision",
+    "target",
+    "toolchain",
+    "operation",
+    "started_at",
+    "completed_at",
+    "outcome",
+    "artifact",
+    "digest",
+    "binding"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^EVD-[A-Za-z0-9._-]+$"
+    },
+    "work_package_id": {
+      "type": "string",
+      "pattern": "^WP-[A-Za-z0-9._-]+$"
+    },
+    "gate": {
+      "type": "string",
+      "pattern": "^G(0[0-9]|1[0-4])$"
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_type": {
+      "enum": [
+        "unit-test"
+      ]
+    },
+    "producer": {
+      "type": "object",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "enum": [
+            "human",
+            "agent",
+            "service",
+            "controller"
+          ]
+        }
+      }
+    },
+    "source_revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target": {
+      "type": "string",
+      "minLength": 1
+    },
+    "toolchain": {
+      "type": "object",
+      "required": [
+        "name",
+        "version"
+      ]
+    },
+    "operation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "outcome": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "BLOCKED",
+        "NOT_RUN",
+        "NOT_APPLICABLE"
+      ]
+    },
+    "artifact": {
+      "type": "string",
+      "minLength": 1
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "composition": {
+      "type": "object"
+    },
+    "sanitization": {
+      "type": "string"
+    },
+    "binding": {
+      "type": "object",
+      "required": [
+        "obligations",
+        "command",
+        "result",
+        "tests_run",
+        "failures",
+        "coverage_scope",
+        "fresh_run"
+      ],
+      "properties": {
+        "obligations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "seam",
+              "red",
+              "green"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "acceptance_ref": {
+                "type": "string"
+              },
+              "seam": {
+                "type": "object",
+                "required": [
+                  "type",
+                  "ref"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "ref": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "red": {
+                "type": "object",
+                "required": [
+                  "observed"
+                ],
+                "properties": {
+                  "observed": {
+                    "type": "boolean"
+                  },
+                  "ref": {
+                    "type": "string"
+                  },
+                  "digest": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "green": {
+                "type": "object",
+                "required": [
+                  "observed"
+                ],
+                "properties": {
+                  "observed": {
+                    "type": "boolean"
+                  },
+                  "ref": {
+                    "type": "string"
+                  },
+                  "digest": {
+                    "type": "string",
+                    "pattern": "^sha256:[0-9a-f]{64}$"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "command": {
+          "type": "string"
+        },
+        "result": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "NOT_RUN"
+          ]
+        },
+        "tests_run": {
+          "type": "integer"
+        },
+        "failures": {
+          "type": "integer"
+        },
+        "coverage_scope": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fresh_run": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

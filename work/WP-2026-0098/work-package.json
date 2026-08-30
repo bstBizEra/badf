@@ -1,0 +1,60 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0098",
+  "title": "WP-BLD-B: G07 evidence schemas + self-dossier extension + build ledger (badf-build -> IMPLEMENTED)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0085",
+  "repository": "bstBizEra/badf",
+  "objective": "Make BADF's own G07 evidence EXACT (BLD-I16) and judgeable: four typed schemas specialize evidence.schema.json for source-change, build, unit-test and documentation; badf_gate.py self-dossier -- the canonical producer, never a second one (BLD-I18) -- binds exact base/head SHAs, the content tree, the changed paths and the expected-surface comparison from the WP's optional expected_surfaces (unexpected paths are declared and the request is held with a BLD-I04 condition; an undeclared surface is non-coverage, not silence), the build command with environment identity and exit code, the author's unit-test log (red/green observed, counts; a FAILED log refuses assembly; the composed-tree gate is named as the fresh authoritative run, BLD-I09), and the documentation's 'not updated and why'. Typed bindings are checked against their schema when produced and on the dossier; generic objects stay admissible. A hash-chained build ledger (run-ledger-event records under work/<WP>/build/) records START/BASELINE/VERIFY/HANDOFF and is never read for a verdict.",
+  "business_value": "G07 evidence that binds 'HEAD' and a NOT_RUN placeholder cannot be judged; evidence that binds the exact base, the content tree, the planned-vs-actual surface and the author's observed red/green can -- by the gate now, and by the shadow at BLD-D.",
+  "in_scope": [
+    "schemas/source-change.schema.json, build.schema.json, unit-test.schema.json, documentation.schema.json (typed bindings; closed binding objects; evidence core required)",
+    "scripts/badf_gate.py: self_dossier binds the four typed bindings (expected-surface comparison with glob matching; author log parsing; FAILED log refuses; environment identity; documentation reasons); check_schema at production time; HUMAN_REQUIRED dossiers structurally validate a present binding; EVIDENCE_RULES for the four G07 types check binding-vs-artifact consistency on PASS dossiers; build ledger writer + `build-ledger <WP>` chain verifier (read-only)",
+    "tests/test_badf_build_evidence.py (10, failing-first)",
+    "badf/skill-registry.json: badf-build DESIGNED -> IMPLEMENTED (SKILL.md untouched, digest unchanged)",
+    "GITHUB_CONTROL_PLANE.md doctrine section; badf/demands/BADF-DEM-0085.json; own composition record + G07 self-dossier (the first produced by the extended producer); reconcile WP-2026-0097"
+  ],
+  "out_of_scope": [
+    "deterministic controls beyond packaging-time surface comparison -- authority-before-mutation, red-before-green enforcement, budget/stop, delegation subset (BLD-C)",
+    "shadow (BLD-D); admission (BLD-E)",
+    "running unit tests inside self-dossier (the composed-tree gate is the fresh run)",
+    "any change to lifecycle.json, the G07 evidence type list or the dossier's source_revision semantics (exactness lives in the binding: base_sha + content_tree; a squash landing makes branch SHAs unreachable on a fresh runner)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "every G07 evidence object the self-dossier writes carries a schema-valid typed binding; source-change binds base_sha, head_sha, content_tree, changed_paths, change_digest, expected_surfaces, unexpected_paths",
+    "expected_surfaces declared + out-of-surface change -> unexpected_paths listed, BLD-I04 condition, dossier HELD naming the paths; undeclared -> non_coverage",
+    "author log present -> unit-test PASS with counts and obligations (red/green observed); FAILED log -> assembly refused; absent -> NOT_RUN with the fresh run named",
+    "malformed binding -> dossier refused; generic object -> admissible; build-ledger chain verified read-only and never consulted for a verdict",
+    "existing self-dossier / reconcile / composition / integration suites green; CI green on the composed tree; QA + REV by BARCHI-1 (shared surface)"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_build_evidence.py (11)",
+    "tests/test_badf_self_dossier.py (unchanged, must stay green)",
+    "tests/test_badf_reconcile.py (unchanged, must stay green)"
+  ],
+  "evidence": [
+    "failing-first run (10 red: 2 failures, 8 errors)",
+    "green run (11)",
+    "mutation: six controls disabled one at a time -> each test red (6/6 killed)",
+    "compose output incl. composition record",
+    "G07 self-dossier with typed bindings -- its own first instance, binding this module's transcript"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "d485931"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-BLD-B of the badf-build program (#188 A->E authorization). Shared surface (badf_gate.py + schemas) -> QA + REV by BARCHI-1. Resolves #191 / GOV-0081. Reconciles WP-2026-0097 (composition_verified false -- no record on the landed tree)."
+}
