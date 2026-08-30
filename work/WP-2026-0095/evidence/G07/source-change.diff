@@ -1,0 +1,120 @@
+diff --git a/badf/demands/BADF-DEM-0082.json b/badf/demands/BADF-DEM-0082.json
+new file mode 100644
+index 0000000..14116a1
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0082.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0082",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 186,
++    "url": "https://github.com/bstBizEra/badf/issues/186",
++    "exported_at": "2026-08-30T13:12:16Z",
++    "body_digest": "sha256:c0cb6a85906aa943983897a1e122064a36f80f7c42a6604b6f1da8f2d87c8695"
++  },
++  "title": "GOV-0077: WP-IMP-E \u2014 admit badf-implementation-plan SHADOWED -> ACTIVE (representative shadow accepted; re-shadow deferred #185)",
++  "problem": "## Observed\n\nbadf-implementation-plan is SHADOWED (WP-IMP-D / #184) on a REPRESENTATIVE shadow. The final admission rung is ACTIVE, a human admission gate (self-approval prohibited).\n\n## Expected\n\n**WP-IMP-E -- admit SHADOWED -> ACTIVE.** The operator's standing /loop directive 'proceed from WP-IMP-A to WP-IMP-E' (2026-08-30, confirmed by 'proceed your tasks') is the admission decision to activate on the representative shadow, with the real re-shadow tracked as a deferred follow-up (#185). Registry SHADOWED -> ACTIVE; representative caveat preserved (shadow-evidence.md still points at #185); ACTIVE grants NO new authority (IMP-I17/I15/I14/I07 hold); no new control, no lifecycle change, no second validator. Mirrors badf-solution-design WP-SOL-E and badf-security-design WP-SEC-E. Completes the WP-IMP-A..E ladder (DESIGNED->ACTIVE).\n\n## Evidence\n\n- Operator admission via standing /loop 'to E' + 'proceed your tasks' 2026-08-30.\n- shadow-evidence.md (WP-IMP-D) is the calibration backing admission; #185 tracks the owed real re-shadow.\n\n## Unknowns\n\nNone that block admission -- the representative-vs-real risk is explicitly accepted by the operator's directive and bounded by #185.\n\ndiscovered-by: BADF-WP-0094 (badf-implementation-plan landed SHADOWED) \u00b7 status: DISCOVERED\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T13:12:16Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-IMP-E admits badf-implementation-plan SHADOWED->ACTIVE on the operator's standing /loop 'to E' directive (2026-08-30). Grants no new authority (IMP-I17/I15/I14/I07). Preserves the representative caveat; real re-shadow deferred to #185. Completes WP-IMP-A..E (3rd capability after solution-design + security-design to traverse DESIGNED->ACTIVE). Ladder-internal. DEM-0082/GOV-0077/WP-0095. Reconciles WP-2026-0094."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 1c27b17..85b7876 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -288,7 +288,7 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "SHADOWED",
++      "status": "ACTIVE",
+       "digest": "sha256:b4cb8255f8fb75015f069f10ade5dd5b058d9ff8364a06f7e74de35b81be9a9f"
+     }
+   ]
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 2d580a8..da71f25 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1211,6 +1211,24 @@ boundaries, demonstrated as doctrine not run). Two committed shadow breakdowns
+ no second validator. Registry `VALIDATED → SHADOWED`; `APPROVED`/`ACTIVE` remain the operator's admission
+ decision.
+ 
++## badf-implementation-plan → ACTIVE — operator admission on a representative shadow (`BADF-WP-0095` / WP-IMP-E, Issue #186 / GOV-0077)
++
++`SHADOWED → ACTIVE` is a **human admission gate** — self-approval is prohibited, so no agent crosses it.
++The operator's standing directive — `/loop … proceed from WP-IMP-A to WP-IMP-E` (2026-08-30), confirmed by
++"proceed your tasks" — is the admission decision to **activate on the representative shadow**, rather than
++hold `ACTIVE` indefinitely for a real G06 plan that BADF — whose own work packages are governance work —
++may not produce soon. This WP records that decision as a governed registry advance, mirroring
++`badf-solution-design` WP-SOL-E and `badf-security-design` WP-SEC-E: `ACTIVE` **grants the skill no new
++authority** (IMP-I17 — `badf_gate.py` is the sole gate authority; IMP-I15 — the plan cannot execute its
++own WPs; IMP-I14 — an Issue grants no authority; IMP-I07 — authority stays derived from `change_class`),
++and there is no `lifecycle.json` change, no new control, no second validator. The admission does **not
++erase the caveat**: `references/shadow-evidence.md` still labels the shadow representative, and the owed
++real-project re-shadow is filed as a tracked follow-up (**#185**, `DISCOVERED`, trigger = the first real
++G06 plan). This **completes the WP-IMP-A…E ladder** (`DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED →
++ACTIVE`) — the third capability, after `badf-solution-design` and `badf-security-design`, to traverse it
++end to end, and the one that gives G06 (Implementation planning) its authoring capability. Registry
++`SHADOWED → ACTIVE`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/skills/badf-implementation-plan/references/acceptance.md b/skills/badf-implementation-plan/references/acceptance.md
+index 1529f8b..9859e4b 100644
+--- a/skills/badf-implementation-plan/references/acceptance.md
++++ b/skills/badf-implementation-plan/references/acceptance.md
+@@ -15,7 +15,7 @@ The same pattern that carried `badf-research`, `badf-architecture`, `badf-soluti
+ | **WP-IMP-B** | backward-compatible `work-package.schema.json` extension — the governed planning fields (`dependencies`, `source_baselines`, `expected_surfaces`, `authority_requirement`, `risk_factors`, `test_obligations`, `evidence_obligations`, `execution_budget`, `stop_conditions`, `composition`) as **optional** properties (walker enforces enum/pattern/nested-required; type/coverage/DAG checks are WP-IMP-C code controls per #171); documents the ledger keys `reconcile` writes | `IMPLEMENTED` |
+ | **WP-IMP-C** | deterministic G06 controls in `check_work_breakdown` (the gate-enforced DAG artifact): **IMP-C1** authority-not-reduced (matrix), **IMP-C2** acceptance coverage, **IMP-C3** bounded budget, **IMP-C4** non-empty stop contract, **IMP-C5** resolvable + acyclic composition order — **code controls** (the walker doesn't type-check, #171) | `VALIDATED` |
+ | **WP-IMP-D** | **representative** planning shadow calibration (no real G06 breakdowns exist yet; real re-shadow owed on first real use) + the issue-projection / execution-topology doctrine exemplars; see `shadow-evidence.md` | `SHADOWED` |
+-| WP-IMP-E | operator admission → registry activation | `ACTIVE` |
++| **WP-IMP-E** | operator admission on the representative shadow (caveat preserved; real re-shadow tracked as #185) → registry activation | `ACTIVE` |
+ 
+ ## WP-IMP-A boundaries (no scope creep)
+ 
+diff --git a/tests/test_badf_g06_planning_controls.py b/tests/test_badf_g06_planning_controls.py
+index a1d80ba..33ac5ab 100644
+--- a/tests/test_badf_g06_planning_controls.py
++++ b/tests/test_badf_g06_planning_controls.py
+@@ -105,10 +105,10 @@ class ShadowCalibrationTests(G06PlanningControlsBase):
+ 
+ 
+ class RegistryStatusTests(unittest.TestCase):
+-    def test_badf_implementation_plan_is_registered_shadowed(self):  # WP-IMP-D advanced VALIDATED -> SHADOWED
++    def test_badf_implementation_plan_is_registered_active(self):  # WP-IMP-E admitted SHADOWED -> ACTIVE (operator admission)
+         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
+         entry = next(e for e in reg["skills"] if e["name"] == "badf-implementation-plan")
+-        self.assertEqual(entry["status"], "SHADOWED")
++        self.assertEqual(entry["status"], "ACTIVE")
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/work/WP-2026-0094/work-package.json b/work/WP-2026-0094/work-package.json
+index cfb0694..2fe8286 100644
+--- a/work/WP-2026-0094/work-package.json
++++ b/work/WP-2026-0094/work-package.json
+@@ -44,11 +44,13 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "7547223"
++    "base_revision": "7547223",
++    "composition_verified": false,
++    "landed_as": "4deb094052d7512766cfa2f99058ec916195b31c"
+   },
+   "note": "Lands IN_PROGRESS by design; next WP reconciles it. Shadow evidence + status advance; no new control (controls are WP-IMP-C), so no mutation. Ladder-internal (no badf_gate.py/schema/reconcile change) -> no BARCHI-2 review needed by the shared-surface rule. Isolated worktree (badf-wt-impd). Ids WP-0094/DEM-0081/GOV-0076. Reconciles WP-2026-0093 (WP-IMP-C, composition_verified: false). Operator /loop 'proceed from WP-IMP-A to WP-IMP-E'. Resolves #183."
+ }
