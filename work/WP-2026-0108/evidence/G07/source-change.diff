@@ -1,0 +1,187 @@
+diff --git a/badf/demands/BADF-DEM-0095.json b/badf/demands/BADF-DEM-0095.json
+new file mode 100644
+index 0000000..ef194f4
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0095.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0095",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 214,
++    "url": "https://github.com/bstBizEra/badf/issues/214",
++    "exported_at": "2026-08-30T20:13:23Z",
++    "body_digest": "sha256:af54896e556ef02ad1e4d9d10037959fef9db9c17135758aaa9514d28f5e26bb"
++  },
++  "title": "GOV-0092: WP-VER-E — admit badf-engineering-verification SHADOWED → ACTIVE? (operator admission decision on the VER-D shadow evidence; ACTIVATE or HOLD)",
++  "problem": "🧠 **ARCHI (BARCHI-3)** — WP-VER-E: admit `badf-engineering-verification` `SHADOWED → ACTIVE` (operator admission decision)\n\n## What is being decided — and by whom\n\n**This rung is a decision, not a build.** The operator decides whether `badf-engineering-verification` is admitted `ACTIVE` on the evidence below. The #195 authorization carried the ladder A→E *on the agent's call* — **except this step**: admission was explicitly NOT taken in advance (recorded on #195 and #207), so this issue puts it to the operator now. Silence is not consent; if no decision is given, the registry stays `SHADOWED` and nothing is lost.\n\n## What ACTIVE grants\n\n**Nothing.** The flip is registry-status only (digest unchanged, no authority granted — the VER-A doctrine and every rung since: `VERIFICATION ≠ APPROVAL`, VER-I18/I20). What changes is standing: the capability's contract, schemas, gate controls and shadow evidence become the admitted G08 verification doctrine for BADF-governed work.\n\n## The evidence trail (all landed, all measured)\n\n| Rung | Landing | What it proved |\n| :--- | :--- | :--- |\n| VER-A freeze (#198 → `e1423ad`) | contract | two-plane model, VER-I01…I20, 16 references; 9 tests; 4/4 registry tampers killed |\n| VER-B typed evidence (#201 → `dcbcc54`) | schemas + `verify` | four typed G08 schemas + the verification record; 15 tests; **15/15 gate mutants + 3/3 tampers killed**; WP-2026-0010 untouched |\n| VER-C controls (#205 → `5b428f7`) | gate | seven pure dossier-level controls (C1–C7), fire-only-when-declared; 11 tests; **17/17 mutants killed** incl. the wiring guard |\n| VER-D shadow (#208 → `8de88d5`) | measurement | WP-2026-0010 **UNTOUCHED** · 5/5 real-verdict records verified + tamper-refused · **12/12** injected defects refused, every control C1–C7 **and** VER-I10/VER-I14 load-bearing · **0 false refusals** (2/2 clean admitted) |\n\n## What independent review found — and that it was fixed\n\nThis rung was reviewed by the new **BADF-QA** and **BADF-REV** seats, who both issued **Request Changes** and were right: two `allowed_tools` assertions had been spliced dead into comments (the no-authority pin was unenforced — measured: `allowed_tools → [\"shell\"]` survived all four modules), the #196 encoded record bound an anachronistic content tree, and a plan promise about probe encoding was unmet. All were fixed or explicitly declared, then re-verified at two successive heads (QA PASS + REV Approved ✓ on `f807a95`). Two further process defects were **self-found and disclosed** rather than discovered by review: a stale composition record pushed once, and a pipe-masked `git apply` failure during the rebase — both caught by re-measuring the shipped tree, neither reaching `main`. **The evidence below is what survived that.**\n\n## What the shadow could NOT measure (the honest part of this decision)\n\n- **No typed real G08 dossier exists** — the typed-object shadow is representative fixtures; a **real re-shadow is owed** the first time a project passes G08 with typed objects (deferred issue filed at close-out, the #185/#166 pattern). The operator may reasonably **hold ACTIVE until then**.\n- **One reviewer seat** at encoding time — reviewer correlation unmeasured (the new BADF-QA/BADF-REV seats change this going forward).\n- **The per-fixture scratch-clone `validate_dossier` path** promised in #207's wording is **declared, not shipped** — representative cases recompute through the pure `check_g08_dossier` / `check_g08_binding`; end-to-end `validate_dossier` is exercised by the historical WP-2026-0010 case and CI's composed run.\n- **The real-review class is RECONSTRUCTED** from public prose verdicts, ids cited — honest, but not observed records.\n\n## The decision (AGREE / NOT_AGREE, or hold)\n\n- **ACTIVATE NOW** — accept the representative shadow with the re-shadow trigger filed (the badf-solution-design precedent: activated on representative evidence, re-shadow deferred to first real use).\n- **HOLD AT SHADOWED** — until the first real typed G08 passage re-shadows the controls (the deferred-trigger stands either way).\n\n**Either answer is a complete, defensible outcome — there is no default and no drift.** If no decision is given, the registry simply stays `SHADOWED`: the contract, schemas and gate controls are already landed and enforcing on every G08 dossier regardless; only the *admitted-doctrine* label waits.\n\nIf **ACTIVATE**: WP-VER-E is a registry flip + contract-pin + doctrine PR (three shared files, `WP-2026-0108`), QA + REV by BADF-QA/BADF-REV, merged under the evidence bar; the admission is recorded quoting the operator's words on this issue, and the deferred real-conditions re-shadow is filed at close-out (mirroring #212 / #185 / #166).\n\nIf **HOLD**: the deferred re-shadow issue is filed now with `trigger = first project G08 passage with typed objects`, and the registry stays `SHADOWED` until it is met — the badf-solution-design precedent inverted, and equally honest.\n\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T20:13:23Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-VER-E: admit badf-engineering-verification SHADOWED -> ACTIVE. Operator decision ACTIVATE recorded on #214, taken on the VER-D shadow evidence with the HOLD alternative and the four declared gaps (no typed real G08 dossier; one reviewer seat at encoding time; RECONSTRUCTED prose review class; declared-not-shipped scratch-clone validate_dossier path) stated in the issue body. Registry status flip only: digest unchanged, allowed_tools [], risk_class C1, no authority granted (VER-I18/I20). No gate, schema or lifecycle change. Real-conditions re-shadow deferred to its own trigger-gated issue (the #212/#185/#166 pattern)."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index db8bad6..fd919ea 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -308,7 +308,7 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "SHADOWED",
++      "status": "ACTIVE",
+       "digest": "sha256:5c68c9c629ef8854600f4e8024bb095833ae4671e9c38b8d48724aadcf57bcad"
+     }
+   ]
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 3574451..b1921bc 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1524,6 +1524,42 @@ schema or lifecycle change (ladder-internal). **Admission (`VER-E`) is the opera
+ evidence, asked on its own issue — never pre-granted**; the real typed re-shadow trigger (first project
+ G08 with typed objects) is filed as a deferred issue at close-out, mirroring #185 / #166.
+ 
++## badf-engineering-verification → ACTIVE — the operator's admission on the shadow evidence (`BADF-WP-0108` / WP-VER-E, Issue #214 / GOV-0092)
++
++The G08 verification capability is admitted `ACTIVE`. **The flip grants nothing**: registry status only,
++digest unchanged, `allowed_tools: []`, `risk_class: C1`, no `scripts/badf_engineering_verification.py`
++(VER-I20), no gate, schema or lifecycle change — `VERIFICATION ≠ APPROVAL` (VER-I18) is as true after the
++admission as before it. C1–C7 have been enforcing on every G08 dossier since `5b428f7` independently of any
++label; what changes is that the contract, the typed schemas, the seven controls and the shadow evidence are
++now the **admitted** G08 verification doctrine for BADF-governed work.
++
++**What the operator admitted over — carried into the admission, not around it.** The decision was put on
++#214 with the alternative (`HOLD AT SHADOWED`) stated beside it, and these four gaps named in the issue body
++rather than only in linked evidence:
++
++- **No typed real G08 dossier exists** — the typed-object shadow is representative fixtures. A real
++  re-shadow is owed the first time a project passes G08 with typed objects; it is filed as a deferred,
++  trigger-gated issue (the #212 / #185 / #166 pattern).
++- **One reviewer seat at encoding time** — reviewer correlation `NOT_MEASURABLE`. The BADF-QA and BADF-REV
++  seats change this going forward.
++- **The real-review class is RECONSTRUCTED** from public prose verdicts with ids cited — honest, but not
++  observed records.
++- **The per-fixture scratch-clone `validate_dossier` path** is declared, not shipped — end-to-end
++  `validate_dossier` is exercised by the historical WP-2026-0010 case and CI's composed run.
++
++**The ladder that earned it:** VER-A froze the two-plane contract and VER-I01…I20 (#198); VER-B added the
++four typed G08 schemas, the verification record and `badf_gate.py verify`, additive so WP-2026-0010's
++historical dossier stayed untouched (#201); VER-C added the seven pure dossier-level controls (#205); VER-D
++measured them — WP-2026-0010 `UNTOUCHED`, five RECONSTRUCTED single-reviewer records of a real verdict arc
++verified and tamper-refused, 12/12 injected defects refused with every control and VER-I10/VER-I14
++load-bearing, 0 false refusals (#208). Every rung was failing-first and mutation-killed; the VER-D rung was
++independently reviewed by BADF-QA and BADF-REV, both of whom issued Request Changes that found real defects
++— two dead assertions and an anachronistic binding — before approving the fixed heads.
++
++**Doctrine, unchanged by the admission:** no findings does not mean correctness; passing tests do not mean
++coverage; source-head success does not mean composed-result safety; G08 does not replace G09. The gate
++evaluates the evidence and `quality_authority` decides whether G08 advances.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/skills/badf-engineering-verification/evidence/shadow-evidence.md b/skills/badf-engineering-verification/evidence/shadow-evidence.md
+index c575140..0d5ee1b 100644
+--- a/skills/badf-engineering-verification/evidence/shadow-evidence.md
++++ b/skills/badf-engineering-verification/evidence/shadow-evidence.md
+@@ -52,9 +52,15 @@ record is `examples/verification-shadow-evidence.json` (`measured_on` = the `mai
+   reviewer; BARCHI-2 (not encoded) co-reviews the encoding class for fidelity, and BARCHI-1's verdict
+   discloses the COI.
+ 
+-## The root is `SHADOWED`, not `ACTIVE`
++## What this shadow earned, and what the operator then decided
+ 
+ The shadow shows the controls refuse what they must and touch nothing they must not — on
+-representative fixtures, one real dossier and five reconstructed reviews. Admission (`VER-E`) is the
+-**operator's decision on this evidence**, asked on its own issue — it was never pre-granted, and the
+-registry advances by evidence, not by instruction.
++representative fixtures, one real dossier and five reconstructed reviews. That earned `SHADOWED`.
++Admission (`VER-E`) was the **operator's decision on this evidence**, asked on its own issue — it was
++never pre-granted, and the registry advances by evidence, not by instruction.
++
++**Decided on #214 (GOV-0092): `ACTIVATE`.** The question was put with the `HOLD AT SHADOWED` alternative
++stated beside it and the four gaps above named in the issue body; the operator chose to activate over
++them, and the real-conditions re-shadow is deferred to its own trigger-gated issue. **The measurement on
++this page is unchanged by that decision** — an admission does not retroactively widen a shadow, and the
++gaps it was granted over remain exactly as declared here. The live status is `badf/skill-registry.json`.
+diff --git a/skills/badf-engineering-verification/references/acceptance.md b/skills/badf-engineering-verification/references/acceptance.md
+index c5292d8..3daceeb 100644
+--- a/skills/badf-engineering-verification/references/acceptance.md
++++ b/skills/badf-engineering-verification/references/acceptance.md
+@@ -22,3 +22,7 @@ status.
+   gaps declared, not implied.
+ - `APPROVED` / `ACTIVE` — **WP-VER-E**: the operator's admission decision, taken on VER-D's evidence and
+   recorded on its own issue; registry status flip only, digest unchanged, no authority granted.
++  **Decided on #214 (GOV-0092): ACTIVATE** — accepting the four declared gaps (no typed real G08 dossier;
++  one reviewer seat at encoding time; the RECONSTRUCTED prose review class; the declared-not-shipped
++  scratch-clone `validate_dossier` path), with the real-conditions re-shadow deferred to its own
++  trigger-gated issue. The live status remains `badf/skill-registry.json`; this ladder is a pointer.
+diff --git a/tests/test_badf_engineering_verification_contract.py b/tests/test_badf_engineering_verification_contract.py
+index c342eb1..c6d8c7b 100644
+--- a/tests/test_badf_engineering_verification_contract.py
++++ b/tests/test_badf_engineering_verification_contract.py
+@@ -143,11 +143,11 @@ class BadfEngineeringVerificationContractTests(unittest.TestCase):
+         for token in ("G08", "G09", "C2", "security-validation", "does not replace"):
+             self.assertIn(token, boundary, token)
+ 
+-    def test_registry_pin_is_shadowed_and_tool_empty(self):
++    def test_registry_pin_is_active_and_tool_empty(self):
+         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
+         entries = [e for e in registry["skills"] if e.get("name") == "badf-engineering-verification"]
+         self.assertEqual(1, len(entries)); entry = entries[0]
+-        self.assertEqual("SHADOWED", entry["status"])  # VER-D (WP-2026-0106)
++        self.assertEqual("ACTIVE", entry["status"])  # VER-E (WP-2026-0108) -- operator admission #214; ACTIVE grants no authority
+         self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])
+         self.assertEqual("skills/badf-engineering-verification/SKILL.md", entry["source"])
+         self.assertEqual("sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest(), entry["digest"])
+diff --git a/tests/test_badf_verification_shadow.py b/tests/test_badf_verification_shadow.py
+index f4a9f7e..e6c8f79 100644
+--- a/tests/test_badf_verification_shadow.py
++++ b/tests/test_badf_verification_shadow.py
+@@ -156,7 +156,7 @@ class ShadowRecordTests(unittest.TestCase):
+         flipped = {c["subject"]: c["outcome"] for c in flip["cases"] if c["case_class"] == "representative-typed-dossier"}
+         self.assertNotEqual(subjects, flipped, "a tampered outcome cannot equal the recomputed truth")
+ 
+-    def test_doc_names_every_case_and_gap_and_root_is_shadowed(self):
++    def test_doc_names_every_case_and_gap_and_root_is_at_least_shadowed(self):
+         text = DOC.read_text(encoding="utf-8")
+         first = text.split("\n\n")[1] if text.startswith("#") else text.split("\n\n")[0]
+         for token in ("representative", "RECONSTRUCTED"):
+@@ -165,7 +165,9 @@ class ShadowRecordTests(unittest.TestCase):
+             self.assertIn(token.lower(), text.lower(), token)
+         registry = json.loads((ROOT / "badf/skill-registry.json").read_text(encoding="utf-8"))
+         entry = next(e for e in registry["skills"] if e["name"] == "badf-engineering-verification")
+-        self.assertEqual("SHADOWED", entry["status"])
++        # VER-E (#214): the operator admitted ACTIVE over this shadow's declared gaps. The shadow is a
++        # measurement, not a status -- it earned SHADOWED and does not un-earn it when the root advances.
++        self.assertIn(entry["status"], ("SHADOWED", "ACTIVE"))
+         self.assertEqual(entry["digest"], gate.sha256(ROOT / "skills/badf-engineering-verification/SKILL.md"))
+ 
+ 
+diff --git a/work/WP-2026-0106/work-package.json b/work/WP-2026-0106/work-package.json
+index 672949c..5fa6867 100644
+--- a/work/WP-2026-0106/work-package.json
++++ b/work/WP-2026-0106/work-package.json
+@@ -47,11 +47,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "5b428f7"
++    "base_revision": "5b428f7",
++    "landed_content_tree": "22bdd26ff832927c30e0b8b748167be9b970d6fc",
++    "composition_verified": true,
++    "landed_as": "8de88d5ca3d42ce236523260113f196b41741f82"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-VER-D of the badf-engineering-verification program (#195 A->E authorization; approval + adopted encoding conditions on #207). Ladder-internal -- lands under the standing evidence bar after BARCHI-2's encoding co-review and BARCHI-1's (COI-disclosed) verdict. Resolves #207 / GOV-0089. Engineered by BARCHI-3 under /loop. Reconciles the land-time-current WP at landing."
+ }
