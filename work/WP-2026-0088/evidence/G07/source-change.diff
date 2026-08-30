@@ -1,0 +1,153 @@
+diff --git a/badf/demands/BADF-DEM-0075.json b/badf/demands/BADF-DEM-0075.json
+new file mode 100644
+index 0000000..dccecd2
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0075.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0075",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 160,
++    "url": "https://github.com/bstBizEra/badf/issues/160",
++    "exported_at": "2026-08-30T07:43:37Z",
++    "body_digest": "sha256:1b36d09d95376e8a1c3093c95eea4a203547dc040701edaf1d85b8363775967a"
++  },
++  "title": "GOV-0064: composition fixtures judge the candidate with the base's tests/ — a guard change cannot be green in the composed world",
++  "problem": "## Observed\n\n`tests/_scratch.py::seed_clone(carry_working_state=True)` carries `scripts/badf_gate.py, badf, skills, schemas, templates, examples, docs, work` into the scratch candidate — never `tests/`. The composition fixtures (`tests/test_badf_git_composition.py`, `tests/test_badf_git_integration.py`) then run `badf_compose.py` with `--tests test_badf_git_contract.py`, so the composed world judges the candidate with the **base's** guard.\n\nSurfaced by the badf-git shadow calibration (#157 / WP-2026-0082): adding a ninth file under `skills/badf-git/references/` while extending `test_contract_surface_is_declarative_only` in the same PR is green in the checkout and **red in the composed world** — 12/21 composition tests fail with `suite: FAILED … test_contract_surface_is_declarative_only`, locally and on the runner alike. Any PR that legitimately changes a guard exercised inside the composed world cannot be green in these suites. WP-2026-0082 kept the eight-file freeze untouched and placed its evidence at `skills/badf-git/evidence/` instead; the limitation remains.\n\n## Acceptance criteria\n\n- The composed world judges a candidate with the candidate's own `tests/` (carried like the other locked inputs), or the fixtures pin the tiny module from the candidate explicitly — one mechanism, stated in `_scratch.py`'s docstring.\n- The WP-0076 stripping logic in `test_badf_git_composition.py` setUp (the carried record/dossier vs. the never-carried `tests/`) is revisited so the record stays CURRENT under the chosen mechanism.\n- No change to `badf_compose.py`'s verification semantics; no change to `badf_gate.py`.\n\n## Test list\n\n- `test_composed_world_runs_the_candidates_guard` — a candidate that adds a reference and extends the guard composes PASS.\n- `test_composed_world_still_refuses_a_guard_regression` — a candidate whose reference set drifts without a guard change composes FAIL.\n- Existing `CompositionRecordTests` and `CompositionEvidenceTests` stay green.\n\nVersion tier: patch (test harness only).\n\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T07:43:37Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Harness gap surfaced by the badf-git GIT-I shadow (#157): seed_clone(carry_working_state=True) never carried tests/, so the composition fixtures judged a candidate with the base's guard. Promoted to a prerequisite of GIT-J (#169): the registry flip trips the base's contract pin inside the composed world. Fix: carry tests/ like the other locked inputs; no change to badf_compose.py or badf_gate.py."
++}
+diff --git a/tests/_scratch.py b/tests/_scratch.py
+index cdbe258..8b1997d 100644
+--- a/tests/_scratch.py
++++ b/tests/_scratch.py
+@@ -51,10 +51,12 @@ def seed_clone(dest: Path, *, carry_working_state: bool = False) -> str:
+         # The clone must see the same working state as ROOT: the gate under test,
+         # the registries and decisions, and any work packages -- including files
+         # not yet committed on the source branch.
++        # -- and tests/ (WP-0088, #160): the composed world must judge the candidate with the
++        # candidate's own guards, or a legitimate guard change is red there by construction.
+         # EVERY locked input the working gate reads -- piecemeal lists missed badf/demands,
+         # templates and then badf/skill-registry.json (WP-0032: 30 red on the runner, green
+         # composed, because the composed world's origin/main IS the candidate).
+-        for rel in ("scripts/badf_gate.py", "badf", "skills", "schemas", "templates", "examples", "docs", "work"):
++        for rel in ("scripts/badf_gate.py", "badf", "skills", "schemas", "templates", "examples", "docs", "work", "tests"):
+             src = gate.ROOT / rel; dst = dest / rel
+             if src.is_dir():
+                 shutil.rmtree(dst, ignore_errors=True); shutil.copytree(src, dst)
+diff --git a/tests/test_badf_git_composition.py b/tests/test_badf_git_composition.py
+index 7d2339c..1686f7f 100644
+--- a/tests/test_badf_git_composition.py
++++ b/tests/test_badf_git_composition.py
+@@ -19,6 +19,7 @@ import subprocess
+ import sys
+ import tempfile
+ import unittest
++import uuid
+ from pathlib import Path
+ 
+ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+@@ -51,8 +52,9 @@ class _Candidate(unittest.TestCase):
+         self.repo = self.tmp / "badf"
+         self.base = seed_clone(self.repo, carry_working_state=True)
+         # The carried work/ may hold THIS checkout's own composition record and G07 dossier
+-        # (once WP-0076 has committed them); the scratch never carries tests/, so that record
+-        # cannot match the scratch's content tree -- and every test here builds its own claim.
++        # (once WP-0076 has committed them); the scratch carries tests/ (WP-0088) but not every
++        # top-level input (.github/, scripts/badf_compose.py, ...), so that record cannot match the
++        # scratch's content tree -- and every test here builds its own claim.
+         shutil.rmtree(self.repo / "work" / WP / "evidence", ignore_errors=True)
+         (self.repo / "work" / WP / "gate-dossier.G07.json").unlink(missing_ok=True)
+         g(self.repo, "checkout", "-q", "-b", f"wp/{WP}-composition")
+@@ -203,3 +205,61 @@ class CompositionVerificationSubskillTests(unittest.TestCase):
+ 
+ if __name__ == "__main__":
+     unittest.main()
++
++
++class CarriedTestsTests(unittest.TestCase):
++    """WP-0088 (#160): the composed world judges a candidate with the candidate's own tests/.
++
++    A probe guard is written into THIS checkout's tests/ (untracked, removed on cleanup) before the
++    scratch is seeded. If seed_clone carries tests/, the probe runs inside the composed world and its
++    verdict decides the compose; if it does not, the composed world runs the base's tests and the probe
++    is never seen ("Ran 0 tests"). Red before the carry line, green after.
++    """
++
++    def setUp(self):
++        self.tag = uuid.uuid4().hex[:8]
++        self.probe = gate.ROOT / "tests" / f"probe_{self.tag}_guard.py"
++        self.guarded = f"docs/probe-{self.tag}.md"
++        self.probe.write_text(
++            "import unittest\nfrom pathlib import Path\n\n\nclass ProbeGuard(unittest.TestCase):\n"
++            "    def test_probe_guard(self):\n        root = Path(__file__).resolve().parents[1]\n"
++            f"        self.assertTrue((root / {self.guarded!r}).is_file(), 'guarded file missing')\n",
++            encoding="utf-8")
++        self.addCleanup(self.probe.unlink, True)
++        self.tmp = Path(tempfile.mkdtemp(prefix="badf-git-carried-"))
++        self.addCleanup(shutil.rmtree, self.tmp, True)
++        self.repo = self.tmp / "badf"
++        self.base = seed_clone(self.repo, carry_working_state=True)
++        shutil.rmtree(self.repo / "work" / WP / "evidence", ignore_errors=True)
++        (self.repo / "work" / WP / "gate-dossier.G07.json").unlink(missing_ok=True)
++        g(self.repo, "checkout", "-q", "-b", f"wp/{WP}-carried")
++        self.msg = self.tmp / "msg.txt"; self.msg.write_text(MESSAGE, encoding="utf-8")
++
++    def compose_with_probe(self) -> subprocess.CompletedProcess:
++        return subprocess.run([sys.executable, "scripts/badf_compose.py", "--repo", str(self.repo), "--base", TARGET,
++                               "--candidate", "HEAD", "--message-file", str(self.msg), "--tests", self.probe.name],
++                              cwd=str(gate.ROOT), capture_output=True, text=True)
++
++    def test_seed_clone_carries_tests_dir(self):
++        src = {p.relative_to(gate.ROOT / "tests"): p.read_bytes() for p in (gate.ROOT / "tests").rglob("*.py")
++               if "__pycache__" not in p.parts}
++        self.assertIn(Path(self.probe.name), src)
++        for rel, data in src.items():
++            carried = self.repo / "tests" / rel
++            self.assertTrue(carried.is_file(), f"tests/{rel} not carried into the scratch")
++            self.assertEqual(carried.read_bytes(), data, f"tests/{rel} differs from the checkout")
++
++    def test_composed_world_runs_the_candidates_guard(self):
++        (self.repo / self.guarded).write_text("probe\n", encoding="utf-8")
++        lock_and_commit(self.repo, f"BADF-WP-0076: candidate satisfies its own guard\n\nWork-Package: {WP}\n")
++        r = self.compose_with_probe()
++        self.assertIn("Ran 1 test", r.stdout, "the candidate's guard did not run in the composed world:\n" + r.stdout + r.stderr)
++        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++
++    def test_composed_world_still_refuses_a_guard_regression(self):
++        lock_and_commit(self.repo, f"BADF-WP-0076: candidate drops what its guard requires\n\nWork-Package: {WP}\n")
++        r = self.compose_with_probe()
++        self.assertIn("Ran 1 test", r.stdout, "the candidate's guard did not run in the composed world:\n" + r.stdout + r.stderr)
++        self.assertNotEqual(r.returncode, 0, "the composed world admitted a candidate its own guard refuses")
++        self.assertIn("test_probe_guard", r.stdout + r.stderr)
++
+diff --git a/work/WP-2026-0082/work-package.json b/work/WP-2026-0082/work-package.json
+index 2e6dff9..b3272ac 100644
+--- a/work/WP-2026-0082/work-package.json
++++ b/work/WP-2026-0082/work-package.json
+@@ -41,11 +41,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "8a753cb"
++    "base_revision": "8a753cb",
++    "landed_content_tree": "212c22bac155b6f52c7dafbd6f5246bae5fde44e",
++    "composition_verified": true,
++    "landed_as": "78eab75afbeeb5275db7fc6227fc6d302073ab6e"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. BADF-WP-GIT-I per GTGM v0.1 section 17, after GIT-H (WP-2026-0086 / 8a753cb). Resolves #157 / GOV-0062. Reconciles WP-2026-0086 (composition_verified true). Engineered by BARCHI-2 in a linked worktree under the operator's /loop ('proceed on your call')."
+ }
