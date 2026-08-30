@@ -1,0 +1,47 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index a63affe..88e2b5b 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1010,7 +1010,6 @@ lifecycle result; `lifecycle.json` is unchanged. The cross-artifact **seams** 
+ traceability, SEC-I01 exact-baseline binding, and the semantic resolution of every ref against the
+ architecture/solution artifacts — are **deferred to WP-SEC-C** (failing-first), exactly as the solution
+ seams were deferred from WP-SOL-B to WP-SOL-C. Registry `DESIGNED → IMPLEMENTED`.
+-
+ ## badf-security-design → VALIDATED — the matrix-internal seams (`BADF-WP-0084` / WP-SEC-C, Issue #162 / GOV-0065)
+ 
+ WP-SEC-B enforced the structural controls; WP-SEC-C enforces the **cross-artifact seams** the matrix can
+@@ -1065,6 +1064,34 @@ re-shadow on real data tracked rather than lost. This **completes the WP-SEC-A
+ (`DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED → ACTIVE`), the second capability after
+ `badf-solution-design` to traverse it end to end. Registry `SHADOWED → ACTIVE`.
+ 
++## badf-git GIT-I — shadow calibration on the program's own history (`BADF-WP-0082`, Issue #157 / GOV-0062)
++
++`SHADOWED` means the controls were run against real cases and behaved. `badf-git` is unusual: **it ran
++on itself** — every work package GIT-B…H was integrated through the tools it was building, rebased
++under a moving `main` five times, its composition claims refused as stale and recomputed three times,
++its landings verified four times by the reconcile it introduced. That history is the shadow corpus,
++recorded once in `examples/git-shadow-evidence.json` and **recomputed from the object store on every
++run** by `tests/test_badf_git_shadow.py` with the real tools: 4/4 record-bearing landings' content
++trees equal their claims; 11/11 pre-record landings read `composition_verified: false` — honestly;
++14/14 recent first-parent landings conform to GIT-B's identity rule; a baseline at the GIT-F landing
++judged at the GIT-G landing renders `SOURCE_ADVANCED` through `git_staleness`; the baseline tag renders
++`RELEASE_BOUND` through `git_release_check`; four CI runs are cited for the detached-runner inspectors.
++A tampered record — a wrong tree, a wrong verdict, a case that cannot be recomputed offline — is refused
++by the tests, so the record cannot drift from history. **Non-coverage is named, not implied:** rewrite
++verdicts (`STALE_EVIDENCE`) were exercised only synthetically — the rewritten heads were force-pushed
++away; the recovery inventory on real dirty state was observed, not committed; branch-name conformance
++of landed heads was API-observed; no signed tag exists. **Result: no contract gap surfaced under real
++conditions.** The root stays `DESIGNED` — a declarative router whose implementation is its seven
++`IMPLEMENTED` subskills and their suites; advancing the family is the operator's admission decision
++(GIT-J), the `badf-research` precedent. No registry status change, no lifecycle change, no new
++control, no new tool.
++
++The measurement note is `skills/badf-git/evidence/shadow-evidence.md` — deliberately **outside** the
++frozen `references/` contract surface (`test_contract_surface_is_declarative_only` keeps its eight
++files; evidence is not contract). The calibration surfaced one harness limitation, not a contract gap:
++the composed world judges a candidate with the *base's* `tests/`, so a PR that changes a guard cannot
++be green inside `test_badf_git_composition` — filed as #160 (GOV-0064).
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

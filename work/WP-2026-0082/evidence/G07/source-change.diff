@@ -1,0 +1,578 @@
+diff --git a/badf/demands/BADF-DEM-0069.json b/badf/demands/BADF-DEM-0069.json
+new file mode 100644
+index 0000000..9c844a0
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0069.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0069",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 157,
++    "url": "https://github.com/bstBizEra/badf/issues/157",
++    "exported_at": "2026-08-29T23:04:46Z",
++    "body_digest": "sha256:6f37e92a196a35ebfeb576301e8c42362a46cd985522f8381e28e4aa0248a040"
++  },
++  "title": "GOV-0062: BADF-WP-GIT-I — shadow calibration on real BADF history: a recomputed `git-shadow` record (4/4 landings match, 14/14 identities conform, SOURCE_ADVANCED and RELEASE_BOUND replayed), gaps declared; root stays DESIGNED for GIT-J",
++  "problem": "## Observed\n\n`SHADOWED` means *the controls were run against real cases and behaved* (`docs/07`: representative tasks observed without affecting gates). `badf-research` and `badf-architecture` shadowed on real historical BADF records; `badf-solution-design` shadowed representatively and said so. `badf-git` has now shipped seven subskills (GIT-B…H), each proven failing-first and by mutation against **synthetic** scratch clones — and, unusually, the program **ran on itself**: every one of its work packages was integrated through the tools it was building. That history is the shadow corpus, and it is recomputable from the object store alone. Measured on `main` `605f97f`: **identity** — 14 of the last 14 first-parent landings carry a `BADF-WP-NNNN:` label and a canonical `Work-Package: WP-2026-NNNN` trailer with one NNNN (GIT-B's rule; the 10 landings after it landed had to, the 4 before happened to); **composition/landing** — of 15 landings since GIT-A, the 4 that carry a composition record (0076, 0079, 0080, 0081) have a landed content tree **equal** to the recorded `expected_content_tree`, and the 11 that predate GIT-E read `composition_verified: false` — visibly, never silently; **staleness** — a baseline at the GIT-F landing (`928fc6b`) judged at the GIT-G landing (`74282a4`) is `SOURCE_ADVANCED` (ancestor), the real forward case; **release** — `BADF-BASELINE-1.0.0 → 3f6119b` is `RELEASE_BOUND`; **the runner** — every CI run since GIT-C renders the inspectors on a detached checkout (`GIT_BASELINED … detached`, `CURRENT`, `EVIDENCE_ONLY`, `RELEASE_BOUND`). What real history **cannot** replay: the rewrite verdicts (`STALE_EVIDENCE`) — the rewritten heads were force-pushed away and are not on `origin` — and the recovery inventory on genuinely dirty state, observed locally during the program (`TOPIC RECOVERY_REQUIRED` before a push, `LOCAL` on a mid-rebase residue) but not committed. GTGM v0.1 §17 **GIT-I — Shadow: real BADF PR calibration**.\n\n## Expected\n\n**The shadow corpus becomes a committed, recomputed record — and its gaps are named, not implied.**\n\n1. **`examples/git-shadow-evidence.json`** — one `git-shadow` record listing every case with the verdict the tool renders: the 4 record-bearing landings (`wp`, `landed_as`, `expected_content_tree`, `landed_content_tree`, `MATCH`), the 11 landings without a record (`composition_verified: false`), the 14 identity-conforming landings (commit, label, trailer), the `SOURCE_ADVANCED` staleness case (`928fc6b → 74282a4`), the `RELEASE_BOUND` baseline, and the CI runner citations (run ids) for the detached-checkout inspectors — plus a **`non_coverage`** list: rewrite verdicts (synthetic only), the recovery inventory on real dirty state (observed, not committed), branch-name conformance of landed PR heads (observed through the GitHub API — branches are deleted on merge — not recomputable offline), and tag signing (none exist).\n2. **`tests/test_badf_git_shadow.py`** recomputes the record from history with the real tools — `content_tree` on each `landed_as` against the record read from the landed tree; the identity rule on each cited squash; `git_staleness` with a baseline taken at `928fc6b` and judged at `74282a4` in a scratch clone; `git_release_check` on the baseline — and fails if the committed record and history ever disagree. A case whose verdict cannot be recomputed offline is not allowed in `cases`; it belongs in `non_coverage`. This makes the shadow **self-verifying in CI and inside the composed world**, exactly like the other families' shadow examples.\n3. **`skills/badf-git/references/shadow-evidence.md`** — the measurement table (case · real history · what the contract had to represent · outcome), the honest first sentence about what is real and what is only synthetic, the runner citations, and **why the root stays `DESIGNED`**: the router's implementation *is* its seven `IMPLEMENTED` subskills and their failing-first/mutation suites; its shadow is this record; advancing it — the research precedent — is the operator's admission decision (GIT-J), never an agent's.\n4. **No registry status change, no lifecycle change, no new control, no new tool** — the shadow observes; it does not affect a gate. `badf-git` remains `DESIGNED`; the doctrine section records the calibration.\n\n## Acceptance criteria\n\n1. `examples/git-shadow-evidence.json` validates structurally (record kind, every case has `case`, the identifiers and a `verdict`; `non_coverage` non-empty) and every case's verdict is **recomputed** from history by the test module: 4/4 landings `MATCH`; 11/11 no-record landings have no record in their landed tree; 14/14 identity cases conform; the staleness case renders `SOURCE_ADVANCED` through `git_staleness`; the baseline renders `RELEASE_BOUND` through `git_release_check`.\n2. A tampered shadow record (a wrong tree, a wrong verdict, a case that cannot be recomputed) is refused by the tests (mutation of the example, not the code).\n3. `shadow-evidence.md` names every case class and every non-coverage item, states which verdicts were exercised only synthetically, and cites the CI run ids for the runner inspectors.\n4. `badf-git` root stays `DESIGNED`; no change to `badf/lifecycle.json`, `badf_gate.py`, `badf_compose.py`, schemas, workflow or authority; `repo` clean; this PR carries its own composition record; full suite + compose green in CI (the shadow tests run inside the composed world too).\n\n## Tests (`tests/test_badf_git_shadow.py`)\n\n- `test_shadow_record_is_well_formed_and_names_non_coverage`\n- `test_every_recorded_landing_matches_its_content_tree`\n- `test_every_no_record_landing_has_no_record_in_its_landed_tree`\n- `test_every_identity_case_conforms_on_real_history`\n- `test_staleness_case_renders_SOURCE_ADVANCED_with_the_real_tool`\n- `test_release_case_renders_RELEASE_BOUND_with_the_real_tool`\n- `test_tampered_shadow_record_is_refused`\n- `test_shadow_evidence_doc_names_every_case_and_gap_and_root_stays_designed`\n\n## Out of scope\n\n- Advancing `badf-git` to `SHADOWED`/`APPROVED`/`ACTIVE` — **GIT-J**, the operator's admission decision.\n- Reconstructing force-pushed heads to replay rewrite verdicts (they are gone from `origin`; the synthetic proofs stand and the gap is declared).\n- Any new control, tool, schema, workflow step or authority; the remote-workspace mode (#133).\n\n## Risk / authority / stop conditions\n\n- Change class **C1** (evidence + tests + doc; no code path changes). Target gate **G07**, `HUMAN_REQUIRED`.\n- Stop if a case cannot be recomputed offline (it moves to non-coverage), or if honesty would require claiming a verdict history cannot support.\n- Lean mode: **enforced** — reuse the existing tools verbatim; no shadow-specific code paths.\n\n## Identity\n\n- Ledger **WP-2026-0082** · demand **BADF-DEM-0069** · this issue **GOV-0062** · phase label BADF-WP-GIT-I. Ids measured across `main`, every remote branch head and all issues.\n- Branch `wp/WP-2026-0082-git-shadow` in a linked worktree from `605f97f`; reconciles WP-2026-0081 (`composition_verified: true` — the fourth verified landing).\n- Sequence: A ✓ B ✓ C ✓ D ✓ E ✓ F ✓ G ✓ H ✓ → **I (this)** → J.\n\nsource: GTGM v0.1 §17 (GIT-I); `docs/07` lifecycle; the research/architecture/solution-design shadow precedents · discovered-by: BARCHI-2, the program that integrated itself through its own tools · status: PROPOSED\n\n🧠 **BARCHI-2** — plan posted; engineered under the operator's `/loop your goal on badf-git`.\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-29T23:04:46Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "BADF-WP-GIT-I shadow calibration: examples/git-shadow-evidence.json recomputed from real history by tests/test_badf_git_shadow.py; evidence/shadow-evidence.md; root stays DESIGNED for GIT-J. Ids measured across main, every remote branch head and all issues. Authority: operator `/loop your goal on badf-git` + 'proceed on your call' (2026-08-29), design order GTGM v0.1 section 17 after GIT-H (WP-2026-0081, 605f97f). Worked as BADF-WP-0082."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index a63affe..88e2b5b 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1010,7 +1010,6 @@ lifecycle result; `lifecycle.json` is unchanged. The cross-artifact **seams** 
+ traceability, SEC-I01 exact-baseline binding, and the semantic resolution of every ref against the
+ architecture/solution artifacts — are **deferred to WP-SEC-C** (failing-first), exactly as the solution
+ seams were deferred from WP-SOL-B to WP-SOL-C. Registry `DESIGNED → IMPLEMENTED`.
+-
+ ## badf-security-design → VALIDATED — the matrix-internal seams (`BADF-WP-0084` / WP-SEC-C, Issue #162 / GOV-0065)
+ 
+ WP-SEC-B enforced the structural controls; WP-SEC-C enforces the **cross-artifact seams** the matrix can
+@@ -1065,6 +1064,34 @@ re-shadow on real data tracked rather than lost. This **completes the WP-SEC-A
+ (`DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED → ACTIVE`), the second capability after
+ `badf-solution-design` to traverse it end to end. Registry `SHADOWED → ACTIVE`.
+ 
++## badf-git GIT-I — shadow calibration on the program's own history (`BADF-WP-0082`, Issue #157 / GOV-0062)
++
++`SHADOWED` means the controls were run against real cases and behaved. `badf-git` is unusual: **it ran
++on itself** — every work package GIT-B…H was integrated through the tools it was building, rebased
++under a moving `main` five times, its composition claims refused as stale and recomputed three times,
++its landings verified four times by the reconcile it introduced. That history is the shadow corpus,
++recorded once in `examples/git-shadow-evidence.json` and **recomputed from the object store on every
++run** by `tests/test_badf_git_shadow.py` with the real tools: 4/4 record-bearing landings' content
++trees equal their claims; 11/11 pre-record landings read `composition_verified: false` — honestly;
++14/14 recent first-parent landings conform to GIT-B's identity rule; a baseline at the GIT-F landing
++judged at the GIT-G landing renders `SOURCE_ADVANCED` through `git_staleness`; the baseline tag renders
++`RELEASE_BOUND` through `git_release_check`; four CI runs are cited for the detached-runner inspectors.
++A tampered record — a wrong tree, a wrong verdict, a case that cannot be recomputed offline — is refused
++by the tests, so the record cannot drift from history. **Non-coverage is named, not implied:** rewrite
++verdicts (`STALE_EVIDENCE`) were exercised only synthetically — the rewritten heads were force-pushed
++away; the recovery inventory on real dirty state was observed, not committed; branch-name conformance
++of landed heads was API-observed; no signed tag exists. **Result: no contract gap surfaced under real
++conditions.** The root stays `DESIGNED` — a declarative router whose implementation is its seven
++`IMPLEMENTED` subskills and their suites; advancing the family is the operator's admission decision
++(GIT-J), the `badf-research` precedent. No registry status change, no lifecycle change, no new
++control, no new tool.
++
++The measurement note is `skills/badf-git/evidence/shadow-evidence.md` — deliberately **outside** the
++frozen `references/` contract surface (`test_contract_surface_is_declarative_only` keeps its eight
++files; evidence is not contract). The calibration surfaced one harness limitation, not a contract gap:
++the composed world judges a candidate with the *base's* `tests/`, so a PR that changes a guard cannot
++be green inside `test_badf_git_composition` — filed as #160 (GOV-0064).
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/examples/git-shadow-evidence.json b/examples/git-shadow-evidence.json
+new file mode 100644
+index 0000000..eb6c744
+--- /dev/null
++++ b/examples/git-shadow-evidence.json
+@@ -0,0 +1,279 @@
++{
++  "record": "git-shadow",
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0082",
++  "repository": "bstBizEra/badf",
++  "measured_on": "605f97fe12b419072f7bc9e254d5945e11ffb4db",
++  "measured_at": "2026-08-29T23:10:00Z",
++  "corpus": "this program's own history: every badf-git work package (GIT-B..H) was integrated through the tools it was building",
++  "cases": [
++    {
++      "case": "landing-without-record",
++      "wp": "WP-2026-0066",
++      "landed_as": "b1e0f5aebde56a18f02a3ba7cead25d34ee270d0",
++      "verdict": "composition_verified: false"
++    },
++    {
++      "case": "landing-without-record",
++      "wp": "WP-2026-0067",
++      "landed_as": "8673d9a3292d304968c4c8bc15b9a6cd4d64b031",
++      "verdict": "composition_verified: false"
++    },
++    {
++      "case": "landing-without-record",
++      "wp": "WP-2026-0068",
++      "landed_as": "c04981dffca5a9b65269350029cf49618929962b",
++      "verdict": "composition_verified: false"
++    },
++    {
++      "case": "landing-without-record",
++      "wp": "WP-2026-0069",
++      "landed_as": "0b2fd527c4e53b7c5b142de11c71438bea6b17b7",
++      "verdict": "composition_verified: false"
++    },
++    {
++      "case": "landing-without-record",
++      "wp": "WP-2026-0070",
++      "landed_as": "0343c8e96740f97fdfe54f7b29b574e296c559a2",
++      "verdict": "composition_verified: false"
++    },
++    {
++      "case": "landing-without-record",
++      "wp": "WP-2026-0071",
++      "landed_as": "aba7de3bd8028f99ee6c4f78efc6fcda2111fca1",
++      "verdict": "composition_verified: false"
++    },
++    {
++      "case": "landing-without-record",
++      "wp": "WP-2026-0072",
++      "landed_as": "9cf4b13bd3c56d860c517f558ac7c53dc6316bf2",
++      "verdict": "composition_verified: false"
++    },
++    {
++      "case": "landing-without-record",
++      "wp": "WP-2026-0074",
++      "landed_as": "dc6b608ebea7aee2097b050883f0a0fe9ce9ed6c",
++      "verdict": "composition_verified: false"
++    },
++    {
++      "case": "landing-without-record",
++      "wp": "WP-2026-0075",
++      "landed_as": "f1a0a5c9f7060a4bb9b18aa3007e0cfa00722f69",
++      "verdict": "composition_verified: false"
++    },
++    {
++      "case": "landing-verified",
++      "wp": "WP-2026-0076",
++      "landed_as": "5aaeb62bb7029a00b487ff9746acd791d5235373",
++      "expected_content_tree": "2a258edbfe84ed513f9becc1be87f4c7f12d0d14",
++      "landed_content_tree": "2a258edbfe84ed513f9becc1be87f4c7f12d0d14",
++      "recorded_for_base": "1b80d7c9d20e1f39c6287aa033904e6cbff17dc3",
++      "verdict": "MATCH"
++    },
++    {
++      "case": "landing-without-record",
++      "wp": "WP-2026-0077",
++      "landed_as": "1b80d7c9d20e1f39c6287aa033904e6cbff17dc3",
++      "verdict": "composition_verified: false"
++    },
++    {
++      "case": "landing-without-record",
++      "wp": "WP-2026-0078",
++      "landed_as": "2d080e059102afa485696a1a3ff1fa290240db36",
++      "verdict": "composition_verified: false"
++    },
++    {
++      "case": "landing-verified",
++      "wp": "WP-2026-0079",
++      "landed_as": "928fc6bca7cbf572783feb699bd559052176721e",
++      "expected_content_tree": "a3482b675dc2650fa8cf5864446e6e01607a2713",
++      "landed_content_tree": "a3482b675dc2650fa8cf5864446e6e01607a2713",
++      "recorded_for_base": "2d080e059102afa485696a1a3ff1fa290240db36",
++      "verdict": "MATCH"
++    },
++    {
++      "case": "landing-verified",
++      "wp": "WP-2026-0080",
++      "landed_as": "74282a4f21405378ccb84f7dace7b58aac5af2d9",
++      "expected_content_tree": "89d58b12a704bdfea0c70309487f7bda096251e2",
++      "landed_content_tree": "89d58b12a704bdfea0c70309487f7bda096251e2",
++      "recorded_for_base": "928fc6bca7cbf572783feb699bd559052176721e",
++      "verdict": "MATCH"
++    },
++    {
++      "case": "landing-verified",
++      "wp": "WP-2026-0081",
++      "landed_as": "605f97fe12b419072f7bc9e254d5945e11ffb4db",
++      "expected_content_tree": "7a27cff59d490b29625b6c772ca8f5e4b9751605",
++      "landed_content_tree": "7a27cff59d490b29625b6c772ca8f5e4b9751605",
++      "recorded_for_base": "74282a4f21405378ccb84f7dace7b58aac5af2d9",
++      "verdict": "MATCH"
++    },
++    {
++      "case": "identity-conform",
++      "commit": "605f97fe12b419072f7bc9e254d5945e11ffb4db",
++      "label": "BADF-WP-0081",
++      "trailer": "WP-2026-0081",
++      "verdict": "CONFORM"
++    },
++    {
++      "case": "identity-conform",
++      "commit": "74282a4f21405378ccb84f7dace7b58aac5af2d9",
++      "label": "BADF-WP-0080",
++      "trailer": "WP-2026-0080",
++      "verdict": "CONFORM"
++    },
++    {
++      "case": "identity-conform",
++      "commit": "928fc6bca7cbf572783feb699bd559052176721e",
++      "label": "BADF-WP-0079",
++      "trailer": "WP-2026-0079",
++      "verdict": "CONFORM"
++    },
++    {
++      "case": "identity-conform",
++      "commit": "2d080e059102afa485696a1a3ff1fa290240db36",
++      "label": "BADF-WP-0078",
++      "trailer": "WP-2026-0078",
++      "verdict": "CONFORM"
++    },
++    {
++      "case": "identity-conform",
++      "commit": "5aaeb62bb7029a00b487ff9746acd791d5235373",
++      "label": "BADF-WP-0076",
++      "trailer": "WP-2026-0076",
++      "verdict": "CONFORM"
++    },
++    {
++      "case": "identity-conform",
++      "commit": "1b80d7c9d20e1f39c6287aa033904e6cbff17dc3",
++      "label": "BADF-WP-0077",
++      "trailer": "WP-2026-0077",
++      "verdict": "CONFORM"
++    },
++    {
++      "case": "identity-conform",
++      "commit": "dc6b608ebea7aee2097b050883f0a0fe9ce9ed6c",
++      "label": "BADF-WP-0074",
++      "trailer": "WP-2026-0074",
++      "verdict": "CONFORM"
++    },
++    {
++      "case": "identity-conform",
++      "commit": "f1a0a5c9f7060a4bb9b18aa3007e0cfa00722f69",
++      "label": "BADF-WP-0075",
++      "trailer": "WP-2026-0075",
++      "verdict": "CONFORM"
++    },
++    {
++      "case": "identity-conform",
++      "commit": "0b2fd527c4e53b7c5b142de11c71438bea6b17b7",
++      "label": "BADF-WP-0069",
++      "trailer": "WP-2026-0069",
++      "verdict": "CONFORM"
++    },
++    {
++      "case": "identity-conform",
++      "commit": "9cf4b13bd3c56d860c517f558ac7c53dc6316bf2",
++      "label": "BADF-WP-0072",
++      "trailer": "WP-2026-0072",
++      "verdict": "CONFORM"
++    },
++    {
++      "case": "identity-conform",
++      "commit": "0343c8e96740f97fdfe54f7b29b574e296c559a2",
++      "label": "BADF-WP-0070",
++      "trailer": "WP-2026-0070",
++      "verdict": "CONFORM"
++    },
++    {
++      "case": "identity-conform",
++      "commit": "aba7de3bd8028f99ee6c4f78efc6fcda2111fca1",
++      "label": "BADF-WP-0071",
++      "trailer": "WP-2026-0071",
++      "verdict": "CONFORM"
++    },
++    {
++      "case": "identity-conform",
++      "commit": "c04981dffca5a9b65269350029cf49618929962b",
++      "label": "BADF-WP-0068",
++      "trailer": "WP-2026-0068",
++      "verdict": "CONFORM"
++    },
++    {
++      "case": "identity-conform",
++      "commit": "8673d9a3292d304968c4c8bc15b9a6cd4d64b031",
++      "label": "BADF-WP-0067",
++      "trailer": "WP-2026-0067",
++      "verdict": "CONFORM"
++    },
++    {
++      "case": "staleness-source-advanced",
++      "baseline_head": "928fc6bca7cbf572783feb699bd559052176721e",
++      "head": "74282a4f21405378ccb84f7dace7b58aac5af2d9",
++      "baseline_meaning": "GIT-F landing",
++      "head_meaning": "GIT-G landing",
++      "verdict": "SOURCE_ADVANCED",
++      "note": "the real forward case: the recorded head is an ancestor of the new head; composition and review invalidated, head-bound evidence intact"
++    },
++    {
++      "case": "release-bound",
++      "tag": "BADF-BASELINE-1.0.0",
++      "source_revision": "3f6119b05ae4a5158d40f5d9965d4ebe57bee794",
++      "source_result_tree": "3c222735fadcbf23442bba928a4ba0f30ae83337",
++      "provenance": {
++        "annotated": true,
++        "signed": false,
++        "tagger": "BADF Baseline <badf@bizera.local>"
++      },
++      "verdict": "RELEASE_BOUND"
++    }
++  ],
++  "runner_citations": [
++    {
++      "run_id": 33274353040,
++      "pr": 148,
++      "inspectors": [
++        "git-baseline: head_kind detached (refs/pull/148/merge)",
++        "git-staleness: CURRENT"
++      ]
++    },
++    {
++      "run_id": 33276346140,
++      "pr": 152,
++      "inspectors": [
++        "git-baseline: detached",
++        "git-staleness: CURRENT",
++        "composition: CURRENT (a3482b6)"
++      ]
++    },
++    {
++      "run_id": 33277666507,
++      "pr": 154,
++      "inspectors": [
++        "git-baseline: detached",
++        "git-staleness: CURRENT",
++        "git-recovery: EVIDENCE_ONLY RECOVERABLE",
++        "composition: CURRENT (89d58b1)"
++      ]
++    },
++    {
++      "run_id": 33279337817,
++      "pr": 156,
++      "inspectors": [
++        "git-baseline: detached",
++        "git-staleness: CURRENT",
++        "git-recovery: EVIDENCE_ONLY RECOVERABLE",
++        "git-release-check: RELEASE_BOUND BADF-BASELINE-1.0.0",
++        "composition: CURRENT (7a27cff)"
++      ]
++    }
++  ],
++  "non_coverage": [
++    "STALE_EVIDENCE (rewrite) verdicts were exercised only synthetically: the program's rewritten heads (e.g. 7a755d9, c10a22e under #148) were force-pushed away and are not on origin, so history cannot replay them",
++    "the recovery inventory on genuinely dirty state was observed locally during the program (TOPIC RECOVERY_REQUIRED before a push; LOCAL on a mid-rebase residue) but is not committed evidence; the committed runner records are EVIDENCE_ONLY on clean checkouts",
++    "branch-name conformance of landed PR heads (wp/WP-2026-NNNN-<slug>) was observed through the GitHub API at merge time; branches are deleted on merge, so it is not recomputable offline",
++    "tag signing: no signed release ref exists; provenance.signed is recorded, never verified",
++    "landings before GIT-E carry no composition record by construction; their composition_verified: false is the honest reading, not a defect"
++  ]
++}
+diff --git a/skills/badf-git/evidence/shadow-evidence.md b/skills/badf-git/evidence/shadow-evidence.md
+new file mode 100644
+index 0000000..361dabb
+--- /dev/null
++++ b/skills/badf-git/evidence/shadow-evidence.md
+@@ -0,0 +1,50 @@
++# Shadow evidence (`BADF-WP-0082`, Issue #157 / GOV-0062)
++
++**What is real and what is only synthetic — first sentence, as the contract requires.** Every case
++below is real BADF history, recomputed from the object store by `tests/test_badf_git_shadow.py` with
++the real tools; the one verdict class history cannot replay — `STALE_EVIDENCE` on a rewrite — was
++exercised only against synthetic scratch clones, and is listed under non-coverage, not implied to pass.
++
++`badf-git` is unusual among BADF's capability families: **it ran on itself.** Every work package
++GIT-B…H was integrated through the tools it was building — rebased under a moving `main` five times,
++its composition claims refused as stale and recomputed, its landings verified by the reconcile it
++introduced. That history is the shadow corpus. It is recorded once, in
++`examples/git-shadow-evidence.json`, and re-derived on every CI run and inside every composed tree.
++
++## Measurement
++
++| Case class | Real history | What the contract had to represent | Outcome |
++| :--- | :--- | :--- | :--- |
++| `landing-verified` (4) | WP-2026-0076, 0079, 0080, 0081 — the landings that carry a composition record | GIT-E's claim (`expected_content_tree`, bound with `work/<WP>/` and the lockfile excluded) equals what GitHub's squash actually produced; GIT-F's `MERGED != VERIFIED` | **4/4 MATCH.** Each landed content tree equals the record read from the landed tree. |
++| `landing-without-record` (11) | WP-2026-0066…0075, 0077, 0078 — landings that predate GIT-E or belong to other families | A landing with no claim must read `composition_verified: false` — visibly, never a silent pass | **11/11 honest.** No record in any of those landed trees; reconcile writes `false`. |
++| `identity-conform` (14) | the last 14 first-parent landings on `main` | GIT-B: one NNNN across the `BADF-WP-NNNN:` label and the canonical `Work-Package: WP-2026-NNNN` trailer | **14/14 CONFORM** — the 10 after GIT-B landed had to; the 4 before happened to. |
++| `staleness-source-advanced` (1) | a baseline at the GIT-F landing (`928fc6b`) judged at the GIT-G landing (`74282a4`) | GIT-D: forward progress is `SOURCE_ADVANCED` (the recorded head is an ancestor), not a rewrite | **`SOURCE_ADVANCED`**, `source_rewritten: false`, through `git_staleness` in a scratch clone. |
++| `release-bound` (1) | `BADF-BASELINE-1.0.0 → 3f6119b`, the `source_revision` of every G00–G02 example | GIT-H: annotated, on `main`'s first parent, record-bound, unmoved; provenance stated (unsigned) | **`RELEASE_BOUND`** through `git_release_check`. |
++| runner citations (4 runs) | CI runs 33274353040, 33276346140, 33277666507, 33279337817 (PRs #148, #152, #154, #156) | GIT-C/D/G/H on real infrastructure: a *detached* checkout (`refs/pull/N/merge`) must render `detached`, `CURRENT`, `EVIDENCE_ONLY`, `RELEASE_BOUND` | Rendered as claimed on every run; cited by run id (observed on the platform, not recomputable offline). |
++
++**Result: no contract gap surfaced under real conditions.** The tools said what the contract says
++they must, on the history that actually happened — including the three times during the program that
++compose *refused* a stale composition record (base moved under #148 twice; content changed after the
++claim) and the four times reconcile verified a landing.
++
++## Non-coverage (named, not implied)
++
++- **`STALE_EVIDENCE` on rewrites** — the program's rewritten heads (e.g. `7a755d9`, `c10a22e` under
++  #148) were force-pushed away and are not on `origin`; the rewrite verdicts stand on the synthetic
++  proofs in `tests/test_badf_git_staleness.py` (amend, reset, rebase onto a moved target) only.
++- **Recovery inventory on real dirty state** — observed locally during the program (`TOPIC
++  RECOVERY_REQUIRED` before a push; `LOCAL` on a mid-rebase residue) but not committed; the committed
++  runner records are `EVIDENCE_ONLY` on clean checkouts.
++- **Branch-name conformance of landed PR heads** — observed through the GitHub API at merge time;
++  branches are deleted on merge, so it is not recomputable offline (the label/trailer half is).
++- **Tag signing** — no signed release ref exists; `provenance.signed` is recorded, never verified.
++
++## Why the root stays `DESIGNED` here
++
++`badf-git` is a declarative router. Its implementation *is* its seven `IMPLEMENTED` subskills
++(`repository-state`, `commit-integrity`, `composition-verification`, `pull-request-integration`,
++`git-recovery`, `release-versioning`, and the identity contract enforced by `check_pr_traceability`)
++and their failing-first and mutation suites; its shadow is this record. Advancing the family up the
++ladder is the **operator's admission decision** — the `badf-research` precedent (shadow at WP-0055,
++`ACTIVE` by admission at WP-0058) — and is GIT-J, never an agent's act. Nothing in this shadow affects
++a gate: no registry status change, no lifecycle change, no new control.
+diff --git a/tests/test_badf_git_shadow.py b/tests/test_badf_git_shadow.py
+new file mode 100644
+index 0000000..a9107d0
+--- /dev/null
++++ b/tests/test_badf_git_shadow.py
+@@ -0,0 +1,136 @@
++"""GIT-I (BADF-WP-0082): the shadow corpus is this program's own history, recomputed.
++
++badf-git integrated every one of its work packages through the tools it was building.
++`examples/git-shadow-evidence.json` records what those tools render on that real history --
++landings whose content tree matches the committed composition record, landings that predate
++records and honestly read `composition_verified: false`, squash landings that conform to the
++identity rule, a SOURCE_ADVANCED staleness case between two landings, the RELEASE_BOUND
++baseline -- and names what history cannot replay. Every case here is RECOMPUTED from the
++object store with the real tools, so the committed record can never drift from history; a
++case that cannot be recomputed offline is not allowed in `cases` at all.
++"""
++import hashlib
++import json
++import re
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++from tests._scratch import seed_clone  # noqa: E402
++
++SHADOW = gate.ROOT / "examples/git-shadow-evidence.json"
++DOC = gate.ROOT / "skills/badf-git/evidence/shadow-evidence.md"
++TARGET = f"refs/remotes/origin/{gate.DEFAULT_BRANCH}"
++ALLOWED_CASES = {"landing-verified", "landing-without-record", "identity-conform", "staleness-source-advanced", "release-bound"}
++
++
++def load_shadow() -> dict:
++    return json.loads(SHADOW.read_text(encoding="utf-8"))
++
++
++def cases(kind: str) -> list:
++    return [c for c in load_shadow()["cases"] if c["case"] == kind]
++
++
++def g(*args: str) -> str:
++    return subprocess.run(["git", "-C", str(gate.ROOT), *args], capture_output=True, text=True, check=True).stdout.strip()
++
++
++class ShadowRecordTests(unittest.TestCase):
++    def test_shadow_record_is_well_formed_and_names_non_coverage(self):
++        s = load_shadow()
++        self.assertEqual(s["record"], "git-shadow"); self.assertEqual(s["repository"], gate.self_repository())
++        self.assertTrue(s["cases"]); self.assertTrue(s["non_coverage"])
++        for c in s["cases"]:
++            self.assertIn(c["case"], ALLOWED_CASES, f"{c['case']}: a case that cannot be recomputed offline belongs in non_coverage")
++            self.assertIn("verdict", c)
++        self.assertEqual({c["case"] for c in s["cases"]}, ALLOWED_CASES, "every contract part the shadow claims must be present")
++        for gap in ("STALE_EVIDENCE", "recovery", "branch", "sign"):
++            self.assertTrue(any(gap.lower() in n.lower() for n in s["non_coverage"]), f"non_coverage must name the {gap} gap")
++
++    def test_every_recorded_landing_matches_its_content_tree(self):
++        landings = gate.ledger_landings(); seen = cases("landing-verified")
++        self.assertGreaterEqual(len(seen), 4)
++        for c in seen:
++            with self.subTest(wp=c["wp"]):
++                self.assertEqual(landings[c["wp"]][-1], c["landed_as"], "the ledger's landing must be the recorded one")
++                rec_text = gate._git("show", f"{c['landed_as']}:work/{c['wp']}/evidence/G07/composition-record.json")
++                self.assertIsNotNone(rec_text); rec = json.loads(rec_text)
++                landed = gate.content_tree(gate.ROOT, c["wp"], c["landed_as"])
++                self.assertEqual((rec["expected_content_tree"], landed, c["verdict"]), (c["expected_content_tree"], c["landed_content_tree"], "MATCH"))
++                self.assertEqual(landed, rec["expected_content_tree"])
++
++    def test_every_no_record_landing_has_no_record_in_its_landed_tree(self):
++        landings = gate.ledger_landings(); seen = cases("landing-without-record")
++        self.assertGreaterEqual(len(seen), 11)
++        for c in seen:
++            with self.subTest(wp=c["wp"]):
++                self.assertEqual(landings[c["wp"]][-1], c["landed_as"])
++                self.assertIsNone(gate._git("show", f"{c['landed_as']}:work/{c['wp']}/evidence/G07/composition-record.json"))
++                self.assertEqual(c["verdict"], "composition_verified: false")
++
++    def test_every_identity_case_conforms_on_real_history(self):
++        seen = cases("identity-conform"); self.assertGreaterEqual(len(seen), 14)
++        first_parent = set(g("rev-list", "--first-parent", TARGET).split())
++        for c in seen:
++            with self.subTest(commit=c["commit"][:7]):
++                self.assertIn(c["commit"], first_parent, "an identity case must be a first-parent landing on main")
++                subject = g("log", "-1", "--format=%s", c["commit"]); body = g("log", "-1", "--format=%b", c["commit"])
++                lab = re.match(r"^BADF-WP-([0-9]{4}):", subject); tr = re.search(rf"^Work-Package:\s*({re.escape(gate.WP_NAMESPACE)}[0-9]{{4}})\s*$", body, re.M)
++                self.assertTrue(lab and tr and lab.group(1) == tr.group(1)[-4:], f"{c['commit'][:7]}: label/trailer do not conform")
++                self.assertEqual((c["label"], c["trailer"], c["verdict"]), (f"BADF-WP-{lab.group(1)}", tr.group(1), "CONFORM"))
++
++    def test_staleness_case_renders_SOURCE_ADVANCED_with_the_real_tool(self):
++        (c,) = cases("staleness-source-advanced")
++        tmp = Path(tempfile.mkdtemp(prefix="badf-git-shadow-")); self.addCleanup(shutil.rmtree, tmp, True)
++        repo = tmp / "badf"; seed_clone(repo)
++        subprocess.run(["git", "-C", str(repo), "fetch", "-q", "origin", c["baseline_head"], c["head"]], check=True)
++        subprocess.run(["git", "-C", str(repo), "checkout", "-q", "--detach", c["baseline_head"]], check=True)
++        baseline = gate.git_baseline(repo)
++        subprocess.run(["git", "-C", str(repo), "checkout", "-q", "--detach", c["head"]], check=True)
++        v = gate.git_staleness(baseline, repo)
++        self.assertEqual((v["disposition"], v["old_source_head"], v["new_source_head"], v["source_rewritten"]), ("SOURCE_ADVANCED", c["baseline_head"], c["head"], False))
++        self.assertEqual(c["verdict"], "SOURCE_ADVANCED")
++
++    def test_release_case_renders_RELEASE_BOUND_with_the_real_tool(self):
++        (c,) = cases("release-bound")
++        v = gate.git_release_check(gate.ROOT, c["tag"])
++        self.assertEqual((v["disposition"], v["source_revision"], c["verdict"]), ("RELEASE_BOUND", c["source_revision"], "RELEASE_BOUND"))
++
++    def test_tampered_shadow_record_is_refused(self):
++        """The record is evidence only because the tests recompute it: a wrong tree, a wrong verdict
++        and a non-recomputable case must each fail the recomputation."""
++        s = load_shadow()
++        bad_tree = json.loads(json.dumps(s)); v = next(c for c in bad_tree["cases"] if c["case"] == "landing-verified"); v["landed_content_tree"] = "0" * 40
++        bad_verdict = json.loads(json.dumps(s)); w = next(c for c in bad_verdict["cases"] if c["case"] == "identity-conform"); w["verdict"] = "NONCONFORM"
++        bad_case = json.loads(json.dumps(s)); bad_case["cases"].append({"case": "rewrite-stale", "verdict": "STALE_EVIDENCE"})
++        for label, doc in (("wrong tree", bad_tree), ("wrong verdict", bad_verdict), ("non-recomputable case", bad_case)):
++            with self.subTest(label=label):
++                with self.assertRaises(AssertionError):
++                    self._recompute(doc)
++
++    def _recompute(self, s: dict) -> None:
++        for c in s["cases"]:
++            assert c["case"] in ALLOWED_CASES
++            if c["case"] == "landing-verified":
++                assert gate.content_tree(gate.ROOT, c["wp"], c["landed_as"]) == c["landed_content_tree"]
++            if c["case"] == "identity-conform":
++                assert c["verdict"] == "CONFORM"
++
++    def test_shadow_evidence_doc_names_every_case_and_gap_and_root_stays_designed(self):
++        text = DOC.read_text(encoding="utf-8")
++        for token in ("landing-verified", "landing-without-record", "identity-conform", "staleness-source-advanced", "release-bound",
++                      "STALE_EVIDENCE", "synthetic", "non-coverage", "DESIGNED", "GIT-J", "admission", "run"):
++            self.assertIn(token, text, token)
++        reg = gate.load_json(gate.ROOT / "badf/skill-registry.json"); by = {s["name"]: s for s in reg["skills"]}
++        self.assertEqual(by["badf-git"]["status"], "DESIGNED")
++        self.assertEqual(hashlib.sha256((gate.ROOT / by["badf-git"]["source"]).read_bytes()).hexdigest(), by["badf-git"]["digest"][7:])
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0086/work-package.json b/work/WP-2026-0086/work-package.json
+index 8421da3..841f476 100644
+--- a/work/WP-2026-0086/work-package.json
++++ b/work/WP-2026-0086/work-package.json
+@@ -44,11 +44,13 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR (registry back to SHADOWED)"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "5b6cd52"
++    "base_revision": "5b6cd52",
++    "composition_verified": false,
++    "landed_as": "8a753cb2689ada8774d16755f0a422541784939c"
+   },
+   "note": "Lands IN_PROGRESS by design; next WP reconciles it. Registry admission SHADOWED->ACTIVE on the operator's standing /loop 'until active' directive (2026-08-30); grants no authority (SEC-I15/I13); caveat preserved; real re-shadow deferred to #166. No new control -> no mutation. Isolated worktree (badf-wt-sece, GIT-I04). Ids WP-0086/DEM-0073/GOV-0067. Reconciles WP-2026-0085 (composition_verified: false). Completes WP-SEC-A..E. Resolves #167 / GOV-0067."
+ }
