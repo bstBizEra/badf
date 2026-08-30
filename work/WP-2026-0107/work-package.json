@@ -42,11 +42,13 @@
     "reversible": true,
     "method": "revert the squash commit via PR (registry entry + skill removed)"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "ce3c458"
+    "base_revision": "ce3c458",
+    "composition_verified": false,
+    "landed_as": "f5a575de594b11bb20e3df6e6c35ea025640012c"
   },
   "note": "Ladder-internal DESIGNED contract freeze (SKILL + references, no gate/schema/lifecycle) -> no BADF-QA/BADF-REV review required at A; WP-VAL-B (typed G09 evidence schemas) and WP-VAL-C (deterministic gate controls) are shared-surface -> QA+REV by BADF-QA/BADF-REV. Authored by BARCHI-1 as Senior ARCH & ENGIN. Ids WP-0107/DEM-0094/GOV-0090. Rebased three times as the base moved under an open PR: bbec762 -> 8de88d5 (VER-D) -> d292801 (VER-E, a deliberate yield so an operator-authorized admission would not queue behind a contract freeze) -> ce3c458 (WP-0109). Reconciles WP-2026-0109; WP-2026-0104, 0106 and 0108 were already reconciled upstream. Each rebase costs a G07 regeneration because source-change.diff is base-bound. Delivery ladder WP-VAL-A(DESIGNED)->B(IMPLEMENTED)->C(VALIDATED)->D(SHADOWED)->E(quality_authority/operator admission ACTIVE)."
 }

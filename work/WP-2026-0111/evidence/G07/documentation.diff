@@ -1,0 +1,35 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 6a534b9..773f404 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1618,6 +1618,30 @@ producers, never authority. Ladder-internal at this rung (SKILL + 17 references,
+ WP-VAL-B (typed G09 evidence contracts) and WP-VAL-C (canonical deterministic controls) are
+ shared-surface and go to BADF-QA + BADF-REV. Authored by BARCHI-1 as Senior ARCH & ENGIN. Registry
+ `badf-release-validation: DESIGNED`.
++## A guard that could not pass — the build shadow's authority case (`BADF-WP-0110`, Issue #225 / GOV-0097)
++
++`tests/test_badf_build_shadow.py`'s `authority-replayed` case compared the record's stored demand
++`status` — a **snapshot of a mutable field**, taken at the record's `measured_on` — against the **live**
++demand file. So it measured *"is this demand currently `AUTHORIZED`"* while the record claims *"was this
++demand human-authorized as measured"*. The consequence was sharper than a loose comparison: the
++`CLOSED_DEMAND` branch was **unreachable**. Element 0 is frozen at `AUTHORIZED`, so a legitimately
++discharged demand could never satisfy the tuple the branch existed to accommodate — the mirror image of
++an assertion that can never fail, and the only one of the evening's instances that CI caught rather than
++a seat. One case reddened when `BADF-DEM-0087` was discharged (#224); **all 67 would have** when #220's
++derived terminality lands, which was a hard sequencing dependency now removed.
++
++The fix recomputes the demand **at the record's `measured_on`**, exactly what the generator read: the
++comparison stays *exact* rather than being loosened to "`AUTHORIZED` or any terminal state", which would
++have kept the light green by proving less — a demand that reached terminal *wrongly* would have passed.
++It also restores the module's own convention: the sibling case classes all recompute at a pinned
++revision via `show(c["landed_as"], …)`; this one had skipped it. One durable live assertion remains,
++chosen because no legitimate lifecycle transition can break it: a demand recorded as human-authorized
++must still record a human principal.
++
++**The record was not re-measured.** `examples/build-shadow-evidence.json` is byte-identical. Editing a
++frozen measurement so that today's tests pass would falsify the measurement — the standing rule when a
++shadow and the present disagree is that the *test* is wrong, or the present is, and never that the past
++should be rewritten. #220's derived-terminality work must not reach for that green either.
+ 
+ ## Discovery ≠ scope expansion
+ 

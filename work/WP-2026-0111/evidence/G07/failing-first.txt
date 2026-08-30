@@ -1,0 +1,21 @@
+F
+======================================================================
+FAIL: test_every_authority_case_replays_from_the_demand_record (tests.test_badf_build_shadow.BuildShadowTests.test_every_authority_case_replays_from_the_demand_record) (wp='WP-2026-0100')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-auth/tests/test_badf_build_shadow.py", line 65, in test_every_authority_case_replays_from_the_demand_record
+    self.assertEqual((c["status"], c["principal_type"], c["verdict"]), (dem.get("status"), ht, expected))
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Tuples differ: ('AUTHORIZED', 'human', 'AUTHORIZED_HUMAN') != ('RESOLVED', 'human', 'CLOSED_DEMAND')
+
+First differing element 0:
+'AUTHORIZED'
+'RESOLVED'
+
+- ('AUTHORIZED', 'human', 'AUTHORIZED_HUMAN')
++ ('RESOLVED', 'human', 'CLOSED_DEMAND')
+
+----------------------------------------------------------------------
+Ran 1 test in 0.173s
+
+FAILED (failures=1)

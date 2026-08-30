@@ -1,0 +1,22 @@
+{
+  "record": "git-composition",
+  "schema_version": "1.0.0",
+  "observed_at": "2026-08-30T22:43:05Z",
+  "repository": "bstBizEra/badf",
+  "work_package_id": "WP-2026-0111",
+  "target_ref": "refs/heads/main",
+  "target_base_sha": "f5a575de594b11bb20e3df6e6c35ea025640012c",
+  "source_ref": "refs/heads/wp/WP-2026-0111-authority-replay",
+  "source_head_sha": "4e2186187aadab2a7729fd5286a5cf702b50d4d0",
+  "merge_base_sha": "f5a575de594b11bb20e3df6e6c35ea025640012c",
+  "merge_method": "squash",
+  "expected_result_tree": "147baf79a2fdf2658ae3c88d53a187ee0038a027",
+  "expected_content_tree": "b4d84854582900735718837925934cdbc441f396",
+  "policy_epoch": "BADF-2026-08-25",
+  "test_set_epoch": null,
+  "suite_pattern": "test_badf_build_contract.py",
+  "non_coverage": [
+    "test_set_epoch: BADF defines no test-set/toolchain epoch; not recorded rather than invented",
+    "source_head_sha and expected_result_tree are informational: committing this record moves both; the binding is expected_content_tree (work/<WP>/ and the lockfile excluded)"
+  ]
+}
