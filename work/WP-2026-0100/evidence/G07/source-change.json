@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0100-G07-source-change",
+  "work_package_id": "WP-2026-0100",
+  "gate": "G07",
+  "claim": "the change WP-2026-0100 makes to this repository, outside its own directory and the lockfile",
+  "evidence_type": "source-change",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-08-30T16:55:35Z",
+  "completed_at": "2026-08-30T16:55:35Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0100/evidence/G07/source-change.diff",
+  "digest": "sha256:8036e943ec90e9989f2e1277dd64d73e8a27a330d98b8e6941f9aaa7a25b27e0",
+  "binding": {
+    "base_sha": "6814a244b3ac7850ef2165f39e24cd685261cba8",
+    "head_sha": "0400e47f64f1b977a09fdeab6921e9aa829e083a",
+    "content_tree": "672da1efe145a9ff8e3b89e1b13899b6f086e9e8",
+    "changed_paths": [
+      "badf/demands/BADF-DEM-0087.json",
+      "badf/skill-registry.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "skills/badf-engineering-verification/SKILL.md",
+      "skills/badf-engineering-verification/references/acceptance.md",
+      "skills/badf-engineering-verification/references/composed-tree-contract.md",
+      "skills/badf-engineering-verification/references/contract-test-contract.md",
+      "skills/badf-engineering-verification/references/evidence-normalization.md",
+      "skills/badf-engineering-verification/references/external-methodology.md",
+      "skills/badf-engineering-verification/references/finding-contract.md",
+      "skills/badf-engineering-verification/references/g08-contract.md",
+      "skills/badf-engineering-verification/references/g08-g09-boundary.md",
+      "skills/badf-engineering-verification/references/independence.md",
+      "skills/badf-engineering-verification/references/integration-test-contract.md",
+      "skills/badf-engineering-verification/references/non-coverage.md",
+      "skills/badf-engineering-verification/references/review-contract.md",
+      "skills/badf-engineering-verification/references/review-lenses.md",
+      "skills/badf-engineering-verification/references/runtime-observation.md",
+      "skills/badf-engineering-verification/references/target-binding.md",
+      "skills/badf-engineering-verification/references/verification-matrix.md",
+      "tests/test_badf_engineering_verification_contract.py",
+      "work/WP-2026-0098/work-package.json"
+    ],
+    "expected_surfaces": {
+      "declared": false,
+      "files": []
+    },
+    "unexpected_paths": [],
+    "change_digest": "sha256:8036e943ec90e9989f2e1277dd64d73e8a27a330d98b8e6941f9aaa7a25b27e0"
+  }
+}
