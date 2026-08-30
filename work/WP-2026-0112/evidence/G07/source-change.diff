@@ -27,10 +27,10 @@ index 0000000..ff551e9
 +  "note": "The WP-2026-0109 family-name guard passed in 0.000s with skills/badf-build/ moved aside: absence of the surface was indistinguishable from a clean surface. Fixed by adopting the repo's existing idiom (tests/test_badf_schema_drift.py:31, a module-level non-emptiness assertion naming this failure mode) plus in-test checks for the partial cases it cannot see. Ids asked for and confirmed by BARCHI-3 and BADF-QA before binding."
 +}
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 773f404..c4952cc 100644
+index 985574e..47c9131 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -1642,6 +1642,29 @@ must still record a human principal.
+@@ -1643,6 +1643,29 @@ must still record a human principal.
  frozen measurement so that today's tests pass would falsify the measurement — the standing rule when a
  shadow and the present disagree is that the *test* is wrong, or the present is, and never that the past
  should be rewritten. #220's derived-terminality work must not reach for that green either.
@@ -100,24 +100,3 @@ index 885cb56..51be983 100644
          unresolved = {t: sorted(f) for t, f in found.items() if t not in known}
          self.assertEqual({}, unresolved, "badf-* families named in the badf-build surface but absent from "
                           + f"{REGISTRY.relative_to(ROOT)}: "
-diff --git a/work/WP-2026-0111/work-package.json b/work/WP-2026-0111/work-package.json
-index ac8dbb5..0af5e2f 100644
---- a/work/WP-2026-0111/work-package.json
-+++ b/work/WP-2026-0111/work-package.json
-@@ -42,11 +42,14 @@
-     "reversible": true,
-     "method": "revert the squash commit via PR"
-   },
--  "status": "IN_PROGRESS",
-+  "status": "CLOSED",
-   "external_target": {
-     "repository": "bstBizEra/badf",
-     "branch": "main",
--    "base_revision": "f5a575d"
-+    "base_revision": "f5a575d",
-+    "landed_content_tree": "b4d84854582900735718837925934cdbc441f396",
-+    "composition_verified": true,
-+    "landed_as": "66c92f846f05bcea90ba0bcc8de1f8784a3bdd6e"
-   },
-   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Defect in MY landed test, found by BARCHI-3 (blocked by it on #224) and independently measured by BADF-REV, who sharpened it: the CLOSED_DEMAND branch was unreachable, the mirror of tonight's assertions that could not fail. No delegation on this one -- the fix is a single test method and splitting it would be delegation theatre, so C7 has nothing to judge here and that is stated rather than manufactured. Resolves #225 / GOV-0097. RENUMBERED from WP-2026-0110 / BADF-DEM-0097, which collided with the unlanded #224 (BARCHI-3): I misread my own id sweep -- it printed 0110 as in use on a remote head -- and skipped the ask. #224 keeps the original ids because they are already embedded in its bound dossier, record, ledger and lockfile; this work package was fresh and cheaper to move. Reconciles WP-2026-0107 (VAL-A).",
-   "expected_surfaces": {

@@ -1,8 +1,8 @@
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 773f404..c4952cc 100644
+index 985574e..47c9131 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -1642,6 +1642,29 @@ must still record a human principal.
+@@ -1643,6 +1643,29 @@ must still record a human principal.
  frozen measurement so that today's tests pass would falsify the measurement — the standing rule when a
  shadow and the present disagree is that the *test* is wrong, or the present is, and never that the past
  should be rewritten. #220's derived-terminality work must not reach for that green either.

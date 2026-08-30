@@ -46,15 +46,14 @@
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "66c92f8"
+    "base_revision": "87dd192"
   },
-  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Instance ten of the evening's proxy-vs-property class, found on my own surface by applying BARCHI-3's checklist (#221) and the second such instance introduced while remediating. Ids measured across four surfaces AND asked for -- confirmed clear by BARCHI-3 (including their local worktrees) and BADF-QA (with positive controls) before binding, the remedy for my WP-0110/DEM-0097 collision. Fix adopts existing prior art rather than inventing a guard. Resolves #229 / GOV-0099. Reconciles WP-2026-0111. Ownership was NOT a free choice: the canonical gate refuses to open a new work package while a landed one is unreconciled (\"reconcile landed work packages before opening a new one\"), so the next WP to open owns the reconcile mechanically. I had earlier ceded WP-2026-0111 to BARCHI-3's #224 by agreement; the gate overrode the agreement and both seats were told. An earlier staged reconcile of WP-2026-0109 was dropped as redundant -- #213 had already landed it byte-identically, visible only by diffing against origin/main rather than local HEAD.",
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Instance ten of the evening's proxy-vs-property class, found on my own surface by applying BARCHI-3's checklist (#221) and the second such instance introduced while remediating. Ids measured across four surfaces AND asked for -- confirmed clear by BARCHI-3 (including their local worktrees) and BADF-QA (with positive controls) before binding, the remedy for my WP-0110/DEM-0097 collision. Fix adopts existing prior art rather than inventing a guard. Resolves #229 / GOV-0099. Reconciled WP-2026-0111 locally when the gate refused to open this WP with it unreconciled; #224 reconciled it independently and landed first (87dd192), so my copy collapsed to a byte-identical no-op on rebase -- the fourth instance of derived-reconcile-convergence tonight. Ownership was NOT a free choice: the canonical gate refuses to open a new work package while a landed one is unreconciled (\"reconcile landed work packages before opening a new one\"), so the next WP to open owns the reconcile mechanically. I had earlier ceded WP-2026-0111 to BARCHI-3's #224 by agreement; the gate overrode the agreement and both seats were told. An earlier staged reconcile of WP-2026-0109 was dropped as redundant -- #213 had already landed it byte-identically, visible only by diffing against origin/main rather than local HEAD.",
   "expected_surfaces": {
     "files": [
       "tests/test_badf_build_contract.py",
       "badf/demands/BADF-DEM-0099.json",
-      "docs/governance/GITHUB_CONTROL_PLANE.md",
-      "work/WP-2026-0111/work-package.json"
+      "docs/governance/GITHUB_CONTROL_PLANE.md"
     ]
   },
   "test_obligations": [
