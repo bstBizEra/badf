@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0112-G07-unit-test",
+  "work_package_id": "WP-2026-0112",
+  "gate": "G07",
+  "claim": "the author's unit-test run, bound; the composed-tree gate is the fresh run",
+  "evidence_type": "unit-test",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "unittest",
+    "version": "1"
+  },
+  "operation": "python3 -m unittest tests.test_badf_build_contract",
+  "started_at": "2026-08-30T23:31:16Z",
+  "completed_at": "2026-08-30T23:31:16Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0112/evidence/G07/unit-test.log",
+  "digest": "sha256:fe744d440205f89419012dc1eab84db4e351b40e88c480fd15c09be838df1665",
+  "binding": {
+    "obligations": [
+      {
+        "id": "TEST-001",
+        "seam": {
+          "type": "module",
+          "ref": "tests/test_badf_build_contract.py"
+        },
+        "red": {
+          "observed": true,
+          "ref": "work/WP-2026-0112/evidence/G07/failing-first.txt",
+          "digest": "sha256:c3dc4ce80790d0a5a68dcff2d3009be59564c24dfe01144e0f6b50051e539cc3"
+        },
+        "green": {
+          "observed": true,
+          "ref": "work/WP-2026-0112/evidence/G07/unit-test.log",
+          "digest": "sha256:fe744d440205f89419012dc1eab84db4e351b40e88c480fd15c09be838df1665"
+        }
+      }
+    ],
+    "command": "python3 -m unittest tests.test_badf_build_contract",
+    "result": "PASS",
+    "tests_run": 10,
+    "failures": 0,
+    "coverage_scope": [
+      "tests/test_badf_build_contract.py"
+    ],
+    "fresh_run": "scripts/badf_compose.py (the composed-tree gate) re-runs the suite on the tree that would land; CI is the fresh, authoritative run (BLD-I09)"
+  }
+}

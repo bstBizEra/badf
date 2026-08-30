@@ -1,0 +1,102 @@
+diff --git a/badf/demands/BADF-DEM-0099.json b/badf/demands/BADF-DEM-0099.json
+new file mode 100644
+index 0000000..ff551e9
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0099.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0099",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 229,
++    "url": "https://github.com/bstBizEra/badf/issues/229",
++    "exported_at": "2026-08-30T22:38:07Z",
++    "body_digest": "sha256:6f14d5e4b32f9769fc02006daf605e984ee77c6ad3b7aaf6e22a6f5960e252fd"
++  },
++  "title": "GOV-0099: the WP-0109 family-name guard passes vacuously when skills/badf-build/ is absent (instance ten; second introduced while remediating)",
++  "problem": "🔎 **REV (BARCHI-2, on my own surface)** — the WP-2026-0109 family-name guard passes vacuously when the surface it scans is absent\n\nFiled against myself, applying BARCHI-3's checklist from #221 — *\"for each guard, ask what it does when its input is missing; if the answer is 'passes', it is not a guard\"* — to the guard I shipped two work packages ago.\n\n## Measured (detached probe at `origin/main` `ce3c458`, restored)\n`tests/test_badf_build_contract.py::test_every_family_named_in_the_surface_resolves_in_the_registry` collects `badf-*` tokens by `(ROOT / \"skills\" / \"badf-build\").rglob(\"*.md\")` and asserts none are unresolved. With `skills/badf-build/` moved aside:\n\n```\nRan 1 test in 0.000s\nOK          ← surface absent; guard passes\n```\n\nrestored → `OK` again (0.002s). **Absence of the surface is indistinguishable from a clean surface.** The guard's own defect (`badf-verification` unresolved) would also vanish under a rename: the check would go quiet exactly when the thing it protects stopped existing.\n\nThis is instance ten of the class and the second one **introduced while remediating** — BADF-REV's M2 (`if live.is_file()` silently vacuous) was the ninth, in the fix for the eighth. My guard was written to close a naming defect and shipped with the same hole in a different shape: `is_file()` standing for \"there is something to check\" there, an empty glob standing for it here.\n\n## Acceptance criteria\n- The guard asserts it actually scanned the surface before concluding: at minimum `SKILL.md` plus the fourteen `references/*.md` were read, and the token set contains `badf-build` itself (the surface cannot describe itself without naming itself).\n- Red-verified by moving the surface aside — the probe above must fail, not pass — and restored byte-identical.\n- Same question asked of the sibling `badf-build` guards while there: `test_badf_build_shadow` and `test_badf_build_evidence` carry anti-vacuity thresholds (4 each); `test_badf_build_activation` and `test_badf_build_controls` iterate literal tuples and fixture globs used for cleanup, not assertions — measured, no change needed. Stated so the next reader need not re-derive it.\n- No change to `badf_gate.py`, schemas, or any other family's surface.\n\n## Not in scope\nGeneralizing to other families' surfaces — that is #223's territory, and BADF-REV documented the trap there (`badf-security-assurance` is unresolved in ten places *correctly*, \"named, not built\"), so a naive generalization would flag deliberate forward references.\n\n**Version tier:** patch. Ids: `GOV-0099` claimed here; the WP/DEM pair will be measured **and asked for** at filing time — GOV is safely measurable alone because issue titles are a complete surface, unlike WP/DEM ids which can exist in an unpushed tree (#227).\n\n<!-- agent: reviewer -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T22:38:07Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "The WP-2026-0109 family-name guard passed in 0.000s with skills/badf-build/ moved aside: absence of the surface was indistinguishable from a clean surface. Fixed by adopting the repo's existing idiom (tests/test_badf_schema_drift.py:31, a module-level non-emptiness assertion naming this failure mode) plus in-test checks for the partial cases it cannot see. Ids asked for and confirmed by BARCHI-3 and BADF-QA before binding."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 773f404..c4952cc 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1642,6 +1642,29 @@ must still record a human principal.
+ frozen measurement so that today's tests pass would falsify the measurement — the standing rule when a
+ shadow and the present disagree is that the *test* is wrong, or the present is, and never that the past
+ should be rewritten. #220's derived-terminality work must not reach for that green either.
++## A guard that went quiet when its subject disappeared (`BADF-WP-0112`, Issue #229 / GOV-0099)
++
++The family-name guard shipped two work packages earlier (`WP-2026-0109`) scanned `skills/badf-build/**`
++by glob and asserted no `badf-*` token was unresolved. Move that directory aside and it reported
++`Ran 1 test … OK` **in 0.000s** — absence of the surface was indistinguishable from a clean surface, and
++the very defect it existed to catch would have vanished under a rename. It went quiet exactly when the
++thing it protects stopped existing.
++
++This is the tenth instance of the evening's class and the **second introduced while remediating** — it
++was written to close a naming defect. The remedy is the idiom this repository **already carried**: `tests/test_badf_schema_drift.py:31` asserts non-emptiness of its glob-derived sets at module scope, with a comment naming this exact failure mode — found by BADF-REV while sweeping, and it reframes the fix from a design question into a consistency one. Copied rather than reinvented, and fired at import so it cannot be forgotten by whoever adds the next test. The scan must now prove it read
++the router, the fourteen frozen references, and the family naming itself before anything is concluded
++from an empty result. Verified by moving the surface aside — the probe that used to pass now fails with
++`the surface's router is absent; the scan below would conclude nothing, quietly` — and by two further
++vectors measured rather than assumed.
++
++Two notes for whoever generalizes this. First, the class is **"an assertion over a collection derived
++from a glob"**, not "an assertion inside a glob loop": BADF-REV's sweep for the in-loop shape missed
++this instance precisely because it asserts on a derived dict, so a repo-wide detector must catch both or
++it inherits the blind spot it is hunting. Second, the checklist that found it — *ask what a guard reports
++when its input is missing; if the answer is "passes", it is not a guard* — now has a **clear as well as a
++hit**: applied to the `badf-engineering-verification` modules it correctly found nothing, because those
++already assert counts before iterating. A detection rule that has only ever fired is as suspect as a
++guard that never does.
+ 
+ ## Discovery ≠ scope expansion
+ 
+diff --git a/tests/test_badf_build_contract.py b/tests/test_badf_build_contract.py
+index 885cb56..51be983 100644
+--- a/tests/test_badf_build_contract.py
++++ b/tests/test_badf_build_contract.py
+@@ -19,6 +19,13 @@ REFERENCES = ROOT / "skills" / "badf-build" / "references"
+ REGISTRY = ROOT / "badf" / "skill-registry.json"
+ LIFECYCLE = ROOT / "badf" / "lifecycle.json"
+ 
++SURFACE = sorted((ROOT / "skills" / "badf-build").rglob("*.md"))
++# The idiom is tests/test_badf_schema_drift.py:31 -- a module-level non-emptiness assertion whose
++# comment names this failure mode. An empty SURFACE would make the family-name guard below pass in
++# 0.000s, so absence of the surface would be indistinguishable from a clean surface (GOV-0099 / #229).
++# Asserted at import: it fires once per module and cannot be forgotten by whoever adds the next test.
++assert SURFACE, "an empty badf-build surface would make the family-name guard vacuous"
++
+ REFS = {
+     "g07-contract.md", "preflight.md", "execution-contract.md", "tdd-contract.md", "test-seams.md",
+     "delegation.md", "scope-containment.md", "retry-and-budget.md", "stop-conditions.md",
+@@ -115,7 +122,12 @@ class BadfBuildContractTests(unittest.TestCase):
+         NON_FAMILY = {"badf-sa"}
+         known = {e.get("name") for e in json.loads(REGISTRY.read_text(encoding="utf-8"))["skills"]}
+         found = {}
+-        for path in sorted((ROOT / "skills" / "badf-build").rglob("*.md")):
++        # SURFACE is non-empty by the module-level assertion; these catch the PARTIAL cases it cannot:
++        # the router gone, a reference deleted, or a scan that read files but learned nothing.
++        self.assertTrue(SKILL.is_file(), "the surface's router is absent; the scan below would conclude nothing, quietly")
++        self.assertEqual(REFS, {p.name for p in REFERENCES.glob("*.md")}, "the frozen reference set is not what the scan read")
++        self.assertGreaterEqual(len(SURFACE), 1 + len(REFS), f"scanned only {len(SURFACE)} files under skills/badf-build/")
++        for path in SURFACE:
+             for raw in re.findall(r"badf-[a-z0-9-]+", path.read_text(encoding="utf-8")):
+                 # "badf-git," / "badf-build." never enter the match (the class excludes punctuation);
+                 # a trailing hyphen can, and a path "badf-build/references/x.md" already stops at "/".
+@@ -123,6 +135,7 @@ class BadfBuildContractTests(unittest.TestCase):
+                 if token in NON_FAMILY:
+                     continue
+                 found.setdefault(token, set()).add(str(path.relative_to(ROOT)))
++        self.assertIn("badf-build", found, "the scan did not even find the family naming itself; it read nothing meaningful")
+         unresolved = {t: sorted(f) for t, f in found.items() if t not in known}
+         self.assertEqual({}, unresolved, "badf-* families named in the badf-build surface but absent from "
+                          + f"{REGISTRY.relative_to(ROOT)}: "
