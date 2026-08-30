@@ -4,22 +4,27 @@
   "id": "WP-YYYY-NNNN",
   "title": "Concise delivery outcome",
   "owner": "named accountable owner",
-  "objective": "Measurable result",
+  "demand": "BADF-DEM-0000",
+  "repository": "owner/repo",
+  "objective": "One measurable delivery outcome",
   "business_value": "Value proposition and KPI",
   "in_scope": [],
   "out_of_scope": [],
-  "dependencies": [],
   "target_gate": "G00",
   "change_class": "C1",
-  "data_classification": "INTERNAL",
+  "data_classification": "internal",
   "acceptance_criteria": [],
-  "non_functional_requirements": [],
-  "permissions": {"tools": [], "environments": [], "mutations": []},
+  "permissions": [],
   "tests": [],
   "evidence": [],
-  "reviewers": [],
-  "rollback": {"trigger": "", "procedure": "", "owner": ""},
-  "escalation": {"owner": "", "conditions": []},
-  "status": "DRAFT"
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "DRAFT",
+  "external_target": {
+    "repository": "owner/repo",
+    "branch": "main",
+    "base_revision": ""
+  }
 }
-
