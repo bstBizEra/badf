@@ -93,12 +93,12 @@ class BadfGitContractTests(unittest.TestCase):
         self.assertIn("vX.Y.Z", release)
         self.assertIn("commit prefixes", release)
 
-    def test_registry_pin_is_designed_and_tool_empty(self):
+    def test_registry_pin_is_active_and_tool_empty(self):
         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
         entries = [e for e in registry["skills"] if e.get("name") == "badf-git"]
         self.assertEqual(1, len(entries))
         entry = entries[0]
-        self.assertEqual("DESIGNED", entry["status"])
+        self.assertEqual("ACTIVE", entry["status"])
         self.assertEqual([], entry["allowed_tools"])
         digest = "sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest()
         self.assertEqual(digest, entry["digest"])

@@ -122,13 +122,13 @@ class ShadowRecordTests(unittest.TestCase):
             if c["case"] == "identity-conform":
                 assert c["verdict"] == "CONFORM"
 
-    def test_shadow_evidence_doc_names_every_case_and_gap_and_root_stays_designed(self):
+    def test_shadow_evidence_doc_names_every_case_and_gap_and_root_is_active(self):
         text = DOC.read_text(encoding="utf-8")
         for token in ("landing-verified", "landing-without-record", "identity-conform", "staleness-source-advanced", "release-bound",
                       "STALE_EVIDENCE", "synthetic", "non-coverage", "DESIGNED", "GIT-J", "admission", "run"):
             self.assertIn(token, text, token)
         reg = gate.load_json(gate.ROOT / "badf/skill-registry.json"); by = {s["name"]: s for s in reg["skills"]}
-        self.assertEqual(by["badf-git"]["status"], "DESIGNED")
+        self.assertEqual(by["badf-git"]["status"], "ACTIVE")
         self.assertEqual(hashlib.sha256((gate.ROOT / by["badf-git"]["source"]).read_bytes()).hexdigest(), by["badf-git"]["digest"][7:])
 
 
