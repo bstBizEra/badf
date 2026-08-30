@@ -22,3 +22,7 @@ status.
   gaps declared, not implied.
 - `APPROVED` / `ACTIVE` — **WP-VER-E**: the operator's admission decision, taken on VER-D's evidence and
   recorded on its own issue; registry status flip only, digest unchanged, no authority granted.
+  **Decided on #214 (GOV-0092): ACTIVATE** — accepting the four declared gaps (no typed real G08 dossier;
+  one reviewer seat at encoding time; the RECONSTRUCTED prose review class; the declared-not-shipped
+  scratch-clone `validate_dossier` path), with the real-conditions re-shadow deferred to its own
+  trigger-gated issue. The live status remains `badf/skill-registry.json`; this ladder is a pointer.

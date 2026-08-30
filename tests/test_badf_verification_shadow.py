@@ -156,7 +156,7 @@ class ShadowRecordTests(unittest.TestCase):
         flipped = {c["subject"]: c["outcome"] for c in flip["cases"] if c["case_class"] == "representative-typed-dossier"}
         self.assertNotEqual(subjects, flipped, "a tampered outcome cannot equal the recomputed truth")
 
-    def test_doc_names_every_case_and_gap_and_root_is_shadowed(self):
+    def test_doc_names_every_case_and_gap_and_root_is_at_least_shadowed(self):
         text = DOC.read_text(encoding="utf-8")
         first = text.split("\n\n")[1] if text.startswith("#") else text.split("\n\n")[0]
         for token in ("representative", "RECONSTRUCTED"):
@@ -165,7 +165,9 @@ class ShadowRecordTests(unittest.TestCase):
             self.assertIn(token.lower(), text.lower(), token)
         registry = json.loads((ROOT / "badf/skill-registry.json").read_text(encoding="utf-8"))
         entry = next(e for e in registry["skills"] if e["name"] == "badf-engineering-verification")
-        self.assertEqual("SHADOWED", entry["status"])
+        # VER-E (#214): the operator admitted ACTIVE over this shadow's declared gaps. The shadow is a
+        # measurement, not a status -- it earned SHADOWED and does not un-earn it when the root advances.
+        self.assertIn(entry["status"], ("SHADOWED", "ACTIVE"))
         self.assertEqual(entry["digest"], gate.sha256(ROOT / "skills/badf-engineering-verification/SKILL.md"))
 
 

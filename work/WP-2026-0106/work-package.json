@@ -47,11 +47,14 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "5b428f7"
+    "base_revision": "5b428f7",
+    "landed_content_tree": "22bdd26ff832927c30e0b8b748167be9b970d6fc",
+    "composition_verified": true,
+    "landed_as": "8de88d5ca3d42ce236523260113f196b41741f82"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-VER-D of the badf-engineering-verification program (#195 A->E authorization; approval + adopted encoding conditions on #207). Ladder-internal -- lands under the standing evidence bar after BARCHI-2's encoding co-review and BARCHI-1's (COI-disclosed) verdict. Resolves #207 / GOV-0089. Engineered by BARCHI-3 under /loop. Reconciles the land-time-current WP at landing."
 }

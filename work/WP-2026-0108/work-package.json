@@ -1,0 +1,59 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0108",
+  "title": "WP-VER-E: admit badf-engineering-verification SHADOWED -> ACTIVE (operator admission #214; registry status flip only, no authority granted)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0095",
+  "repository": "bstBizEra/badf",
+  "objective": "Record the operator's admission decision taken on the VER-D shadow evidence: badf-engineering-verification advances SHADOWED -> ACTIVE in badf/skill-registry.json. The flip grants NOTHING -- status only, digest unchanged (sha256 of SKILL.md, untouched), allowed_tools [], risk_class C1, no scripts/badf_engineering_verification.py (VER-I20), no gate/schema/lifecycle change; VERIFICATION != APPROVAL (VER-I18) holds after the admission exactly as before. C1..C7 have enforced on every G08 dossier since 5b428f7 regardless of label; what changes is that the contract, typed schemas, controls and shadow evidence become the ADMITTED G08 verification doctrine. The four declared gaps the operator admitted over (no typed real G08 dossier; one reviewer seat at encoding time / reviewer correlation NOT_MEASURABLE; RECONSTRUCTED prose review class; declared-not-shipped scratch-clone validate_dossier path) are carried verbatim into the doctrine section and the acceptance ladder rather than dropped at admission; the real-conditions re-shadow is deferred to its own trigger-gated issue.",
+  "business_value": "An admission that hides the gaps it was granted over is worth less than no admission: the next agent reads ACTIVE and infers evidence that was never produced. Carrying the four gaps into the doctrine makes the label honest, and the deferred trigger makes the missing evidence a scheduled obligation rather than an oversight.",
+  "in_scope": [
+    "badf/skill-registry.json: badf-engineering-verification SHADOWED -> ACTIVE (single status line; digest, allowed_tools and risk_class frozen); lockfile re-signed",
+    "tests/test_badf_engineering_verification_contract.py: the rung pin moves to ACTIVE (failing-first observed before the registry flip)",
+    "skills/badf-engineering-verification/references/acceptance.md: the ladder's ACTIVE rung records the #214 decision and the four accepted gaps (SKILL.md untouched -- the digest must not move)",
+    "GITHUB_CONTROL_PLANE.md doctrine section (the admission, what it grants, what it admitted over, the ladder that earned it); badf/demands/BADF-DEM-0095.json; own composition record + typed G07 self-dossier; reconcile the land-time-current WP"
+  ],
+  "out_of_scope": [
+    "any change to SKILL.md (the digest is pinned by the registry and by the contract test)",
+    "any change to badf_gate.py, schemas/, lifecycle.json, badf_compose.py or CI",
+    "the real-conditions re-shadow itself (deferred, trigger-gated, filed at close-out); badf-security-assurance; #210 and #211 (deferred, non-blocking)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "badf-engineering-verification is ACTIVE with digest == sha256(skills/badf-engineering-verification/SKILL.md), allowed_tools [] and risk_class C1 -- all three unchanged from the SHADOWED entry",
+    "the contract test pin fails before the registry flip and passes after (failing-first observed and recorded)",
+    "the doctrine section and the acceptance ladder both carry the four declared gaps verbatim and state that ACTIVE grants no authority",
+    "no diff in scripts/, schemas/, badf/lifecycle.json, .github/ or skills/badf-engineering-verification/SKILL.md",
+    "existing verification suites (shadow/controls/evidence/contract) green; CI green on the composed tree; QA + REV by BADF-QA and BADF-REV"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_engineering_verification_contract.py (9, pin at rung E)",
+    "tests/test_badf_verification_shadow.py (7, unchanged)",
+    "tests/test_badf_verification_controls.py (11, unchanged)",
+    "tests/test_badf_verification_evidence.py (15, unchanged)"
+  ],
+  "evidence": [
+    "failing-first run (pin ACTIVE vs registry SHADOWED)",
+    "green run",
+    "registry mutation battery (status revert / digest tamper / allowed_tools / risk_class)",
+    "compose output incl. composition record",
+    "G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR; the registry returns to SHADOWED and the controls keep enforcing"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "8de88d5"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-VER-E of the badf-engineering-verification program -- the final rung. The A->E authorization on #195 explicitly did NOT pre-grant this admission; the operator was asked on #214 with the HOLD alternative stated and decided ACTIVATE. Resolves #214 / GOV-0092. QA + REV by BADF-QA (bst-sa-5b) and BADF-REV (bst-sa-f0). Engineered by BARCHI-3 under /loop."
+}
