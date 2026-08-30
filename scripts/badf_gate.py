@@ -3544,8 +3544,17 @@ def validate_security_composition(path: Path) -> str:
         # SEC-C03 (SEC-I03): a threat dispositioned `controlled` must name a control.
         if t["disposition"] == "controlled" and not (t.get("control_refs") or []):
             raise ValidationError(f"security-composition: {t['security_id']} is dispositioned 'controlled' but carries no control_refs; a threat controlled by nothing is not controlled (SEC-C03 / SEC-I03)")
+        # ---- WP-SEC-C: matrix-internal cross-artifact seams (the coherence the matrix alone can decide;
+        # the full bidirectional/baseline/semantic resolution needs the specialist artifacts -- deferred).
+        # SEC-C04 (SEC-I04, downstream traceability): a controlled threat carries a verification obligation.
+        if t["disposition"] == "controlled" and not (t.get("verification_refs") or []):
+            raise ValidationError(f"security-composition: {t['security_id']} is 'controlled' but carries no verification_refs; a control asserted but never verified is an incomplete chain -- a security conclusion traces downstream to a verification obligation (SEC-C04 / SEC-I04)")
+        # SEC-C05 (SEC-I12 / SEC-I03, disposition <-> residual-risk coherence): residual risk cannot be
+        # declared pending authority-acceptance unless the threat was actually dispositioned to authority.
+        if t.get("residual_risk") == "ACCEPTED-PENDING-AUTHORITY" and t["disposition"] != "pending-authority":
+            raise ValidationError(f"security-composition: {t['security_id']} declares residual_risk ACCEPTED-PENDING-AUTHORITY but its disposition is {t['disposition']!r}, not 'pending-authority'; risk cannot be pending authority-acceptance unless the threat was dispositioned to authority (SEC-C05 / SEC-I12)")
     controlled = sum(1 for t in threats if t["disposition"] == "controlled")
-    return f"BADF SECURITY-COMPOSITION PASS: {len(threats)} threat(s), {controlled} controlled; structural (SEC-C01/02/03), seams deferred to WP-SEC-C"
+    return f"BADF SECURITY-COMPOSITION PASS: {len(threats)} threat(s), {controlled} controlled; structural + matrix-internal seams (SEC-C01..C05)"
 
 
 # ---- badf-git GIT-C: the read-only baseline inspector (BADF-WP-0069) ----------------

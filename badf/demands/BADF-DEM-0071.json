@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0071",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 162,
+    "url": "https://github.com/bstBizEra/badf/issues/162",
+    "exported_at": "2026-08-30T00:01:07Z",
+    "body_digest": "sha256:c7711cdda062df3c90818b1e7f263fb7df5fac238e9703ab011d58104745ee05"
+  },
+  "title": "GOV-0065: WP-SEC-C \u2014 cross-artifact seam controls SEC-C04/C05 (badf-security-design -> VALIDATED)",
+  "problem": "## Observed\n\nbadf-security-design is IMPLEMENTED (WP-SEC-B): the `security` command enforces the structural controls (no-empty/SEC-C01/SEC-C02/SEC-C03). The matrix-internal cross-artifact SEAM controls are not enforced yet.\n\n## Expected\n\n**WP-SEC-C -> VALIDATED.** Two seam controls in validate_security_composition, each failing-first + mutation-killed: SEC-C04 (SEC-I04 downstream) a controlled threat carries >=1 verification_refs (a control asserted but never verified is an incomplete chain); SEC-C05 (SEC-I12/I03) residual_risk == ACCEPTED-PENDING-AUTHORITY requires disposition == pending-authority (can't claim authority-pending acceptance without routing to authority). Registry IMPLEMENTED -> VALIDATED. The full external-artifact/semantic seams (SEC-I04 bidirectional against a sec-req registry, SEC-I01 baseline-digest binding, semantic ref resolution) need artifacts that don't exist -> deferred honestly, mirroring solution external seams. No new invariant, no lifecycle change, no second validator (SEC-I15).\n\n## Evidence\n\n- Mirrors WP-SOL-C (matrix-internal seams SOL-C04/05/06 enforced; external seams deferred).\n\n## Unknowns\n\nNone blocking; external seams await the specialist artifacts.\n\ndiscovered-by: operator /loop 'proceed next steps until badf-security-design is active' 2026-08-30 \u00b7 status: DISCOVERED\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-30T00:01:07Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "WP-SEC-C advances badf-security-design IMPLEMENTED->VALIDATED: matrix-internal seam controls SEC-C04 (controlled->verification, SEC-I04 downstream) + SEC-C05 (residual ACCEPTED-PENDING-AUTHORITY <=> pending-authority disposition, SEC-I12/I03), each failing-first + mutation. External-artifact/semantic seams deferred. Mirrors WP-SOL-C. DEM-0071/GOV-0065/WP-0084 (0082/0069/0062=GIT-I; GOV-0064=#160). Reconciles WP-2026-0083 (WP-SEC-B; composition_verified: false, no record). Operator /loop to active 2026-08-30."
+}

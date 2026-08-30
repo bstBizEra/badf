@@ -1,0 +1,202 @@
+diff --git a/badf/demands/BADF-DEM-0071.json b/badf/demands/BADF-DEM-0071.json
+new file mode 100644
+index 0000000..57dd002
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0071.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0071",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 162,
++    "url": "https://github.com/bstBizEra/badf/issues/162",
++    "exported_at": "2026-08-30T00:01:07Z",
++    "body_digest": "sha256:c7711cdda062df3c90818b1e7f263fb7df5fac238e9703ab011d58104745ee05"
++  },
++  "title": "GOV-0065: WP-SEC-C \u2014 cross-artifact seam controls SEC-C04/C05 (badf-security-design -> VALIDATED)",
++  "problem": "## Observed\n\nbadf-security-design is IMPLEMENTED (WP-SEC-B): the `security` command enforces the structural controls (no-empty/SEC-C01/SEC-C02/SEC-C03). The matrix-internal cross-artifact SEAM controls are not enforced yet.\n\n## Expected\n\n**WP-SEC-C -> VALIDATED.** Two seam controls in validate_security_composition, each failing-first + mutation-killed: SEC-C04 (SEC-I04 downstream) a controlled threat carries >=1 verification_refs (a control asserted but never verified is an incomplete chain); SEC-C05 (SEC-I12/I03) residual_risk == ACCEPTED-PENDING-AUTHORITY requires disposition == pending-authority (can't claim authority-pending acceptance without routing to authority). Registry IMPLEMENTED -> VALIDATED. The full external-artifact/semantic seams (SEC-I04 bidirectional against a sec-req registry, SEC-I01 baseline-digest binding, semantic ref resolution) need artifacts that don't exist -> deferred honestly, mirroring solution external seams. No new invariant, no lifecycle change, no second validator (SEC-I15).\n\n## Evidence\n\n- Mirrors WP-SOL-C (matrix-internal seams SOL-C04/05/06 enforced; external seams deferred).\n\n## Unknowns\n\nNone blocking; external seams await the specialist artifacts.\n\ndiscovered-by: operator /loop 'proceed next steps until badf-security-design is active' 2026-08-30 \u00b7 status: DISCOVERED\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T00:01:07Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-SEC-C advances badf-security-design IMPLEMENTED->VALIDATED: matrix-internal seam controls SEC-C04 (controlled->verification, SEC-I04 downstream) + SEC-C05 (residual ACCEPTED-PENDING-AUTHORITY <=> pending-authority disposition, SEC-I12/I03), each failing-first + mutation. External-artifact/semantic seams deferred. Mirrors WP-SOL-C. DEM-0071/GOV-0065/WP-0084 (0082/0069/0062=GIT-I; GOV-0064=#160). Reconciles WP-2026-0083 (WP-SEC-B; composition_verified: false, no record). Operator /loop to active 2026-08-30."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index facc7b2..b182ff6 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -248,7 +248,7 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "IMPLEMENTED",
++      "status": "VALIDATED",
+       "digest": "sha256:60d0a80d0ec829627555698c353b962975e519a2a71b081109b5d75320cdef6e"
+     },
+     {
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 961453d..80a17ea 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1011,6 +1011,22 @@ traceability, SEC-I01 exact-baseline binding, and the semantic resolution of eve
+ architecture/solution artifacts — are **deferred to WP-SEC-C** (failing-first), exactly as the solution
+ seams were deferred from WP-SOL-B to WP-SOL-C. Registry `DESIGNED → IMPLEMENTED`.
+ 
++## badf-security-design → VALIDATED — the matrix-internal seams (`BADF-WP-0084` / WP-SEC-C, Issue #162 / GOV-0065)
++
++WP-SEC-B enforced the structural controls; WP-SEC-C enforces the **cross-artifact seams** the matrix can
++decide alone, mirroring WP-SOL-C. Two controls, each mutation-killed: **SEC-C04** (SEC-I04, downstream
++traceability) — a `controlled` threat carries ≥1 `verification_refs`, because a control that is asserted
++but never verified is an incomplete chain; a security conclusion traces *downstream* to a verification
++obligation. **SEC-C05** (SEC-I12 / SEC-I03, disposition ↔ residual-risk coherence) — `residual_risk =
++ACCEPTED-PENDING-AUTHORITY` requires `disposition = pending-authority`, so a threat cannot claim its
++residual risk is pending authority-acceptance unless it was actually dispositioned to authority. Both are
++disposition-scoped and one-directional by design (a `deferred`/`blocked` threat needs no verification; a
++`pending-authority` threat need not have declared its residual risk yet). The **external-artifact** seams
++— the FULL SEC-I04 bidirectional traceability against a real sec-req registry, SEC-I01 exact-baseline
++digest binding, and the semantic resolution of every ref against the architecture/solution artifacts —
++stay **deferred**, honestly, until those artifacts exist. No new invariant, no `lifecycle.json` change, no
++second validator (SEC-I15). Registry `IMPLEMENTED → VALIDATED`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 40e6036..9a81322 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -3544,8 +3544,17 @@ def validate_security_composition(path: Path) -> str:
+         # SEC-C03 (SEC-I03): a threat dispositioned `controlled` must name a control.
+         if t["disposition"] == "controlled" and not (t.get("control_refs") or []):
+             raise ValidationError(f"security-composition: {t['security_id']} is dispositioned 'controlled' but carries no control_refs; a threat controlled by nothing is not controlled (SEC-C03 / SEC-I03)")
++        # ---- WP-SEC-C: matrix-internal cross-artifact seams (the coherence the matrix alone can decide;
++        # the full bidirectional/baseline/semantic resolution needs the specialist artifacts -- deferred).
++        # SEC-C04 (SEC-I04, downstream traceability): a controlled threat carries a verification obligation.
++        if t["disposition"] == "controlled" and not (t.get("verification_refs") or []):
++            raise ValidationError(f"security-composition: {t['security_id']} is 'controlled' but carries no verification_refs; a control asserted but never verified is an incomplete chain -- a security conclusion traces downstream to a verification obligation (SEC-C04 / SEC-I04)")
++        # SEC-C05 (SEC-I12 / SEC-I03, disposition <-> residual-risk coherence): residual risk cannot be
++        # declared pending authority-acceptance unless the threat was actually dispositioned to authority.
++        if t.get("residual_risk") == "ACCEPTED-PENDING-AUTHORITY" and t["disposition"] != "pending-authority":
++            raise ValidationError(f"security-composition: {t['security_id']} declares residual_risk ACCEPTED-PENDING-AUTHORITY but its disposition is {t['disposition']!r}, not 'pending-authority'; risk cannot be pending authority-acceptance unless the threat was dispositioned to authority (SEC-C05 / SEC-I12)")
+     controlled = sum(1 for t in threats if t["disposition"] == "controlled")
+-    return f"BADF SECURITY-COMPOSITION PASS: {len(threats)} threat(s), {controlled} controlled; structural (SEC-C01/02/03), seams deferred to WP-SEC-C"
++    return f"BADF SECURITY-COMPOSITION PASS: {len(threats)} threat(s), {controlled} controlled; structural + matrix-internal seams (SEC-C01..C05)"
+ 
+ 
+ # ---- badf-git GIT-C: the read-only baseline inspector (BADF-WP-0069) ----------------
+diff --git a/skills/badf-security-design/references/acceptance.md b/skills/badf-security-design/references/acceptance.md
+index afb58f1..0bfb16f 100644
+--- a/skills/badf-security-design/references/acceptance.md
++++ b/skills/badf-security-design/references/acceptance.md
+@@ -12,8 +12,8 @@ contract first, prove it later, in separate WPs. **Do not build every specialist
+ | WP | Outcome | Status |
+ | :--- | :--- | :--- |
+ | WP-SEC-A | root `SKILL.md` + references: G05 mapping, routing, specialist boundaries, architecture/solution-design interfaces, threat/control/risk model, normalization contract, OWASP dispositions, SEC-I01…I15, admission criteria | `DESIGNED` |
+-| **WP-SEC-B** | the `security-composition` matrix schema + the `security` gate command with structural controls (no-empty · SEC-C01 unique · SEC-C02 provenance · SEC-C03 controlled-has-control · SEC-I12 residual-risk-not-accepted by schema); see `traceability.md` | `IMPLEMENTED` |
+-| WP-SEC-C | cross-artifact **seam** controls in the canonical `badf_gate.py` (SEC-I04 bidirectional trace, SEC-I01 baseline binding, semantic ref resolution; failing-first) | `VALIDATED` |
++| WP-SEC-B | the `security-composition` matrix schema + the `security` gate command with structural controls (no-empty · SEC-C01 unique · SEC-C02 provenance · SEC-C03 controlled-has-control · SEC-I12 residual-risk-not-accepted by schema); see `traceability.md` | `IMPLEMENTED` |
++| **WP-SEC-C** | matrix-internal cross-artifact **seam** controls: SEC-C04 (a `controlled` threat is verified, SEC-I04 downstream) + SEC-C05 (residual-risk ↔ disposition coherence, SEC-I12); external-artifact seams (full SEC-I04 bidirectional, SEC-I01 baseline binding, semantic resolution) deferred | `VALIDATED` |
+ | WP-SEC-D | historical / representative security-design shadow calibration | `SHADOWED` |
+ | WP-SEC-E | independent admission | `ACTIVE` |
+ 
+diff --git a/skills/badf-security-design/references/traceability.md b/skills/badf-security-design/references/traceability.md
+index 5e79c57..bf2a643 100644
+--- a/skills/badf-security-design/references/traceability.md
++++ b/skills/badf-security-design/references/traceability.md
+@@ -60,10 +60,15 @@ mutation-killed:
+ | SEC-C01 | unique `security_id` | — | **enforced** (WP-SEC-B) |
+ | SEC-C02 | every threat binds ≥1 provenance `source` ref | SEC-I02 | **enforced** (WP-SEC-B) |
+ | SEC-C03 | a `controlled` threat carries ≥1 `control_refs` | SEC-I03 | **enforced** (WP-SEC-B) |
++| SEC-C04 | a `controlled` threat carries ≥1 `verification_refs` | SEC-I04 (downstream) | **enforced** (WP-SEC-C) |
++| SEC-C05 | `residual_risk` = `ACCEPTED-PENDING-AUTHORITY` ⟹ `disposition` = `pending-authority` | SEC-I12 / SEC-I03 | **enforced** (WP-SEC-C) |
+ | — | `residual_risk` cannot be a bare `ACCEPTED` (enum) | SEC-I12 | **enforced by schema** (WP-SEC-B) |
+ 
+-The **cross-artifact seams** — SEC-I04 bidirectional traceability (a sec-req resolves up *and* down),
+-SEC-I01 exact-baseline digest binding, and the *semantic* resolution of every ref against the
+-architecture/solution artifacts — **cannot** be enforced until those artifacts and the sec-req/control
+-registries exist; they are **deferred to WP-SEC-C**, honestly, not faked. `residual_risk`'s exclusion of
+-`ACCEPTED` makes SEC-I12 structural: the skill has no value with which to self-accept risk.
++WP-SEC-C adds the **matrix-internal** cross-artifact seams — the coherence a composition can be judged on
++from the matrix alone: a control that is asserted but never verified (SEC-C04), and a residual-risk claim
++that bypasses the authority disposition (SEC-C05). The **external-artifact** seams — the FULL SEC-I04
++bidirectional traceability (a sec-req resolving *up* to a threat/requirement/NFR against a real sec-req
++registry), SEC-I01 exact-baseline digest binding, and the *semantic* resolution of every ref against the
++architecture/solution artifacts — **cannot** be enforced until those artifacts and registries exist; they
++are **deferred**, honestly, not faked. `residual_risk`'s exclusion of a bare `ACCEPTED` makes SEC-I12
++structural: the skill has no value with which to self-accept risk.
+diff --git a/tests/test_badf_security_composition.py b/tests/test_badf_security_composition.py
+index 70c4742..70fadf4 100644
+--- a/tests/test_badf_security_composition.py
++++ b/tests/test_badf_security_composition.py
+@@ -106,11 +106,44 @@ class SchemaEnforcedTests(SecurityCompositionBase):
+         self.refused(rec, "residual_risk")
+ 
+ 
++class MatrixInternalSeamTests(SecurityCompositionBase):
++    """WP-SEC-C: the composition is coherent across concerns at the level the matrix alone can
++    decide. The full external-artifact/semantic seams reconcile against artifacts that do not
++    exist yet -- deferred. The example carries verification obligations and a coherent
++    pending-authority row, so it satisfies every seam."""
++
++    def test_a_controlled_threat_with_no_verification_is_refused(self):  # SEC-C04 / SEC-I04
++        rec = copy.deepcopy(EXAMPLE)
++        rec["threats"][0].pop("verification_refs", None)
++        self.refused(rec, "no verification_refs")
++
++    def test_a_non_controlled_threat_needs_no_verification(self):  # SEC-C04 is disposition-scoped
++        # a threat submitted to authority (not yet controlled) legitimately carries no verification.
++        rec = copy.deepcopy(EXAMPLE)
++        rec["threats"][0]["disposition"] = "deferred"
++        rec["threats"][0].pop("control_refs", None)
++        rec["threats"][0].pop("verification_refs", None)
++        self.admitted(rec)
++
++    def test_accepted_pending_authority_requires_pending_authority_disposition(self):  # SEC-C05
++        rec = copy.deepcopy(EXAMPLE)
++        # threats[0] is 'controlled'; claiming ACCEPTED-PENDING-AUTHORITY there is incoherent.
++        rec["threats"][0]["residual_risk"] = "ACCEPTED-PENDING-AUTHORITY"
++        self.refused(rec, "not 'pending-authority'")
++
++    def test_pending_authority_without_accepted_pending_is_allowed(self):  # SEC-C05 is one-directional
++        # a pending-authority threat need not have declared its residual risk yet.
++        rec = copy.deepcopy(EXAMPLE)
++        # threats[3] is the pending-authority row; drop its residual_risk -> still admitted.
++        rec["threats"][3].pop("residual_risk", None)
++        self.admitted(rec)
++
++
+ class RegistryStatusTests(unittest.TestCase):
+-    def test_badf_security_design_is_registered_implemented(self):  # WP-SEC-B advanced DESIGNED -> IMPLEMENTED
++    def test_badf_security_design_is_registered_validated(self):  # WP-SEC-C advanced IMPLEMENTED -> VALIDATED
+         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
+         entry = next(e for e in reg["skills"] if e["name"] == "badf-security-design")
+-        self.assertEqual(entry["status"], "IMPLEMENTED")
++        self.assertEqual(entry["status"], "VALIDATED")
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/work/WP-2026-0083/work-package.json b/work/WP-2026-0083/work-package.json
+index f55b559..9792049 100644
+--- a/work/WP-2026-0083/work-package.json
++++ b/work/WP-2026-0083/work-package.json
+@@ -45,11 +45,13 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "605f97f"
++    "base_revision": "605f97f",
++    "composition_verified": false,
++    "landed_as": "eb9f0c58b0beb3334444695602bc6c6688875a45"
+   },
+   "note": "Lands IN_PROGRESS by design; next WP reconciles it. Adds the `security` gate command (structural controls) -> mutation-tested. Built in isolated worktree (badf-wt-secb, GIT-I04) parallel to BARCHI-2 badf-git GIT-I (#157). Ids WP-0083/DEM-0070/GOV-0063 (0082/0069/0062 = GIT-I). Reconciles WP-2026-0081 (GIT-H, landed 605f97f; rendered composition_verified: true). Operator 'proceed on the badf-security-design' 2026-08-30. Resolves #158."
+ }
