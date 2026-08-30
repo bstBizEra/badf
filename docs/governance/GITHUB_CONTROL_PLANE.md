@@ -1588,6 +1588,31 @@ it; 2 attempts of 3), and **C7** judged a real delegation. The build ledger reco
 `START · BASELINE · RED · RETRY · GREEN · VERIFY · HANDOFF`. #212 (the deferred real-conditions
 re-shadow) now has its first real case; discharging #212 remains its own work package.
 
+## A guard that could not pass — the build shadow's authority case (`BADF-WP-0110`, Issue #225 / GOV-0097)
+
+`tests/test_badf_build_shadow.py`'s `authority-replayed` case compared the record's stored demand
+`status` — a **snapshot of a mutable field**, taken at the record's `measured_on` — against the **live**
+demand file. So it measured *"is this demand currently `AUTHORIZED`"* while the record claims *"was this
+demand human-authorized as measured"*. The consequence was sharper than a loose comparison: the
+`CLOSED_DEMAND` branch was **unreachable**. Element 0 is frozen at `AUTHORIZED`, so a legitimately
+discharged demand could never satisfy the tuple the branch existed to accommodate — the mirror image of
+an assertion that can never fail, and the only one of the evening's instances that CI caught rather than
+a seat. One case reddened when `BADF-DEM-0087` was discharged (#224); **all 67 would have** when #220's
+derived terminality lands, which was a hard sequencing dependency now removed.
+
+The fix recomputes the demand **at the record's `measured_on`**, exactly what the generator read: the
+comparison stays *exact* rather than being loosened to "`AUTHORIZED` or any terminal state", which would
+have kept the light green by proving less — a demand that reached terminal *wrongly* would have passed.
+It also restores the module's own convention: the sibling case classes all recompute at a pinned
+revision via `show(c["landed_as"], …)`; this one had skipped it. One durable live assertion remains,
+chosen because no legitimate lifecycle transition can break it: a demand recorded as human-authorized
+must still record a human principal.
+
+**The record was not re-measured.** `examples/build-shadow-evidence.json` is byte-identical. Editing a
+frozen measurement so that today's tests pass would falsify the measurement — the standing rule when a
+shadow and the present disagree is that the *test* is wrong, or the present is, and never that the past
+should be rewritten. #220's derived-terminality work must not reach for that green either.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

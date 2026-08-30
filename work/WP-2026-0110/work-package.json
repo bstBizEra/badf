@@ -1,0 +1,78 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0110",
+  "title": "the build shadow's authority case recomputes at the measured revision, not against live mutable state",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0097",
+  "repository": "bstBizEra/badf",
+  "objective": "Fix tests/test_badf_build_shadow.py::test_every_authority_case_replays_from_the_demand_record, which compared the record's stored demand `status` -- a snapshot of a mutable field taken at measured_on -- against the LIVE demand file. It measured 'is this demand currently AUTHORIZED' while the record claims 'was this demand human-authorized as measured', so its CLOSED_DEMAND branch was UNREACHABLE (element 0 is frozen) and any legitimate transition to a terminal state reddened the case: one today (BADF-DEM-0087 via #224), all 67 when #220's derived terminality lands. The fix recomputes the demand AT the record's measured_on -- exactly what the generator read, exact triple comparison preserved, not loosened to 'AUTHORIZED or terminal' -- and adds the one durable live assertion that cannot break under a legitimate lifecycle transition: the authorizing principal is still human. It is the only case class in the module that read the present; the other five already recompute at a pinned revision. The record is NOT re-measured: it is a measurement of the past.",
+  "business_value": "A shadow whose recomputation drifts with present state cannot be evidence for an admission; and a hard sequencing dependency (#220 Tier B would turn main red in 67 places) is removed before it fires.",
+  "in_scope": [
+    "tests/test_badf_build_shadow.py: the authority case recomputes at measured_on + the durable human-principal assertion + a comment recording why the old comparison was unreachable",
+    "badf/demands/BADF-DEM-0097.json; GITHUB_CONTROL_PLANE.md doctrine note (the proxy-vs-property class and the #220 sequencing dependency); own composition record + typed G07 self-dossier; reconcile WP-2026-0109"
+  ],
+  "out_of_scope": [
+    "examples/build-shadow-evidence.json -- NOT re-measured or edited",
+    "#220's derived-terminality work itself; #224; any other family's surface; any gate or schema change"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "with a demand flipped to a terminal state, the test is RED before the fix and GREEN after; the probe is restored byte-identically",
+    "the assertion stays an exact triple comparison recomputed at measured_on; a demand absent at measured_on still recomputes symmetrically (ABSENT -> NOT_AUTHORIZED)",
+    "the live check is limited to authorized_by.principal_type == human (immune to lifecycle transitions)",
+    "examples/build-shadow-evidence.json byte-identical; the other six shadow cases and the contract/activation pins green; CI green on the composed tree"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_build_shadow.py (7; the authority case fixed)"
+  ],
+  "evidence": [
+    "failing-first: demand flipped to RESOLVED -> red on the unfixed test",
+    "green: same flip -> green on the fixed test",
+    "probe restored byte-identical",
+    "compose output incl. composition record",
+    "typed G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "ce3c458"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Defect in MY landed test, found by BARCHI-3 (blocked by it on #224) and independently measured by BADF-REV, who sharpened it: the CLOSED_DEMAND branch was unreachable, the mirror of tonight's assertions that could not fail. No delegation on this one -- the fix is a single test method and splitting it would be delegation theatre, so C7 has nothing to judge here and that is stated rather than manufactured. Resolves #225 / GOV-0097. Reconciles WP-2026-0109.",
+  "expected_surfaces": {
+    "files": [
+      "tests/test_badf_build_shadow.py",
+      "badf/demands/BADF-DEM-0097.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "work/WP-2026-0109/work-package.json"
+    ]
+  },
+  "test_obligations": [
+    {
+      "id": "TEST-001",
+      "claim": "the authority case recomputes at measured_on and survives a legitimate demand transition",
+      "level": "unit"
+    }
+  ],
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ]
+}

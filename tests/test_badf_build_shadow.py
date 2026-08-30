@@ -56,13 +56,30 @@ class BuildShadowTests(unittest.TestCase):
                 self.assertEqual((c["verdict"], c["mismatches"]), ("BOUND" if not bad else "MISMATCH", bad))
 
     def test_every_authority_case_replays_from_the_demand_record(self):
+        """The record is a MEASUREMENT OF THE PAST: each case stores the demand's status as it stood at
+        `measured_on`. Reading the LIVE demand measured a different property -- "is it currently
+        AUTHORIZED" -- which made the CLOSED_DEMAND branch below UNREACHABLE: element 0 is frozen at
+        AUTHORIZED, so a legitimately discharged demand could never satisfy the tuple. One case reddened
+        the moment BADF-DEM-0087 was discharged (#224), and all 67 would have under #220's derived
+        terminality. Every sibling case class here already recomputes at a pinned revision; this one had
+        skipped that convention. Fixed under WP-2026-0110 / #225 -- exact comparison kept, recomputed at
+        the revision the record was measured on, so no future lifecycle transition can falsify it."""
+        measured_on = load_shadow()["measured_on"]
         seen = cases("authority-replayed"); self.assertGreaterEqual(len(seen), 66)
         for c in seen:
             with self.subTest(wp=c["wp"]):
-                dem = json.loads((gate.ROOT / "badf/demands" / f"{c['demand']}.json").read_text(encoding="utf-8"))
-                ht = (dem.get("authorized_by") or {}).get("principal_type")
-                expected = "AUTHORIZED_HUMAN" if (dem.get("status") == "AUTHORIZED" and ht == "human") else ("CLOSED_DEMAND" if dem.get("status") == "RESOLVED" and ht == "human" else "NOT_AUTHORIZED")
-                self.assertEqual((c["status"], c["principal_type"], c["verdict"]), (dem.get("status"), ht, expected))
+                blob = show(measured_on, f"badf/demands/{c['demand']}.json")
+                dem = json.loads(blob) if blob is not None else {}
+                st = dem.get("status", "ABSENT"); ht = (dem.get("authorized_by") or {}).get("principal_type")
+                expected = ("AUTHORIZED_HUMAN" if (st == "AUTHORIZED" and ht == "human")
+                            else ("CLOSED_DEMAND" if st == "RESOLVED" and ht == "human" else "NOT_AUTHORIZED"))
+                self.assertEqual((c["status"], c["principal_type"], c["verdict"]), (st, ht, expected))
+                # The one durable check against the LIVE record: a lifecycle transition may legitimately
+                # move `status`, but the principal that authorized a demand never stops being a human.
+                live = gate.ROOT / "badf/demands" / f"{c['demand']}.json"
+                if c["principal_type"] == "human" and live.is_file():
+                    self.assertEqual("human", (json.loads(live.read_text(encoding="utf-8")).get("authorized_by") or {}).get("principal_type"),
+                                     f"{c['demand']} no longer records a human authorizing principal")
 
     def test_typed_bindings_recompute_from_the_object_store(self):
         seen = cases("typed-binding-recomputed"); self.assertGreaterEqual(len(seen), 2)

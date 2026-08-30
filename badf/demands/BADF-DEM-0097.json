@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0097",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 225,
+    "url": "https://github.com/bstBizEra/badf/issues/225",
+    "exported_at": "2026-08-30T21:56:20Z",
+    "body_digest": "sha256:bc952d358b4ec5f4417f50ef757513b97e6642abfab857e8cf727f8d2d89d94e"
+  },
+  "title": "GOV-0097: the build shadow's authority case recomputes a different property than it records (live demand status vs the measured snapshot) — 1 failure today, 67 under #220",
+  "problem": "🧠 **ARCHI (BARCHI-2)** — the shadow's authority case recomputes a *different property* than it records\n\n## Stage-Gate\n- **Stage:** 1 intake — a latent defect in a landed test, found by another seat when its work first triggered the condition.\n- **Decision:** Continue — it blocks BARCHI-3's close-out today and arms a 67-case failure under #220.\n- **Over-engineering risk:** rewriting the shadow record to make the test green. **Refused** — the record is a measurement of the past and stays as measured; the test is what is wrong.\n- **Glossary stage(s):** 7 build.\n\n## Observed (reported by BARCHI-3, reproduced here)\n`tests/test_badf_build_shadow.py::test_every_authority_case_replays_from_the_demand_record` reads each demand from the **live working tree** and asserts the record's stored `status` equals it. But the stored value is a **snapshot of a mutable field**, taken at the record's `measured_on` (`8f3d805`). The moment a demand legitimately reaches a terminal state, the equality breaks:\n\n```\nwp='WP-2026-0100': ('AUTHORIZED','human','AUTHORIZED_HUMAN') != ('RESOLVED','human','CLOSED_DEMAND')\n```\n\nBARCHI-3 discharged `BADF-DEM-0087` in their close-out; nothing is wrong with that transition, and nothing is wrong with the record. **My test is wrong.**\n\n**It is the only case class in the module that does this.** `request-digest-bound`, `typed-binding-recomputed` and `fresh-verification-replayed` all recompute at a pinned revision (`show(c[\"landed_as\"], …)`); the authority case reads the present. So it measures *\"is this demand currently AUTHORIZED\"* when the record claims *\"was this demand human-authorized as measured\"* — the same proxy-vs-property class as tonight's other four findings.\n\n**Scale:** all 67 `authority-replayed` cases store `AUTHORIZED`. Under #220 (derived terminality), every finished demand stops sitting `AUTHORIZED` and **all 67 fail at once**. Today's single collision is the leading edge.\n\n## Acceptance criteria (WP-2026-0110 / BADF-DEM-0097)\n- The authority case recomputes the demand **at the record's `measured_on`**, reproducing exactly what the generator read; the assertion stays an exact triple comparison — **not** loosened to \"AUTHORIZED or any terminal state\" (that would keep it green by proving less).\n- Demand absent at `measured_on` still recomputes symmetrically (`ABSENT` → `NOT_AUTHORIZED`), as the generator does.\n- **Failing-first is demonstrated, not asserted:** with a demand flipped to a terminal state, the test is red before the fix and green after; the probe is restored byte-identically.\n- `examples/build-shadow-evidence.json` is **not** re-measured or edited. No other test, gate or family surface changes.\n\n## Tests\n- `test_every_authority_case_replays_from_the_demand_record` (fixed) · the other six shadow cases and the contract/activation pins unchanged and green.\n\n## Out of scope\n- #220's derived-terminality work itself (this fix makes the shadow survive it, which is the point); re-measuring the record; other families' surfaces.\n\n**Version tier:** patch. **Lean mode:** advisory. Review: BADF-QA + BADF-REV. Executed through the `badf-build` workflow.\n\n<!-- agent: architect -->\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-30T21:56:20Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "The build shadow's authority case compared a stored snapshot of a mutable field against its live value, so its CLOSED_DEMAND branch was unreachable and any legitimate demand transition reddened it (1 case today via #224; all 67 under #220). Fix: recompute at the record's measured_on, exactly as the generator did, plus a durable live check that the authorizing principal is still human. The record is not re-measured."
+}
