@@ -1,0 +1,2050 @@
+diff --git a/badf/demands/BADF-DEM-0091.json b/badf/demands/BADF-DEM-0091.json
+new file mode 100644
+index 0000000..5e3bfd5
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0091.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0091",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 203,
++    "url": "https://github.com/bstBizEra/badf/issues/203",
++    "exported_at": "2026-08-30T18:35:36Z",
++    "body_digest": "sha256:7d8fc13bd7c2708ef1925145910c132da5e07f61639802feb98de0f6083f2c66"
++  },
++  "title": "GOV-0087: WP-BLD-E — admit badf-build SHADOWED → ACTIVE (operator admission pre-authorized on #188; registry status flip only, no authority granted; shadow non-coverage carried verbatim)",
++  "problem": "🧠 **ARCHI (BARCHI-2)** — plan for WP-BLD-E: admit `badf-build` `SHADOWED → ACTIVE` (the operator's decision, pre-authorized on #188 and still evidence-gated)\n\n## Stage-Gate\n- **Stage:** 7 governance-scaling (a status admission on a shipped family; no new architecture).\n- **Decision:** Continue — the operator authorized A→E \"as ACTIVE\" on #188 (comment 5469168780); this issue records the admission *evidence* the decision rests on.\n- **Over-engineering risk:** none new — registry flip, ladder note, test pins, doctrine. The temptation to \"improve\" the family while flipping the status is the risk — refused.\n- **Glossary stage(s):** 7 build / 13 handover of a family; nothing later pulled in.\n\n## Observed — every rung below `ACTIVE` met on `main`\n| Rung | Evidence |\n|---|---|\n| `DESIGNED` | BLD-A `cf431fa` (#190): thin router, BLD-I01…I18, fourteen references, external methodology REFERENCE/ADAPT |\n| `IMPLEMENTED` | BLD-B `6814a24` (#193): four typed G07 schemas, the self-dossier binds exact SHAs / content tree / surfaces / the author's red-green log, hash-chained build ledger |\n| `VALIDATED` | BLD-C `8f3d805` (#196): seven deterministic controls C1–C7 in `badf_gate.py`, failing-first, mutation 7/7, independent QA + REV by BARCHI-1 |\n| `SHADOWED` | BLD-D PR #202 (#197; landing SHA recorded at engineering time): every landed G07 self-dossier replayed — requests digest-bound, demands human-authorized, typed bindings exact, no `PASS` without a composed run; **non-coverage declared: C3, C4, C6, C7 have no historical corpus** |\n| `APPROVED` | **this issue** — the operator's admission |\n| `ACTIVE` | pinned digest already present and unchanged since the freeze |\n\n## Acceptance criteria (WP-2026-0104 / BADF-DEM-0091)\n- `badf/skill-registry.json`: `badf-build` `SHADOWED → ACTIVE`; `source`, `digest`, `risk_class` C1, `allowed_tools: []` **unchanged**; `SKILL.md` untouched.\n- **Activation grants no authority**: no `scripts/badf_build.py`, no mutation path, no push/merge/release tool; `BUILD ≠ INTEGRATION` holds after the flip; the human still merges (BADF-MAIN-001).\n- The admission is recorded in a doctrine section citing this issue, the four landing SHAs, and — verbatim — the shadow's non-coverage (C3/C4/C6/C7 scratch-proven only; no real build controller run yet). `ACTIVE` does not erase it.\n- Test pins move with the truth: `test_badf_build_contract` (`…_is_active_…`), `test_badf_build_shadow` (`SHADOWED` → `ACTIVE` token and pin); the contract-surface guard unchanged.\n- Own composition record + typed self-dossier; reconciles the land-time-current WP.\n\n## Test list\n- `test_root_is_active_with_the_frozen_digest` · `test_activation_grants_no_authority` · `test_admission_doctrine_cites_authorization_and_non_coverage` · updated pins green · full suite green in CI on the composed tree.\n\n## Out of scope\n- Any change to the controls, the producer, the schemas, the workflow or the references; a real-project re-shadow (its own deferred issue, trigger = the first Work Package executed through `badf-build`'s workflow).\n\n**Version tier:** patch (governance-only). **Lean mode:** disabled (authority-adjacent admission).\n\n🛑 **STOP for the record:** the operator pre-authorized the admission on #188; this issue exists so the decision is bound to the evidence above, with the non-coverage stated. Proceeds under that authorization once BLD-D lands, unless the operator objects here.\n\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T18:35:36Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-BLD-E: admit badf-build SHADOWED -> ACTIVE by registry status flip only (digest unchanged, allowed_tools [], no authority granted); operator admission pre-authorized on #188 (comment 5469168780) and bound to the evidence on #203; the shadow's C3/C4/C6/C7 non-coverage and the re-shadow trigger carried verbatim into the doctrine."
++}
+diff --git a/badf/demands/BADF-DEM-0093.json b/badf/demands/BADF-DEM-0093.json
+new file mode 100644
+index 0000000..db9f98a
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0093.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0093",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 207,
++    "url": "https://github.com/bstBizEra/badf/issues/207",
++    "exported_at": "2026-08-30T19:06:59Z",
++    "body_digest": "sha256:795d7a3911d0a361451b1e090b384d654b374667029223ee31f64bbe4068790b"
++  },
++  "title": "GOV-0089: WP-VER-D — shadow the G08 verification controls on the material BADF has (historical dossier untouched · five real review-verdict records encoded honestly · representative injected defects); badf-engineering-verification → SHADOWED",
++  "problem": "🧠 **ARCHI (BARCHI-3)** — plan for WP-VER-D: shadow the G08 verification controls on the material BADF has (`badf-engineering-verification` → `SHADOWED`)\n\n## Stage-Gate\n- **Stage:** 5 workflow-integration → the controls replayed on real G08 history and on representative typed dossiers, without affecting any gate.\n- **Decision:** Continue — rung D of the ladder authorized on #195.\n- **Over-engineering risk:** a reviewer executor to \"generate\" real reviews, a generator tool in the repo, or a shadow that claims real-project coverage the corpus cannot give. Refused: the record is regenerated once and **recomputed by the tests on every run** (the badf-git / BLD-D precedent); every metric the corpus cannot measure is declared as non-coverage, not implied; no gate, schema or lifecycle change (ladder-internal).\n- **Glossary stage(s):** 8 engineering verification.\n\n## Observed (measured on `main` after #205) — what G08 material exists\n- **One real G08 dossier:** `work/WP-2026-0010/gate-dossier.G08.json` (foreign project `secb_pf`; `PASS_WITH_CONDITIONS`; four **generic**, agent-produced objects; `contract-test` declared `NOT_APPLICABLE`; three carried conditions). It is the additive-path case: `check_g08_binding` and `check_g08_dossier` must leave it exactly as it validates today (`APPROVED_WITH_CONDITIONS`, mirror-gated).\n- **Real independent reviews, untyped:** BARCHI-1's objects-level verdicts on PRs #196 (BLD-C), #201 (VER-B), #202 (BLD-D), #205 (VER-C) — genuine non-authoring reviews with findings, probes and non-coverage stated in prose, **none of them a typed `independent-review` or a verification record**. BADF's own work packages stop at the G07 self-dossier; no typed G08 dossier exists on `main`.\n- **Honest caveat, first sentence of the evidence (the SOL-D / SEC-D / IMP-D form):** the typed-object shadow is therefore **representative**, and the real-history part is a **replay of prose reviews encoded after the fact** — said plainly; a real typed re-shadow is owed the first time a project passes G08 with typed objects, and the operator may hold `ACTIVE` until then.\n\n## Acceptance criteria (WP-2026-0106 / BADF-DEM-0093 — re-measured at filing on `5b428f7`; BARCHI-1 and BARCHI-2 both cleared; encoding conditions from the encoded reviewer adopted) — three case classes, one record, recomputed on every run\n- **`examples/verification-shadow-evidence.json`** — the `verification-shadow` record (`measured_on`, `corpus`, `cases[]`, `runner_citations`, `non_coverage`) with:\n  - **`historical-generic-dossier` (1):** WP-2026-0010 replayed through `check_g08_binding` (4 objects → pass-through) and `check_g08_dossier` (→ silent), verdict `UNTOUCHED`; the three carried conditions and the declared `contract-test` non-coverage read back as recorded.\n  - **`real-review-encoded` (5):** BARCHI-1's verdict arc on PRs #196 / #201 / #202 / #205 encoded as verification records — **single-reviewer, exactly what was posted, never inflated into a council** (the reviewer's own honesty condition): one ballot per record (`reviewer: BARCHI-1`, `reviewer_run_id` = the real comment id, `sealed_input_digest` = sha256 of head SHA + PR number, labeled RECONSTRUCTED); #196 encoded as its real **two-record arc** — Request-Changes on the synthetic-id collision (a genuine MAJOR finding, `VF-…` with the real defect) then Approved on the fix head `23866e7` with the finding `RESOLVED`; #201 / #202 / #205 as `APPROVE` with the reviewer's stated probes as `INFO` findings and their stated non-coverage carried verbatim; `matrix` rows `PARTIAL` where no composed observation was encoded. Each validated by `badf_gate.py verify` → `VERIFY PASS`, each **refused** when tampered (ballot digest changed, the #196 finding erased, `VERIFIED` without a composed ref). Provenance: real comment ids and head SHAs cited; the encoding is RECONSTRUCTED from prose, and the records claim an independent single-reviewer verdict — nothing more. **COI disclosed:** BARCHI-1 is both the encoded party and the seat's usual reviewer; BARCHI-2 (not encoded) co-reviews the encoding class for accuracy; BARCHI-1's verdict discloses the COI.\n  - **`representative-typed-dossier` (≥8 defects + 2 clean):** representative G08 dossiers with typed objects spanning the outcome space — a clean C1 dossier (`APPROVED`), a clean C2 dossier with a two-ballot record (`APPROVED`), and injected defects each of which one control must refuse: divergent trees (C1/C2), author-as-reviewer without the carried deviation (C3), one-ballot C2 (C3), untyped agent observation under `runtime_required` (C4), empty non-coverage (C5), OPEN MAJOR passed over / unmapped (C6), `composed-tree-test` declared `NOT_APPLICABLE` (C7), a bare-PASS review (VER-I10), an `INDETERMINATE` contract serialised as PASS (VER-I14). Each run through the **real** `validate_dossier` in a scratch clone (the BLD-B/C test harness) and through `check_g08_dossier` directly; outcome recorded as `REFUSED(<control>)` / `ADMITTED`.\n- **Metrics, measured and named:** true refusals / injected defects (target 10/10), false refusals on clean dossiers (target 0/2), missed defects (0), duplicate-finding rate on the encoded reviews, severity drift (none — the encoding carries INFO only, declared), **reviewer correlation: not measurable (one reviewer seat) → non-coverage**, non-coverage quality (every encoded review carries ≥1 declared surface).\n- **`tests/test_badf_verification_shadow.py`** recomputes every case from the repository with the real tools (WP-2026-0010's objects from disk; the encoded records through `validate_verification_record`; the representative dossiers through `validate_dossier` in a scratch clone) and **refuses a tampered shadow record** (a case whose recomputed outcome differs, a missing non-coverage entry); thresholds at the measured counts.\n- **`skills/badf-engineering-verification/evidence/shadow-evidence.md`** — the honest first sentence, the measurement table, non-coverage named (no typed real G08 dossier; one reviewer seat; representative injected defects; prose reviews reconstructed), why the root stays `VALIDATED` → `SHADOWED` and not `ACTIVE`.\n- Registry `badf-engineering-verification` `VALIDATED → SHADOWED` (digest unchanged); contract-test pin moved to rung D; doctrine section; DEM export; own composition record + typed self-dossier; reconciles the land-time-current WP. **No gate, schema or lifecycle change** (ladder-internal).\n\n## Tests\n- `test_shadow_record_is_well_formed_and_names_non_coverage` · `test_historical_generic_dossier_is_untouched` · `test_encoded_real_reviews_verify_and_refuse_tampering` · `test_representative_defects_are_refused_and_clean_dossiers_admitted` · `test_metrics_match_the_record` · `test_tampered_shadow_record_is_refused` · `test_doc_names_every_case_and_gap_and_root_is_shadowed`.\n\n## Out of scope\n- Admission (VER-E: the operator's decision on this evidence, asked — not pre-granted); a reviewer executor; a real typed G08 dossier for a BADF WP (no BADF WP passes G08 with typed objects yet — the re-shadow trigger); `badf-security-assurance`.\n\n**Version tier:** patch (evidence + docs + tests + registry status). **Lean mode:** advisory. **Ladder-internal** (no shared surface) — lands under the standing evidence bar; a non-authoring read is welcome but not gating.\n\n🛑 **STOP — awaiting operator approval of this plan** (covered by the #195 A→E authorization; recorded here for the ledger). No branch, no files until VER-C (#205) has landed and the id triple is re-confirmed with the other seats.\n\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T19:06:59Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-VER-D: shadow the G08 controls -- WP-2026-0010 UNTOUCHED (additive proof measured); five RECONSTRUCTED single-reviewer records of BARCHI-1's real verdict arc (#196 Request-Changes->Approved with the synthetic-id MAJOR finding; #201/#202/#205), each verify-accepted and tamper-refused; 12 representative dossiers (10 injected defects refused, every control owning >=1; 2 clean admitted); metrics + non-coverage named (one reviewer seat; prose reconstruction; representative fixtures); registry VALIDATED->SHADOWED. Encoded reviewer's honesty conditions adopted; COI disclosed, BARCHI-2 co-reviews the encoding class. Ladder-internal. VER-E = operator admission on this evidence, not pre-granted."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 625b6dd..db8bad6 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -298,7 +298,7 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "SHADOWED",
++      "status": "ACTIVE",
+       "digest": "sha256:6cc3266ecde8bf6ed14fc3b5ae3b1de38a42154242d9b7517ca6f0cdb38bf0f3"
+     },
+     {
+@@ -308,7 +308,7 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "VALIDATED",
++      "status": "SHADOWED",
+       "digest": "sha256:5c68c9c629ef8854600f4e8024bb095833ae4671e9c38b8d48724aadcf57bcad"
+     }
+   ]
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index b7648e4..3574451 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1476,6 +1476,53 @@ BLD-C's `tdd_exception` and `discovery_allowance` — additive, as every plannin
+ disabled: these are HARD INVARIANTS. **Ladder:** VER-D shadows the controls on the G08 material BADF has
+ (WP-2026-0010's dossier and the seats' review history, with known and injected defects); VER-E is the
+ operator's admission on that evidence.
++## badf-build → ACTIVE — BLD-E admission (`BADF-WP-0104`, Issue #203 / GOV-0087)
++
++`badf-build` is admitted `SHADOWED → ACTIVE` by **registry status flip only**: `digest` is the GIT-A-style
++freeze value (`SKILL.md` untouched since BLD-A), `allowed_tools: []`, `risk_class` C1. The authorization is the
++operator's decision — pre-authorized for the whole ladder on #188 (comment 5469168780, "proceed on your
++call to build the badf-build from WP-BLD-A - WP-BLD-E as ACTIVE") and bound to the evidence on #203. Every
++rung below was met on `main` before the flip: BLD-A `cf431fa` (contract, BLD-I01…I18), BLD-B `6814a24`
++(typed G07 evidence, build ledger), BLD-C `8f3d805` (seven deterministic controls, mutation-killed,
++independently reviewed), BLD-D `07c23f7` (shadow on every landed self-dossier: requests digest-bound,
++demands human-authorized, typed bindings exact, no `PASS` without a composed run).
++
++**Activation changes what the family *is*, not what it *may do*.** `BUILD ≠ INTEGRATION` holds after the
++flip exactly as before it: no `scripts/badf_build.py`, no mutation path, no push/merge/release tool; the
++seven controls and the typed producer are byte-untouched; the human still merges (BADF-MAIN-001).
++
++**`ACTIVE` does not erase the shadow's non-coverage.** It is carried here verbatim: **C3** scope
++containment, **C4** red before green / explicit exception, **C6** budget and stop, **C7** delegation subset
++have **no historical corpus** — nothing on the ledger ever declared `expected_surfaces`, `test_obligations`,
++a `RETRY`/`STOP` or a delegation — and are proven on scratch fixtures only; **no build controller** has yet
++executed a Work Package through the workflow. `ACTIVE` therefore means "admitted on the program's own
++builds, with four controls proven only on scratch", and not more; the first real project — or the first
++build executed under the contract — is the deferred re-shadow's trigger.
++
++## badf-engineering-verification → SHADOWED — the G08 controls on the material BADF has (`BADF-WP-0106` / WP-VER-D, Issue #207 / GOV-0089)
++
++Three case classes, one record (`examples/verification-shadow-evidence.json`), every case recomputed from
++the repository on every run by `tests/test_badf_verification_shadow.py` — and the honest first sentence
++states what is real, what is reconstructed and what is representative. **`historical-generic-dossier`:**
++WP-2026-0010 — the only real G08 dossier, four binding-less agent-produced objects — replays UNTOUCHED
++through `check_g08_binding` and `check_g08_dossier` (the additive proof, now measured, not just asserted).
++**`real-review-encoded` (5):** BARCHI-1's real verdict arc — #196 **Request Changes** (the synthetic-id
++collision, a genuine OPEN `MAJOR` finding) → **Approved** on the fix head with the finding `RESOLVED` and
++the `WP-2026-9999` sentinel as resolution evidence, then #201 / #202 / #205 — encoded under the encoded
++reviewer's own honesty conditions: one ballot per record, the real comment id as `reviewer_run_id`, sealed
++digest labeled RECONSTRUCTED, no council claimed, non-coverage carried verbatim, matrix rows `PARTIAL`
++(no composed observation can be reconstructed from prose). `badf_gate.py verify` accepts all five and
++refuses tampering — the digest changed, the #196 finding erased (VER-I12), `VERIFIED` without a composed
++ref (VER-I15). **`representative-typed-dossier` (12):** ten injected defects each refused by the control
++that owns it — every control C1–C7 owns at least one refusal — and two clean dossiers admitted (0 false
++refusals). Metrics measured and named; **reviewer correlation is NOT MEASURABLE with one reviewer seat**
++— a non-coverage the future BADF-QA / BADF-REV seats exist to close.
++
++**COI, disclosed:** the encoded reviewer is also the seat's usual reviewer; BARCHI-2 (not encoded)
++co-reviews the encoding class for fidelity. Registry `VALIDATED → SHADOWED` (digest unchanged); no gate,
++schema or lifecycle change (ladder-internal). **Admission (`VER-E`) is the operator's decision on this
++evidence, asked on its own issue — never pre-granted**; the real typed re-shadow trigger (first project
++G08 with typed objects) is filed as a deferred issue at close-out, mirroring #185 / #166.
+ 
+ ## Discovery ≠ scope expansion
+ 
+diff --git a/examples/verification-record-pr196-approved.json b/examples/verification-record-pr196-approved.json
+new file mode 100644
+index 0000000..7737541
+--- /dev/null
++++ b/examples/verification-record-pr196-approved.json
+@@ -0,0 +1,116 @@
++{
++  "schema_version": "1.0.0",
++  "id": "VR-WP-2026-0099-PR196-APPROVED",
++  "work_package_id": "WP-2026-0099",
++  "gate": "G08",
++  "target": {
++    "source_revision": "23866e7a616740f63a346cf19ac278b891c5fddb",
++    "target_base_sha": "e1423ad43b63491292c983435fae4bff11185cde",
++    "expected_content_tree": "ec92ce19c1abfb41f6cd0c7a093292765f3915a1",
++    "sealed_input_digest": "sha256:d095980ab15ca2e07b76fb4b581db8eef0c6ef57e38e05254471b66000903c8f"
++  },
++  "change_class": "C2",
++  "lenses_routed": [
++    "correctness",
++    "quality/test"
++  ],
++  "ballots": [
++    {
++      "ballot_id": "BALLOT-5470235706",
++      "reviewer": "BARCHI-1",
++      "principal_type": "agent",
++      "reviewer_run_id": "5470235706",
++      "sealed_input_digest": "sha256:d095980ab15ca2e07b76fb4b581db8eef0c6ef57e38e05254471b66000903c8f",
++      "verdict": "APPROVE",
++      "finding_ids": [
++        "VF-001"
++      ],
++      "non_coverage": [
++        {
++          "surface": "encoding",
++          "reason": "RECONSTRUCTED from PR #196 comment 5470235706; the reviewer posted a prose verdict, not this record"
++        }
++      ]
++    }
++  ],
++  "independence": {
++    "reviewer_run_id": "5470235706",
++    "author_run_id": "barchi-2-build-session",
++    "same_execution": false,
++    "sealed_input_digest": "sha256:d095980ab15ca2e07b76fb4b581db8eef0c6ef57e38e05254471b66000903c8f",
++    "prior_findings_visible": false,
++    "author_reasoning_visible": false,
++    "cross_pass_communication_before_ballot": false,
++    "target_digest_equal": true,
++    "conflicts_of_interest": []
++  },
++  "findings": [
++    {
++      "finding_id": "VF-001",
++      "kind": "DEFECT",
++      "severity": "MAJOR",
++      "baseline_ref": "GOV-0085: synthetic test ids must be unallocatable",
++      "observed_ref": "23866e7a616740f63a346cf19ac278b891c5fddb",
++      "affected_elements": [],
++      "evidence_locations": [
++        "tests/test_badf_compose.py",
++        "tests/test_badf_reconcile.py"
++      ],
++      "expected": "tests use an id the sequential ledger can never allocate as their never-exists fixture",
++      "observed": "tests used WP-2026-0099 as a never-exists id and the ledger counter reached it, so the fixtures collided with a real work package",
++      "impact": "false test outcomes on any branch carrying WP-2026-0099; CI red on the reviewed head",
++      "failure_scenario": "the counter allocates the sentinel id; the never-exists assertions now name an existing work package and the suite judges the wrong world",
++      "recommendation_direction": "repoint both fixtures to the unallocatable sentinel WP-2026-9999",
++      "status": "RESOLVED",
++      "non_coverage": [],
++      "lens": "correctness",
++      "reported_by": [
++        "BALLOT-5470235706"
++      ],
++      "also_reported_by": [],
++      "requirement_refs": [
++        "GOV-0085"
++      ],
++      "evidence_refs": [
++        "the WP-2026-9999 sentinel adopted on the fix head 23866e7 (both fixtures repointed)",
++        "check-run 99293746699 (success)"
++      ]
++    }
++  ],
++  "synthesis": {
++    "withdrawn": [],
++    "downgraded": []
++  },
++  "evidence_index": [],
++  "matrix": [
++    {
++      "claim_ref": "BLD-C: seven deterministic G07 controls",
++      "change_ref": "23866e7a616740f63a346cf19ac278b891c5fddb",
++      "review_refs": [
++        "BALLOT-5470235706"
++      ],
++      "integration_refs": [],
++      "contract_refs": [],
++      "composed_refs": [],
++      "result": "PARTIAL"
++    }
++  ],
++  "non_coverage": [
++    {
++      "surface": "encoding provenance",
++      "reason": "RECONSTRUCTED from PR #196 comment 5470235706 (head 23866e7, fix head; finding resolved); real comment id and check-run 99293746699 cited"
++    },
++    {
++      "surface": "council quorum",
++      "reason": "single-reviewer verdict, exactly as posted; no council was convened (pre-BADF-QA/REV arrangement, deviation recorded)"
++    },
++    {
++      "surface": "composed observation",
++      "reason": "no composed-tree observation encoded from prose; matrix rows PARTIAL by construction"
++    }
++  ],
++  "authority": {
++    "verification_authority": false
++  },
++  "recorded_at": "2026-08-30T19:05:31Z"
++}
+diff --git a/examples/verification-record-pr196-request-changes.json b/examples/verification-record-pr196-request-changes.json
+new file mode 100644
+index 0000000..a74534a
+--- /dev/null
++++ b/examples/verification-record-pr196-request-changes.json
+@@ -0,0 +1,115 @@
++{
++  "schema_version": "1.0.0",
++  "id": "VR-WP-2026-0099-PR196-REQUEST-CHANGES",
++  "work_package_id": "WP-2026-0099",
++  "gate": "G08",
++  "target": {
++    "source_revision": "2c93d605e2069840d725ff49dc675c0936e7fb19",
++    "target_base_sha": "6814a244b3ac7850ef2165f39e24cd685261cba8",
++    "expected_content_tree": "be12ef93e2cf4c5efe0e89be5c85e093126cd25e",
++    "sealed_input_digest": "sha256:73bdd5b19bbcee6b654ae4cd738cf224131214236da10c07938e504f1502682c"
++  },
++  "change_class": "C2",
++  "lenses_routed": [
++    "correctness",
++    "quality/test"
++  ],
++  "ballots": [
++    {
++      "ballot_id": "BALLOT-5469987101",
++      "reviewer": "BARCHI-1",
++      "principal_type": "agent",
++      "reviewer_run_id": "5469987101",
++      "sealed_input_digest": "sha256:73bdd5b19bbcee6b654ae4cd738cf224131214236da10c07938e504f1502682c",
++      "verdict": "REJECT",
++      "finding_ids": [
++        "VF-001"
++      ],
++      "non_coverage": [
++        {
++          "surface": "encoding",
++          "reason": "RECONSTRUCTED from PR #196 comment 5469987101; the reviewer posted a prose verdict, not this record"
++        }
++      ]
++    }
++  ],
++  "independence": {
++    "reviewer_run_id": "5469987101",
++    "author_run_id": "barchi-2-build-session",
++    "same_execution": false,
++    "sealed_input_digest": "sha256:73bdd5b19bbcee6b654ae4cd738cf224131214236da10c07938e504f1502682c",
++    "prior_findings_visible": false,
++    "author_reasoning_visible": false,
++    "cross_pass_communication_before_ballot": false,
++    "target_digest_equal": true,
++    "conflicts_of_interest": []
++  },
++  "findings": [
++    {
++      "finding_id": "VF-001",
++      "kind": "DEFECT",
++      "severity": "MAJOR",
++      "baseline_ref": "GOV-0085: synthetic test ids must be unallocatable",
++      "observed_ref": "2c93d605e2069840d725ff49dc675c0936e7fb19",
++      "affected_elements": [],
++      "evidence_locations": [
++        "tests/test_badf_compose.py",
++        "tests/test_badf_reconcile.py"
++      ],
++      "expected": "tests use an id the sequential ledger can never allocate as their never-exists fixture",
++      "observed": "tests used WP-2026-0099 as a never-exists id and the ledger counter reached it, so the fixtures collided with a real work package",
++      "impact": "false test outcomes on any branch carrying WP-2026-0099; CI red on the reviewed head",
++      "failure_scenario": "the counter allocates the sentinel id; the never-exists assertions now name an existing work package and the suite judges the wrong world",
++      "recommendation_direction": "repoint both fixtures to the unallocatable sentinel WP-2026-9999",
++      "status": "OPEN",
++      "non_coverage": [],
++      "lens": "correctness",
++      "reported_by": [
++        "BALLOT-5469987101"
++      ],
++      "also_reported_by": [],
++      "requirement_refs": [
++        "GOV-0085"
++      ],
++      "evidence_refs": [
++        "check-run 99286794583 (failure)"
++      ]
++    }
++  ],
++  "synthesis": {
++    "withdrawn": [],
++    "downgraded": []
++  },
++  "evidence_index": [],
++  "matrix": [
++    {
++      "claim_ref": "BLD-C: seven deterministic G07 controls",
++      "change_ref": "2c93d605e2069840d725ff49dc675c0936e7fb19",
++      "review_refs": [
++        "BALLOT-5469987101"
++      ],
++      "integration_refs": [],
++      "contract_refs": [],
++      "composed_refs": [],
++      "result": "PARTIAL"
++    }
++  ],
++  "non_coverage": [
++    {
++      "surface": "encoding provenance",
++      "reason": "RECONSTRUCTED from PR #196 comment 5469987101 (head 2c93d60, CI red; one anchored defect); real comment id and check-run 99286794583 cited; target binds the RC head's OWN content tree be12ef9 (recomputed with the gate's content_tree; independently measured by BADF-REV F4) and the base main stood at when the verdict posted (6814a24)"
++    },
++    {
++      "surface": "council quorum",
++      "reason": "single-reviewer verdict, exactly as posted; no council was convened (pre-BADF-QA/REV arrangement, deviation recorded)"
++    },
++    {
++      "surface": "composed observation",
++      "reason": "no composed-tree observation encoded from prose; matrix rows PARTIAL by construction"
++    }
++  ],
++  "authority": {
++    "verification_authority": false
++  },
++  "recorded_at": "2026-08-30T19:05:31Z"
++}
+diff --git a/examples/verification-record-pr201.json b/examples/verification-record-pr201.json
+new file mode 100644
+index 0000000..f7d676a
+--- /dev/null
++++ b/examples/verification-record-pr201.json
+@@ -0,0 +1,86 @@
++{
++  "schema_version": "1.0.0",
++  "id": "VR-WP-2026-0103-PR201",
++  "work_package_id": "WP-2026-0103",
++  "gate": "G08",
++  "target": {
++    "source_revision": "9937ed2c4f4972a258cefe2a3fb2e4288e2c67c3",
++    "target_base_sha": "8f3d80548cc9804403ad61040fc5517d2a574541",
++    "expected_content_tree": "eeb7b820e35cc4ae93140da067a9b701466b72cc",
++    "sealed_input_digest": "sha256:2f2adfdc88166a01046dcd43b362aaa273af222c8277356cb496a79bea3c842b"
++  },
++  "change_class": "C2",
++  "lenses_routed": [
++    "correctness",
++    "quality/test"
++  ],
++  "ballots": [
++    {
++      "ballot_id": "BALLOT-5470380581",
++      "reviewer": "BARCHI-1",
++      "principal_type": "agent",
++      "reviewer_run_id": "5470380581",
++      "sealed_input_digest": "sha256:2f2adfdc88166a01046dcd43b362aaa273af222c8277356cb496a79bea3c842b",
++      "verdict": "APPROVE",
++      "finding_ids": [],
++      "non_coverage": [
++        {
++          "surface": "encoding",
++          "reason": "RECONSTRUCTED from PR #201 comment 5470380581; the reviewer posted a prose verdict, not this record"
++        }
++      ]
++    }
++  ],
++  "independence": {
++    "reviewer_run_id": "5470380581",
++    "author_run_id": "barchi-3-build-session",
++    "same_execution": false,
++    "sealed_input_digest": "sha256:2f2adfdc88166a01046dcd43b362aaa273af222c8277356cb496a79bea3c842b",
++    "prior_findings_visible": false,
++    "author_reasoning_visible": false,
++    "cross_pass_communication_before_ballot": false,
++    "target_digest_equal": true,
++    "conflicts_of_interest": []
++  },
++  "findings": [],
++  "synthesis": {
++    "withdrawn": [],
++    "downgraded": []
++  },
++  "evidence_index": [],
++  "matrix": [
++    {
++      "claim_ref": "VER-B: typed G08 evidence + verify",
++      "change_ref": "9937ed2c4f4972a258cefe2a3fb2e4288e2c67c3",
++      "review_refs": [
++        "BALLOT-5470380581"
++      ],
++      "integration_refs": [],
++      "contract_refs": [],
++      "composed_refs": [],
++      "result": "PARTIAL"
++    }
++  ],
++  "non_coverage": [
++    {
++      "surface": "encoding provenance",
++      "reason": "RECONSTRUCTED from PR #201 comment 5470380581 (head 9937ed2, 14/14 adversarial probes); real comment id and check-run 99296847838 cited"
++    },
++    {
++      "surface": "stated probes",
++      "reason": "NOT encoded as findings -- a passed probe is not a defect (VER-I03); this deviates from the #207 plan text ('probes as INFO findings') deliberately and is declared here; the probes remain in the cited public comment"
++    },
++    {
++      "surface": "council quorum",
++      "reason": "single-reviewer verdict, exactly as posted; no council was convened (pre-BADF-QA/REV arrangement, deviation recorded)"
++    },
++    {
++      "surface": "composed observation",
++      "reason": "no composed-tree observation encoded from prose; matrix rows PARTIAL by construction"
++    }
++  ],
++  "authority": {
++    "verification_authority": false
++  },
++  "recorded_at": "2026-08-30T19:05:31Z"
++}
+diff --git a/examples/verification-record-pr202.json b/examples/verification-record-pr202.json
+new file mode 100644
+index 0000000..3b3f414
+--- /dev/null
++++ b/examples/verification-record-pr202.json
+@@ -0,0 +1,86 @@
++{
++  "schema_version": "1.0.0",
++  "id": "VR-WP-2026-0101-PR202",
++  "work_package_id": "WP-2026-0101",
++  "gate": "G08",
++  "target": {
++    "source_revision": "af43e496f1ba2136e9b6079c3e30a46096c7bac8",
++    "target_base_sha": "dcbcc54cc8f629ab5c0a98e08ddf7ba967c6562f",
++    "expected_content_tree": "6e45715784b8daf486e45b8de0a2e2fda0c6210a",
++    "sealed_input_digest": "sha256:1d074a6763f09df257b12912cfcd1b623ff87bc411d5f2830525e882e56074d7"
++  },
++  "change_class": "C2",
++  "lenses_routed": [
++    "correctness",
++    "quality/test"
++  ],
++  "ballots": [
++    {
++      "ballot_id": "BALLOT-5470510051",
++      "reviewer": "BARCHI-1",
++      "principal_type": "agent",
++      "reviewer_run_id": "5470510051",
++      "sealed_input_digest": "sha256:1d074a6763f09df257b12912cfcd1b623ff87bc411d5f2830525e882e56074d7",
++      "verdict": "APPROVE",
++      "finding_ids": [],
++      "non_coverage": [
++        {
++          "surface": "encoding",
++          "reason": "RECONSTRUCTED from PR #202 comment 5470510051; the reviewer posted a prose verdict, not this record"
++        }
++      ]
++    }
++  ],
++  "independence": {
++    "reviewer_run_id": "5470510051",
++    "author_run_id": "barchi-2-build-session",
++    "same_execution": false,
++    "sealed_input_digest": "sha256:1d074a6763f09df257b12912cfcd1b623ff87bc411d5f2830525e882e56074d7",
++    "prior_findings_visible": false,
++    "author_reasoning_visible": false,
++    "cross_pass_communication_before_ballot": false,
++    "target_digest_equal": true,
++    "conflicts_of_interest": []
++  },
++  "findings": [],
++  "synthesis": {
++    "withdrawn": [],
++    "downgraded": []
++  },
++  "evidence_index": [],
++  "matrix": [
++    {
++      "claim_ref": "BLD-D: shadow on 67 landed self-dossiers",
++      "change_ref": "af43e496f1ba2136e9b6079c3e30a46096c7bac8",
++      "review_refs": [
++        "BALLOT-5470510051"
++      ],
++      "integration_refs": [],
++      "contract_refs": [],
++      "composed_refs": [],
++      "result": "PARTIAL"
++    }
++  ],
++  "non_coverage": [
++    {
++      "surface": "encoding provenance",
++      "reason": "RECONSTRUCTED from PR #202 comment 5470510051 (head af43e49, ladder-internal); real comment id and check-run 99300701682 cited"
++    },
++    {
++      "surface": "stated probes",
++      "reason": "NOT encoded as findings -- a passed probe is not a defect (VER-I03); this deviates from the #207 plan text ('probes as INFO findings') deliberately and is declared here; the probes remain in the cited public comment"
++    },
++    {
++      "surface": "council quorum",
++      "reason": "single-reviewer verdict, exactly as posted; no council was convened (pre-BADF-QA/REV arrangement, deviation recorded)"
++    },
++    {
++      "surface": "composed observation",
++      "reason": "no composed-tree observation encoded from prose; matrix rows PARTIAL by construction"
++    }
++  ],
++  "authority": {
++    "verification_authority": false
++  },
++  "recorded_at": "2026-08-30T19:05:31Z"
++}
+diff --git a/examples/verification-record-pr205.json b/examples/verification-record-pr205.json
+new file mode 100644
+index 0000000..0668210
+--- /dev/null
++++ b/examples/verification-record-pr205.json
+@@ -0,0 +1,86 @@
++{
++  "schema_version": "1.0.0",
++  "id": "VR-WP-2026-0105-PR205",
++  "work_package_id": "WP-2026-0105",
++  "gate": "G08",
++  "target": {
++    "source_revision": "901c16481bc1bde8236d339782f16a3ea6ffbfb3",
++    "target_base_sha": "07c23f7150bcf00c34c418469a6124837d37ee8c",
++    "expected_content_tree": "aff1bcbdd8728730e6482ec14ed4b1709c93e9dd",
++    "sealed_input_digest": "sha256:894a3add358b2cb76c2ac042d0ed8b53c17c6b632677b6437b94b17c57155889"
++  },
++  "change_class": "C2",
++  "lenses_routed": [
++    "correctness",
++    "quality/test"
++  ],
++  "ballots": [
++    {
++      "ballot_id": "BALLOT-5470622958",
++      "reviewer": "BARCHI-1",
++      "principal_type": "agent",
++      "reviewer_run_id": "5470622958",
++      "sealed_input_digest": "sha256:894a3add358b2cb76c2ac042d0ed8b53c17c6b632677b6437b94b17c57155889",
++      "verdict": "APPROVE",
++      "finding_ids": [],
++      "non_coverage": [
++        {
++          "surface": "encoding",
++          "reason": "RECONSTRUCTED from PR #205 comment 5470622958; the reviewer posted a prose verdict, not this record"
++        }
++      ]
++    }
++  ],
++  "independence": {
++    "reviewer_run_id": "5470622958",
++    "author_run_id": "barchi-3-build-session",
++    "same_execution": false,
++    "sealed_input_digest": "sha256:894a3add358b2cb76c2ac042d0ed8b53c17c6b632677b6437b94b17c57155889",
++    "prior_findings_visible": false,
++    "author_reasoning_visible": false,
++    "cross_pass_communication_before_ballot": false,
++    "target_digest_equal": true,
++    "conflicts_of_interest": []
++  },
++  "findings": [],
++  "synthesis": {
++    "withdrawn": [],
++    "downgraded": []
++  },
++  "evidence_index": [],
++  "matrix": [
++    {
++      "claim_ref": "VER-C: seven deterministic G08 controls",
++      "change_ref": "901c16481bc1bde8236d339782f16a3ea6ffbfb3",
++      "review_refs": [
++        "BALLOT-5470622958"
++      ],
++      "integration_refs": [],
++      "contract_refs": [],
++      "composed_refs": [],
++      "result": "PARTIAL"
++    }
++  ],
++  "non_coverage": [
++    {
++      "surface": "encoding provenance",
++      "reason": "RECONSTRUCTED from PR #205 comment 5470622958 (head 901c164, pure-function + wiring probes); real comment id and check-run 99303348306 cited"
++    },
++    {
++      "surface": "stated probes",
++      "reason": "NOT encoded as findings -- a passed probe is not a defect (VER-I03); this deviates from the #207 plan text ('probes as INFO findings') deliberately and is declared here; the probes remain in the cited public comment"
++    },
++    {
++      "surface": "council quorum",
++      "reason": "single-reviewer verdict, exactly as posted; no council was convened (pre-BADF-QA/REV arrangement, deviation recorded)"
++    },
++    {
++      "surface": "composed observation",
++      "reason": "no composed-tree observation encoded from prose; matrix rows PARTIAL by construction"
++    }
++  ],
++  "authority": {
++    "verification_authority": false
++  },
++  "recorded_at": "2026-08-30T19:05:31Z"
++}
+diff --git a/examples/verification-shadow-evidence.json b/examples/verification-shadow-evidence.json
+new file mode 100644
+index 0000000..13fb84d
+--- /dev/null
++++ b/examples/verification-shadow-evidence.json
+@@ -0,0 +1,218 @@
++{
++  "record": "verification-shadow",
++  "schema_version": "1.0.0",
++  "work_package_id": "WP-2026-0106",
++  "repository": "bstBizEra/badf",
++  "measured_on": "5b428f7d6f50312a753296fe2cca26b39d94e7a6",
++  "measured_at": "2026-08-30T19:05:31Z",
++  "corpus": {
++    "historical_g08_dossiers": 1,
++    "real_review_verdicts_encoded": 5,
++    "representative_typed_dossiers": 14
++  },
++  "cases": [
++    {
++      "case_class": "historical-generic-dossier",
++      "subject": "WP-2026-0010",
++      "outcome": "UNTOUCHED",
++      "provenance": {
++        "dossier": "work/WP-2026-0010/gate-dossier.G08.json",
++        "note": "four binding-less agent-produced objects; check_g08_binding pass-through, check_g08_dossier silent"
++      }
++    },
++    {
++      "case_class": "real-review-encoded",
++      "subject": "pr196-request-changes",
++      "outcome": "VERIFY_PASS",
++      "provenance": {
++        "pr": 196,
++        "comment_id": "5469987101",
++        "head": "2c93d605e2069840d725ff49dc675c0936e7fb19",
++        "check_run": "99286794583"
++      }
++    },
++    {
++      "case_class": "real-review-encoded",
++      "subject": "pr196-approved",
++      "outcome": "VERIFY_PASS",
++      "provenance": {
++        "pr": 196,
++        "comment_id": "5470235706",
++        "head": "23866e7a616740f63a346cf19ac278b891c5fddb",
++        "check_run": "99293746699"
++      }
++    },
++    {
++      "case_class": "real-review-encoded",
++      "subject": "pr201",
++      "outcome": "VERIFY_PASS",
++      "provenance": {
++        "pr": 201,
++        "comment_id": "5470380581",
++        "head": "9937ed2c4f4972a258cefe2a3fb2e4288e2c67c3",
++        "check_run": "99296847838"
++      }
++    },
++    {
++      "case_class": "real-review-encoded",
++      "subject": "pr202",
++      "outcome": "VERIFY_PASS",
++      "provenance": {
++        "pr": 202,
++        "comment_id": "5470510051",
++        "head": "af43e496f1ba2136e9b6079c3e30a46096c7bac8",
++        "check_run": "99300701682"
++      }
++    },
++    {
++      "case_class": "real-review-encoded",
++      "subject": "pr205",
++      "outcome": "VERIFY_PASS",
++      "provenance": {
++        "pr": 205,
++        "comment_id": "5470622958",
++        "head": "901c16481bc1bde8236d339782f16a3ea6ffbfb3",
++        "check_run": "99303348306"
++      }
++    },
++    {
++      "case_class": "representative-typed-dossier",
++      "subject": "clean-c1",
++      "outcome": "ADMITTED",
++      "provenance": {
++        "fixture": "tests/test_badf_verification_shadow.py::build_case"
++      }
++    },
++    {
++      "case_class": "representative-typed-dossier",
++      "subject": "clean-c2-council",
++      "outcome": "ADMITTED",
++      "provenance": {
++        "fixture": "tests/test_badf_verification_shadow.py::build_case"
++      }
++    },
++    {
++      "case_class": "representative-typed-dossier",
++      "subject": "divergent-tree-with-record",
++      "outcome": "REFUSED(C1)",
++      "provenance": {
++        "fixture": "tests/test_badf_verification_shadow.py::build_case"
++      }
++    },
++    {
++      "case_class": "representative-typed-dossier",
++      "subject": "divergent-tree-no-record",
++      "outcome": "REFUSED(C2)",
++      "provenance": {
++        "fixture": "tests/test_badf_verification_shadow.py::build_case"
++      }
++    },
++    {
++      "case_class": "representative-typed-dossier",
++      "subject": "author-as-reviewer-uncarried",
++      "outcome": "REFUSED(C3)",
++      "provenance": {
++        "fixture": "tests/test_badf_verification_shadow.py::build_case"
++      }
++    },
++    {
++      "case_class": "representative-typed-dossier",
++      "subject": "c2-one-ballot",
++      "outcome": "REFUSED(C3)",
++      "provenance": {
++        "fixture": "tests/test_badf_verification_shadow.py::build_case"
++      }
++    },
++    {
++      "case_class": "representative-typed-dossier",
++      "subject": "c2-missing-lens",
++      "outcome": "REFUSED(C3)",
++      "provenance": {
++        "fixture": "tests/test_badf_verification_shadow.py::build_case"
++      }
++    },
++    {
++      "case_class": "representative-typed-dossier",
++      "subject": "untyped-agent-under-runtime-required",
++      "outcome": "REFUSED(C4)",
++      "provenance": {
++        "fixture": "tests/test_badf_verification_shadow.py::build_case"
++      }
++    },
++    {
++      "case_class": "representative-typed-dossier",
++      "subject": "empty-non-coverage",
++      "outcome": "REFUSED(C5)",
++      "provenance": {
++        "fixture": "tests/test_badf_verification_shadow.py::build_case"
++      }
++    },
++    {
++      "case_class": "representative-typed-dossier",
++      "subject": "open-major-passed-over",
++      "outcome": "REFUSED(C6)",
++      "provenance": {
++        "fixture": "tests/test_badf_verification_shadow.py::build_case"
++      }
++    },
++    {
++      "case_class": "representative-typed-dossier",
++      "subject": "open-major-unmapped-pwc",
++      "outcome": "REFUSED(C6)",
++      "provenance": {
++        "fixture": "tests/test_badf_verification_shadow.py::build_case"
++      }
++    },
++    {
++      "case_class": "representative-typed-dossier",
++      "subject": "composed-declared-not-applicable",
++      "outcome": "REFUSED(C7)",
++      "provenance": {
++        "fixture": "tests/test_badf_verification_shadow.py::build_case"
++      }
++    },
++    {
++      "case_class": "representative-typed-dossier",
++      "subject": "bare-pass-review",
++      "outcome": "REFUSED(VER-I10)",
++      "provenance": {
++        "fixture": "tests/test_badf_verification_shadow.py::build_case",
++        "level": "binding (check_g08_binding)"
++      }
++    },
++    {
++      "case_class": "representative-typed-dossier",
++      "subject": "indeterminate-contract-as-pass",
++      "outcome": "REFUSED(VER-I14)",
++      "provenance": {
++        "fixture": "tests/test_badf_verification_shadow.py::build_case",
++        "level": "binding (check_g08_binding)"
++      }
++    }
++  ],
++  "runner_citations": [
++    "check-run 99286794583 (PR #196, head 2c93d60)",
++    "check-run 99293746699 (PR #196, head 23866e7)",
++    "check-run 99296847838 (PR #201, head 9937ed2)",
++    "check-run 99300701682 (PR #202, head af43e49)",
++    "check-run 99303348306 (PR #205, head 901c164)"
++  ],
++  "metrics": {
++    "injected_defects_refused": 12,
++    "clean_dossiers_admitted": 2,
++    "false_refusals": 0,
++    "missed_defects": 0,
++    "encoded_reviews_verified": 5,
++    "duplicate_finding_rate": 0,
++    "severity_drift": "NONE -- approvals encode no findings (probes are not defects, VER-I03; deviation from the #207 INFO-findings wording declared in each record)",
++    "reviewer_correlation": "NOT_MEASURABLE_ONE_SEAT"
++  },
++  "non_coverage": [
++    "no typed real G08 dossier exists on main -- the typed-object shadow is representative, and a real re-shadow is owed the first time a project passes G08 with typed objects",
++    "one reviewer seat -- reviewer correlation not measurable",
++    "the real-review class is RECONSTRUCTED from prose verdict comments (ids cited), not observed records",
++    "representative injected defects are synthetic fixtures, not production history",
++    "the #201/#202/#205 approvals encode findings: [] -- the reviewer's probes are not encoded as pseudo-findings (VER-I03); deviation from the #207 plan wording declared",
++    "dossier-level representative cases recompute through the PURE check_g08_dossier (plus two binding-level cases through check_g08_binding); the per-fixture scratch-clone validate_dossier path promised in the #207 wording is NOT shipped -- validate_dossier end-to-end is exercised by the historical WP-2026-0010 case and by CI's composed run of the rung's own dossier; deviation declared"
++  ]
++}
+diff --git a/skills/badf-engineering-verification/evidence/shadow-evidence.md b/skills/badf-engineering-verification/evidence/shadow-evidence.md
+new file mode 100644
+index 0000000..c575140
+--- /dev/null
++++ b/skills/badf-engineering-verification/evidence/shadow-evidence.md
+@@ -0,0 +1,60 @@
++# Shadow evidence — badf-engineering-verification (WP-VER-D, `BADF-WP-0106`, Issue #207 / GOV-0089)
++
++**What is real and what is reconstructed or representative — first sentence, as the contract requires.**
++The typed-object shadow is **representative** (no typed real G08 dossier exists on `main`; a real
++re-shadow is owed the first time a project passes G08 with typed objects), and the real-review class is
++**RECONSTRUCTED** from prose verdict comments — encoded under the encoded reviewer's own honesty
++conditions, never inflated into a council. What is fully real: `work/WP-2026-0010`'s historical G08
++dossier, replayed byte-for-byte through the landed gate, and the five verdicts BARCHI-1 actually posted.
++
++The capability's live status is `badf/skill-registry.json` (`SHADOWED` at `BADF-WP-0106`). Everything
++below is recomputed from the repository on every run by `tests/test_badf_verification_shadow.py`; the
++record is `examples/verification-shadow-evidence.json` (`measured_on` = the `main` that includes #205).
++
++## Measurement
++
++| Case class | Corpus | What the contract had to do | Outcome |
++| :--- | :--- | :--- | :--- |
++| `historical-generic-dossier` (1) | WP-2026-0010 — the only real G08 dossier: four binding-less, agent-produced objects, `contract-test` declared `NOT_APPLICABLE`, three carried conditions | the additive path: `check_g08_binding` passes through, `check_g08_dossier` stays silent, the dossier still validates end-to-end | **UNTOUCHED** |
++| `real-review-encoded` (5) | BARCHI-1's real verdict arc — PR #196 **Request Changes** (comment 5469987101, head `2c93d60`, CI red) → **Approved** (5470235706, fix head `23866e7`), #201 (5470380581), #202 (5470510051), #205 (5470622958) | single-reviewer verification records: one ballot each, the real comment id as `reviewer_run_id`, sealed digest RECONSTRUCTED, the #196 synthetic-id collision as a genuine OPEN `MAJOR` finding then `RESOLVED` on the fix head (the `WP-2026-9999` sentinel as resolution evidence); `verify` accepts each and refuses tampering (digest changed, the finding erased, `VERIFIED` without a composed ref) | **5/5 `VERIFY_PASS`**, tamper-refused |
++| `representative-typed-dossier` (14) | synthetic fixtures spanning the outcome space: 2 clean (C1; C2 with a two-ballot record), 10 injected defects | each defect refused by the control that owns it — divergent trees (C1 with a record, C2 without), author-as-reviewer uncarried (C3), one-ballot C2 (C3), missing lens (C3), untyped agent observation under `runtime_required` (C4), empty non-coverage (C5), OPEN MAJOR passed over / unmapped (C6 ×2), composed declared `NOT_APPLICABLE` (C7), plus two binding-level cases — a bare-PASS review (VER-I10) and an INDETERMINATE contract serialised as PASS (VER-I14) | **12/12 refused, 2/2 admitted**; every control C1–C7 and the binding invariants VER-I10/VER-I14 own ≥1 refusal |
++
++## Metrics
++
++| Metric | Result |
++| :--- | :--- |
++| injected defects refused | 12/12 |
++| clean dossiers admitted (false refusals) | 2/2 (0 false) |
++| missed defects | 0 |
++| encoded real reviews verified / tamper-refused | 5/5 |
++| duplicate-finding rate | 0 (single reviewer) |
++| severity drift | none declared (the encoding carries only what was posted) |
++| reviewer correlation | **NOT MEASURABLE — one reviewer seat** (non-coverage) |
++
++## Non-coverage (named, not implied)
++
++- **No typed real G08 dossier** — BADF's own work packages stop at the G07 self-dossier; the
++  typed-object cases are representative fixtures. A real typed re-shadow is owed the first time a
++  project passes G08 with typed objects, and the operator may hold `ACTIVE` until then.
++- **One reviewer seat** — reviewer correlation and duplicate-rate metrics cannot be measured; the
++  future BADF-QA / BADF-REV seats change this.
++- **Prose reconstruction** — the encoded records are RECONSTRUCTED from PR comments (ids and check-runs
++  cited in each record's `non_coverage`); the reviewer posted verdicts, not records. The approvals encode
++  `findings: []` — the reviewer's probes are **not** encoded as pseudo-findings (a passed probe is not a
++  defect, VER-I03); this deviation from the #207 plan wording is declared in each record. The #196
++  Request-Changes record binds the RC head's **own** content tree (`be12ef9`, recomputed) and the base
++  `main` stood at when the verdict posted (`6814a24`) — corrected under BADF-REV finding F4.
++- **The per-fixture `validate_dossier` scratch-clone path** promised in the #207 wording is not shipped —
++  representative cases recompute through the pure `check_g08_dossier` (and `check_g08_binding` for the two
++  binding-level cases); end-to-end `validate_dossier` is exercised by the historical WP-2026-0010 case and
++  by CI's composed run of this rung's own dossier. Deviation declared, not implied.
++- **Conflict of interest, disclosed** — BARCHI-1 is both the encoded party and the seat's usual
++  reviewer; BARCHI-2 (not encoded) co-reviews the encoding class for fidelity, and BARCHI-1's verdict
++  discloses the COI.
++
++## The root is `SHADOWED`, not `ACTIVE`
++
++The shadow shows the controls refuse what they must and touch nothing they must not — on
++representative fixtures, one real dossier and five reconstructed reviews. Admission (`VER-E`) is the
++**operator's decision on this evidence**, asked on its own issue — it was never pre-granted, and the
++registry advances by evidence, not by instruction.
+diff --git a/tests/test_badf_build_activation.py b/tests/test_badf_build_activation.py
+new file mode 100644
+index 0000000..fba2ead
+--- /dev/null
++++ b/tests/test_badf_build_activation.py
+@@ -0,0 +1,56 @@
++"""BLD-E: badf-build admitted SHADOWED -> ACTIVE by registry status flip only (WP-2026-0104, #203).
++
++Pins what activation must and must not change: the root is ACTIVE with the frozen digest; the
++family still holds no tools and grants no authority (BUILD != INTEGRATION); the seven controls and
++the typed producer are untouched; the doctrine records the operator authorization, the four landing
++SHAs and -- verbatim -- the shadow's non-coverage. Failing-first: every test here was red before the flip.
++"""
++import hashlib
++import json
++import sys
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++DOCTRINE = gate.ROOT / "docs/governance/GITHUB_CONTROL_PLANE.md"
++
++
++def registry():
++    r = json.loads((gate.ROOT / "badf/skill-registry.json").read_text(encoding="utf-8"))
++    return {s["name"]: s for s in r["skills"]}
++
++
++class ActivationTests(unittest.TestCase):
++    def test_root_is_active_with_the_frozen_digest(self):
++        g = registry()["badf-build"]
++        self.assertEqual(g["status"], "ACTIVE")
++        self.assertEqual(g["digest"], "sha256:" + hashlib.sha256((gate.ROOT / g["source"]).read_bytes()).hexdigest(), "activation must not touch SKILL.md")
++        self.assertEqual(g["digest"], "sha256:6cc3266ecde8bf6ed14fc3b5ae3b1de38a42154242d9b7517ca6f0cdb38bf0f3")
++
++    def test_activation_grants_no_authority(self):
++        g = registry()["badf-build"]
++        self.assertEqual(g["allowed_tools"], []); self.assertEqual(g["risk_class"], "C1")
++        self.assertFalse((gate.ROOT / "scripts/badf_build.py").exists())
++        text = (gate.ROOT / "skills/badf-build/SKILL.md").read_text(encoding="utf-8")
++        self.assertIn("BUILD ≠ INTEGRATION", text); self.assertIn("BLD-I17", text); self.assertIn("BLD-I18", text)
++
++    def test_controls_and_producer_are_untouched_by_the_flip(self):
++        src = (gate.ROOT / "scripts/badf_gate.py").read_text(encoding="utf-8")
++        for token in ("_require_authorized_demand", "_check_build_budget_and_stop", "_check_delegations", "BLD-I04 / C3", "BLD-I07 / BLD-I08 / C4", "BLD-I09 / C5", "check_g07_binding", "verify_build_ledger"):
++            self.assertIn(token, src, token)
++        self.assertEqual(len([t for t in ("source-change", "build", "unit-test", "documentation") if (gate.ROOT / "schemas" / f"{t}.schema.json").is_file()]), 4)
++
++    def test_admission_doctrine_cites_authorization_landings_and_non_coverage(self):
++        text = DOCTRINE.read_text(encoding="utf-8")
++        start = text.find("## badf-build → ACTIVE"); self.assertGreater(start, 0, "no BLD-E admission section")
++        end = text.find("\n## ", start + 1); section = text[start:end if end > 0 else None]
++        for token in ("#203", "#188", "5469168780", "cf431fa", "6814a24", "8f3d805", "07c23f7", "C3", "C4", "C6", "C7", "scratch", "no build controller",
++                      "allowed_tools: []", "BUILD ≠ INTEGRATION", "BADF-MAIN-001", "does not erase"):
++            self.assertIn(token, section, token)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/tests/test_badf_build_contract.py b/tests/test_badf_build_contract.py
+index daeca6c..44290e0 100644
+--- a/tests/test_badf_build_contract.py
++++ b/tests/test_badf_build_contract.py
+@@ -88,11 +88,11 @@ class BadfBuildContractTests(unittest.TestCase):
+             self.assertIn(token, text, token)
+         self.assertIn("not automatically", read("self-review.md").lower())
+ 
+-    def test_registry_pin_is_shadowed_and_tool_empty(self):
++    def test_registry_pin_is_active_and_tool_empty(self):
+         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
+         entries = [e for e in registry["skills"] if e.get("name") == "badf-build"]
+         self.assertEqual(1, len(entries)); entry = entries[0]
+-        self.assertEqual("SHADOWED", entry["status"]); self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])  # BLD-B
++        self.assertEqual("ACTIVE", entry["status"]); self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])  # BLD-B
+         self.assertEqual("skills/badf-build/SKILL.md", entry["source"])
+         self.assertEqual("sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest(), entry["digest"])
+ 
+diff --git a/tests/test_badf_build_shadow.py b/tests/test_badf_build_shadow.py
+index e466c41..8c110ca 100644
+--- a/tests/test_badf_build_shadow.py
++++ b/tests/test_badf_build_shadow.py
+@@ -99,13 +99,13 @@ class BuildShadowTests(unittest.TestCase):
+         with self.assertRaises(AssertionError):
+             for c in bad["cases"]: assert c["case"] in ALLOWED_CASES
+ 
+-    def test_doc_names_every_case_and_gap_and_root_is_shadowed(self):
++    def test_doc_names_every_case_and_gap_and_root_is_active(self):
+         text = DOC.read_text(encoding="utf-8")
+         for token in ("request-digest-bound", "authority-replayed", "typed-binding-recomputed", "fresh-verification-replayed", "dossier-not-on-ledger",
+                       "non-coverage", "C3", "C4", "C6", "C7", "WP-2026-0010", "SHADOWED", "BLD-E", "admission", "run"):
+             self.assertIn(token, text, token)
+         reg = gate.load_json(gate.ROOT / "badf/skill-registry.json"); by = {s["name"]: s for s in reg["skills"]}
+-        self.assertEqual(by["badf-build"]["status"], "SHADOWED")
++        self.assertEqual(by["badf-build"]["status"], "ACTIVE")  # BLD-E: admitted; the note still records the SHADOWED measurement
+         self.assertEqual(hashlib.sha256((gate.ROOT / by["badf-build"]["source"]).read_bytes()).hexdigest(), by["badf-build"]["digest"][7:])
+ 
+ 
+diff --git a/tests/test_badf_engineering_verification_contract.py b/tests/test_badf_engineering_verification_contract.py
+index b00601f..c342eb1 100644
+--- a/tests/test_badf_engineering_verification_contract.py
++++ b/tests/test_badf_engineering_verification_contract.py
+@@ -143,11 +143,12 @@ class BadfEngineeringVerificationContractTests(unittest.TestCase):
+         for token in ("G08", "G09", "C2", "security-validation", "does not replace"):
+             self.assertIn(token, boundary, token)
+ 
+-    def test_registry_pin_is_validated_and_tool_empty(self):
++    def test_registry_pin_is_shadowed_and_tool_empty(self):
+         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
+         entries = [e for e in registry["skills"] if e.get("name") == "badf-engineering-verification"]
+         self.assertEqual(1, len(entries)); entry = entries[0]
+-        self.assertEqual("VALIDATED", entry["status"]);  # VER-C (WP-2026-0105) self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])
++        self.assertEqual("SHADOWED", entry["status"])  # VER-D (WP-2026-0106)
++        self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])
+         self.assertEqual("skills/badf-engineering-verification/SKILL.md", entry["source"])
+         self.assertEqual("sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest(), entry["digest"])
+ 
+diff --git a/tests/test_badf_verification_controls.py b/tests/test_badf_verification_controls.py
+index 2bb5030..e5a5715 100644
+--- a/tests/test_badf_verification_controls.py
++++ b/tests/test_badf_verification_controls.py
+@@ -217,10 +217,11 @@ class SchemaAndRegistryTests(unittest.TestCase):
+         for kept in ("expected_surfaces", "tdd_exception", "test_obligations"):  # BLD-C's fields untouched
+             self.assertIn(kept, s["properties"])
+ 
+-    def test_registry_pin_is_validated_and_skill_digest_unchanged(self):
++    def test_registry_pin_is_at_least_validated_and_skill_digest_unchanged(self):
+         registry = json.loads((gate.ROOT / "badf/skill-registry.json").read_text(encoding="utf-8"))
+         entry = next(e for e in registry["skills"] if e["name"] == "badf-engineering-verification")
+-        self.assertEqual("VALIDATED", entry["status"]); self.assertEqual([], entry["allowed_tools"])
++        self.assertIn(entry["status"], ("VALIDATED", "SHADOWED", "ACTIVE"))  # VER-C floor; later rungs advance it
++        self.assertEqual([], entry["allowed_tools"])
+         self.assertEqual(entry["digest"], gate.sha256(gate.ROOT / "skills/badf-engineering-verification/SKILL.md"))
+ 
+ 
+diff --git a/tests/test_badf_verification_shadow.py b/tests/test_badf_verification_shadow.py
+new file mode 100644
+index 0000000..f4a9f7e
+--- /dev/null
++++ b/tests/test_badf_verification_shadow.py
+@@ -0,0 +1,221 @@
++"""badf-engineering-verification VER-D (BADF-WP-0106 / GOV-0089): shadow the G08 controls on
++the material BADF has.
++
++Three case classes, one record (`examples/verification-shadow-evidence.json`), every case
++recomputed from the repository on every run: (1) `historical-generic-dossier` -- WP-2026-0010's
++binding-less G08 dossier passes check_g08_binding and check_g08_dossier UNTOUCHED (the additive
++proof); (2) `real-review-encoded` -- BARCHI-1's real verdict arc (#196 Request-Changes -> Approved,
++#201, #202, #205) as five RECONSTRUCTED single-reviewer verification records that `verify` accepts
++and whose tampering it refuses -- encoded under the reviewer's own honesty conditions (one ballot,
++the real comment id, no council claimed, the #196 MAJOR finding and its RESOLVED arc); (3)
++`representative-typed-dossier` -- injected defects each refused by the control that owns it, clean
++dossiers admitted. Metrics measured, non-coverage named (no typed real G08 dossier; one reviewer
++seat; prose reconstructed; representative defects). No gate, schema or lifecycle change.
++"""
++import copy
++import json
++import sys
++import tempfile
++import shutil
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
++import badf_gate as gate  # noqa: E402
++from tests.test_badf_verification_controls import dossier, objects, evidence, observation, review, finding, wp, COMP  # noqa: E402
++
++ROOT = gate.ROOT
++RECORD = ROOT / "examples" / "verification-shadow-evidence.json"
++DOC = ROOT / "skills" / "badf-engineering-verification" / "evidence" / "shadow-evidence.md"
++ENCODED = {
++    "pr196-request-changes": ("5469987101", "REJECT"),
++    "pr196-approved": ("5470235706", "APPROVE"),
++    "pr201": ("5470380581", "APPROVE"),
++    "pr202": ("5470510051", "APPROVE"),
++    "pr205": ("5470622958", "APPROVE"),
++}
++
++
++def shadow():
++    return json.loads(RECORD.read_text(encoding="utf-8"))
++
++
++def cases(kind):
++    return [c for c in shadow()["cases"] if c["case_class"] == kind]
++
++
++class ShadowRecordTests(unittest.TestCase):
++    def test_shadow_record_is_well_formed_and_names_non_coverage(self):
++        rec = shadow()
++        for key in ("record", "schema_version", "work_package_id", "repository", "measured_on", "measured_at",
++                    "corpus", "cases", "runner_citations", "non_coverage"):
++            self.assertIn(key, rec, key)
++        self.assertEqual("verification-shadow", rec["record"]); self.assertEqual("WP-2026-0106", rec["work_package_id"])
++        nc = " ".join(rec["non_coverage"]).lower()
++        for gap in ("no typed real g08 dossier", "one reviewer seat", "reconstructed", "representative"):
++            self.assertIn(gap, nc, gap)
++        self.assertEqual(1, len(cases("historical-generic-dossier")))
++        self.assertEqual(5, len(cases("real-review-encoded")))
++        self.assertGreaterEqual(len(cases("representative-typed-dossier")), 12)
++
++    def test_historical_generic_dossier_is_untouched(self):
++        [case] = cases("historical-generic-dossier")
++        self.assertEqual("UNTOUCHED", case["outcome"]); self.assertEqual("WP-2026-0010", case["subject"])
++        wp10 = ROOT / "work" / "WP-2026-0010"
++        d = json.loads((wp10 / "gate-dossier.G08.json").read_text(encoding="utf-8"))
++        ev = {e["type"]: json.loads((ROOT / e["path"]).read_text(encoding="utf-8")) for e in d["evidence"]}
++        for t, e in ev.items():
++            gate.check_g08_binding(ROOT / e["artifact"], d, e)   # binding-less -> pass-through
++        w = json.loads((wp10 / "work-package.json").read_text(encoding="utf-8"))
++        gate.check_g08_dossier(d, w, ev, None, None)             # silent
++        self.assertEqual(d["disposition"], "PASS_WITH_CONDITIONS")
++
++    def test_encoded_real_reviews_verify_and_refuse_tampering(self):
++        enc = {c["subject"]: c for c in cases("real-review-encoded")}
++        self.assertEqual(set(ENCODED), set(enc))
++        tmp = Path(tempfile.mkdtemp(prefix="badf-shadow-")); self.addCleanup(shutil.rmtree, tmp, True)
++        for name, (comment_id, verdict) in ENCODED.items():
++            path = ROOT / "examples" / f"verification-record-{name}.json"
++            self.assertTrue(path.is_file(), name)
++            rec = json.loads(path.read_text(encoding="utf-8"))
++            self.assertEqual(1, len(rec["ballots"]), "single-reviewer: one ballot, never a council")
++            ballot = rec["ballots"][0]
++            self.assertEqual(comment_id, ballot["reviewer_run_id"], "the real comment id is the run id")
++            self.assertEqual(verdict, ballot["verdict"], name)
++            self.assertIn("reconstructed", json.dumps(rec["non_coverage"]).lower(), "provenance declared in-record")
++            out = gate.validate_verification_record(path)
++            self.assertIn("BADF VERIFY PASS", out)
++            self.assertEqual("VERIFY_PASS", enc[name]["outcome"])
++            bad = copy.deepcopy(rec); bad["ballots"][0]["sealed_input_digest"] = "sha256:" + "9" * 64
++            p = tmp / "bad.json"; p.write_text(json.dumps(bad), encoding="utf-8")
++            with self.assertRaises(gate.ValidationError): gate.validate_verification_record(p)
++        # the #196 arc: a real MAJOR finding, then RESOLVED -- and erasing it is refused
++        rc = json.loads((ROOT / "examples" / "verification-record-pr196-request-changes.json").read_text(encoding="utf-8"))
++        majors = [f for f in rc["findings"] if f["severity"] == "MAJOR" and f["status"] == "OPEN"]
++        self.assertEqual(1, len(majors), "the synthetic-id collision is encoded as a real OPEN MAJOR finding")
++        ap = json.loads((ROOT / "examples" / "verification-record-pr196-approved.json").read_text(encoding="utf-8"))
++        self.assertTrue(any(f["severity"] == "MAJOR" and f["status"] == "RESOLVED" for f in ap["findings"]),
++                        "the Approved record carries the finding RESOLVED, not erased")
++        bad = copy.deepcopy(rc); bad["findings"] = []; p = tmp / "erased.json"; p.write_text(json.dumps(bad), encoding="utf-8")
++        with self.assertRaises(gate.ValidationError): gate.validate_verification_record(p)  # ballot cites VF- -> VER-I12
++
++    def test_representative_defects_are_refused_and_clean_dossiers_admitted(self):
++        reps = cases("representative-typed-dossier")
++        by = {c["subject"]: c for c in reps}
++        harness = {
++            "clean-c1": (None, dossier(), None, objects(), COMP, None),
++        }
++        # recompute every case through the pure control; the record must agree
++        def run(subject):
++            c = by[subject]
++            built = build_case(subject)
++            try:
++                if len(built) == 2:                    # binding-level case: (artifact_text, evidence)
++                    import tempfile as _tf, shutil as _sh
++                    tmp = Path(_tf.mkdtemp(prefix="badf-shadow-bind-")); self.addCleanup(_sh.rmtree, tmp, True)
++                    art = tmp / "artifact.txt"; art.write_text(built[0], encoding="utf-8")
++                    gate.check_g08_binding(art, {}, built[1])
++                    return "ADMITTED"
++                d, w, ev, comp, rec = built
++                gate.check_g08_dossier(d, w, ev, comp, rec)
++                return "ADMITTED"
++            except gate.ValidationError as exc:
++                import re as _re
++                m = _re.search(r"/ (C[1-7])\)", str(exc))   # the control tag is the trailing "(VER-Ixx / Cn)"
++                if m:
++                    return f"REFUSED({m.group(1)})"
++                m = _re.search(r"(VER-I1[04])", str(exc))    # binding-level cases carry the invariant tag
++                return f"REFUSED({m.group(1)})" if m else "REFUSED(?)"
++        for subject, c in by.items():
++            self.assertEqual(c["outcome"], run(subject), subject)
++        admitted = [c for c in reps if c["outcome"] == "ADMITTED"]
++        refused = [c for c in reps if c["outcome"].startswith("REFUSED")]
++        self.assertGreaterEqual(len(admitted), 2); self.assertGreaterEqual(len(refused), 10)
++        controls_hit = {c["outcome"] for c in refused}
++        for ctrl in ("C1", "C2", "C3", "C4", "C5", "C6", "C7", "VER-I10", "VER-I14"):
++            self.assertTrue(any(ctrl in o for o in controls_hit), f"{ctrl} must own at least one refusal")
++
++    def test_metrics_match_the_record(self):
++        rec = shadow(); m = rec["metrics"]
++        reps = cases("representative-typed-dossier")
++        self.assertEqual(m["injected_defects_refused"], len([c for c in reps if c["outcome"].startswith("REFUSED")]))
++        self.assertEqual(m["clean_dossiers_admitted"], len([c for c in reps if c["outcome"] == "ADMITTED"]))
++        self.assertEqual(m["false_refusals"], 0); self.assertEqual(m["missed_defects"], 0)
++        self.assertEqual(m["encoded_reviews_verified"], 5)
++        self.assertIn("reviewer_correlation", rec["metrics"]); self.assertEqual(m["reviewer_correlation"], "NOT_MEASURABLE_ONE_SEAT")
++
++    def test_tampered_shadow_record_is_refused(self):
++        rec = shadow()
++        flip = copy.deepcopy(rec)
++        for c in flip["cases"]:
++            if c["case_class"] == "representative-typed-dossier" and c["outcome"].startswith("REFUSED"):
++                c["outcome"] = "ADMITTED"; break
++        self.assertNotEqual(rec, flip)
++        subjects = {c["subject"]: c["outcome"] for c in rec["cases"] if c["case_class"] == "representative-typed-dossier"}
++        flipped = {c["subject"]: c["outcome"] for c in flip["cases"] if c["case_class"] == "representative-typed-dossier"}
++        self.assertNotEqual(subjects, flipped, "a tampered outcome cannot equal the recomputed truth")
++
++    def test_doc_names_every_case_and_gap_and_root_is_shadowed(self):
++        text = DOC.read_text(encoding="utf-8")
++        first = text.split("\n\n")[1] if text.startswith("#") else text.split("\n\n")[0]
++        for token in ("representative", "RECONSTRUCTED"):
++            self.assertIn(token.lower(), (text[:1200]).lower(), token)
++        for token in ("WP-2026-0010", "#196", "#201", "#202", "#205", "conflict of interest", "one reviewer seat"):
++            self.assertIn(token.lower(), text.lower(), token)
++        registry = json.loads((ROOT / "badf/skill-registry.json").read_text(encoding="utf-8"))
++        entry = next(e for e in registry["skills"] if e["name"] == "badf-engineering-verification")
++        self.assertEqual("SHADOWED", entry["status"])
++        self.assertEqual(entry["digest"], gate.sha256(ROOT / "skills/badf-engineering-verification/SKILL.md"))
++
++
++def build_case(subject):
++    """Deterministic reconstruction of each representative case from the VER-C test fixtures."""
++    if subject == "clean-c1":
++        return dossier(), None, objects(), COMP, None
++    if subject == "clean-c2-council":
++        from tests.test_badf_verification_controls import record
++        return dossier(change_class="C2"), None, objects(), COMP, record()
++    if subject == "divergent-tree-with-record":
++        ev = objects(); ev["integration-test"]["binding"]["target"]["expected_content_tree"] = "f" * 40
++        return dossier(), None, ev, COMP, None
++    if subject == "divergent-tree-no-record":
++        ev = objects()
++        for o in ev.values(): o["binding"]["target"]["expected_content_tree"] = "f" * 40
++        ev["independent-review"]["binding"]["target"]["expected_content_tree"] = "e" * 40
++        ev["composed-tree-test"]["binding"]["composition"].update(recorded_expected_content_tree="f" * 40, recomputed_content_tree="f" * 40)
++        return dossier(), None, ev, None, None
++    if subject == "author-as-reviewer-uncarried":
++        ev = objects(); ev["independent-review"]["binding"]["independence"]["author_run_id"] = "run-a"
++        return dossier(), None, ev, COMP, None
++    if subject == "c2-one-ballot":
++        from tests.test_badf_verification_controls import record
++        one = record(); one["ballots"] = one["ballots"][:1]
++        return dossier(change_class="C2"), None, objects(), COMP, one
++    if subject == "c2-missing-lens":
++        from tests.test_badf_verification_controls import record
++        return dossier(change_class="C2"), None, objects(), COMP, record(lenses_routed=["correctness"])
++    if subject == "untyped-agent-under-runtime-required":
++        ev = objects(**{"integration-test": evidence("integration-test", None, producer="agent")})
++        return dossier(), wp(verification_obligations={"runtime_required": True}), ev, COMP, None
++    if subject == "empty-non-coverage":
++        ev = objects(**{"integration-test": evidence("integration-test", observation("integration-test", non_coverage=[]))})
++        return dossier(), None, ev, COMP, None
++    if subject == "open-major-passed-over":
++        ev = objects(**{"independent-review": evidence("independent-review", review(findings=[finding()], verdict="APPROVE_WITH_CONDITIONS"))})
++        return dossier(), None, ev, COMP, None
++    if subject == "open-major-unmapped-pwc":
++        ev = objects(**{"independent-review": evidence("independent-review", review(findings=[finding()], verdict="APPROVE_WITH_CONDITIONS"))})
++        return dossier(disposition="PASS_WITH_CONDITIONS"), None, ev, COMP, None
++    if subject == "composed-declared-not-applicable":
++        return dossier(non_coverage=[{"evidence_type": "composed-tree-test", "reason": "r", "declared_by": "x"}]), None, objects(), COMP, None
++    if subject == "bare-pass-review":                 # binding-level: VER-I10, no findings + no non-coverage + no permitting contract
++        return ("review\n", evidence("independent-review", review(non_coverage=[])))
++    if subject == "indeterminate-contract-as-pass":   # binding-level: VER-I14, INDETERMINATE serialised as PASS
++        b = observation("contract-test"); b["result"] = "INDETERMINATE"
++        return ("x\n", evidence("contract-test", b, outcome="PASS"))
++    raise AssertionError(f"unknown representative subject {subject!r}")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0104/build/progress.jsonl b/work/WP-2026-0104/build/progress.jsonl
+new file mode 100644
+index 0000000..caaf206
+--- /dev/null
++++ b/work/WP-2026-0104/build/progress.jsonl
+@@ -0,0 +1,4 @@
++{"actor": {"id": "badf-self-dossier", "type": "controller"}, "event_hash": "sha256:45d80004199c2ef6021fb204dd1cceb1693d96d6ae9c5e94e46b6cc9f4d827d6", "event_id": "EVT-WP-2026-0104-0001", "note": "self-dossier assembly started", "outcome": "OK", "previous_event_hash": "sha256:0000000000000000000000000000000000000000000000000000000000000000", "recorded_at": "2026-08-30T19:02:51Z", "sequence": 1, "step": "START", "workflow_id": "WP-2026-0104"}
++{"actor": {"id": "badf-self-dossier", "type": "controller"}, "event_hash": "sha256:b2867fe4aacabb9f2e33512abf1e0952bbefb7377222994adffdba9273b94a3a", "event_id": "EVT-WP-2026-0104-0002", "note": "base 5b428f7d6f50 head b143547eb194 content tree 98b397e1d79d", "outcome": "OK", "previous_event_hash": "sha256:45d80004199c2ef6021fb204dd1cceb1693d96d6ae9c5e94e46b6cc9f4d827d6", "recorded_at": "2026-08-30T19:02:51Z", "sequence": 2, "step": "BASELINE", "workflow_id": "WP-2026-0104"}
++{"actor": {"id": "badf-self-dossier", "type": "controller"}, "event_hash": "sha256:b59a07e7c23c4bc8fd427c92e1ad4e675f72aebc7543b3070d11b5db84a57548", "event_id": "EVT-WP-2026-0104-0003", "note": "unit-test PASS: ran 4, failures 0; build exit 0", "outcome": "OK", "previous_event_hash": "sha256:b2867fe4aacabb9f2e33512abf1e0952bbefb7377222994adffdba9273b94a3a", "recorded_at": "2026-08-30T19:02:51Z", "sequence": 3, "step": "VERIFY", "workflow_id": "WP-2026-0104"}
++{"actor": {"id": "badf-self-dossier", "type": "controller"}, "event_hash": "sha256:2d15f31279b48586a52c2ae5b929a5f895db0d707b778dcd36d2e680c5aac269", "event_id": "EVT-WP-2026-0104-0004", "note": "G07 dossier assembled, disposition HUMAN_REQUIRED", "outcome": "OK", "previous_event_hash": "sha256:b59a07e7c23c4bc8fd427c92e1ad4e675f72aebc7543b3070d11b5db84a57548", "recorded_at": "2026-08-30T19:02:51Z", "sequence": 4, "step": "HANDOFF", "workflow_id": "WP-2026-0104"}
+diff --git a/work/WP-2026-0104/build/session.json b/work/WP-2026-0104/build/session.json
+new file mode 100644
+index 0000000..169f4be
+--- /dev/null
++++ b/work/WP-2026-0104/build/session.json
+@@ -0,0 +1,8 @@
++{
++  "work_package_id": "WP-2026-0104",
++  "producer": "badf-self-dossier",
++  "started_at": "2026-08-30T19:02:46Z",
++  "base_sha": "5b428f7d6f50312a753296fe2cca26b39d94e7a6",
++  "head_sha": "b143547eb1946e945eedbfde0d592f8ebd5f4b22",
++  "content_tree": "98b397e1d79d36bd6ea36e79397a1726f95c80d5"
++}
+diff --git a/work/WP-2026-0104/evidence/G07/build.json b/work/WP-2026-0104/evidence/G07/build.json
+new file mode 100644
+index 0000000..2c14fa0
+--- /dev/null
++++ b/work/WP-2026-0104/evidence/G07/build.json
+@@ -0,0 +1,44 @@
++{
++  "schema_version": "1.0.0",
++  "id": "EVD-WP-2026-0104-G07-build",
++  "work_package_id": "WP-2026-0104",
++  "gate": "G07",
++  "claim": "the modules compile",
++  "evidence_type": "build",
++  "producer": {
++    "id": "badf-self-dossier",
++    "type": "controller"
++  },
++  "source_revision": "HEAD",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "py_compile",
++    "version": "1"
++  },
++  "operation": "py_compile",
++  "started_at": "2026-08-30T19:02:46Z",
++  "completed_at": "2026-08-30T19:02:46Z",
++  "outcome": "PASS",
++  "artifact": "work/WP-2026-0104/evidence/G07/build.txt",
++  "digest": "sha256:72b8c609edaf2f1bb7f9d4fdefee6a3aa089239b7dc6dac61b5a144e8cf39a57",
++  "binding": {
++    "command": "/opt/bst-sa/.venv/bin/python3 -m py_compile scripts/badf_gate.py scripts/badf_compose.py",
++    "cwd": ".",
++    "environment": {
++      "python": "3.13.11",
++      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2+-x86_64-with-glibc2.35"
++    },
++    "exit_code": 0,
++    "artifacts": [
++      {
++        "ref": "scripts/badf_gate.py",
++        "digest": "sha256:2a5f312ec98996039f8603076739636f5a25d41758abc6393f0f16d7c84f693c"
++      },
++      {
++        "ref": "scripts/badf_compose.py",
++        "digest": "sha256:0ca8e2d56872959372edd3c1e1205de69aba850cbefa5e34602733d0b15587f6"
++      }
++    ],
++    "non_coverage": []
++  }
++}
+diff --git a/work/WP-2026-0104/evidence/G07/build.txt b/work/WP-2026-0104/evidence/G07/build.txt
+new file mode 100644
+index 0000000..108c238
+--- /dev/null
++++ b/work/WP-2026-0104/evidence/G07/build.txt
+@@ -0,0 +1 @@
++python -m py_compile scripts/badf_gate.py scripts/badf_compose.py -> exit 0
+diff --git a/work/WP-2026-0104/evidence/G07/composition-record.json b/work/WP-2026-0104/evidence/G07/composition-record.json
+new file mode 100644
+index 0000000..f6a89a2
+--- /dev/null
++++ b/work/WP-2026-0104/evidence/G07/composition-record.json
+@@ -0,0 +1,22 @@
++{
++  "record": "git-composition",
++  "schema_version": "1.0.0",
++  "observed_at": "2026-08-30T19:02:46Z",
++  "repository": "bstBizEra/badf",
++  "work_package_id": "WP-2026-0104",
++  "target_ref": "refs/heads/main",
++  "target_base_sha": "5b428f7d6f50312a753296fe2cca26b39d94e7a6",
++  "source_ref": "refs/heads/wp/WP-2026-0104-build-activation",
++  "source_head_sha": "b143547eb1946e945eedbfde0d592f8ebd5f4b22",
++  "merge_base_sha": "5b428f7d6f50312a753296fe2cca26b39d94e7a6",
++  "merge_method": "squash",
++  "expected_result_tree": "85828872adfd867120f1fbddf6e00b075c0de7e7",
++  "expected_content_tree": "98b397e1d79d36bd6ea36e79397a1726f95c80d5",
++  "policy_epoch": "BADF-2026-08-25",
++  "test_set_epoch": null,
++  "suite_pattern": "test_badf_build_contract.py",
++  "non_coverage": [
++    "test_set_epoch: BADF defines no test-set/toolchain epoch; not recorded rather than invented",
++    "source_head_sha and expected_result_tree are informational: committing this record moves both; the binding is expected_content_tree (work/<WP>/ and the lockfile excluded)"
++  ]
++}
+diff --git a/work/WP-2026-0104/evidence/G07/composition.json b/work/WP-2026-0104/evidence/G07/composition.json
+new file mode 100644
+index 0000000..5c30e8e
+--- /dev/null
++++ b/work/WP-2026-0104/evidence/G07/composition.json
+@@ -0,0 +1,24 @@
++{
++  "schema_version": "1.0.0",
++  "id": "EVD-WP-2026-0104-G07-composition",
++  "work_package_id": "WP-2026-0104",
++  "gate": "G07",
++  "claim": "the composition claim of WP-2026-0104: the expected content tree bound to its target base (recomputed and compared by scripts/badf_compose.py on the composed tree)",
++  "evidence_type": "composition",
++  "producer": {
++    "id": "badf-self-dossier",
++    "type": "controller"
++  },
++  "source_revision": "HEAD",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "badf_compose.py --record",
++    "version": "1"
++  },
++  "operation": "badf_compose.py --record",
++  "started_at": "2026-08-30T19:02:46Z",
++  "completed_at": "2026-08-30T19:02:46Z",
++  "outcome": "PASS",
++  "artifact": "work/WP-2026-0104/evidence/G07/composition-record.json",
++  "digest": "sha256:089d1bb0e1b4b47e9083e6ca89530e9871b651c6637568d193684ca8564799ce"
++}
+diff --git a/work/WP-2026-0104/evidence/G07/documentation.diff b/work/WP-2026-0104/evidence/G07/documentation.diff
+new file mode 100644
+index 0000000..62a3481
+--- /dev/null
++++ b/work/WP-2026-0104/evidence/G07/documentation.diff
+@@ -0,0 +1,33 @@
++diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
++index b7648e4..8df9203 100644
++--- a/docs/governance/GITHUB_CONTROL_PLANE.md
+++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
++@@ -1476,6 +1476,28 @@ BLD-C's `tdd_exception` and `discovery_allowance` — additive, as every plannin
++ disabled: these are HARD INVARIANTS. **Ladder:** VER-D shadows the controls on the G08 material BADF has
++ (WP-2026-0010's dossier and the seats' review history, with known and injected defects); VER-E is the
++ operator's admission on that evidence.
+++## badf-build → ACTIVE — BLD-E admission (`BADF-WP-0104`, Issue #203 / GOV-0087)
+++
+++`badf-build` is admitted `SHADOWED → ACTIVE` by **registry status flip only**: `digest` is the GIT-A-style
+++freeze value (`SKILL.md` untouched since BLD-A), `allowed_tools: []`, `risk_class` C1. The authorization is the
+++operator's decision — pre-authorized for the whole ladder on #188 (comment 5469168780, "proceed on your
+++call to build the badf-build from WP-BLD-A - WP-BLD-E as ACTIVE") and bound to the evidence on #203. Every
+++rung below was met on `main` before the flip: BLD-A `cf431fa` (contract, BLD-I01…I18), BLD-B `6814a24`
+++(typed G07 evidence, build ledger), BLD-C `8f3d805` (seven deterministic controls, mutation-killed,
+++independently reviewed), BLD-D `07c23f7` (shadow on every landed self-dossier: requests digest-bound,
+++demands human-authorized, typed bindings exact, no `PASS` without a composed run).
+++
+++**Activation changes what the family *is*, not what it *may do*.** `BUILD ≠ INTEGRATION` holds after the
+++flip exactly as before it: no `scripts/badf_build.py`, no mutation path, no push/merge/release tool; the
+++seven controls and the typed producer are byte-untouched; the human still merges (BADF-MAIN-001).
+++
+++**`ACTIVE` does not erase the shadow's non-coverage.** It is carried here verbatim: **C3** scope
+++containment, **C4** red before green / explicit exception, **C6** budget and stop, **C7** delegation subset
+++have **no historical corpus** — nothing on the ledger ever declared `expected_surfaces`, `test_obligations`,
+++a `RETRY`/`STOP` or a delegation — and are proven on scratch fixtures only; **no build controller** has yet
+++executed a Work Package through the workflow. `ACTIVE` therefore means "admitted on the program's own
+++builds, with four controls proven only on scratch", and not more; the first real project — or the first
+++build executed under the contract — is the deferred re-shadow's trigger.
++ 
++ ## Discovery ≠ scope expansion
++ 
+diff --git a/work/WP-2026-0104/evidence/G07/documentation.json b/work/WP-2026-0104/evidence/G07/documentation.json
+new file mode 100644
+index 0000000..b3c2a5c
+--- /dev/null
++++ b/work/WP-2026-0104/evidence/G07/documentation.json
+@@ -0,0 +1,33 @@
++{
++  "schema_version": "1.0.0",
++  "id": "EVD-WP-2026-0104-G07-documentation",
++  "work_package_id": "WP-2026-0104",
++  "gate": "G07",
++  "claim": "the documentation this change carries",
++  "evidence_type": "documentation",
++  "producer": {
++    "id": "badf-self-dossier",
++    "type": "controller"
++  },
++  "source_revision": "HEAD",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "git diff",
++    "version": "1"
++  },
++  "operation": "git diff",
++  "started_at": "2026-08-30T19:02:46Z",
++  "completed_at": "2026-08-30T19:02:46Z",
++  "outcome": "PASS",
++  "artifact": "work/WP-2026-0104/evidence/G07/documentation.diff",
++  "digest": "sha256:7e4ea7499a56168a3f7fe4f42a6567922abd39544dbbd765baffea86d52c4a61",
++  "binding": {
++    "changed": [
++      "docs/governance/GITHUB_CONTROL_PLANE.md"
++    ],
++    "contract_changed": true,
++    "behavior_changed": false,
++    "required_updates": [],
++    "not_updated_with_reason": "documentation changed with the work package"
++  }
++}
+diff --git a/work/WP-2026-0104/evidence/G07/failing-first.txt b/work/WP-2026-0104/evidence/G07/failing-first.txt
+new file mode 100644
+index 0000000..770732e
+--- /dev/null
++++ b/work/WP-2026-0104/evidence/G07/failing-first.txt
+@@ -0,0 +1,27 @@
++python3 -m unittest tests.test_badf_build_activation  # before the flip
++.F.F
++======================================================================
++FAIL: test_admission_doctrine_cites_authorization_landings_and_non_coverage (tests.test_badf_build_activation.ActivationTests.test_admission_doctrine_cites_authorization_landings_and_non_coverage)
++----------------------------------------------------------------------
++Traceback (most recent call last):
++  File "/mnt/c/laragon/www/badf-wt-build-e/tests/test_badf_build_activation.py", line 48, in test_admission_doctrine_cites_authorization_landings_and_non_coverage
++    start = text.find("## badf-build → ACTIVE"); self.assertGreater(start, 0, "no BLD-E admission section")
++                                                 ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
++AssertionError: -1 not greater than 0 : no BLD-E admission section
++
++======================================================================
++FAIL: test_root_is_active_with_the_frozen_digest (tests.test_badf_build_activation.ActivationTests.test_root_is_active_with_the_frozen_digest)
++----------------------------------------------------------------------
++Traceback (most recent call last):
++  File "/mnt/c/laragon/www/badf-wt-build-e/tests/test_badf_build_activation.py", line 29, in test_root_is_active_with_the_frozen_digest
++    self.assertEqual(g["status"], "ACTIVE")
++    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
++AssertionError: 'SHADOWED' != 'ACTIVE'
++- SHADOWED
+++ ACTIVE
++
++
++----------------------------------------------------------------------
++Ran 4 tests in 0.034s
++
++FAILED (failures=2)
+diff --git a/work/WP-2026-0104/evidence/G07/source-change.diff b/work/WP-2026-0104/evidence/G07/source-change.diff
+new file mode 100644
+index 0000000..df6205a
+--- /dev/null
++++ b/work/WP-2026-0104/evidence/G07/source-change.diff
+@@ -0,0 +1,195 @@
++diff --git a/badf/demands/BADF-DEM-0091.json b/badf/demands/BADF-DEM-0091.json
++new file mode 100644
++index 0000000..5e3bfd5
++--- /dev/null
+++++ b/badf/demands/BADF-DEM-0091.json
++@@ -0,0 +1,22 @@
+++{
+++  "schema_version": "1.0.0",
+++  "demand_id": "BADF-DEM-0091",
+++  "kind": "issue",
+++  "source": {
+++    "repository": "bstBizEra/badf",
+++    "issue": 203,
+++    "url": "https://github.com/bstBizEra/badf/issues/203",
+++    "exported_at": "2026-08-30T18:35:36Z",
+++    "body_digest": "sha256:7d8fc13bd7c2708ef1925145910c132da5e07f61639802feb98de0f6083f2c66"
+++  },
+++  "title": "GOV-0087: WP-BLD-E — admit badf-build SHADOWED → ACTIVE (operator admission pre-authorized on #188; registry status flip only, no authority granted; shadow non-coverage carried verbatim)",
+++  "problem": "🧠 **ARCHI (BARCHI-2)** — plan for WP-BLD-E: admit `badf-build` `SHADOWED → ACTIVE` (the operator's decision, pre-authorized on #188 and still evidence-gated)\n\n## Stage-Gate\n- **Stage:** 7 governance-scaling (a status admission on a shipped family; no new architecture).\n- **Decision:** Continue — the operator authorized A→E \"as ACTIVE\" on #188 (comment 5469168780); this issue records the admission *evidence* the decision rests on.\n- **Over-engineering risk:** none new — registry flip, ladder note, test pins, doctrine. The temptation to \"improve\" the family while flipping the status is the risk — refused.\n- **Glossary stage(s):** 7 build / 13 handover of a family; nothing later pulled in.\n\n## Observed — every rung below `ACTIVE` met on `main`\n| Rung | Evidence |\n|---|---|\n| `DESIGNED` | BLD-A `cf431fa` (#190): thin router, BLD-I01…I18, fourteen references, external methodology REFERENCE/ADAPT |\n| `IMPLEMENTED` | BLD-B `6814a24` (#193): four typed G07 schemas, the self-dossier binds exact SHAs / content tree / surfaces / the author's red-green log, hash-chained build ledger |\n| `VALIDATED` | BLD-C `8f3d805` (#196): seven deterministic controls C1–C7 in `badf_gate.py`, failing-first, mutation 7/7, independent QA + REV by BARCHI-1 |\n| `SHADOWED` | BLD-D PR #202 (#197; landing SHA recorded at engineering time): every landed G07 self-dossier replayed — requests digest-bound, demands human-authorized, typed bindings exact, no `PASS` without a composed run; **non-coverage declared: C3, C4, C6, C7 have no historical corpus** |\n| `APPROVED` | **this issue** — the operator's admission |\n| `ACTIVE` | pinned digest already present and unchanged since the freeze |\n\n## Acceptance criteria (WP-2026-0104 / BADF-DEM-0091)\n- `badf/skill-registry.json`: `badf-build` `SHADOWED → ACTIVE`; `source`, `digest`, `risk_class` C1, `allowed_tools: []` **unchanged**; `SKILL.md` untouched.\n- **Activation grants no authority**: no `scripts/badf_build.py`, no mutation path, no push/merge/release tool; `BUILD ≠ INTEGRATION` holds after the flip; the human still merges (BADF-MAIN-001).\n- The admission is recorded in a doctrine section citing this issue, the four landing SHAs, and — verbatim — the shadow's non-coverage (C3/C4/C6/C7 scratch-proven only; no real build controller run yet). `ACTIVE` does not erase it.\n- Test pins move with the truth: `test_badf_build_contract` (`…_is_active_…`), `test_badf_build_shadow` (`SHADOWED` → `ACTIVE` token and pin); the contract-surface guard unchanged.\n- Own composition record + typed self-dossier; reconciles the land-time-current WP.\n\n## Test list\n- `test_root_is_active_with_the_frozen_digest` · `test_activation_grants_no_authority` · `test_admission_doctrine_cites_authorization_and_non_coverage` · updated pins green · full suite green in CI on the composed tree.\n\n## Out of scope\n- Any change to the controls, the producer, the schemas, the workflow or the references; a real-project re-shadow (its own deferred issue, trigger = the first Work Package executed through `badf-build`'s workflow).\n\n**Version tier:** patch (governance-only). **Lean mode:** disabled (authority-adjacent admission).\n\n🛑 **STOP for the record:** the operator pre-authorized the admission on #188; this issue exists so the decision is bound to the evidence above, with the non-coverage stated. Proceeds under that authorization once BLD-D lands, unless the operator objects here.\n\n<!-- agent: architect -->\n",
+++  "authorized_by": {
+++    "principal": "operator",
+++    "principal_type": "human"
+++  },
+++  "recorded_at": "2026-08-30T18:35:36Z",
+++  "provenance": "EXPORTED_FROM_SOURCE",
+++  "status": "AUTHORIZED",
+++  "note": "WP-BLD-E: admit badf-build SHADOWED -> ACTIVE by registry status flip only (digest unchanged, allowed_tools [], no authority granted); operator admission pre-authorized on #188 (comment 5469168780) and bound to the evidence on #203; the shadow's C3/C4/C6/C7 non-coverage and the re-shadow trigger carried verbatim into the doctrine."
+++}
++diff --git a/badf/skill-registry.json b/badf/skill-registry.json
++index 625b6dd..d10c222 100644
++--- a/badf/skill-registry.json
+++++ b/badf/skill-registry.json
++@@ -298,7 +298,7 @@
++       "version": "0.1.0",
++       "risk_class": "C1",
++       "allowed_tools": [],
++-      "status": "SHADOWED",
+++      "status": "ACTIVE",
++       "digest": "sha256:6cc3266ecde8bf6ed14fc3b5ae3b1de38a42154242d9b7517ca6f0cdb38bf0f3"
++     },
++     {
++diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
++index b7648e4..8df9203 100644
++--- a/docs/governance/GITHUB_CONTROL_PLANE.md
+++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
++@@ -1476,6 +1476,28 @@ BLD-C's `tdd_exception` and `discovery_allowance` — additive, as every plannin
++ disabled: these are HARD INVARIANTS. **Ladder:** VER-D shadows the controls on the G08 material BADF has
++ (WP-2026-0010's dossier and the seats' review history, with known and injected defects); VER-E is the
++ operator's admission on that evidence.
+++## badf-build → ACTIVE — BLD-E admission (`BADF-WP-0104`, Issue #203 / GOV-0087)
+++
+++`badf-build` is admitted `SHADOWED → ACTIVE` by **registry status flip only**: `digest` is the GIT-A-style
+++freeze value (`SKILL.md` untouched since BLD-A), `allowed_tools: []`, `risk_class` C1. The authorization is the
+++operator's decision — pre-authorized for the whole ladder on #188 (comment 5469168780, "proceed on your
+++call to build the badf-build from WP-BLD-A - WP-BLD-E as ACTIVE") and bound to the evidence on #203. Every
+++rung below was met on `main` before the flip: BLD-A `cf431fa` (contract, BLD-I01…I18), BLD-B `6814a24`
+++(typed G07 evidence, build ledger), BLD-C `8f3d805` (seven deterministic controls, mutation-killed,
+++independently reviewed), BLD-D `07c23f7` (shadow on every landed self-dossier: requests digest-bound,
+++demands human-authorized, typed bindings exact, no `PASS` without a composed run).
+++
+++**Activation changes what the family *is*, not what it *may do*.** `BUILD ≠ INTEGRATION` holds after the
+++flip exactly as before it: no `scripts/badf_build.py`, no mutation path, no push/merge/release tool; the
+++seven controls and the typed producer are byte-untouched; the human still merges (BADF-MAIN-001).
+++
+++**`ACTIVE` does not erase the shadow's non-coverage.** It is carried here verbatim: **C3** scope
+++containment, **C4** red before green / explicit exception, **C6** budget and stop, **C7** delegation subset
+++have **no historical corpus** — nothing on the ledger ever declared `expected_surfaces`, `test_obligations`,
+++a `RETRY`/`STOP` or a delegation — and are proven on scratch fixtures only; **no build controller** has yet
+++executed a Work Package through the workflow. `ACTIVE` therefore means "admitted on the program's own
+++builds, with four controls proven only on scratch", and not more; the first real project — or the first
+++build executed under the contract — is the deferred re-shadow's trigger.
++ 
++ ## Discovery ≠ scope expansion
++ 
++diff --git a/tests/test_badf_build_activation.py b/tests/test_badf_build_activation.py
++new file mode 100644
++index 0000000..fba2ead
++--- /dev/null
+++++ b/tests/test_badf_build_activation.py
++@@ -0,0 +1,56 @@
+++"""BLD-E: badf-build admitted SHADOWED -> ACTIVE by registry status flip only (WP-2026-0104, #203).
+++
+++Pins what activation must and must not change: the root is ACTIVE with the frozen digest; the
+++family still holds no tools and grants no authority (BUILD != INTEGRATION); the seven controls and
+++the typed producer are untouched; the doctrine records the operator authorization, the four landing
+++SHAs and -- verbatim -- the shadow's non-coverage. Failing-first: every test here was red before the flip.
+++"""
+++import hashlib
+++import json
+++import sys
+++import unittest
+++from pathlib import Path
+++
+++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+++sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+++import badf_gate as gate  # noqa: E402
+++
+++DOCTRINE = gate.ROOT / "docs/governance/GITHUB_CONTROL_PLANE.md"
+++
+++
+++def registry():
+++    r = json.loads((gate.ROOT / "badf/skill-registry.json").read_text(encoding="utf-8"))
+++    return {s["name"]: s for s in r["skills"]}
+++
+++
+++class ActivationTests(unittest.TestCase):
+++    def test_root_is_active_with_the_frozen_digest(self):
+++        g = registry()["badf-build"]
+++        self.assertEqual(g["status"], "ACTIVE")
+++        self.assertEqual(g["digest"], "sha256:" + hashlib.sha256((gate.ROOT / g["source"]).read_bytes()).hexdigest(), "activation must not touch SKILL.md")
+++        self.assertEqual(g["digest"], "sha256:6cc3266ecde8bf6ed14fc3b5ae3b1de38a42154242d9b7517ca6f0cdb38bf0f3")
+++
+++    def test_activation_grants_no_authority(self):
+++        g = registry()["badf-build"]
+++        self.assertEqual(g["allowed_tools"], []); self.assertEqual(g["risk_class"], "C1")
+++        self.assertFalse((gate.ROOT / "scripts/badf_build.py").exists())
+++        text = (gate.ROOT / "skills/badf-build/SKILL.md").read_text(encoding="utf-8")
+++        self.assertIn("BUILD ≠ INTEGRATION", text); self.assertIn("BLD-I17", text); self.assertIn("BLD-I18", text)
+++
+++    def test_controls_and_producer_are_untouched_by_the_flip(self):
+++        src = (gate.ROOT / "scripts/badf_gate.py").read_text(encoding="utf-8")
+++        for token in ("_require_authorized_demand", "_check_build_budget_and_stop", "_check_delegations", "BLD-I04 / C3", "BLD-I07 / BLD-I08 / C4", "BLD-I09 / C5", "check_g07_binding", "verify_build_ledger"):
+++            self.assertIn(token, src, token)
+++        self.assertEqual(len([t for t in ("source-change", "build", "unit-test", "documentation") if (gate.ROOT / "schemas" / f"{t}.schema.json").is_file()]), 4)
+++
+++    def test_admission_doctrine_cites_authorization_landings_and_non_coverage(self):
+++        text = DOCTRINE.read_text(encoding="utf-8")
+++        start = text.find("## badf-build → ACTIVE"); self.assertGreater(start, 0, "no BLD-E admission section")
+++        end = text.find("\n## ", start + 1); section = text[start:end if end > 0 else None]
+++        for token in ("#203", "#188", "5469168780", "cf431fa", "6814a24", "8f3d805", "07c23f7", "C3", "C4", "C6", "C7", "scratch", "no build controller",
+++                      "allowed_tools: []", "BUILD ≠ INTEGRATION", "BADF-MAIN-001", "does not erase"):
+++            self.assertIn(token, section, token)
+++
+++
+++if __name__ == "__main__":
+++    unittest.main()
++diff --git a/tests/test_badf_build_contract.py b/tests/test_badf_build_contract.py
++index daeca6c..44290e0 100644
++--- a/tests/test_badf_build_contract.py
+++++ b/tests/test_badf_build_contract.py
++@@ -88,11 +88,11 @@ class BadfBuildContractTests(unittest.TestCase):
++             self.assertIn(token, text, token)
++         self.assertIn("not automatically", read("self-review.md").lower())
++ 
++-    def test_registry_pin_is_shadowed_and_tool_empty(self):
+++    def test_registry_pin_is_active_and_tool_empty(self):
++         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
++         entries = [e for e in registry["skills"] if e.get("name") == "badf-build"]
++         self.assertEqual(1, len(entries)); entry = entries[0]
++-        self.assertEqual("SHADOWED", entry["status"]); self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])  # BLD-B
+++        self.assertEqual("ACTIVE", entry["status"]); self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])  # BLD-B
++         self.assertEqual("skills/badf-build/SKILL.md", entry["source"])
++         self.assertEqual("sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest(), entry["digest"])
++ 
++diff --git a/tests/test_badf_build_shadow.py b/tests/test_badf_build_shadow.py
++index e466c41..8c110ca 100644
++--- a/tests/test_badf_build_shadow.py
+++++ b/tests/test_badf_build_shadow.py
++@@ -99,13 +99,13 @@ class BuildShadowTests(unittest.TestCase):
++         with self.assertRaises(AssertionError):
++             for c in bad["cases"]: assert c["case"] in ALLOWED_CASES
++ 
++-    def test_doc_names_every_case_and_gap_and_root_is_shadowed(self):
+++    def test_doc_names_every_case_and_gap_and_root_is_active(self):
++         text = DOC.read_text(encoding="utf-8")
++         for token in ("request-digest-bound", "authority-replayed", "typed-binding-recomputed", "fresh-verification-replayed", "dossier-not-on-ledger",
++                       "non-coverage", "C3", "C4", "C6", "C7", "WP-2026-0010", "SHADOWED", "BLD-E", "admission", "run"):
++             self.assertIn(token, text, token)
++         reg = gate.load_json(gate.ROOT / "badf/skill-registry.json"); by = {s["name"]: s for s in reg["skills"]}
++-        self.assertEqual(by["badf-build"]["status"], "SHADOWED")
+++        self.assertEqual(by["badf-build"]["status"], "ACTIVE")  # BLD-E: admitted; the note still records the SHADOWED measurement
++         self.assertEqual(hashlib.sha256((gate.ROOT / by["badf-build"]["source"]).read_bytes()).hexdigest(), by["badf-build"]["digest"][7:])
++ 
++ 
++diff --git a/work/WP-2026-0105/work-package.json b/work/WP-2026-0105/work-package.json
++index 14b120d..046811f 100644
++--- a/work/WP-2026-0105/work-package.json
+++++ b/work/WP-2026-0105/work-package.json
++@@ -50,11 +50,14 @@
++     "reversible": true,
++     "method": "revert the squash commit via PR"
++   },
++-  "status": "IN_PROGRESS",
+++  "status": "CLOSED",
++   "external_target": {
++     "repository": "bstBizEra/badf",
++     "branch": "main",
++-    "base_revision": "dcbcc54"
+++    "base_revision": "dcbcc54",
+++    "landed_content_tree": "aff1bcbdd8728730e6482ec14ed4b1709c93e9dd",
+++    "composition_verified": true,
+++    "landed_as": "5b428f7d6f50312a753296fe2cca26b39d94e7a6"
++   },
++   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-VER-C of the badf-engineering-verification program (#195 A->E authorization; approval recorded on #204). Shared surface (badf_gate.py + work-package.schema.json) -> non-authoring QA + REV; lean disabled. Resolves #204 / GOV-0088. Engineered by BARCHI-3 under /loop. Reconciles the land-time-current WP at landing."
++ }
+diff --git a/work/WP-2026-0104/evidence/G07/source-change.json b/work/WP-2026-0104/evidence/G07/source-change.json
+new file mode 100644
+index 0000000..1021f08
+--- /dev/null
++++ b/work/WP-2026-0104/evidence/G07/source-change.json
+@@ -0,0 +1,44 @@
++{
++  "schema_version": "1.0.0",
++  "id": "EVD-WP-2026-0104-G07-source-change",
++  "work_package_id": "WP-2026-0104",
++  "gate": "G07",
++  "claim": "the change WP-2026-0104 makes to this repository, outside its own directory and the lockfile",
++  "evidence_type": "source-change",
++  "producer": {
++    "id": "badf-self-dossier",
++    "type": "controller"
++  },
++  "source_revision": "HEAD",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "git diff",
++    "version": "1"
++  },
++  "operation": "git diff",
++  "started_at": "2026-08-30T19:02:46Z",
++  "completed_at": "2026-08-30T19:02:46Z",
++  "outcome": "PASS",
++  "artifact": "work/WP-2026-0104/evidence/G07/source-change.diff",
++  "digest": "sha256:fe7d5b426e600e57736165ecf3c16ec8427b3c5b55a8ec55ef3e784704d4ce25",
++  "binding": {
++    "base_sha": "5b428f7d6f50312a753296fe2cca26b39d94e7a6",
++    "head_sha": "b143547eb1946e945eedbfde0d592f8ebd5f4b22",
++    "content_tree": "98b397e1d79d36bd6ea36e79397a1726f95c80d5",
++    "changed_paths": [
++      "badf/demands/BADF-DEM-0091.json",
++      "badf/skill-registry.json",
++      "docs/governance/GITHUB_CONTROL_PLANE.md",
++      "tests/test_badf_build_activation.py",
++      "tests/test_badf_build_contract.py",
++      "tests/test_badf_build_shadow.py",
++      "work/WP-2026-0105/work-package.json"
++    ],
++    "expected_surfaces": {
++      "declared": false,
++      "files": []
++    },
++    "unexpected_paths": [],
++    "change_digest": "sha256:fe7d5b426e600e57736165ecf3c16ec8427b3c5b55a8ec55ef3e784704d4ce25"
++  }
++}
+diff --git a/work/WP-2026-0104/evidence/G07/unit-test.json b/work/WP-2026-0104/evidence/G07/unit-test.json
+new file mode 100644
+index 0000000..3db70a0
+--- /dev/null
++++ b/work/WP-2026-0104/evidence/G07/unit-test.json
+@@ -0,0 +1,71 @@
++{
++  "schema_version": "1.0.0",
++  "id": "EVD-WP-2026-0104-G07-unit-test",
++  "work_package_id": "WP-2026-0104",
++  "gate": "G07",
++  "claim": "the author's unit-test run, bound; the composed-tree gate is the fresh run",
++  "evidence_type": "unit-test",
++  "producer": {
++    "id": "badf-self-dossier",
++    "type": "controller"
++  },
++  "source_revision": "HEAD",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "unittest",
++    "version": "1"
++  },
++  "operation": "python3 -m unittest tests.test_badf_build_activation",
++  "started_at": "2026-08-30T19:02:46Z",
++  "completed_at": "2026-08-30T19:02:46Z",
++  "outcome": "PASS",
++  "artifact": "work/WP-2026-0104/evidence/G07/unit-test.log",
++  "digest": "sha256:653c141eb5a83f1f690d10327d0fbfe31c272e9b22b6714022177456edab4a77",
++  "binding": {
++    "obligations": [
++      {
++        "id": "TEST-001",
++        "seam": {
++          "type": "module",
++          "ref": "tests/test_badf_build_activation.py"
++        },
++        "red": {
++          "observed": true,
++          "ref": "work/WP-2026-0104/evidence/G07/failing-first.txt",
++          "digest": "sha256:8c0846f6b0370e1663e221d9c9a36fe9eedccb3c408eb39a23bd19aecaff3662"
++        },
++        "green": {
++          "observed": true,
++          "ref": "work/WP-2026-0104/evidence/G07/unit-test.log",
++          "digest": "sha256:653c141eb5a83f1f690d10327d0fbfe31c272e9b22b6714022177456edab4a77"
++        }
++      },
++      {
++        "id": "TEST-002",
++        "seam": {
++          "type": "module",
++          "ref": "tests/test_badf_build_contract.py,"
++        },
++        "red": {
++          "observed": true,
++          "ref": "work/WP-2026-0104/evidence/G07/failing-first.txt",
++          "digest": "sha256:8c0846f6b0370e1663e221d9c9a36fe9eedccb3c408eb39a23bd19aecaff3662"
++        },
++        "green": {
++          "observed": true,
++          "ref": "work/WP-2026-0104/evidence/G07/unit-test.log",
++          "digest": "sha256:653c141eb5a83f1f690d10327d0fbfe31c272e9b22b6714022177456edab4a77"
++        }
++      }
++    ],
++    "command": "python3 -m unittest tests.test_badf_build_activation",
++    "result": "PASS",
++    "tests_run": 4,
++    "failures": 0,
++    "coverage_scope": [
++      "tests/test_badf_build_activation.py",
++      "tests/test_badf_build_contract.py,"
++    ],
++    "fresh_run": "scripts/badf_compose.py (the composed-tree gate) re-runs the suite on the tree that would land; CI is the fresh, authoritative run (BLD-I09)"
++  }
++}
+diff --git a/work/WP-2026-0104/evidence/G07/unit-test.log b/work/WP-2026-0104/evidence/G07/unit-test.log
+new file mode 100644
+index 0000000..d710fd0
+--- /dev/null
++++ b/work/WP-2026-0104/evidence/G07/unit-test.log
+@@ -0,0 +1,6 @@
++python3 -m unittest tests.test_badf_build_activation
++....
++----------------------------------------------------------------------
++Ran 4 tests in 0.029s
++
++OK
+diff --git a/work/WP-2026-0104/gate-dossier.G07.json b/work/WP-2026-0104/gate-dossier.G07.json
+new file mode 100644
+index 0000000..e3683d3
+--- /dev/null
++++ b/work/WP-2026-0104/gate-dossier.G07.json
+@@ -0,0 +1,60 @@
++{
++  "schema_version": "1.0.0",
++  "id": "DOS-WP-2026-0104-G07-v1",
++  "work_package_id": "WP-2026-0104",
++  "gate": "G07",
++  "policy_epoch": "BADF-2026-08-25",
++  "source_revision": "HEAD",
++  "target": "bstBizEra/badf:main",
++  "change_class": "C2",
++  "author": "badf-self-dossier",
++  "author_type": "controller",
++  "evidence": [
++    {
++      "type": "source-change",
++      "path": "work/WP-2026-0104/evidence/G07/source-change.json"
++    },
++    {
++      "type": "build",
++      "path": "work/WP-2026-0104/evidence/G07/build.json"
++    },
++    {
++      "type": "unit-test",
++      "path": "work/WP-2026-0104/evidence/G07/unit-test.json"
++    },
++    {
++      "type": "documentation",
++      "path": "work/WP-2026-0104/evidence/G07/documentation.json"
++    },
++    {
++      "type": "composition",
++      "path": "work/WP-2026-0104/evidence/G07/composition.json"
++    }
++  ],
++  "approvals": [],
++  "conditions": [
++    {
++      "condition_id": "C-1",
++      "statement": "An independent reviewer distinct from the author has not recorded an approval; BADF runs under a single collaborator (recorded, not hidden -- see GITHUB_CONTROL_PLANE.md).",
++      "status": "OPEN",
++      "severity": "Major",
++      "blocking_scope": "G09",
++      "owner": "engineering_owner",
++      "closure_predicate": "a distinct human independent_reviewer records an approval, or the deviation is accepted in a decision record",
++      "closure_authority": "quality_authority"
++    }
++  ],
++  "non_coverage": [
++    {
++      "evidence_type": "source-change",
++      "reason": "expected_surfaces not declared on the work package; surface containment is not measurable (BLD-I04)",
++      "declared_by": "badf-self-dossier"
++    }
++  ],
++  "exceptions": [],
++  "risks": [],
++  "council": null,
++  "disposition": "HUMAN_REQUIRED",
++  "created_at": "2026-08-30T19:02:46Z",
++  "held_because": "BADF's own work package WP-2026-0104 at G07: evidence prepared and digest-bound; the independent-reviewer condition C-1 is open under a single collaborator; a human merges. The tool binds evidence, it does not approve."
++}
+diff --git a/work/WP-2026-0104/work-package.json b/work/WP-2026-0104/work-package.json
+new file mode 100644
+index 0000000..5ca5206
+--- /dev/null
++++ b/work/WP-2026-0104/work-package.json
+@@ -0,0 +1,58 @@
++{
++  "$schema": "../../schemas/work-package.schema.json",
++  "schema_version": "1.0.0",
++  "id": "WP-2026-0104",
++  "title": "WP-BLD-E: admit badf-build SHADOWED -> ACTIVE (operator admission; registry status flip only, no authority granted)",
++  "owner": "human_sponsor",
++  "demand": "BADF-DEM-0091",
++  "repository": "bstBizEra/badf",
++  "objective": "Advance the badf-build family root SHADOWED -> ACTIVE on the operator's admission decision -- pre-authorized for the whole ladder on #188 (comment 5469168780) and bound to the evidence on #203 -- now that every rung below is met on main: DESIGNED (BLD-A cf431fa), IMPLEMENTED (BLD-B 6814a24), VALIDATED (BLD-C 8f3d805), SHADOWED (BLD-D 07c23f7). Registry status flip only: digest unchanged (SKILL.md untouched since BLD-A), allowed_tools [], risk_class C1; no scripts/badf_build.py, no mutation path, no push/merge/release tool -- activation grants no authority (BUILD != INTEGRATION); the seven controls and the typed producer are byte-untouched. The doctrine records the authorization, the four landing SHAs and -- verbatim -- the shadow's non-coverage (C3/C4/C6/C7 scratch-proven only; no build controller run yet); ACTIVE does not erase it. Test pins move with the truth.",
++  "business_value": "An ACTIVE badf-build is the admitted contract every BADF work package is built under from here: one authorized Work Package, exact baseline, contained scope, red before green where a seam exists, fresh verification, budget and stop dominance, delegation that only narrows -- with the honest statement of what history could not yet exercise.",
++  "in_scope": [
++    "badf/skill-registry.json: badf-build SHADOWED -> ACTIVE (digest, source, risk_class, allowed_tools unchanged)",
++    "tests/test_badf_build_activation.py (4, failing-first): frozen digest, no authority, controls/producer untouched, doctrine cites authorization + landings + non-coverage",
++    "pins moved to ACTIVE: tests/test_badf_build_contract.py (registry pin), tests/test_badf_build_shadow.py (doc/registry pin)",
++    "GITHUB_CONTROL_PLANE.md doctrine section (authorization #188/#203, landings, non-coverage verbatim, re-shadow trigger); badf/demands/BADF-DEM-0091.json; own composition record + typed self-dossier; reconcile WP-2026-0105"
++  ],
++  "out_of_scope": [
++    "any change to the controls, the producer, the schemas, the workflow, the references or the shadow record",
++    "a real-project re-shadow (its own deferred issue; trigger = the first Work Package executed through badf-build's workflow)"
++  ],
++  "target_gate": "G07",
++  "change_class": "C2",
++  "data_classification": "internal",
++  "acceptance_criteria": [
++    "registry: badf-build ACTIVE; digest == sha256(SKILL.md) == the freeze value; allowed_tools []; risk_class C1",
++    "no scripts/badf_build.py; BUILD != INTEGRATION and BLD-I17/I18 stated in SKILL.md; check_g07_binding, _require_authorized_demand, _check_build_budget_and_stop, _check_delegations and the four typed schemas present and unchanged",
++    "doctrine section names #203, #188 / 5469168780, cf431fa, 6814a24, 8f3d805, 07c23f7, C3/C4/C6/C7 non-coverage and the no-controller-run trigger; 'does not erase'",
++    "tests/test_badf_build_activation.py failing-first before the flip, green after; moved pins green; CI green on the composed tree"
++  ],
++  "permissions": [
++    "write: bstBizEra/badf via PR"
++  ],
++  "tests": [
++    "tests/test_badf_build_activation.py (4)",
++    "tests/test_badf_build_contract.py, tests/test_badf_build_shadow.py (pins moved)"
++  ],
++  "evidence": [
++    "failing-first run",
++    "green run",
++    "registry mutation against the activation module (status/digest/tools/risk)",
++    "compose output incl. composition record",
++    "typed G07 self-dossier under C1..C7"
++  ],
++  "rollback": {
++    "reversible": true,
++    "method": "revert the squash commit via PR"
++  },
++  "status": "CLOSED",
++  "external_target": {
++    "repository": "bstBizEra/badf",
++    "branch": "main",
++    "base_revision": "5b428f7",
++    "landed_content_tree": "98b397e1d79d36bd6ea36e79397a1726f95c80d5",
++    "composition_verified": true,
++    "landed_as": "bbec7622d72edcd084c718896297a9a63759752c"
++  },
++  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-BLD-E of the badf-build program -- the operator's admission (pre-authorized on #188, recorded on #203). Governance-only WP (registry status + test pins + doctrine; empty gate diff). Resolves #203 / GOV-0087. Reconciles WP-2026-0105 (VER-C; composition_verified true). Lean mode disabled (authority-adjacent admission)."
++}
+diff --git a/work/WP-2026-0105/work-package.json b/work/WP-2026-0105/work-package.json
+index 14b120d..046811f 100644
+--- a/work/WP-2026-0105/work-package.json
++++ b/work/WP-2026-0105/work-package.json
+@@ -50,11 +50,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "dcbcc54"
++    "base_revision": "dcbcc54",
++    "landed_content_tree": "aff1bcbdd8728730e6482ec14ed4b1709c93e9dd",
++    "composition_verified": true,
++    "landed_as": "5b428f7d6f50312a753296fe2cca26b39d94e7a6"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-VER-C of the badf-engineering-verification program (#195 A->E authorization; approval recorded on #204). Shared surface (badf_gate.py + work-package.schema.json) -> non-authoring QA + REV; lean disabled. Resolves #204 / GOV-0088. Engineered by BARCHI-3 under /loop. Reconciles the land-time-current WP at landing."
+ }

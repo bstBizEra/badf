@@ -1,0 +1,58 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index b7648e4..3574451 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1476,6 +1476,53 @@ BLD-C's `tdd_exception` and `discovery_allowance` — additive, as every plannin
+ disabled: these are HARD INVARIANTS. **Ladder:** VER-D shadows the controls on the G08 material BADF has
+ (WP-2026-0010's dossier and the seats' review history, with known and injected defects); VER-E is the
+ operator's admission on that evidence.
++## badf-build → ACTIVE — BLD-E admission (`BADF-WP-0104`, Issue #203 / GOV-0087)
++
++`badf-build` is admitted `SHADOWED → ACTIVE` by **registry status flip only**: `digest` is the GIT-A-style
++freeze value (`SKILL.md` untouched since BLD-A), `allowed_tools: []`, `risk_class` C1. The authorization is the
++operator's decision — pre-authorized for the whole ladder on #188 (comment 5469168780, "proceed on your
++call to build the badf-build from WP-BLD-A - WP-BLD-E as ACTIVE") and bound to the evidence on #203. Every
++rung below was met on `main` before the flip: BLD-A `cf431fa` (contract, BLD-I01…I18), BLD-B `6814a24`
++(typed G07 evidence, build ledger), BLD-C `8f3d805` (seven deterministic controls, mutation-killed,
++independently reviewed), BLD-D `07c23f7` (shadow on every landed self-dossier: requests digest-bound,
++demands human-authorized, typed bindings exact, no `PASS` without a composed run).
++
++**Activation changes what the family *is*, not what it *may do*.** `BUILD ≠ INTEGRATION` holds after the
++flip exactly as before it: no `scripts/badf_build.py`, no mutation path, no push/merge/release tool; the
++seven controls and the typed producer are byte-untouched; the human still merges (BADF-MAIN-001).
++
++**`ACTIVE` does not erase the shadow's non-coverage.** It is carried here verbatim: **C3** scope
++containment, **C4** red before green / explicit exception, **C6** budget and stop, **C7** delegation subset
++have **no historical corpus** — nothing on the ledger ever declared `expected_surfaces`, `test_obligations`,
++a `RETRY`/`STOP` or a delegation — and are proven on scratch fixtures only; **no build controller** has yet
++executed a Work Package through the workflow. `ACTIVE` therefore means "admitted on the program's own
++builds, with four controls proven only on scratch", and not more; the first real project — or the first
++build executed under the contract — is the deferred re-shadow's trigger.
++
++## badf-engineering-verification → SHADOWED — the G08 controls on the material BADF has (`BADF-WP-0106` / WP-VER-D, Issue #207 / GOV-0089)
++
++Three case classes, one record (`examples/verification-shadow-evidence.json`), every case recomputed from
++the repository on every run by `tests/test_badf_verification_shadow.py` — and the honest first sentence
++states what is real, what is reconstructed and what is representative. **`historical-generic-dossier`:**
++WP-2026-0010 — the only real G08 dossier, four binding-less agent-produced objects — replays UNTOUCHED
++through `check_g08_binding` and `check_g08_dossier` (the additive proof, now measured, not just asserted).
++**`real-review-encoded` (5):** BARCHI-1's real verdict arc — #196 **Request Changes** (the synthetic-id
++collision, a genuine OPEN `MAJOR` finding) → **Approved** on the fix head with the finding `RESOLVED` and
++the `WP-2026-9999` sentinel as resolution evidence, then #201 / #202 / #205 — encoded under the encoded
++reviewer's own honesty conditions: one ballot per record, the real comment id as `reviewer_run_id`, sealed
++digest labeled RECONSTRUCTED, no council claimed, non-coverage carried verbatim, matrix rows `PARTIAL`
++(no composed observation can be reconstructed from prose). `badf_gate.py verify` accepts all five and
++refuses tampering — the digest changed, the #196 finding erased (VER-I12), `VERIFIED` without a composed
++ref (VER-I15). **`representative-typed-dossier` (12):** ten injected defects each refused by the control
++that owns it — every control C1–C7 owns at least one refusal — and two clean dossiers admitted (0 false
++refusals). Metrics measured and named; **reviewer correlation is NOT MEASURABLE with one reviewer seat**
++— a non-coverage the future BADF-QA / BADF-REV seats exist to close.
++
++**COI, disclosed:** the encoded reviewer is also the seat's usual reviewer; BARCHI-2 (not encoded)
++co-reviews the encoding class for fidelity. Registry `VALIDATED → SHADOWED` (digest unchanged); no gate,
++schema or lifecycle change (ladder-internal). **Admission (`VER-E`) is the operator's decision on this
++evidence, asked on its own issue — never pre-granted**; the real typed re-shadow trigger (first project
++G08 with typed objects) is filed as a deferred issue at close-out, mirroring #185 / #166.
+ 
+ ## Discovery ≠ scope expansion
+ 
