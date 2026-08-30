@@ -1,0 +1,35 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index b35adc7..881ac3e 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1130,6 +1130,30 @@ the non-coverage list is kept in full. The note also corrects a count that had p
+ the family has **six** subskills (GIT-C…H), not seven. The generator is not a repo tool — the shadow
+ test recomputes every case from the object store on every run, in CI and in the composed world.
+ 
++## badf-implementation-plan — G06 planning contract freeze (`BADF-WP-0091` / WP-IMP-A, Issue #177 / GOV-0073)
++
++BADF had an enforced **G06 gate** (WP-0067: `work-breakdown`/`test-plan`/`release-plan`/`rollback-plan`
++with an acyclic dependency graph) and, since WP-IMP-0, a WP template that conforms to its schema — but no
++capability to turn an approved G01–G05 design into those artifacts. `badf-implementation-plan` is that
++capability, frozen `DESIGNED`: a thin planning composition/router that decomposes approved design into a
++**governed Work Package DAG** and normalizes it into the **existing** four G06 artifacts. SKILL.md + 16
++references + `IMP-I01…IMP-I17`.
++
++The doctrine it freezes is `Task ≠ Work Package ≠ GitHub Issue ≠ Branch` and `Implementation Plan ≠
++Authority` — a Work Package is the *bounded execution contract* (scope · acceptance · authority · risk ·
++dependencies · expected surfaces · tests · evidence · budget · rollback · stop conditions); a task is an
++execution step inside it; an Issue is a tracking projection whose state grants no authority (IMP-I14).
++Four boundaries carry it: **(1) composes G06's existing four artifacts, adds no fifth gate artifact** and
++changes no `lifecycle.json`; **(2) authority is derived from `change_class` (C0–C3) and the matrix, never
++a new A0/A2 system** (IMP-I07); **(3) it declares execution topology while `badf-git` realizes it**
++(IMP-I15); **(4) no execution engine, no `scripts/badf_implementation_plan.py`, no schema** at freeze
++(IMP-I17), and it does not duplicate G01–G05 (IMP-I02). Spec Kit, Superpowers and Matt Pocock's
++`to-tickets` are adapted (plan→WP, tracer-bullet vertical slices, expand-migrate-contract, TDD, worktrees)
++but never adopted as authority — external capability can shape a plan, never expand authority. The
++ladder WP-IMP-A…E mirrors solution-design / security-design; per **#171** the typed planning fields
++WP-IMP-B adds will be enforced by **code controls**, not by trusting the schema walker's type field.
++Registry `DESIGNED`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
