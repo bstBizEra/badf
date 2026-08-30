@@ -1,0 +1,53 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0092",
+  "title": "WP-IMP-B: extend work-package.schema.json with the governed planning fields (badf-implementation-plan -> IMPLEMENTED)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0079",
+  "repository": "bstBizEra/badf",
+  "objective": "Advance badf-implementation-plan DESIGNED -> IMPLEMENTED by extending schemas/work-package.schema.json with the ten governed planning fields (source_baselines, expected_surfaces, authority_requirement, risk_factors, dependencies with typed edges, test_obligations, evidence_obligations, execution_budget, stop_conditions, composition) as OPTIONAL properties, and documenting the two external_target keys reconcile_work_package writes (landed_content_tree, composition_verified). Strictly additive and backward-compatible so all 76 existing WP records still validate. The schema walker enforces enum/pattern/nested-required; the type/coverage/authority/DAG controls are WP-IMP-C code controls (#171 / GOV-0071). No new gate command, no lifecycle change.",
+  "business_value": "The Governed Work Package is the bounded execution contract; giving it a schema shape for the planning fields makes those fields governed rather than ad-hoc extras, so WP-IMP-C can enforce them and an authority can weigh them. Doing it backward-compatibly keeps the entire ledger valid -- validate_repo checks every WP record against the schema on every run, in the composed world too.",
+  "in_scope": [
+    "schemas/work-package.schema.json: +10 optional planning fields + external_target landed_content_tree/composition_verified docs; no required change, no additionalProperties tightening",
+    "examples/work-package-planned.json: a planned WP exercising every new field",
+    "tests/test_badf_work_package_schema_extension.py: backward-compat over all existing records; optionality; walker-enforced enum/pattern/nested-required negatives; external_target docs; registry IMPLEMENTED",
+    "badf/skill-registry.json: badf-implementation-plan DESIGNED -> IMPLEMENTED",
+    "skills/badf-implementation-plan/references/acceptance.md: ladder rung IMPLEMENTED; GITHUB_CONTROL_PLANE.md doctrine section; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "the type-checking / acceptance-test-evidence coverage / authority-not-reduced / DAG-derivation controls -- WP-IMP-C code controls (the walker does not type-check, #171)",
+    "any new gate command, lifecycle.json change, scripts/badf_implementation_plan.py; WP-IMP-D shadow / WP-IMP-E admission"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "every existing work/*/work-package.json validates against the extended schema (repo PASS, branch + composed via badf_compose)",
+    "the planned example conforms; unknown stop_condition/level, non-WP dependency, missing execution_budget.max_attempts, bad derived_from are each refused",
+    "no field is in required; additionalProperties absent; badf-implementation-plan registered IMPLEMENTED",
+    "tests pass; repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_work_package_schema_extension.py",
+    "tests/test_badf_implementation_plan_contract.py",
+    "tests/test_badf_work_package_template.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "ccc0c71"
+  },
+  "note": "Lands IN_PROGRESS by design; next WP reconciles it. Backward-compat schema extension; no gate code (controls are WP-IMP-C) -> no mutation. Isolated worktree (badf-wt-impb). Ids WP-0092/DEM-0079/GOV-0074. Reconciles WP-2026-0091 (WP-IMP-A, composition_verified: false). Foundational-artifact change: BARCHI-2 schema-diff review + operator visibility requested. Operator /loop 'proceed from WP-IMP-A to WP-IMP-E'. Resolves #179."
+}

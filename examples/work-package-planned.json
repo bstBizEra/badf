@@ -1,0 +1,115 @@
+{
+  "$schema": "../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0000",
+  "title": "Example planned work package",
+  "owner": "engineering_owner",
+  "demand": "BADF-DEM-0000",
+  "repository": "owner/repo",
+  "objective": "One measurable outcome",
+  "business_value": "Value + KPI",
+  "in_scope": [
+    "the slice"
+  ],
+  "out_of_scope": [
+    "everything else"
+  ],
+  "target_gate": "G06",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "AC-021",
+    "AC-022"
+  ],
+  "permissions": [
+    "write: owner/repo via PR"
+  ],
+  "tests": [
+    "TEST-031"
+  ],
+  "evidence": [
+    "source-change",
+    "unit-test"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "DRAFT",
+  "source_baselines": {
+    "requirements": "REQ-BASELINE-1.0.0",
+    "architecture": "ARCH-1.0.0",
+    "solution": "SOL-1.0.0",
+    "security": "SEC-1.0.0"
+  },
+  "expected_surfaces": {
+    "files": [
+      "schemas/example.schema.json"
+    ],
+    "services": [
+      "billing-api"
+    ],
+    "interfaces": [
+      "API-017"
+    ],
+    "data": [
+      "billing_account"
+    ]
+  },
+  "authority_requirement": {
+    "derived_from": "C2",
+    "required_roles": [
+      "engineering_owner",
+      "quality_authority"
+    ]
+  },
+  "risk_factors": [
+    "contract_change",
+    "customer_visible"
+  ],
+  "dependencies": {
+    "blocked_by": [
+      "WP-2026-0001"
+    ],
+    "composition_after": [
+      "WP-2026-0001"
+    ],
+    "requires_artifact": [],
+    "conflicts_with": []
+  },
+  "test_obligations": [
+    {
+      "id": "TEST-031",
+      "claim": "AC-021",
+      "level": "integration"
+    },
+    {
+      "id": "TEST-032",
+      "claim": "AC-022",
+      "level": "unit"
+    }
+  ],
+  "evidence_obligations": [
+    "source-change",
+    "build",
+    "unit-test",
+    "documentation"
+  ],
+  "execution_budget": {
+    "max_attempts": 3,
+    "max_elapsed_minutes": 120,
+    "max_cost": "bounded-policy-value"
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "BASELINE_STALE",
+    "CREDENTIAL_EXPOSURE",
+    "BUDGET_EXHAUSTED"
+  ],
+  "composition": {
+    "landing_order": [
+      "WP-2026-0001",
+      "WP-2026-0000"
+    ]
+  }
+}

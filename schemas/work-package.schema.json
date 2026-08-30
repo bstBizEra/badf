@@ -225,6 +225,13 @@
         "landed_as": {
           "type": "string",
           "pattern": "^[0-9a-f]{7,40}$"
+        },
+        "landed_content_tree": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "composition_verified": {
+          "type": "boolean"
         }
       }
     },
@@ -236,6 +243,196 @@
       "type": "string",
       "minLength": 1,
       "description": "Required when status is CLOSED and no commit on the first-parent history of origin/main carries this record's Work-Package line (withdrawn before landing, or landed before the trailer discipline existed). Refused when the ledger does show a landing: that would be a false statement."
+    },
+    "source_baselines": {
+      "type": "object",
+      "description": "The exact upstream inputs this WP implements (IMP-I02).",
+      "properties": {
+        "requirements": {
+          "type": "string"
+        },
+        "architecture": {
+          "type": "string"
+        },
+        "solution": {
+          "type": "string"
+        },
+        "security": {
+          "type": "string"
+        }
+      }
+    },
+    "expected_surfaces": {
+      "type": "object",
+      "description": "What the WP is expected to change (IMP-I08).",
+      "properties": {
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "services": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "interfaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "authority_requirement": {
+      "type": "object",
+      "description": "Authority derived from change_class + the matrix (IMP-I07); never a parallel A0/A2 system.",
+      "properties": {
+        "derived_from": {
+          "enum": [
+            "C0",
+            "C1",
+            "C2",
+            "C3"
+          ]
+        },
+        "required_roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "risk_factors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "dependencies": {
+      "type": "object",
+      "description": "Typed edges; blocking is separate from composition/landing order (IMP-I05/I06).",
+      "properties": {
+        "blocked_by": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^WP-[A-Za-z0-9._-]+$"
+          }
+        },
+        "composition_after": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^WP-[A-Za-z0-9._-]+$"
+          }
+        },
+        "requires_artifact": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^WP-[A-Za-z0-9._-]+$"
+          }
+        },
+        "conflicts_with": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^WP-[A-Za-z0-9._-]+$"
+          }
+        }
+      }
+    },
+    "test_obligations": {
+      "type": "array",
+      "description": "Every acceptance claim has a verification obligation (IMP-I09).",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "claim",
+          "level"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "claim": {
+            "type": "string"
+          },
+          "level": {
+            "enum": [
+              "unit",
+              "contract",
+              "integration",
+              "security",
+              "migration",
+              "performance",
+              "composed-tree"
+            ]
+          }
+        }
+      }
+    },
+    "evidence_obligations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "execution_budget": {
+      "type": "object",
+      "required": [
+        "max_attempts"
+      ],
+      "description": "Bounded autonomous execution (IMP-I11).",
+      "properties": {
+        "max_attempts": {
+          "type": "integer"
+        },
+        "max_elapsed_minutes": {
+          "type": "number"
+        },
+        "max_cost": {}
+      }
+    },
+    "stop_conditions": {
+      "type": "array",
+      "description": "Immediate-halt conditions (IMP-I12).",
+      "items": {
+        "enum": [
+          "AUTHORITY_CONFLICT",
+          "BASELINE_STALE",
+          "CREDENTIAL_EXPOSURE",
+          "UNEXPECTED_DESTRUCTIVE_SCOPE",
+          "POLICY_BYPASS",
+          "EVIDENCE_CORRUPTION",
+          "BUDGET_EXHAUSTED",
+          "PRODUCTION_INSTABILITY"
+        ]
+      }
+    },
+    "composition": {
+      "type": "object",
+      "description": "Landing/composition order, separate from execution blockers (IMP-I06).",
+      "properties": {
+        "landing_order": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^WP-[A-Za-z0-9._-]+$"
+          }
+        }
+      }
     }
   }
 }

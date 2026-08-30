@@ -1,0 +1,549 @@
+diff --git a/badf/demands/BADF-DEM-0079.json b/badf/demands/BADF-DEM-0079.json
+new file mode 100644
+index 0000000..4006b09
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0079.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0079",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 179,
++    "url": "https://github.com/bstBizEra/badf/issues/179",
++    "exported_at": "2026-08-30T11:55:09Z",
++    "body_digest": "sha256:eaf71da73bbb4b0d9abc33922e5b5b30f4a2073c4c10cf876260051120e9a5ff"
++  },
++  "title": "GOV-0074: WP-IMP-B \u2014 extend work-package.schema.json with the governed planning fields (badf-implementation-plan -> IMPLEMENTED; backward-compatible)",
++  "problem": "## Observed\n\nbadf-implementation-plan is DESIGNED (WP-IMP-A). The Governed WP contract names ten planning fields but work-package.schema.json does not carry them.\n\n## Expected\n\n**WP-IMP-B -> IMPLEMENTED.** Extend work-package.schema.json with source_baselines/expected_surfaces/authority_requirement/risk_factors/dependencies(typed edges)/test_obligations/evidence_obligations/execution_budget/stop_conditions/composition as OPTIONAL properties; document reconcile's external_target keys (landed_content_tree, composition_verified). examples/work-package-planned.json + tests (backward-compat over all existing records; optionality; walker-enforced enum/pattern/nested-required negatives). STRICTLY ADDITIVE: no field in required, additionalProperties stays absent (would reject note + ledger keys), external_target keeps holding the reconcile-written keys -- so validate_repo stays green on all 76 existing records (branch + composed world). The type-checking/coverage/authority/DAG controls are WP-IMP-C code controls (#171: walker does not type-check; parse_composition_record uses equality). Registry DESIGNED -> IMPLEMENTED. No new gate, no lifecycle change.\n\n## Evidence\n\n- Pre-check: none of the 10 field names are a top-level key in any of the 76 existing records; repo PASS on the branch after the extension.\n\n## Unknowns\n\nNone -- additive extension; enforcement of the typed values is WP-IMP-C.\n\ndiscovered-by: operator /loop 'proceed from WP-IMP-A to WP-IMP-E' 2026-08-30 \u00b7 status: DISCOVERED\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T11:55:09Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-IMP-B advances badf-implementation-plan DESIGNED->IMPLEMENTED: backward-compatible work-package.schema.json extension (10 optional planning fields + external_target reconcile-key docs). Strictly additive (no required, additionalProperties absent); repo PASS branch+composed. Walker enforces enum/pattern/nested-required; type/coverage/DAG = WP-IMP-C code controls (#171). DEM-0079/GOV-0074/WP-0092. Reconciles WP-2026-0091. BARCHI-2 schema-diff review requested."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index b6fd63c..ccba8a6 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -288,7 +288,7 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "DESIGNED",
++      "status": "IMPLEMENTED",
+       "digest": "sha256:b4cb8255f8fb75015f069f10ade5dd5b058d9ff8364a06f7e74de35b81be9a9f"
+     }
+   ]
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 881ac3e..2936101 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1154,6 +1154,23 @@ ladder WP-IMP-A…E mirrors solution-design / security-design; per **#171** the
+ WP-IMP-B adds will be enforced by **code controls**, not by trusting the schema walker's type field.
+ Registry `DESIGNED`.
+ 
++## badf-implementation-plan → IMPLEMENTED — the Work Package schema extension (`BADF-WP-0092` / WP-IMP-B, Issue #179 / GOV-0074)
++
++WP-IMP-A froze the contract; WP-IMP-B gives the **Governed Work Package** its richer shape by extending
++`schemas/work-package.schema.json` with the planning fields — `dependencies`, `source_baselines`,
++`expected_surfaces`, `authority_requirement`, `risk_factors`, `test_obligations`, `evidence_obligations`,
++`execution_budget`, `stop_conditions`, `composition` — **all optional**, so every one of the 76 existing
++records still validates (`repo` PASS on the branch and in the composed world). The extension is strictly
++additive: nothing enters `required`, `additionalProperties` stays absent (tightening it would reject
++`note` and the ledger keys), and it **documents** the two keys `reconcile_work_package` writes on every
++landing (`landed_content_tree`, `composition_verified`). The schema walker enforces what it can here —
++`enum` (an unknown `stop_condition` or `test_obligation.level` is refused), `pattern` (a dependency that
++is not a `WP-…` id is refused), nested `required` (an `execution_budget` without `max_attempts` is
++refused) — while the **type-checking, coverage and DAG-derivation controls are WP-IMP-C code controls**,
++because the walker does not type-check non-object types (#171 / GOV-0071) and `parse_composition_record`
++already trusts nothing structurally. No `lifecycle.json` change, no new gate, no
++`scripts/badf_implementation_plan.py`. Registry `DESIGNED → IMPLEMENTED`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/examples/work-package-planned.json b/examples/work-package-planned.json
+new file mode 100644
+index 0000000..284309e
+--- /dev/null
++++ b/examples/work-package-planned.json
+@@ -0,0 +1,115 @@
++{
++  "$schema": "../schemas/work-package.schema.json",
++  "schema_version": "1.0.0",
++  "id": "WP-2026-0000",
++  "title": "Example planned work package",
++  "owner": "engineering_owner",
++  "demand": "BADF-DEM-0000",
++  "repository": "owner/repo",
++  "objective": "One measurable outcome",
++  "business_value": "Value + KPI",
++  "in_scope": [
++    "the slice"
++  ],
++  "out_of_scope": [
++    "everything else"
++  ],
++  "target_gate": "G06",
++  "change_class": "C2",
++  "data_classification": "internal",
++  "acceptance_criteria": [
++    "AC-021",
++    "AC-022"
++  ],
++  "permissions": [
++    "write: owner/repo via PR"
++  ],
++  "tests": [
++    "TEST-031"
++  ],
++  "evidence": [
++    "source-change",
++    "unit-test"
++  ],
++  "rollback": {
++    "reversible": true,
++    "method": "revert the squash commit via PR"
++  },
++  "status": "DRAFT",
++  "source_baselines": {
++    "requirements": "REQ-BASELINE-1.0.0",
++    "architecture": "ARCH-1.0.0",
++    "solution": "SOL-1.0.0",
++    "security": "SEC-1.0.0"
++  },
++  "expected_surfaces": {
++    "files": [
++      "schemas/example.schema.json"
++    ],
++    "services": [
++      "billing-api"
++    ],
++    "interfaces": [
++      "API-017"
++    ],
++    "data": [
++      "billing_account"
++    ]
++  },
++  "authority_requirement": {
++    "derived_from": "C2",
++    "required_roles": [
++      "engineering_owner",
++      "quality_authority"
++    ]
++  },
++  "risk_factors": [
++    "contract_change",
++    "customer_visible"
++  ],
++  "dependencies": {
++    "blocked_by": [
++      "WP-2026-0001"
++    ],
++    "composition_after": [
++      "WP-2026-0001"
++    ],
++    "requires_artifact": [],
++    "conflicts_with": []
++  },
++  "test_obligations": [
++    {
++      "id": "TEST-031",
++      "claim": "AC-021",
++      "level": "integration"
++    },
++    {
++      "id": "TEST-032",
++      "claim": "AC-022",
++      "level": "unit"
++    }
++  ],
++  "evidence_obligations": [
++    "source-change",
++    "build",
++    "unit-test",
++    "documentation"
++  ],
++  "execution_budget": {
++    "max_attempts": 3,
++    "max_elapsed_minutes": 120,
++    "max_cost": "bounded-policy-value"
++  },
++  "stop_conditions": [
++    "AUTHORITY_CONFLICT",
++    "BASELINE_STALE",
++    "CREDENTIAL_EXPOSURE",
++    "BUDGET_EXHAUSTED"
++  ],
++  "composition": {
++    "landing_order": [
++      "WP-2026-0001",
++      "WP-2026-0000"
++    ]
++  }
++}
+diff --git a/schemas/work-package.schema.json b/schemas/work-package.schema.json
+index 726fdab..387dd00 100644
+--- a/schemas/work-package.schema.json
++++ b/schemas/work-package.schema.json
+@@ -225,6 +225,13 @@
+         "landed_as": {
+           "type": "string",
+           "pattern": "^[0-9a-f]{7,40}$"
++        },
++        "landed_content_tree": {
++          "type": "string",
++          "pattern": "^[0-9a-f]{40}$"
++        },
++        "composition_verified": {
++          "type": "boolean"
+         }
+       }
+     },
+@@ -236,6 +243,196 @@
+       "type": "string",
+       "minLength": 1,
+       "description": "Required when status is CLOSED and no commit on the first-parent history of origin/main carries this record's Work-Package line (withdrawn before landing, or landed before the trailer discipline existed). Refused when the ledger does show a landing: that would be a false statement."
++    },
++    "source_baselines": {
++      "type": "object",
++      "description": "The exact upstream inputs this WP implements (IMP-I02).",
++      "properties": {
++        "requirements": {
++          "type": "string"
++        },
++        "architecture": {
++          "type": "string"
++        },
++        "solution": {
++          "type": "string"
++        },
++        "security": {
++          "type": "string"
++        }
++      }
++    },
++    "expected_surfaces": {
++      "type": "object",
++      "description": "What the WP is expected to change (IMP-I08).",
++      "properties": {
++        "files": {
++          "type": "array",
++          "items": {
++            "type": "string"
++          }
++        },
++        "services": {
++          "type": "array",
++          "items": {
++            "type": "string"
++          }
++        },
++        "interfaces": {
++          "type": "array",
++          "items": {
++            "type": "string"
++          }
++        },
++        "data": {
++          "type": "array",
++          "items": {
++            "type": "string"
++          }
++        }
++      }
++    },
++    "authority_requirement": {
++      "type": "object",
++      "description": "Authority derived from change_class + the matrix (IMP-I07); never a parallel A0/A2 system.",
++      "properties": {
++        "derived_from": {
++          "enum": [
++            "C0",
++            "C1",
++            "C2",
++            "C3"
++          ]
++        },
++        "required_roles": {
++          "type": "array",
++          "items": {
++            "type": "string"
++          }
++        }
++      }
++    },
++    "risk_factors": {
++      "type": "array",
++      "items": {
++        "type": "string"
++      }
++    },
++    "dependencies": {
++      "type": "object",
++      "description": "Typed edges; blocking is separate from composition/landing order (IMP-I05/I06).",
++      "properties": {
++        "blocked_by": {
++          "type": "array",
++          "items": {
++            "type": "string",
++            "pattern": "^WP-[A-Za-z0-9._-]+$"
++          }
++        },
++        "composition_after": {
++          "type": "array",
++          "items": {
++            "type": "string",
++            "pattern": "^WP-[A-Za-z0-9._-]+$"
++          }
++        },
++        "requires_artifact": {
++          "type": "array",
++          "items": {
++            "type": "string",
++            "pattern": "^WP-[A-Za-z0-9._-]+$"
++          }
++        },
++        "conflicts_with": {
++          "type": "array",
++          "items": {
++            "type": "string",
++            "pattern": "^WP-[A-Za-z0-9._-]+$"
++          }
++        }
++      }
++    },
++    "test_obligations": {
++      "type": "array",
++      "description": "Every acceptance claim has a verification obligation (IMP-I09).",
++      "items": {
++        "type": "object",
++        "required": [
++          "id",
++          "claim",
++          "level"
++        ],
++        "properties": {
++          "id": {
++            "type": "string"
++          },
++          "claim": {
++            "type": "string"
++          },
++          "level": {
++            "enum": [
++              "unit",
++              "contract",
++              "integration",
++              "security",
++              "migration",
++              "performance",
++              "composed-tree"
++            ]
++          }
++        }
++      }
++    },
++    "evidence_obligations": {
++      "type": "array",
++      "items": {
++        "type": "string"
++      }
++    },
++    "execution_budget": {
++      "type": "object",
++      "required": [
++        "max_attempts"
++      ],
++      "description": "Bounded autonomous execution (IMP-I11).",
++      "properties": {
++        "max_attempts": {
++          "type": "integer"
++        },
++        "max_elapsed_minutes": {
++          "type": "number"
++        },
++        "max_cost": {}
++      }
++    },
++    "stop_conditions": {
++      "type": "array",
++      "description": "Immediate-halt conditions (IMP-I12).",
++      "items": {
++        "enum": [
++          "AUTHORITY_CONFLICT",
++          "BASELINE_STALE",
++          "CREDENTIAL_EXPOSURE",
++          "UNEXPECTED_DESTRUCTIVE_SCOPE",
++          "POLICY_BYPASS",
++          "EVIDENCE_CORRUPTION",
++          "BUDGET_EXHAUSTED",
++          "PRODUCTION_INSTABILITY"
++        ]
++      }
++    },
++    "composition": {
++      "type": "object",
++      "description": "Landing/composition order, separate from execution blockers (IMP-I06).",
++      "properties": {
++        "landing_order": {
++          "type": "array",
++          "items": {
++            "type": "string",
++            "pattern": "^WP-[A-Za-z0-9._-]+$"
++          }
++        }
++      }
+     }
+   }
+ }
+diff --git a/skills/badf-implementation-plan/references/acceptance.md b/skills/badf-implementation-plan/references/acceptance.md
+index ddec161..a987ba0 100644
+--- a/skills/badf-implementation-plan/references/acceptance.md
++++ b/skills/badf-implementation-plan/references/acceptance.md
+@@ -11,8 +11,8 @@ The same pattern that carried `badf-research`, `badf-architecture`, `badf-soluti
+ 
+ | WP | Outcome | Status |
+ | :--- | :--- | :--- |
+-| **WP-IMP-A** (this) | root `SKILL.md` + references: WP≠task doctrine, G06 mapping, the Governed WP contract, decomposition/slicing, dependency DAG + frontier, authority-derived, test/evidence/budget/stop planning, release/rollback, issue-projection, IMP-I01…I17, external-methodology | `DESIGNED` |
+-| WP-IMP-B | backward-compatible WP-schema extension (optional governed planning fields) + the enriched `work-breakdown` DAG | `IMPLEMENTED` |
++| WP-IMP-A | root `SKILL.md` + references: WP≠task doctrine, G06 mapping, the Governed WP contract, decomposition/slicing, dependency DAG + frontier, authority-derived, test/evidence/budget/stop planning, release/rollback, issue-projection, IMP-I01…I17, external-methodology | `DESIGNED` |
++| **WP-IMP-B** | backward-compatible `work-package.schema.json` extension — the governed planning fields (`dependencies`, `source_baselines`, `expected_surfaces`, `authority_requirement`, `risk_factors`, `test_obligations`, `evidence_obligations`, `execution_budget`, `stop_conditions`, `composition`) as **optional** properties (walker enforces enum/pattern/nested-required; type/coverage/DAG checks are WP-IMP-C code controls per #171); documents the ledger keys `reconcile` writes | `IMPLEMENTED` |
+ | WP-IMP-C | deterministic G06 controls in `badf_gate.py` (authority derivation, coverage, budget/stop, execution frontier) — **code controls**, per #171 | `VALIDATED` |
+ | WP-IMP-D | GitHub issue projection + `badf-git` execution-topology integration + representative planning shadow | `SHADOWED` |
+ | WP-IMP-E | operator admission → registry activation | `ACTIVE` |
+diff --git a/tests/test_badf_work_package_schema_extension.py b/tests/test_badf_work_package_schema_extension.py
+new file mode 100644
+index 0000000..374b902
+--- /dev/null
++++ b/tests/test_badf_work_package_schema_extension.py
+@@ -0,0 +1,103 @@
++"""Work Package schema extension for G06 planning (BADF-WP-0092 / WP-IMP-B).
++
++badf-implementation-plan needs the Governed Work Package to carry richer planning fields
++(dependencies, source_baselines, expected_surfaces, authority_requirement, risk_factors,
++test_obligations, evidence_obligations, execution_budget, stop_conditions, composition). This WP
++extends schemas/work-package.schema.json with those fields as **optional** properties so every
++existing record still validates (backward-compatible per docs governance) and documents the
++external_target keys `reconcile_work_package` writes (landed_content_tree, composition_verified).
++
++The schema walker enforces required/enum/pattern (incl. nested); it does NOT type-check non-object
++types (#171 / GOV-0071), so the type/coverage/DAG-derivation controls are WP-IMP-C code controls,
++not this schema. These tests guard the additive extension and the walker-enforced constraints.
++"""
++import copy
++import json
++import sys
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++EXAMPLE = json.loads((gate.ROOT / "examples/work-package-planned.json").read_text())
++SCHEMA = json.loads((gate.ROOT / "schemas/work-package.schema.json").read_text())
++
++
++class BackwardCompatTests(unittest.TestCase):
++    def test_all_existing_wp_records_still_validate(self):
++        records = sorted((gate.ROOT / "work").glob("WP-2026-*/work-package.json"))
++        self.assertGreaterEqual(len(records), 70, "expected the full ledger")
++        for p in records:
++            with self.subTest(wp=p.parent.name):
++                gate.check_schema("work-package", json.loads(p.read_text()))
++
++    def test_new_planning_fields_are_optional(self):
++        # a minimal record carrying none of the new fields still validates (backward-compat).
++        minimal = {k: EXAMPLE[k] for k in SCHEMA["required"]}
++        gate.check_schema("work-package", minimal)
++
++    def test_none_of_the_new_fields_are_required(self):
++        new = {"source_baselines", "expected_surfaces", "authority_requirement", "risk_factors",
++               "dependencies", "test_obligations", "evidence_obligations", "execution_budget",
++               "stop_conditions", "composition"}
++        self.assertEqual(set(), new & set(SCHEMA["required"]))
++
++    def test_schema_stays_open_no_additionalProperties_false(self):
++        # tightening additionalProperties would reject `note` and the ledger keys reconcile writes.
++        self.assertNotIn("additionalProperties", SCHEMA)
++
++
++class PlannedRecordTests(unittest.TestCase):
++    def test_the_planned_example_conforms(self):
++        gate.check_schema("work-package", EXAMPLE)
++
++    def test_external_target_documents_the_reconcile_keys(self):
++        et = SCHEMA["properties"]["external_target"]["properties"]
++        self.assertIn("landed_content_tree", et)
++        self.assertIn("composition_verified", et)
++        # a malformed landed_content_tree is refused by the pattern the walker enforces.
++        bad = copy.deepcopy(EXAMPLE)
++        bad["external_target"] = {"repository": "owner/repo", "branch": "main",
++                                  "landed_content_tree": "not-a-tree"}
++        with self.assertRaises(gate.ValidationError):
++            gate.check_schema("work-package", bad)
++
++
++class WalkerEnforcedTests(unittest.TestCase):
++    """The constraints the schema walker DOES enforce on the new fields: enum, pattern, nested required."""
++
++    def refuse(self, mutate):
++        bad = copy.deepcopy(EXAMPLE)
++        mutate(bad)
++        with self.assertRaises(gate.ValidationError):
++            gate.check_schema("work-package", bad)
++
++    def test_unknown_stop_condition_is_refused(self):
++        self.refuse(lambda w: w["stop_conditions"].append("PLEASE_STOP"))
++
++    def test_unknown_test_level_is_refused(self):
++        self.refuse(lambda w: w["test_obligations"][0].__setitem__("level", "vibes"))
++
++    def test_test_obligation_missing_a_required_key_is_refused(self):
++        self.refuse(lambda w: w["test_obligations"][0].pop("claim"))
++
++    def test_dependency_not_matching_the_wp_pattern_is_refused(self):
++        self.refuse(lambda w: w["dependencies"]["blocked_by"].append("ISSUE-17"))
++
++    def test_execution_budget_without_max_attempts_is_refused(self):
++        self.refuse(lambda w: w["execution_budget"].pop("max_attempts"))
++
++    def test_authority_requirement_bad_change_class_is_refused(self):
++        self.refuse(lambda w: w["authority_requirement"].__setitem__("derived_from", "C9"))
++
++
++class RegistryStatusTests(unittest.TestCase):
++    def test_badf_implementation_plan_is_registered_implemented(self):  # WP-IMP-B advanced DESIGNED -> IMPLEMENTED
++        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
++        entry = next(e for e in reg["skills"] if e["name"] == "badf-implementation-plan")
++        self.assertEqual(entry["status"], "IMPLEMENTED")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0091/work-package.json b/work/WP-2026-0091/work-package.json
+index 1462268..955c27f 100644
+--- a/work/WP-2026-0091/work-package.json
++++ b/work/WP-2026-0091/work-package.json
+@@ -42,11 +42,13 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "914309b"
++    "base_revision": "914309b",
++    "composition_verified": false,
++    "landed_as": "ccc0c711b891fb0cc704d1aea09946e032b5d471"
+   },
+   "note": "Lands IN_PROGRESS by design; next WP reconciles it. DESIGNED contract freeze; no gate code (controls are WP-IMP-C) -> no mutation. Isolated worktree (badf-wt-impa). Ids WP-0091/DEM-0078/GOV-0073. Reconciles WP-2026-0089 (WP-IMP-0, composition_verified: false). Operator design directive 2026-08-30; /loop 'proceed from WP-IMP-A to WP-IMP-E'. Resolves #177."
+ }
