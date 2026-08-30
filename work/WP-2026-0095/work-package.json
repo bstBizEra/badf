@@ -43,11 +43,13 @@
     "reversible": true,
     "method": "revert the squash commit via PR (registry back to SHADOWED)"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "4deb094"
+    "base_revision": "4deb094",
+    "composition_verified": false,
+    "landed_as": "d4b8c4a4fe5e92bf5362f963cb835c6628445957"
   },
   "note": "Lands IN_PROGRESS by design; next WP reconciles it. Registry admission SHADOWED->ACTIVE on the operator's standing /loop 'to E' directive (2026-08-30); grants no authority; caveat preserved; real re-shadow deferred to #185. No new control -> no mutation. Ladder-internal (no shared surface). Isolated worktree (badf-wt-impe). Ids WP-0095/DEM-0082/GOV-0077. Reconciles WP-2026-0094 (composition_verified: false). Completes WP-IMP-A..E -- 3rd capability (after solution-design + security-design) to traverse DESIGNED->ACTIVE. Resolves #186 / GOV-0077."
 }
