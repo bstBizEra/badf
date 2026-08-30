@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0072",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 164,
+    "url": "https://github.com/bstBizEra/badf/issues/164",
+    "exported_at": "2026-08-30T00:21:08Z",
+    "body_digest": "sha256:2fdcd1f36c5a61ce6cdcf6be9bacc694c67ce174a633fde1a748af85f4e2b470"
+  },
+  "title": "GOV-0066: WP-SEC-D \u2014 representative shadow calibration (badf-security-design -> SHADOWED)",
+  "problem": "## Observed\n\nbadf-security-design is VALIDATED (WP-SEC-C). SHADOWED is the next rung. But BADF has no real security-composition matrices (no UX/API/authz/threat surface of its own), so the shadow must be representative and say so.\n\n## Expected\n\n**WP-SEC-D -> SHADOWED.** shadow-evidence.md: run `security` over representative threat matrices, measured for true positives (each structural + seam defect refused), zero false positives (clean matrices pass incl. a disposition-scoped deferred row), declared non-coverage (external-artifact seams: full SEC-I04 bidirectional, SEC-I01 baseline binding, semantic resolution). Explicitly REPRESENTATIVE not real-project; real re-shadow owed on first real use. 2 committed representative shadow matrices (API/payment, data/privacy) validated in CI. Registry VALIDATED -> SHADOWED. Mirrors WP-SOL-D. APPROVED/ACTIVE a later operator-authorized step.\n\n## Evidence\n\n- WP-SEC-B/C suites already demonstrate the TP detections + clean passes; this assembles them as calibration evidence + fresh representative matrices, mirroring badf-solution-design WP-SOL-D.\n\n## Unknowns\n\nWhether SHADOWED should wait for a real matrix instead of a representative one -- recorded honestly so the operator can hold APPROVED/ACTIVE for a real re-shadow if preferred.\n\ndiscovered-by: operator /loop 'proceed until active' 2026-08-30 \u00b7 status: DISCOVERED\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-30T00:21:08Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "WP-SEC-D advances badf-security-design VALIDATED->SHADOWED via REPRESENTATIVE shadow calibration (no real security matrices exist -- honestly labelled; real re-shadow owed on first real use). TP/FP/non-coverage over 2 representative matrices (API/payment, data/privacy). External-artifact seams declared non-covered. Mirrors WP-SOL-D. DEM-0072/GOV-0066/WP-0085. Reconciles WP-2026-0084 (composition_verified: false). Operator /loop to active 2026-08-30."
+}
