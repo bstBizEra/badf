@@ -1211,6 +1211,24 @@ boundaries, demonstrated as doctrine not run). Two committed shadow breakdowns
 no second validator. Registry `VALIDATED → SHADOWED`; `APPROVED`/`ACTIVE` remain the operator's admission
 decision.
 
+## badf-implementation-plan → ACTIVE — operator admission on a representative shadow (`BADF-WP-0095` / WP-IMP-E, Issue #186 / GOV-0077)
+
+`SHADOWED → ACTIVE` is a **human admission gate** — self-approval is prohibited, so no agent crosses it.
+The operator's standing directive — `/loop … proceed from WP-IMP-A to WP-IMP-E` (2026-08-30), confirmed by
+"proceed your tasks" — is the admission decision to **activate on the representative shadow**, rather than
+hold `ACTIVE` indefinitely for a real G06 plan that BADF — whose own work packages are governance work —
+may not produce soon. This WP records that decision as a governed registry advance, mirroring
+`badf-solution-design` WP-SOL-E and `badf-security-design` WP-SEC-E: `ACTIVE` **grants the skill no new
+authority** (IMP-I17 — `badf_gate.py` is the sole gate authority; IMP-I15 — the plan cannot execute its
+own WPs; IMP-I14 — an Issue grants no authority; IMP-I07 — authority stays derived from `change_class`),
+and there is no `lifecycle.json` change, no new control, no second validator. The admission does **not
+erase the caveat**: `references/shadow-evidence.md` still labels the shadow representative, and the owed
+real-project re-shadow is filed as a tracked follow-up (**#185**, `DISCOVERED`, trigger = the first real
+G06 plan). This **completes the WP-IMP-A…E ladder** (`DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED →
+ACTIVE`) — the third capability, after `badf-solution-design` and `badf-security-design`, to traverse it
+end to end, and the one that gives G06 (Implementation planning) its authoring capability. Registry
+`SHADOWED → ACTIVE`.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
