@@ -15,7 +15,7 @@ The same pattern that carried `badf-research`, `badf-architecture`, `badf-soluti
 | **WP-IMP-B** | backward-compatible `work-package.schema.json` extension — the governed planning fields (`dependencies`, `source_baselines`, `expected_surfaces`, `authority_requirement`, `risk_factors`, `test_obligations`, `evidence_obligations`, `execution_budget`, `stop_conditions`, `composition`) as **optional** properties (walker enforces enum/pattern/nested-required; type/coverage/DAG checks are WP-IMP-C code controls per #171); documents the ledger keys `reconcile` writes | `IMPLEMENTED` |
 | **WP-IMP-C** | deterministic G06 controls in `check_work_breakdown` (the gate-enforced DAG artifact): **IMP-C1** authority-not-reduced (matrix), **IMP-C2** acceptance coverage, **IMP-C3** bounded budget, **IMP-C4** non-empty stop contract, **IMP-C5** resolvable + acyclic composition order — **code controls** (the walker doesn't type-check, #171) | `VALIDATED` |
 | **WP-IMP-D** | **representative** planning shadow calibration (no real G06 breakdowns exist yet; real re-shadow owed on first real use) + the issue-projection / execution-topology doctrine exemplars; see `shadow-evidence.md` | `SHADOWED` |
-| WP-IMP-E | operator admission → registry activation | `ACTIVE` |
+| **WP-IMP-E** | operator admission on the representative shadow (caveat preserved; real re-shadow tracked as #185) → registry activation | `ACTIVE` |
 
 ## WP-IMP-A boundaries (no scope creep)
 

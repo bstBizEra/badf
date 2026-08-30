@@ -105,10 +105,10 @@ class ShadowCalibrationTests(G06PlanningControlsBase):
 
 
 class RegistryStatusTests(unittest.TestCase):
-    def test_badf_implementation_plan_is_registered_shadowed(self):  # WP-IMP-D advanced VALIDATED -> SHADOWED
+    def test_badf_implementation_plan_is_registered_active(self):  # WP-IMP-E admitted SHADOWED -> ACTIVE (operator admission)
         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
         entry = next(e for e in reg["skills"] if e["name"] == "badf-implementation-plan")
-        self.assertEqual(entry["status"], "SHADOWED")
+        self.assertEqual(entry["status"], "ACTIVE")
 
 
 if __name__ == "__main__":

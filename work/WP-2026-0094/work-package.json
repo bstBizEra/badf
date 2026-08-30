@@ -44,11 +44,13 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "7547223"
+    "base_revision": "7547223",
+    "composition_verified": false,
+    "landed_as": "4deb094052d7512766cfa2f99058ec916195b31c"
   },
   "note": "Lands IN_PROGRESS by design; next WP reconciles it. Shadow evidence + status advance; no new control (controls are WP-IMP-C), so no mutation. Ladder-internal (no badf_gate.py/schema/reconcile change) -> no BARCHI-2 review needed by the shared-surface rule. Isolated worktree (badf-wt-impd). Ids WP-0094/DEM-0081/GOV-0076. Reconciles WP-2026-0093 (WP-IMP-C, composition_verified: false). Operator /loop 'proceed from WP-IMP-A to WP-IMP-E'. Resolves #183."
 }
