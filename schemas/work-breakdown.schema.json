@@ -44,6 +44,128 @@
               "type": "string",
               "pattern": "^WBS-[0-9]{3,}$"
             }
+          },
+          "composition_after": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^WBS-[0-9]{3,}$"
+            }
+          },
+          "change_class": {
+            "enum": [
+              "C0",
+              "C1",
+              "C2",
+              "C3"
+            ]
+          },
+          "authority_requirement": {
+            "type": "object",
+            "properties": {
+              "required_roles": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "acceptance": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "test_obligations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "claim"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "claim": {
+                  "type": "string"
+                },
+                "level": {
+                  "enum": [
+                    "unit",
+                    "contract",
+                    "integration",
+                    "security",
+                    "migration",
+                    "performance",
+                    "composed-tree"
+                  ]
+                }
+              }
+            }
+          },
+          "evidence_obligations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "execution_budget": {
+            "type": "object",
+            "properties": {
+              "max_attempts": {
+                "type": "integer"
+              },
+              "max_elapsed_minutes": {
+                "type": "number"
+              },
+              "max_cost": {}
+            }
+          },
+          "stop_conditions": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "AUTHORITY_CONFLICT",
+                "BASELINE_STALE",
+                "CREDENTIAL_EXPOSURE",
+                "UNEXPECTED_DESTRUCTIVE_SCOPE",
+                "POLICY_BYPASS",
+                "EVIDENCE_CORRUPTION",
+                "BUDGET_EXHAUSTED",
+                "PRODUCTION_INSTABILITY"
+              ]
+            }
+          },
+          "expected_surfaces": {
+            "type": "object",
+            "properties": {
+              "files": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "services": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "interfaces": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }

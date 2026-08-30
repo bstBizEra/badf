@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-EXAMPLE-PLANNED",
+  "tasks": [
+    {
+      "id": "WBS-001",
+      "description": "Ship the migration",
+      "change_class": "C2",
+      "authority_requirement": {
+        "required_roles": [
+          "product_owner",
+          "engineering_owner",
+          "quality_authority",
+          "service_owner"
+        ]
+      },
+      "acceptance": [
+        "AC-021"
+      ],
+      "test_obligations": [
+        {
+          "id": "TEST-031",
+          "claim": "AC-021",
+          "level": "integration"
+        }
+      ],
+      "evidence_obligations": [
+        "source-change",
+        "unit-test"
+      ],
+      "execution_budget": {
+        "max_attempts": 3,
+        "max_elapsed_minutes": 120
+      },
+      "stop_conditions": [
+        "AUTHORITY_CONFLICT",
+        "BASELINE_STALE",
+        "BUDGET_EXHAUSTED"
+      ],
+      "expected_surfaces": {
+        "files": [
+          "schemas/x.json"
+        ],
+        "data": [
+          "billing_account"
+        ]
+      }
+    },
+    {
+      "id": "WBS-002",
+      "description": "Ship the code that depends on the migration",
+      "depends_on": [
+        "WBS-001"
+      ],
+      "composition_after": [
+        "WBS-001"
+      ],
+      "change_class": "C1",
+      "authority_requirement": {
+        "required_roles": [
+          "engineering_owner",
+          "independent_reviewer"
+        ]
+      },
+      "acceptance": [
+        "AC-022"
+      ],
+      "test_obligations": [
+        {
+          "id": "TEST-032",
+          "claim": "AC-022",
+          "level": "unit"
+        }
+      ],
+      "execution_budget": {
+        "max_attempts": 2
+      },
+      "stop_conditions": [
+        "POLICY_BYPASS"
+      ]
+    }
+  ]
+}
