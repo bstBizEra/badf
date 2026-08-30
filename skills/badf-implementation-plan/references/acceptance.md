@@ -13,7 +13,7 @@ The same pattern that carried `badf-research`, `badf-architecture`, `badf-soluti
 | :--- | :--- | :--- |
 | WP-IMP-A | root `SKILL.md` + references: WP≠task doctrine, G06 mapping, the Governed WP contract, decomposition/slicing, dependency DAG + frontier, authority-derived, test/evidence/budget/stop planning, release/rollback, issue-projection, IMP-I01…I17, external-methodology | `DESIGNED` |
 | **WP-IMP-B** | backward-compatible `work-package.schema.json` extension — the governed planning fields (`dependencies`, `source_baselines`, `expected_surfaces`, `authority_requirement`, `risk_factors`, `test_obligations`, `evidence_obligations`, `execution_budget`, `stop_conditions`, `composition`) as **optional** properties (walker enforces enum/pattern/nested-required; type/coverage/DAG checks are WP-IMP-C code controls per #171); documents the ledger keys `reconcile` writes | `IMPLEMENTED` |
-| WP-IMP-C | deterministic G06 controls in `badf_gate.py` (authority derivation, coverage, budget/stop, execution frontier) — **code controls**, per #171 | `VALIDATED` |
+| **WP-IMP-C** | deterministic G06 controls in `check_work_breakdown` (the gate-enforced DAG artifact): **IMP-C1** authority-not-reduced (matrix), **IMP-C2** acceptance coverage, **IMP-C3** bounded budget, **IMP-C4** non-empty stop contract, **IMP-C5** resolvable + acyclic composition order — **code controls** (the walker doesn't type-check, #171) | `VALIDATED` |
 | WP-IMP-D | GitHub issue projection + `badf-git` execution-topology integration + representative planning shadow | `SHADOWED` |
 | WP-IMP-E | operator admission → registry activation | `ACTIVE` |
 

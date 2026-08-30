@@ -93,10 +93,13 @@ class WalkerEnforcedTests(unittest.TestCase):
 
 
 class RegistryStatusTests(unittest.TestCase):
-    def test_badf_implementation_plan_is_registered_implemented(self):  # WP-IMP-B advanced DESIGNED -> IMPLEMENTED
+    def test_badf_implementation_plan_is_registered_at_least_implemented(self):
+        # WP-IMP-B advanced DESIGNED -> IMPLEMENTED; the exact rung is pinned by the current-rung
+        # suite (WP-IMP-C: VALIDATED). Guard only that the schema extension shipped at or past
+        # IMPLEMENTED, so later advances (VALIDATED/SHADOWED/ACTIVE) do not re-break this test.
         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
         entry = next(e for e in reg["skills"] if e["name"] == "badf-implementation-plan")
-        self.assertEqual(entry["status"], "IMPLEMENTED")
+        self.assertIn(entry["status"], ("IMPLEMENTED", "VALIDATED", "SHADOWED", "APPROVED", "ACTIVE"))
 
 
 if __name__ == "__main__":

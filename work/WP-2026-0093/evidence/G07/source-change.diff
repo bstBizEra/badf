@@ -1,0 +1,501 @@
+diff --git a/badf/demands/BADF-DEM-0080.json b/badf/demands/BADF-DEM-0080.json
+new file mode 100644
+index 0000000..c81f70b
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0080.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0080",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 181,
++    "url": "https://github.com/bstBizEra/badf/issues/181",
++    "exported_at": "2026-08-30T12:27:30Z",
++    "body_digest": "sha256:3d1409737db875ac2ba818a04690c4f6ab53bb0b9ce3b1b735eef9aaeeab4ee4"
++  },
++  "title": "GOV-0075: WP-IMP-C \u2014 deterministic G06 planning controls in badf_gate.py (badf-implementation-plan -> VALIDATED)",
++  "problem": "## Observed\n\nbadf-implementation-plan is IMPLEMENTED (WP-IMP-B). The gate-enforced G06 artifact is the work-breakdown (check_work_breakdown), which enforces non-empty/unique/resolvable-deps/acyclic. The operator's remaining planning controls (authority derivation, coverage, budget/stop) are not yet enforced. (Finding: check_schema(work-package) is never called in the gate -- WP records are the human-readable contract, the work-breakdown is the machine-enforced DAG.)\n\n## Expected\n\n**WP-IMP-C -> VALIDATED.** Extend schemas/work-breakdown.schema.json (optional per-task planning fields; additionalProperties:false stays) and check_work_breakdown with 5 code controls, each failing-first + mutation-killed: IMP-C1 authority-not-reduced (required_roles superset of authority-matrix[change_class]); IMP-C2 acceptance coverage (each acceptance claim has a test_obligation); IMP-C3 bounded budget (execution_budget.max_attempts positive integer, code control since walker doesn't type-check #171, rejects True); IMP-C4 non-empty stop contract; IMP-C5 composition_after resolves + acyclic, separate from depends_on. Enriched example; existing minimal example + records still validate. Registry IMPLEMENTED -> VALIDATED. No new gate command, no lifecycle change.\n\n## Evidence\n\n- authority-matrix.json change_classes carry required_roles (C0..C3) -- IMP-C1 uses them. All controls field-scoped so backward-compatible.\n\n## Unknowns\n\nNone -- controls on the gate-enforced work-breakdown artifact.\n\ndiscovered-by: operator /loop 'proceed from WP-IMP-A to WP-IMP-E' 2026-08-30 \u00b7 status: DISCOVERED\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T12:27:30Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-IMP-C advances badf-implementation-plan IMPLEMENTED->VALIDATED: 5 deterministic controls in check_work_breakdown (IMP-C1 authority/IMP-C2 coverage/IMP-C3 budget/IMP-C4 stop/IMP-C5 composition-order), each failing-first + mutation-killed (all 6 mutations kill their tests; /mnt/c write-then-subprocess race needs os.sync). Controls on the gate-enforced work-breakdown (check_schema(work-package) is never called -- WP record is contract, work-breakdown is enforced). DEM-0080/GOV-0075/WP-0093. Reconciles WP-2026-0092. SHARED SURFACE (badf_gate.py) -> BARCHI-2 review."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index ccba8a6..5ec7926 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -288,7 +288,7 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "IMPLEMENTED",
++      "status": "VALIDATED",
+       "digest": "sha256:b4cb8255f8fb75015f069f10ade5dd5b058d9ff8364a06f7e74de35b81be9a9f"
+     }
+   ]
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 2936101..d4a3a38 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1171,6 +1171,25 @@ because the walker does not type-check non-object types (#171 / GOV-0071) and `p
+ already trusts nothing structurally. No `lifecycle.json` change, no new gate, no
+ `scripts/badf_implementation_plan.py`. Registry `DESIGNED → IMPLEMENTED`.
+ 
++## badf-implementation-plan → VALIDATED — the G06 planning controls (`BADF-WP-0093` / WP-IMP-C, Issue #181 / GOV-0075)
++
++WP-IMP-B gave the WP record its schema; WP-IMP-C puts the deterministic controls where the **gate actually
++enforces** — the `work-breakdown` artifact (`check_work_breakdown`), the master WP DAG the gate already
++validates (§11). A material finding grounds the placement: `check_schema("work-package", …)` is never
++called anywhere in the gate — the WP record schema is the human-readable contract (test-validated), while
++the `work-breakdown` is the machine-enforced projection. Five controls join the existing acyclic check,
++each fires only when its optional per-task field is present (so a minimal `id`/`description`/`depends_on`
++task is unaffected), and each is mutation-killed: **IMP-C1** (IMP-I07) a task's `authority_requirement`
++cannot omit a role the authority matrix requires for its `change_class` — the plan cannot reduce
++authority; **IMP-C2** (IMP-I09) every `acceptance` claim carries a `test_obligation` claiming it; **IMP-C3**
++(IMP-I11) a declared `execution_budget` has a positive-integer `max_attempts` — a **code** check, because
++the walker does not type-check non-object types (#171) and even rejects `True` (a Python int); **IMP-C4**
++(IMP-I12) a declared `stop_conditions` names at least one; **IMP-C5** (IMP-I06) `composition_after`
++resolves to real tasks and is acyclic, kept **separate** from `depends_on` (blocking ≠ landing order). The
++`work-breakdown` schema gains these as **optional** task fields (`additionalProperties:false` stays), so
++the existing minimal example and every record still validate. No `lifecycle.json` change, no new gate
++command, no `scripts/badf_implementation_plan.py`. Registry `IMPLEMENTED → VALIDATED`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/examples/work-breakdown-planned.json b/examples/work-breakdown-planned.json
+new file mode 100644
+index 0000000..c30abc6
+--- /dev/null
++++ b/examples/work-breakdown-planned.json
+@@ -0,0 +1,83 @@
++{
++  "schema_version": "1.0.0",
++  "prd_id": "PRD-EXAMPLE-PLANNED",
++  "tasks": [
++    {
++      "id": "WBS-001",
++      "description": "Ship the migration",
++      "change_class": "C2",
++      "authority_requirement": {
++        "required_roles": [
++          "product_owner",
++          "engineering_owner",
++          "quality_authority",
++          "service_owner"
++        ]
++      },
++      "acceptance": [
++        "AC-021"
++      ],
++      "test_obligations": [
++        {
++          "id": "TEST-031",
++          "claim": "AC-021",
++          "level": "integration"
++        }
++      ],
++      "evidence_obligations": [
++        "source-change",
++        "unit-test"
++      ],
++      "execution_budget": {
++        "max_attempts": 3,
++        "max_elapsed_minutes": 120
++      },
++      "stop_conditions": [
++        "AUTHORITY_CONFLICT",
++        "BASELINE_STALE",
++        "BUDGET_EXHAUSTED"
++      ],
++      "expected_surfaces": {
++        "files": [
++          "schemas/x.json"
++        ],
++        "data": [
++          "billing_account"
++        ]
++      }
++    },
++    {
++      "id": "WBS-002",
++      "description": "Ship the code that depends on the migration",
++      "depends_on": [
++        "WBS-001"
++      ],
++      "composition_after": [
++        "WBS-001"
++      ],
++      "change_class": "C1",
++      "authority_requirement": {
++        "required_roles": [
++          "engineering_owner",
++          "independent_reviewer"
++        ]
++      },
++      "acceptance": [
++        "AC-022"
++      ],
++      "test_obligations": [
++        {
++          "id": "TEST-032",
++          "claim": "AC-022",
++          "level": "unit"
++        }
++      ],
++      "execution_budget": {
++        "max_attempts": 2
++      },
++      "stop_conditions": [
++        "POLICY_BYPASS"
++      ]
++    }
++  ]
++}
+diff --git a/schemas/work-breakdown.schema.json b/schemas/work-breakdown.schema.json
+index ea286fd..8d18586 100644
+--- a/schemas/work-breakdown.schema.json
++++ b/schemas/work-breakdown.schema.json
+@@ -44,6 +44,128 @@
+               "type": "string",
+               "pattern": "^WBS-[0-9]{3,}$"
+             }
++          },
++          "composition_after": {
++            "type": "array",
++            "items": {
++              "type": "string",
++              "pattern": "^WBS-[0-9]{3,}$"
++            }
++          },
++          "change_class": {
++            "enum": [
++              "C0",
++              "C1",
++              "C2",
++              "C3"
++            ]
++          },
++          "authority_requirement": {
++            "type": "object",
++            "properties": {
++              "required_roles": {
++                "type": "array",
++                "items": {
++                  "type": "string"
++                }
++              }
++            }
++          },
++          "acceptance": {
++            "type": "array",
++            "items": {
++              "type": "string"
++            }
++          },
++          "test_obligations": {
++            "type": "array",
++            "items": {
++              "type": "object",
++              "required": [
++                "claim"
++              ],
++              "properties": {
++                "id": {
++                  "type": "string"
++                },
++                "claim": {
++                  "type": "string"
++                },
++                "level": {
++                  "enum": [
++                    "unit",
++                    "contract",
++                    "integration",
++                    "security",
++                    "migration",
++                    "performance",
++                    "composed-tree"
++                  ]
++                }
++              }
++            }
++          },
++          "evidence_obligations": {
++            "type": "array",
++            "items": {
++              "type": "string"
++            }
++          },
++          "execution_budget": {
++            "type": "object",
++            "properties": {
++              "max_attempts": {
++                "type": "integer"
++              },
++              "max_elapsed_minutes": {
++                "type": "number"
++              },
++              "max_cost": {}
++            }
++          },
++          "stop_conditions": {
++            "type": "array",
++            "items": {
++              "enum": [
++                "AUTHORITY_CONFLICT",
++                "BASELINE_STALE",
++                "CREDENTIAL_EXPOSURE",
++                "UNEXPECTED_DESTRUCTIVE_SCOPE",
++                "POLICY_BYPASS",
++                "EVIDENCE_CORRUPTION",
++                "BUDGET_EXHAUSTED",
++                "PRODUCTION_INSTABILITY"
++              ]
++            }
++          },
++          "expected_surfaces": {
++            "type": "object",
++            "properties": {
++              "files": {
++                "type": "array",
++                "items": {
++                  "type": "string"
++                }
++              },
++              "services": {
++                "type": "array",
++                "items": {
++                  "type": "string"
++                }
++              },
++              "interfaces": {
++                "type": "array",
++                "items": {
++                  "type": "string"
++                }
++              },
++              "data": {
++                "type": "array",
++                "items": {
++                  "type": "string"
++                }
++              }
++            }
+           }
+         }
+       }
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 9a81322..a25e63c 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -1424,6 +1424,52 @@ def check_work_breakdown(artifact: Path, dossier: dict[str, Any], evidence: dict
+         if color[i] == 0 and not acyclic(i):
+             raise ValidationError("work-breakdown: the task dependency graph has a cycle; no composition order can be defined (G06: composition order defined)")
+ 
++    # ---- WP-IMP-C: the deterministic planning controls the schema walker cannot do (#171). Each fires
++    # only when its optional field is present, so a minimal id/description/depends_on task is unaffected.
++    matrix = (load_json(ROOT / "badf/authority-matrix.json").get("change_classes") or {})
++    for t in tasks:
++        tid = t["id"]
++        # IMP-C1 (IMP-I07): authority is derived from change_class and cannot be reduced below the matrix.
++        if "change_class" in t and "authority_requirement" in t:
++            need = set((matrix.get(t["change_class"]) or {}).get("required_roles") or [])
++            have = set((t["authority_requirement"] or {}).get("required_roles") or [])
++            missing = need - have
++            if missing:
++                raise ValidationError(f"work-breakdown: task {tid} is {t['change_class']} but its authority_requirement omits {sorted(missing)}; the plan cannot reduce the authority the change class requires (IMP-C1 / IMP-I07)")
++        # IMP-C2 (IMP-I09): every acceptance claim has a verification obligation.
++        if t.get("acceptance"):
++            claimed = {(o or {}).get("claim") for o in (t.get("test_obligations") or [])}
++            for ac in t["acceptance"]:
++                if ac not in claimed:
++                    raise ValidationError(f"work-breakdown: task {tid} acceptance {ac!r} has no test_obligation claiming it; every acceptance claim carries a verification obligation (IMP-C2 / IMP-I09)")
++        # IMP-C3 (IMP-I11): a declared execution budget is bounded -- max_attempts a positive integer
++        # (a code control: the schema walker does not type-check non-object types, #171).
++        if "execution_budget" in t:
++            ma = (t["execution_budget"] or {}).get("max_attempts")
++            if not isinstance(ma, int) or isinstance(ma, bool) or ma < 1:
++                raise ValidationError(f"work-breakdown: task {tid} execution_budget.max_attempts must be a positive integer (got {ma!r}); autonomous execution is bounded (IMP-C3 / IMP-I11)")
++        # IMP-C4 (IMP-I12): a declared stop contract names at least one condition.
++        if "stop_conditions" in t and not (t.get("stop_conditions") or []):
++            raise ValidationError(f"work-breakdown: task {tid} declares stop_conditions but names none; an empty stop contract stops nothing (IMP-C4 / IMP-I12)")
++        # IMP-C5 (IMP-I06): composition_after resolves to real tasks (landing order, separate from blocking).
++        for dep in t.get("composition_after") or []:
++            if dep not in ids:
++                raise ValidationError(f"work-breakdown: task {tid} composition_after {dep} which the breakdown does not carry; the landing order must resolve (IMP-C5 / IMP-I06)")
++    # IMP-C5 (cont.): the composition-order graph is itself acyclic (landing order must be buildable).
++    cgraph = {t["id"]: list(t.get("composition_after") or []) for t in tasks}
++    ccolor = {i: 0 for i in cgraph}
++
++    def cacyclic(n: str) -> bool:
++        ccolor[n] = 1
++        for m in cgraph[n]:
++            if ccolor[m] == 1 or (ccolor[m] == 0 and not cacyclic(m)):
++                return False
++        ccolor[n] = 2
++        return True
++    for i in cgraph:
++        if ccolor[i] == 0 and not cacyclic(i):
++            raise ValidationError("work-breakdown: the composition_after graph has a cycle; no landing order can be defined (IMP-C5 / IMP-I06)")
++
+ 
+ def check_test_plan(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+     doc = load_json(artifact)
+diff --git a/skills/badf-implementation-plan/references/acceptance.md b/skills/badf-implementation-plan/references/acceptance.md
+index a987ba0..c935f4a 100644
+--- a/skills/badf-implementation-plan/references/acceptance.md
++++ b/skills/badf-implementation-plan/references/acceptance.md
+@@ -13,7 +13,7 @@ The same pattern that carried `badf-research`, `badf-architecture`, `badf-soluti
+ | :--- | :--- | :--- |
+ | WP-IMP-A | root `SKILL.md` + references: WP≠task doctrine, G06 mapping, the Governed WP contract, decomposition/slicing, dependency DAG + frontier, authority-derived, test/evidence/budget/stop planning, release/rollback, issue-projection, IMP-I01…I17, external-methodology | `DESIGNED` |
+ | **WP-IMP-B** | backward-compatible `work-package.schema.json` extension — the governed planning fields (`dependencies`, `source_baselines`, `expected_surfaces`, `authority_requirement`, `risk_factors`, `test_obligations`, `evidence_obligations`, `execution_budget`, `stop_conditions`, `composition`) as **optional** properties (walker enforces enum/pattern/nested-required; type/coverage/DAG checks are WP-IMP-C code controls per #171); documents the ledger keys `reconcile` writes | `IMPLEMENTED` |
+-| WP-IMP-C | deterministic G06 controls in `badf_gate.py` (authority derivation, coverage, budget/stop, execution frontier) — **code controls**, per #171 | `VALIDATED` |
++| **WP-IMP-C** | deterministic G06 controls in `check_work_breakdown` (the gate-enforced DAG artifact): **IMP-C1** authority-not-reduced (matrix), **IMP-C2** acceptance coverage, **IMP-C3** bounded budget, **IMP-C4** non-empty stop contract, **IMP-C5** resolvable + acyclic composition order — **code controls** (the walker doesn't type-check, #171) | `VALIDATED` |
+ | WP-IMP-D | GitHub issue projection + `badf-git` execution-topology integration + representative planning shadow | `SHADOWED` |
+ | WP-IMP-E | operator admission → registry activation | `ACTIVE` |
+ 
+diff --git a/tests/test_badf_g06_planning_controls.py b/tests/test_badf_g06_planning_controls.py
+new file mode 100644
+index 0000000..722b8ba
+--- /dev/null
++++ b/tests/test_badf_g06_planning_controls.py
+@@ -0,0 +1,92 @@
++"""G06 work-breakdown planning controls (BADF-WP-0093 / WP-IMP-C).
++
++`check_work_breakdown` already enforced non-empty / unique ids / resolvable deps / acyclic. WP-IMP-C
++adds the deterministic planning controls badf-implementation-plan needs -- the ones the schema walker
++cannot do (#171): authority-not-reduced (IMP-C1/I07), acceptance coverage (IMP-C2/I09), a bounded
++budget (IMP-C3/I11), a non-empty stop contract (IMP-C4/I12), and a resolvable + acyclic composition
++order (IMP-C5/I06). Each fires only when its optional per-task field is present, so a minimal
++id/description/depends_on task is unaffected (backward-compatible). Every test mutates a copy of the
++enriched example and runs the gate's own check.
++"""
++import copy
++import json
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++EXAMPLE = json.loads((gate.ROOT / "examples/work-breakdown-planned.json").read_text())
++
++
++class G06PlanningControlsBase(unittest.TestCase):
++    def check(self, doc):
++        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
++            json.dump(doc, f)
++            p = Path(f.name)
++        try:
++            gate.check_work_breakdown(p, {}, {})
++        finally:
++            p.unlink()
++
++    def refuse(self, mutate, needle):
++        bad = copy.deepcopy(EXAMPLE)
++        mutate(bad)
++        with self.assertRaises(gate.ValidationError) as cm:
++            self.check(bad)
++        self.assertIn(needle, str(cm.exception))
++
++
++class PlanningControlTests(G06PlanningControlsBase):
++    def test_enriched_example_passes(self):
++        self.check(EXAMPLE)
++
++    def test_a_minimal_task_still_validates(self):  # backward-compat: no planning fields
++        self.check({"schema_version": "1.0.0", "tasks": [{"id": "WBS-001", "description": "do it"}]})
++
++    def test_authority_reduced_below_the_matrix_is_refused(self):  # IMP-C1 / IMP-I07
++        self.refuse(lambda w: w["tasks"][0]["authority_requirement"]["required_roles"].remove("quality_authority"),
++                    "cannot reduce the authority")
++
++    def test_uncovered_acceptance_is_refused(self):  # IMP-C2 / IMP-I09
++        self.refuse(lambda w: w["tasks"][0]["acceptance"].append("AC-099"),
++                    "no test_obligation claiming it")
++
++    def test_nonpositive_max_attempts_is_refused(self):  # IMP-C3 / IMP-I11
++        self.refuse(lambda w: w["tasks"][0]["execution_budget"].__setitem__("max_attempts", 0),
++                    "positive integer")
++
++    def test_boolean_max_attempts_is_refused(self):  # IMP-C3: True is an int in python; must be rejected
++        self.refuse(lambda w: w["tasks"][0]["execution_budget"].__setitem__("max_attempts", True),
++                    "positive integer")
++
++    def test_empty_stop_conditions_is_refused(self):  # IMP-C4 / IMP-I12
++        self.refuse(lambda w: w["tasks"][0].__setitem__("stop_conditions", []),
++                    "stops nothing")
++
++    def test_dangling_composition_after_is_refused(self):  # IMP-C5 / IMP-I06
++        self.refuse(lambda w: w["tasks"][1]["composition_after"].append("WBS-404"),
++                    "the landing order must resolve")
++
++    def test_cyclic_composition_after_is_refused(self):  # IMP-C5 / IMP-I06
++        self.refuse(lambda w: w["tasks"][0].__setitem__("composition_after", ["WBS-002"]),
++                    "cycle")
++
++    def test_a_task_without_change_class_needs_no_authority(self):  # IMP-C1 is field-scoped
++        # dropping both change_class and authority_requirement is fine (the control is co-occurrence).
++        doc = copy.deepcopy(EXAMPLE)
++        doc["tasks"][0].pop("change_class"); doc["tasks"][0].pop("authority_requirement")
++        self.check(doc)
++
++
++class RegistryStatusTests(unittest.TestCase):
++    def test_badf_implementation_plan_is_registered_validated(self):  # WP-IMP-C advanced IMPLEMENTED -> VALIDATED
++        reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
++        entry = next(e for e in reg["skills"] if e["name"] == "badf-implementation-plan")
++        self.assertEqual(entry["status"], "VALIDATED")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/tests/test_badf_work_package_schema_extension.py b/tests/test_badf_work_package_schema_extension.py
+index 374b902..142669b 100644
+--- a/tests/test_badf_work_package_schema_extension.py
++++ b/tests/test_badf_work_package_schema_extension.py
+@@ -93,10 +93,13 @@ class WalkerEnforcedTests(unittest.TestCase):
+ 
+ 
+ class RegistryStatusTests(unittest.TestCase):
+-    def test_badf_implementation_plan_is_registered_implemented(self):  # WP-IMP-B advanced DESIGNED -> IMPLEMENTED
++    def test_badf_implementation_plan_is_registered_at_least_implemented(self):
++        # WP-IMP-B advanced DESIGNED -> IMPLEMENTED; the exact rung is pinned by the current-rung
++        # suite (WP-IMP-C: VALIDATED). Guard only that the schema extension shipped at or past
++        # IMPLEMENTED, so later advances (VALIDATED/SHADOWED/ACTIVE) do not re-break this test.
+         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
+         entry = next(e for e in reg["skills"] if e["name"] == "badf-implementation-plan")
+-        self.assertEqual(entry["status"], "IMPLEMENTED")
++        self.assertIn(entry["status"], ("IMPLEMENTED", "VALIDATED", "SHADOWED", "APPROVED", "ACTIVE"))
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/work/WP-2026-0092/work-package.json b/work/WP-2026-0092/work-package.json
+index db4b1de..8d623e1 100644
+--- a/work/WP-2026-0092/work-package.json
++++ b/work/WP-2026-0092/work-package.json
+@@ -43,11 +43,13 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "ccc0c71"
++    "base_revision": "ccc0c71",
++    "composition_verified": false,
++    "landed_as": "14761b18b12111d37ef234619461d136bf8bd1eb"
+   },
+   "note": "Lands IN_PROGRESS by design; next WP reconciles it. Backward-compat schema extension; no gate code (controls are WP-IMP-C) -> no mutation. Isolated worktree (badf-wt-impb). Ids WP-0092/DEM-0079/GOV-0074. Reconciles WP-2026-0091 (WP-IMP-A, composition_verified: false). Foundational-artifact change: BARCHI-2 schema-diff review + operator visibility requested. Operator /loop 'proceed from WP-IMP-A to WP-IMP-E'. Resolves #179."
+ }

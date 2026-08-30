@@ -1424,6 +1424,52 @@ def check_work_breakdown(artifact: Path, dossier: dict[str, Any], evidence: dict
         if color[i] == 0 and not acyclic(i):
             raise ValidationError("work-breakdown: the task dependency graph has a cycle; no composition order can be defined (G06: composition order defined)")
 
+    # ---- WP-IMP-C: the deterministic planning controls the schema walker cannot do (#171). Each fires
+    # only when its optional field is present, so a minimal id/description/depends_on task is unaffected.
+    matrix = (load_json(ROOT / "badf/authority-matrix.json").get("change_classes") or {})
+    for t in tasks:
+        tid = t["id"]
+        # IMP-C1 (IMP-I07): authority is derived from change_class and cannot be reduced below the matrix.
+        if "change_class" in t and "authority_requirement" in t:
+            need = set((matrix.get(t["change_class"]) or {}).get("required_roles") or [])
+            have = set((t["authority_requirement"] or {}).get("required_roles") or [])
+            missing = need - have
+            if missing:
+                raise ValidationError(f"work-breakdown: task {tid} is {t['change_class']} but its authority_requirement omits {sorted(missing)}; the plan cannot reduce the authority the change class requires (IMP-C1 / IMP-I07)")
+        # IMP-C2 (IMP-I09): every acceptance claim has a verification obligation.
+        if t.get("acceptance"):
+            claimed = {(o or {}).get("claim") for o in (t.get("test_obligations") or [])}
+            for ac in t["acceptance"]:
+                if ac not in claimed:
+                    raise ValidationError(f"work-breakdown: task {tid} acceptance {ac!r} has no test_obligation claiming it; every acceptance claim carries a verification obligation (IMP-C2 / IMP-I09)")
+        # IMP-C3 (IMP-I11): a declared execution budget is bounded -- max_attempts a positive integer
+        # (a code control: the schema walker does not type-check non-object types, #171).
+        if "execution_budget" in t:
+            ma = (t["execution_budget"] or {}).get("max_attempts")
+            if not isinstance(ma, int) or isinstance(ma, bool) or ma < 1:
+                raise ValidationError(f"work-breakdown: task {tid} execution_budget.max_attempts must be a positive integer (got {ma!r}); autonomous execution is bounded (IMP-C3 / IMP-I11)")
+        # IMP-C4 (IMP-I12): a declared stop contract names at least one condition.
+        if "stop_conditions" in t and not (t.get("stop_conditions") or []):
+            raise ValidationError(f"work-breakdown: task {tid} declares stop_conditions but names none; an empty stop contract stops nothing (IMP-C4 / IMP-I12)")
+        # IMP-C5 (IMP-I06): composition_after resolves to real tasks (landing order, separate from blocking).
+        for dep in t.get("composition_after") or []:
+            if dep not in ids:
+                raise ValidationError(f"work-breakdown: task {tid} composition_after {dep} which the breakdown does not carry; the landing order must resolve (IMP-C5 / IMP-I06)")
+    # IMP-C5 (cont.): the composition-order graph is itself acyclic (landing order must be buildable).
+    cgraph = {t["id"]: list(t.get("composition_after") or []) for t in tasks}
+    ccolor = {i: 0 for i in cgraph}
+
+    def cacyclic(n: str) -> bool:
+        ccolor[n] = 1
+        for m in cgraph[n]:
+            if ccolor[m] == 1 or (ccolor[m] == 0 and not cacyclic(m)):
+                return False
+        ccolor[n] = 2
+        return True
+    for i in cgraph:
+        if ccolor[i] == 0 and not cacyclic(i):
+            raise ValidationError("work-breakdown: the composition_after graph has a cycle; no landing order can be defined (IMP-C5 / IMP-I06)")
+
 
 def check_test_plan(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
     doc = load_json(artifact)
