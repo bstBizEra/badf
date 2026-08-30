@@ -289,6 +289,13 @@
           "items": {
             "type": "string"
           }
+        },
+        "discovery_allowance": {
+          "type": "array",
+          "description": "Paths a build MAY touch beyond the declared surface without re-authorization (BLD-I04 / C3); a bounded discovery allowance, declared by planning.",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -433,6 +440,19 @@
           }
         }
       }
+    },
+    "tdd_exception": {
+      "type": "object",
+      "description": "TDD_NOT_APPLICABLE_WITH_REASON (BLD-I08 / C4): why this work package's unit obligations carry no red phase.",
+      "required": [
+        "reason"
+      ],
+      "properties": {
+        "reason": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

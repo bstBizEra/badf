@@ -88,11 +88,11 @@ class BadfBuildContractTests(unittest.TestCase):
             self.assertIn(token, text, token)
         self.assertIn("not automatically", read("self-review.md").lower())
 
-    def test_registry_pin_is_implemented_and_tool_empty(self):
+    def test_registry_pin_is_validated_and_tool_empty(self):
         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
         entries = [e for e in registry["skills"] if e.get("name") == "badf-build"]
         self.assertEqual(1, len(entries)); entry = entries[0]
-        self.assertEqual("IMPLEMENTED", entry["status"]); self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])  # BLD-B
+        self.assertEqual("VALIDATED", entry["status"]); self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])  # BLD-B
         self.assertEqual("skills/badf-build/SKILL.md", entry["source"])
         self.assertEqual("sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest(), entry["digest"])
 

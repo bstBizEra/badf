@@ -21,6 +21,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import badf_gate as gate  # noqa: E402
 from tests._scratch import seed_clone  # noqa: E402
 
+def authorized_demand(root, demand_id="BADF-DEM-0001"):
+    """C1 (BLD-I03, WP-2026-0099): a scratch request needs a demand AUTHORIZED by a human."""
+    import json as _json
+    src = _json.loads((root / "badf/demands/BADF-DEM-0001.json").read_text(encoding="utf-8"))
+    src["demand_id"] = demand_id; src["status"] = "AUTHORIZED"; src["authorized_by"] = {"principal": "operator", "principal_type": "human"}
+    (root / "badf/demands" / f"{demand_id}.json").write_text(_json.dumps(src, indent=2) + "\n", encoding="utf-8")
+
+
 WP = "WP-2026-0999"
 
 
@@ -58,6 +66,7 @@ class SelfDossierScratch(unittest.TestCase):
                "evidence": ["source-change"], "rollback": {"reversible": True, "method": "revert"},
                "status": "IN_PROGRESS", "external_target": {"repository": "bstBizEra/badf", "branch": "main", "base_revision": self.base}}
         (d / "work-package.json").write_text(json.dumps(rec, indent=2) + "\n")
+        authorized_demand(self.root)
         self.lock()
 
     def tearDown(self):

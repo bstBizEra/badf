@@ -229,6 +229,22 @@
         },
         "fresh_run": {
           "type": "string"
+        },
+        "tdd": {
+          "type": "object",
+          "required": [
+            "applies",
+            "reason"
+          ],
+          "properties": {
+            "applies": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
