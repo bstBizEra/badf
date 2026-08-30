@@ -42,11 +42,13 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "914309b"
+    "base_revision": "914309b",
+    "composition_verified": false,
+    "landed_as": "ccc0c711b891fb0cc704d1aea09946e032b5d471"
   },
   "note": "Lands IN_PROGRESS by design; next WP reconciles it. DESIGNED contract freeze; no gate code (controls are WP-IMP-C) -> no mutation. Isolated worktree (badf-wt-impa). Ids WP-0091/DEM-0078/GOV-0073. Reconciles WP-2026-0089 (WP-IMP-0, composition_verified: false). Operator design directive 2026-08-30; /loop 'proceed from WP-IMP-A to WP-IMP-E'. Resolves #177."
 }

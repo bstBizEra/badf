@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0079",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 179,
+    "url": "https://github.com/bstBizEra/badf/issues/179",
+    "exported_at": "2026-08-30T11:55:09Z",
+    "body_digest": "sha256:eaf71da73bbb4b0d9abc33922e5b5b30f4a2073c4c10cf876260051120e9a5ff"
+  },
+  "title": "GOV-0074: WP-IMP-B \u2014 extend work-package.schema.json with the governed planning fields (badf-implementation-plan -> IMPLEMENTED; backward-compatible)",
+  "problem": "## Observed\n\nbadf-implementation-plan is DESIGNED (WP-IMP-A). The Governed WP contract names ten planning fields but work-package.schema.json does not carry them.\n\n## Expected\n\n**WP-IMP-B -> IMPLEMENTED.** Extend work-package.schema.json with source_baselines/expected_surfaces/authority_requirement/risk_factors/dependencies(typed edges)/test_obligations/evidence_obligations/execution_budget/stop_conditions/composition as OPTIONAL properties; document reconcile's external_target keys (landed_content_tree, composition_verified). examples/work-package-planned.json + tests (backward-compat over all existing records; optionality; walker-enforced enum/pattern/nested-required negatives). STRICTLY ADDITIVE: no field in required, additionalProperties stays absent (would reject note + ledger keys), external_target keeps holding the reconcile-written keys -- so validate_repo stays green on all 76 existing records (branch + composed world). The type-checking/coverage/authority/DAG controls are WP-IMP-C code controls (#171: walker does not type-check; parse_composition_record uses equality). Registry DESIGNED -> IMPLEMENTED. No new gate, no lifecycle change.\n\n## Evidence\n\n- Pre-check: none of the 10 field names are a top-level key in any of the 76 existing records; repo PASS on the branch after the extension.\n\n## Unknowns\n\nNone -- additive extension; enforcement of the typed values is WP-IMP-C.\n\ndiscovered-by: operator /loop 'proceed from WP-IMP-A to WP-IMP-E' 2026-08-30 \u00b7 status: DISCOVERED\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-30T11:55:09Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "WP-IMP-B advances badf-implementation-plan DESIGNED->IMPLEMENTED: backward-compatible work-package.schema.json extension (10 optional planning fields + external_target reconcile-key docs). Strictly additive (no required, additionalProperties absent); repo PASS branch+composed. Walker enforces enum/pattern/nested-required; type/coverage/DAG = WP-IMP-C code controls (#171). DEM-0079/GOV-0074/WP-0092. Reconciles WP-2026-0091. BARCHI-2 schema-diff review requested."
+}
