@@ -1423,6 +1423,25 @@ dossier level (target and staleness binding, quorum by change class, runtime cre
 non-coverage, finding preservation across the dossier) — lean disabled; VER-D shadows on the G08 material
 BADF has; VER-E is the operator's admission on that evidence. A verification ledger writer stays declared,
 not built, until a runtime exists to write it.
+## badf-build → SHADOWED — the program's own builds, judged by the tools it built (`BADF-WP-0101` / WP-BLD-D, Issue #197 / GOV-0084)
+
+`badf-build` shadows on the one corpus BADF has: **67 landed work packages carrying a G07 self-dossier**
+(WP-2026-0011, WP-2026-0100), measured at `8f3d805` and recorded once in `examples/build-shadow-evidence.json`,
+which `tests/test_badf_build_shadow.py` recomputes from the object store on every run — artifact digests at the
+landed tree, the demand record, `content_tree` — and whose tampering it refuses. What history rendered:
+**67/67** requests digest-bound (no request ever pointed at nothing), **67/67** demands `AUTHORIZED` by a
+human (C1 would have admitted every one), **3/3** typed bindings recomputing `MATCH` (WP-2026-0098, WP-2026-0099, WP-2026-0100 — the last
+produced by VER-A under the same producer), and fresh verification honest about the pre-BLD-B era: 55 deferred,
+10 deferred with a composition record, 2 `PASS` — each behind a composed run, **0 without** (C5 replayed). One dossier
+(WP-2026-0010) predates the ledger's identity window and is declared as not placeable, not counted.
+
+**No contract gap surfaced — and the non-coverage is named, not implied.** C3 (scope containment), C4 (red
+before green / explicit exception), C6 (budget and stop) and C7 (delegation subset) have **no historical
+corpus**: nothing on the ledger ever declared `expected_surfaces`, `test_obligations`, a `RETRY`/`STOP` or a
+delegation; they are proven on scratch fixtures only, and no build controller has yet executed a Work Package
+through the workflow. That statement travels verbatim into the BLD-E admission: `ACTIVE` will mean "admitted
+on the program's own builds, with four controls proven only on scratch", and not more. `badf-build` advances
+`VALIDATED → SHADOWED`; no gate, schema or lifecycle change.
 
 ## Discovery ≠ scope expansion
 

@@ -1,0 +1,6 @@
+python3 -m unittest tests.test_badf_build_shadow
+.......
+----------------------------------------------------------------------
+Ran 7 tests in 92.492s
+
+OK

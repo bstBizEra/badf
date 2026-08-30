@@ -1,0 +1,156 @@
+python3 -m unittest tests.test_badf_build_shadow  # before the record existed
+EEEEEEE
+======================================================================
+ERROR: test_doc_names_every_case_and_gap_and_root_is_shadowed (tests.test_badf_build_shadow.BuildShadowTests.test_doc_names_every_case_and_gap_and_root_is_shadowed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-build-d/tests/test_badf_build_shadow.py", line 103, in test_doc_names_every_case_and_gap_and_root_is_shadowed
+    text = DOC.read_text(encoding="utf-8")
+  File "/usr/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/mnt/c/laragon/www/badf-wt-build-d/skills/badf-build/evidence/shadow-evidence.md'
+
+======================================================================
+ERROR: test_every_authority_case_replays_from_the_demand_record (tests.test_badf_build_shadow.BuildShadowTests.test_every_authority_case_replays_from_the_demand_record)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-build-d/tests/test_badf_build_shadow.py", line 59, in test_every_authority_case_replays_from_the_demand_record
+    seen = cases("authority-replayed"); self.assertGreaterEqual(len(seen), 66)
+  File "/mnt/c/laragon/www/badf-wt-build-d/tests/test_badf_build_shadow.py", line 28, in cases
+    return [c for c in load_shadow()["cases"] if c["case"] == kind]
+                       ~~~~~~~~~~~^^
+  File "/mnt/c/laragon/www/badf-wt-build-d/tests/test_badf_build_shadow.py", line 24, in load_shadow
+    return json.loads(SHADOW.read_text(encoding="utf-8"))
+                      ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/mnt/c/laragon/www/badf-wt-build-d/examples/build-shadow-evidence.json'
+
+======================================================================
+ERROR: test_every_request_is_digest_bound_at_its_landing (tests.test_badf_build_shadow.BuildShadowTests.test_every_request_is_digest_bound_at_its_landing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-build-d/tests/test_badf_build_shadow.py", line 47, in test_every_request_is_digest_bound_at_its_landing
+    landings = gate.ledger_landings(); seen = cases("request-digest-bound"); self.assertGreaterEqual(len(seen), 66)
+                                              ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/laragon/www/badf-wt-build-d/tests/test_badf_build_shadow.py", line 28, in cases
+    return [c for c in load_shadow()["cases"] if c["case"] == kind]
+                       ~~~~~~~~~~~^^
+  File "/mnt/c/laragon/www/badf-wt-build-d/tests/test_badf_build_shadow.py", line 24, in load_shadow
+    return json.loads(SHADOW.read_text(encoding="utf-8"))
+                      ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/mnt/c/laragon/www/badf-wt-build-d/examples/build-shadow-evidence.json'
+
+======================================================================
+ERROR: test_fresh_verification_verdicts_replay (tests.test_badf_build_shadow.BuildShadowTests.test_fresh_verification_verdicts_replay)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-build-d/tests/test_badf_build_shadow.py", line 77, in test_fresh_verification_verdicts_replay
+    seen = cases("fresh-verification-replayed"); self.assertGreaterEqual(len(seen), 66)
+  File "/mnt/c/laragon/www/badf-wt-build-d/tests/test_badf_build_shadow.py", line 28, in cases
+    return [c for c in load_shadow()["cases"] if c["case"] == kind]
+                       ~~~~~~~~~~~^^
+  File "/mnt/c/laragon/www/badf-wt-build-d/tests/test_badf_build_shadow.py", line 24, in load_shadow
+    return json.loads(SHADOW.read_text(encoding="utf-8"))
+                      ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/mnt/c/laragon/www/badf-wt-build-d/examples/build-shadow-evidence.json'
+
+======================================================================
+ERROR: test_shadow_record_is_well_formed_and_names_non_coverage (tests.test_badf_build_shadow.BuildShadowTests.test_shadow_record_is_well_formed_and_names_non_coverage)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-build-d/tests/test_badf_build_shadow.py", line 38, in test_shadow_record_is_well_formed_and_names_non_coverage
+    s = load_shadow()
+  File "/mnt/c/laragon/www/badf-wt-build-d/tests/test_badf_build_shadow.py", line 24, in load_shadow
+    return json.loads(SHADOW.read_text(encoding="utf-8"))
+                      ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/mnt/c/laragon/www/badf-wt-build-d/examples/build-shadow-evidence.json'
+
+======================================================================
+ERROR: test_tampered_shadow_record_is_refused (tests.test_badf_build_shadow.BuildShadowTests.test_tampered_shadow_record_is_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-build-d/tests/test_badf_build_shadow.py", line 87, in test_tampered_shadow_record_is_refused
+    s = load_shadow()
+  File "/mnt/c/laragon/www/badf-wt-build-d/tests/test_badf_build_shadow.py", line 24, in load_shadow
+    return json.loads(SHADOW.read_text(encoding="utf-8"))
+                      ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/mnt/c/laragon/www/badf-wt-build-d/examples/build-shadow-evidence.json'
+
+======================================================================
+ERROR: test_typed_bindings_recompute_from_the_object_store (tests.test_badf_build_shadow.BuildShadowTests.test_typed_bindings_recompute_from_the_object_store)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-build-d/tests/test_badf_build_shadow.py", line 68, in test_typed_bindings_recompute_from_the_object_store
+    seen = cases("typed-binding-recomputed"); self.assertGreaterEqual(len(seen), 2)
+  File "/mnt/c/laragon/www/badf-wt-build-d/tests/test_badf_build_shadow.py", line 28, in cases
+    return [c for c in load_shadow()["cases"] if c["case"] == kind]
+                       ~~~~~~~~~~~^^
+  File "/mnt/c/laragon/www/badf-wt-build-d/tests/test_badf_build_shadow.py", line 24, in load_shadow
+    return json.loads(SHADOW.read_text(encoding="utf-8"))
+                      ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/mnt/c/laragon/www/badf-wt-build-d/examples/build-shadow-evidence.json'
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.308s
+
+FAILED (errors=7)
