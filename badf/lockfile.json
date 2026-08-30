@@ -82,6 +82,7 @@
     "badf/demands/BADF-DEM-0071.json": "sha256:8d5aa290b4d626aa67c557abc616d7ef71c34ee0deb499fc8efbb7df9f6d46f7",
     "badf/demands/BADF-DEM-0072.json": "sha256:98b0217cc8c6f18bde8451734498e5b1417af797165feb203ee065374869e59e",
     "badf/demands/BADF-DEM-0073.json": "sha256:a20e0fd3ba6ded2bc453defee921e85d6c19c9b24a8574414a31a7a3c664976a",
+    "badf/demands/BADF-DEM-0075.json": "sha256:f1fd4ed365363bf1dd4d1ffee5315be211cd12e4de5fd84a6b64995dc61dcf98",
     "badf/lifecycle.json": "sha256:9f5218c5ca7e94feafd62acec4d90b55ea39f52c21d7639b1984dc3676cb55f3",
     "badf/mcp-registry.json": "sha256:cf93976e41ccd3bc8f8e918da96e42ffac10bce601d0c859f2639aedbb3fc85e",
     "badf/releases/BADF-BASELINE-1.0.0.json": "sha256:3b3b69e1df01592d99f65e95f2e4a9375bfec277d3ab9198b18af373795a7667",
@@ -327,7 +328,7 @@
     "templates/research-record.json": "sha256:8b4db40fb44b7196dce73f03689ec3d9d2f58621f88f233aa19909d9cd069331",
     "templates/session.md": "sha256:0bf239c6cf55f9050673c21e39176ccd37b9e46f625e78dde6dde0cead6620dc",
     "templates/work-package.json": "sha256:f06b529fee6d041d202a1ca4ebf06ce9ebe0b5a21b7deef914381b76747c426f",
-    "tests/_scratch.py": "sha256:0fc9d88ff7dd896a5692ad0847bec0f4741e24b253236ed927ce7a2daf254eed",
+    "tests/_scratch.py": "sha256:4c8583304b7140a6c91820b5cbde48ef1b78a73882d14fbd72b6644dc7267390",
     "tests/test_badf_advance.py": "sha256:a3bab9213fa797da898c997fe33f2ee36f59c1fea8cec68a86e53cc88edf1efa",
     "tests/test_badf_architecture_contract.py": "sha256:0d5e5bb320d746d97eb74971d8549808dd9cee4a93ea4652d8a87917d2023004",
     "tests/test_badf_assure.py": "sha256:c0422c3901cb93515bbb24729d86a713909033cf64245df082b4d44c07232af2",
@@ -349,7 +350,7 @@
     "tests/test_badf_g08_verification.py": "sha256:268f17a7ed5a06c50a61d2b16dd2db44682f79b962ca0df45efcf61315061faf",
     "tests/test_badf_gate.py": "sha256:3a5b0e2d333947c47f248c78187172140b66cc60ac615fe0a61e0f5f75696da6",
     "tests/test_badf_git_baseline.py": "sha256:14b550713594700ceffc58912215543a4a11f934eb19d8e601df75e392caadf9",
-    "tests/test_badf_git_composition.py": "sha256:a19c1db9216348cfed8977a4c97dc497277e10168acd8a71891e4eff802384a5",
+    "tests/test_badf_git_composition.py": "sha256:18a4a5f0b9d33e29a64ba4c5b37a1a2f779ed32f0faaa327b2b576b0be82f77d",
     "tests/test_badf_git_contract.py": "sha256:beab3aeba5224ef6ff3fc479b0ff49259f83515d3729a7d4ff6bf9bec9304da8",
     "tests/test_badf_git_integration.py": "sha256:c2bc7d5792245ac403caaa7bdc79960c5ce19216003527d347b3fce30d94d51a",
     "tests/test_badf_git_recovery.py": "sha256:a47c91bd5b1eff8f4bcfa697fa747271f41d3dd55b5a2a9cb1371d9fb325a1d8",
@@ -924,7 +925,7 @@
     "work/WP-2026-0082/evidence/G07/unit-test.json": "sha256:e87949e27f6e137cea82f72dc991f065e4adf909ab03a7bea2fa22a52418c24d",
     "work/WP-2026-0082/evidence/G07/unit-test.txt": "sha256:3ebfe5e512dfeda144788ffffd16868b94226c8875f266fe231350792fa89fbc",
     "work/WP-2026-0082/gate-dossier.G07.json": "sha256:2be54011c649807866d52ff722c1ba796ffc5551e1785ef146109ad27c0bf393",
-    "work/WP-2026-0082/work-package.json": "sha256:4819751124096c429b63f5185c5db449b69ed6f06bccc4b34cd67ade18c7b977",
+    "work/WP-2026-0082/work-package.json": "sha256:41dd648554d08fc0bf7fa1e9a1a50fdcf75f1b6fb21595c70ff830ab7bbd63bb",
     "work/WP-2026-0083/evidence/G07/build.json": "sha256:79ec4ea0b2d1036577615099d024509c01bff7df4960c57a0b96257d5792b990",
     "work/WP-2026-0083/evidence/G07/build.txt": "sha256:72b8c609edaf2f1bb7f9d4fdefee6a3aa089239b7dc6dac61b5a144e8cf39a57",
     "work/WP-2026-0083/evidence/G07/documentation.diff": "sha256:34a8bb031a0c7c79aeec5aad7660235f1b699909dabe9487f1245b1ca9ecd815",
@@ -964,7 +965,8 @@
     "work/WP-2026-0086/evidence/G07/unit-test.json": "sha256:600458922e100148963756cf733c1d1bed5e172d7de68fd30aad4562ba16c964",
     "work/WP-2026-0086/evidence/G07/unit-test.txt": "sha256:3ebfe5e512dfeda144788ffffd16868b94226c8875f266fe231350792fa89fbc",
     "work/WP-2026-0086/gate-dossier.G07.json": "sha256:aa80d4f8e611e71c6990d79caf372cc04b417c9e0a5ce0dff4bb549999c6534b",
-    "work/WP-2026-0086/work-package.json": "sha256:d4e0ff6eb97bbbb845f3978fe410398c94850a5bbb44a7f02191aa0de966df52"
+    "work/WP-2026-0086/work-package.json": "sha256:d4e0ff6eb97bbbb845f3978fe410398c94850a5bbb44a7f02191aa0de966df52",
+    "work/WP-2026-0088/work-package.json": "sha256:8e28d9d21430d86fac08227511e2abdc6c7e91b80c871e564933bd540bc99a25"
   },
   "schema_version": "1.0.0"
 }

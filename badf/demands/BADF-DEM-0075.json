@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0075",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 160,
+    "url": "https://github.com/bstBizEra/badf/issues/160",
+    "exported_at": "2026-08-30T07:43:37Z",
+    "body_digest": "sha256:1b36d09d95376e8a1c3093c95eea4a203547dc040701edaf1d85b8363775967a"
+  },
+  "title": "GOV-0064: composition fixtures judge the candidate with the base's tests/ — a guard change cannot be green in the composed world",
+  "problem": "## Observed\n\n`tests/_scratch.py::seed_clone(carry_working_state=True)` carries `scripts/badf_gate.py, badf, skills, schemas, templates, examples, docs, work` into the scratch candidate — never `tests/`. The composition fixtures (`tests/test_badf_git_composition.py`, `tests/test_badf_git_integration.py`) then run `badf_compose.py` with `--tests test_badf_git_contract.py`, so the composed world judges the candidate with the **base's** guard.\n\nSurfaced by the badf-git shadow calibration (#157 / WP-2026-0082): adding a ninth file under `skills/badf-git/references/` while extending `test_contract_surface_is_declarative_only` in the same PR is green in the checkout and **red in the composed world** — 12/21 composition tests fail with `suite: FAILED … test_contract_surface_is_declarative_only`, locally and on the runner alike. Any PR that legitimately changes a guard exercised inside the composed world cannot be green in these suites. WP-2026-0082 kept the eight-file freeze untouched and placed its evidence at `skills/badf-git/evidence/` instead; the limitation remains.\n\n## Acceptance criteria\n\n- The composed world judges a candidate with the candidate's own `tests/` (carried like the other locked inputs), or the fixtures pin the tiny module from the candidate explicitly — one mechanism, stated in `_scratch.py`'s docstring.\n- The WP-0076 stripping logic in `test_badf_git_composition.py` setUp (the carried record/dossier vs. the never-carried `tests/`) is revisited so the record stays CURRENT under the chosen mechanism.\n- No change to `badf_compose.py`'s verification semantics; no change to `badf_gate.py`.\n\n## Test list\n\n- `test_composed_world_runs_the_candidates_guard` — a candidate that adds a reference and extends the guard composes PASS.\n- `test_composed_world_still_refuses_a_guard_regression` — a candidate whose reference set drifts without a guard change composes FAIL.\n- Existing `CompositionRecordTests` and `CompositionEvidenceTests` stay green.\n\nVersion tier: patch (test harness only).\n\n<!-- agent: architect -->\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-30T07:43:37Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "Harness gap surfaced by the badf-git GIT-I shadow (#157): seed_clone(carry_working_state=True) never carried tests/, so the composition fixtures judged a candidate with the base's guard. Promoted to a prerequisite of GIT-J (#169): the registry flip trips the base's contract pin inside the composed world. Fix: carry tests/ like the other locked inputs; no change to badf_compose.py or badf_gate.py."
+}

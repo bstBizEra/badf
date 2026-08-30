@@ -1,0 +1,55 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0088",
+  "title": "Composition fixtures judge the candidate with its own tests/: seed_clone carries tests/ (harness gap #160; prerequisite of GIT-J)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0075",
+  "repository": "bstBizEra/badf",
+  "objective": "Close the harness gap the GIT-I shadow surfaced: tests/_scratch.py::seed_clone(carry_working_state=True) carries scripts/badf_gate.py, badf, skills, schemas, templates, examples, docs and work -- never tests/ -- so the composed world in test_badf_git_composition / test_badf_git_integration judges a candidate with the BASE's guard. A PR that legitimately changes a guard exercised inside the composed world (GIT-J's registry pin flip, or a new badf-git reference) is green in the checkout and red in those fixtures, locally and on the runner. Carry tests/ like the other locked inputs; prove it with a carried probe guard that the composed world runs (and whose refusal it honours); keep the WP-0076 stripping logic (other top-level inputs are still not carried) with its comment corrected. No change to badf_compose.py or badf_gate.py.",
+  "business_value": "The composed-world verdict must be about the candidate as it will land -- code AND tests -- or the fixtures silently refuse honest contract changes and admit regressions the candidate's own tests would catch.",
+  "in_scope": [
+    "tests/_scratch.py: 'tests' joins the carry tuple; docstring states the mechanism",
+    "tests/test_badf_git_composition.py: CarriedTestsTests -- test_seed_clone_carries_tests_dir (byte-equal to the checkout), test_composed_world_runs_the_candidates_guard (carried probe guard runs in the composed world: 'Ran 1 test'), test_composed_world_still_refuses_a_guard_regression (the same probe guard refuses a candidate that drops what it guards); the WP-0076 stripping comment corrected",
+    "badf/demands/BADF-DEM-0075.json; own composition record + G07 self-dossier; reconcile WP-2026-0082 (landed 78eab75)"
+  ],
+  "out_of_scope": [
+    "any change to badf_compose.py's verification semantics or to badf_gate.py",
+    "GIT-J itself (#169 / WP-2026-0087, rebased onto this landing)",
+    "the re-shadow of badf-git (later work package)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "seed_clone(carry_working_state=True) copies the checkout's tests/ into the scratch (byte-equal for every file)",
+    "a probe guard written into the checkout's tests/ (untracked, cleaned up) runs inside the composed world and its verdict decides the compose: PASS when the candidate satisfies it, FAIL when it does not",
+    "the three new tests are red before the carry change and green after (failing-first captured); CompositionRecordTests / CompositionEvidenceTests / integration suites stay green",
+    "no change to badf_compose.py / badf_gate.py; lockfile re-signed; repo clean"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_git_composition.py::CarriedTestsTests (3 tests)",
+    "tests/test_badf_git_composition.py, tests/test_badf_git_integration.py (unchanged, must stay green)"
+  ],
+  "evidence": [
+    "failing-first run (3 red)",
+    "green run after the carry change",
+    "mutation: the carry line removed -> the three tests red again",
+    "compose output incl. composition record",
+    "G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "78eab75"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Harness-only work package (tests/ only; empty gate diff). Resolves #160 / GOV-0064, promoted to a prerequisite of GIT-J (#169). Reconciles WP-2026-0082 (composition_verified true). Engineered by BARCHI-2 under the operator's 'complete the below' directive."
+}
