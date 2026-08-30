@@ -1,0 +1,60 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0105",
+  "title": "WP-VER-C: seven deterministic G08 controls in the canonical gate (badf-engineering-verification -> VALIDATED)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0092",
+  "repository": "bstBizEra/badf",
+  "objective": "Judge typed G08 objects against each other, the Work Package and the composition record: one PURE function check_g08_dossier(dossier, work_package, evidence, composition_record, record) -- no I/O, no git -- wired into validate_dossier only for G08 dossiers claiming PASS / PASS_WITH_CONDITIONS. C1 exact target (VER-I01: dossier source_revision + composition record's expected_content_tree / target_base_sha); C2 one composed identity (VER-I05); C3 independence and quorum by change class (VER-I04/I19: the author's execution or identity cannot review unless the single-collaborator deviation is carried as an OPEN condition; C2/C3 need a verification record with >=2 / >=3 distinct reviewers and runs and the mandatory lenses); C4 runtime credit when the WP declares verification_obligations.runtime_required (VER-I08); C5 per-artifact non-coverage unless comprehensive_coverage_permitted_for names the type (VER-I11); C6 review blockers resolved (VER-I12: OPEN MAJOR/CRITICAL refuses PASS, maps to a condition on PASS_WITH_CONDITIONS; review findings carried or withdrawn by the record); C7 composed-result authority (VER-I15: composed-tree-test never NOT_APPLICABLE). Every control fires only on declared fields; WP-2026-0010's generic dossier stays valid. Optional closed verification_obligations field added to work-package.schema.json additively.",
+  "business_value": "VER-B could see a bare-PASS review; it could not see a review of one tree beside observations of another, an author reviewing itself, a C2 dossier with one ballot, a MAJOR finding passed over, or a composed observation declared not applicable. These controls make the G08 exit criteria -- review blockers resolved, composed result verified, non-coverage declared -- deterministic instead of narrative.",
+  "in_scope": [
+    "scripts/badf_gate.py: check_g08_dossier (pure; C1..C7) + G08_QUORUM / G08_REQUIRED_LENSES / G08_OBSERVATIONS + _independent_reviewer_deviation_carried; wiring in validate_dossier for gate G08 and disposition PASS/PASS_WITH_CONDITIONS (resolves evidence objects, the composition record and the verification record; validate_verification_record runs on a JSON review artifact first)",
+    "schemas/work-package.schema.json: optional closed verification_obligations {runtime_required: boolean, comprehensive_coverage_permitted_for: [G08 types]} beside tdd_exception",
+    "tests/test_badf_verification_controls.py (11, failing-first); rung flips in tests/test_badf_engineering_verification_contract.py (VALIDATED) and tests/test_badf_verification_evidence.py (IMPLEMENTED floor)",
+    "badf/skill-registry.json: badf-engineering-verification IMPLEMENTED -> VALIDATED (SKILL.md untouched, digest unchanged); lockfile re-signed",
+    "GITHUB_CONTROL_PLANE.md doctrine section; badf/demands/BADF-DEM-0092.json; own composition record + typed G07 self-dossier; reconcile the land-time-current WP"
+  ],
+  "out_of_scope": [
+    "shadow (VER-D); admission (VER-E)",
+    "any change to check_g07_binding, self_dossier, badf_compose.py, lifecycle.json or the CI workflow; any badf-build / badf-git file",
+    "a reviewer executor, a test runner, a verification ledger writer; badf-security-assurance"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "check_g08_dossier is pure (no open/load_json/subprocess/write/Path in its source) and is called from validate_dossier only under gate == G08 and a PASS-class disposition",
+    "each of C1..C7 refuses independently with a message naming the control; every control is silent when its fields are undeclared; WP-2026-0010's G08 dossier still validates end-to-end as APPROVED_WITH_CONDITIONS",
+    "work-package.schema.json gains verification_obligations additively (not required; BLD-C's fields untouched)",
+    "registry VALIDATED with the SKILL.md digest unchanged; lifecycle.json untouched",
+    "tests/test_badf_verification_controls.py failing-first (2F+9E) then green (11); each control mutation-killed (7/7); existing VER-B / contract / g08_verification / BLD-C controls suites green; CI green on the composed tree; QA + REV by a non-authoring seat (shared surface)"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_verification_controls.py (11)",
+    "tests/test_badf_verification_evidence.py (15, floor flip)",
+    "tests/test_badf_engineering_verification_contract.py (9, rung flip)",
+    "tests/test_badf_g08_verification.py (unchanged, must stay green)"
+  ],
+  "evidence": [
+    "failing-first run (11 red: 2 failures, 9 errors)",
+    "green run (11)",
+    "mutation: each control disabled one at a time -> its test red; registry tampered -> red",
+    "compose output incl. composition record",
+    "G07 self-dossier with typed bindings"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "dcbcc54"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. WP-VER-C of the badf-engineering-verification program (#195 A->E authorization; approval recorded on #204). Shared surface (badf_gate.py + work-package.schema.json) -> non-authoring QA + REV; lean disabled. Resolves #204 / GOV-0088. Engineered by BARCHI-3 under /loop. Reconciles the land-time-current WP at landing."
+}

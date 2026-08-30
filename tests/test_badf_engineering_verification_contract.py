@@ -143,11 +143,11 @@ class BadfEngineeringVerificationContractTests(unittest.TestCase):
         for token in ("G08", "G09", "C2", "security-validation", "does not replace"):
             self.assertIn(token, boundary, token)
 
-    def test_registry_pin_is_implemented_and_tool_empty(self):
+    def test_registry_pin_is_validated_and_tool_empty(self):
         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
         entries = [e for e in registry["skills"] if e.get("name") == "badf-engineering-verification"]
         self.assertEqual(1, len(entries)); entry = entries[0]
-        self.assertEqual("IMPLEMENTED", entry["status"]);  # VER-B self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])
+        self.assertEqual("VALIDATED", entry["status"]);  # VER-C (WP-2026-0105) self.assertEqual([], entry["allowed_tools"]); self.assertEqual("C1", entry["risk_class"])
         self.assertEqual("skills/badf-engineering-verification/SKILL.md", entry["source"])
         self.assertEqual("sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest(), entry["digest"])
 
