@@ -1,0 +1,108 @@
+{
+  "schema_version": "1.0.0",
+  "prd_id": "PRD-SHADOW-MIGRATION",
+  "tasks": [
+    {
+      "id": "WBS-001",
+      "description": "EXPAND: add the new column alongside the old",
+      "change_class": "C2",
+      "authority_requirement": {
+        "required_roles": [
+          "product_owner",
+          "engineering_owner",
+          "quality_authority",
+          "service_owner"
+        ]
+      },
+      "acceptance": [
+        "AC-001"
+      ],
+      "test_obligations": [
+        {
+          "id": "TEST-001",
+          "claim": "AC-001",
+          "level": "migration"
+        }
+      ],
+      "execution_budget": {
+        "max_attempts": 3
+      },
+      "stop_conditions": [
+        "BASELINE_STALE",
+        "UNEXPECTED_DESTRUCTIVE_SCOPE"
+      ]
+    },
+    {
+      "id": "WBS-002",
+      "description": "MIGRATE: backfill and dual-write in batches",
+      "depends_on": [
+        "WBS-001"
+      ],
+      "composition_after": [
+        "WBS-001"
+      ],
+      "change_class": "C2",
+      "authority_requirement": {
+        "required_roles": [
+          "product_owner",
+          "engineering_owner",
+          "quality_authority",
+          "service_owner"
+        ]
+      },
+      "acceptance": [
+        "AC-002"
+      ],
+      "test_obligations": [
+        {
+          "id": "TEST-002",
+          "claim": "AC-002",
+          "level": "integration"
+        }
+      ],
+      "execution_budget": {
+        "max_attempts": 3,
+        "max_elapsed_minutes": 180
+      },
+      "stop_conditions": [
+        "EVIDENCE_CORRUPTION",
+        "BUDGET_EXHAUSTED"
+      ]
+    },
+    {
+      "id": "WBS-003",
+      "description": "CONTRACT: drop the old column once the new one is authoritative",
+      "depends_on": [
+        "WBS-002"
+      ],
+      "composition_after": [
+        "WBS-002"
+      ],
+      "change_class": "C2",
+      "authority_requirement": {
+        "required_roles": [
+          "product_owner",
+          "engineering_owner",
+          "quality_authority",
+          "service_owner"
+        ]
+      },
+      "acceptance": [
+        "AC-003"
+      ],
+      "test_obligations": [
+        {
+          "id": "TEST-003",
+          "claim": "AC-003",
+          "level": "migration"
+        }
+      ],
+      "execution_budget": {
+        "max_attempts": 2
+      },
+      "stop_conditions": [
+        "UNEXPECTED_DESTRUCTIVE_SCOPE"
+      ]
+    }
+  ]
+}

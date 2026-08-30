@@ -81,11 +81,34 @@ class PlanningControlTests(G06PlanningControlsBase):
         self.check(doc)
 
 
+class ShadowCalibrationTests(G06PlanningControlsBase):
+    """WP-IMP-D: the representative shadow breakdowns pass, and the shadow-evidence reference labels
+    itself REPRESENTATIVE (not real-project) and declares the non-coverage -- silence is not coverage."""
+
+    SHADOWS = ("work-breakdown-shadow-migration.json", "work-breakdown-shadow-feature.json")
+    DOC = gate.ROOT / "skills/badf-implementation-plan/references/shadow-evidence.md"
+
+    def test_representative_shadow_breakdowns_pass(self):
+        for name in self.SHADOWS:
+            self.check(json.loads((gate.ROOT / "examples" / name).read_text()))
+
+    def test_shadow_evidence_declares_representative_caveat(self):
+        doc = self.DOC.read_text()
+        self.assertIn("REPRESENTATIVE", doc)
+        self.assertIn("no real G06 planning breakdowns yet", doc)
+
+    def test_shadow_evidence_declares_noncoverage(self):
+        doc = self.DOC.read_text().lower()
+        self.assertIn("non-coverage", doc)
+        self.assertIn("execution frontier", doc)
+        self.assertIn("semantic resolution", doc)
+
+
 class RegistryStatusTests(unittest.TestCase):
-    def test_badf_implementation_plan_is_registered_validated(self):  # WP-IMP-C advanced IMPLEMENTED -> VALIDATED
+    def test_badf_implementation_plan_is_registered_shadowed(self):  # WP-IMP-D advanced VALIDATED -> SHADOWED
         reg = json.loads((gate.ROOT / "badf/skill-registry.json").read_text())
         entry = next(e for e in reg["skills"] if e["name"] == "badf-implementation-plan")
-        self.assertEqual(entry["status"], "VALIDATED")
+        self.assertEqual(entry["status"], "SHADOWED")
 
 
 if __name__ == "__main__":
