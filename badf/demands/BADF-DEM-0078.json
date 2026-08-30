@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0078",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 177,
+    "url": "https://github.com/bstBizEra/badf/issues/177",
+    "exported_at": "2026-08-30T11:28:16Z",
+    "body_digest": "sha256:eaf2b14ab59378b6ffc0a699110a70ac5d2c1cf24d9cf89100ca0ae360a08405"
+  },
+  "title": "GOV-0073: WP-IMP-A \u2014 freeze badf-implementation-plan (G06 planning composition/router; DESIGNED; WP != task != issue != branch)",
+  "problem": "## Observed\n\nBADF has an enforced G06 gate (WP-0067: work-breakdown/test-plan/release-plan/rollback-plan + acyclic dep graph) and the WP template now conforms (WP-IMP-0). Missing: the skill that turns approved G01-G05 design into a governed Work Package DAG and normalizes it into those four existing G06 artifacts.\n\n## Expected\n\n**WP-IMP-A -- freeze badf-implementation-plan, DESIGNED.** SKILL.md + 16 references (g06-contract, work-package-contract, decomposition, vertical-slicing, dependency-graph, composition-order, authority-and-risk, test-planning, evidence-planning, execution-budget, stop-conditions, release-planning, rollback-planning, issue-projection, acceptance, external-methodology) + IMP-I01..I17. Doctrine: Task != Work Package != GitHub Issue != Branch; Implementation Plan != Authority. Composes G06's EXISTING four artifacts (no fifth gate artifact, no lifecycle change); authority DERIVED from change_class C0-C3 (no A0/A2 system); DECLARES execution topology, badf-git REALIZES it; no scripts/badf_implementation_plan.py, no schema, no execution engine; does not duplicate G01-G05. OWASP-style dispositions for Spec Kit / Superpowers / Matt Pocock to-tickets: ADAPT not authority. Register DESIGNED.\n\n## Evidence\n\n- G06 gate + 4 artifact schemas already exist (WP-0067). Mirrors the badf-solution-design / badf-security-design DESIGNED-first admission ladder.\n\n## Unknowns\n\nHow the new typed WP fields (WP-IMP-B) are enforced given #171 (walker doesn't type-check) -- resolved: code controls in the gate, not type-trust (WP-IMP-C).\n\ndiscovered-by: operator badf-implementation-plan design directive 2026-08-30 \u00b7 status: DISCOVERED\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-30T11:28:16Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "WP-IMP-A freezes badf-implementation-plan (G06 planning composition/router, DESIGNED) per the operator design directive 2026-08-30. Composes G06's existing 4 artifacts; authority derived from change_class; declares-topology/badf-git-realizes; no script/schema/lifecycle/execution. IMP-I01..I17. DEM-0078/GOV-0073/WP-0091. Reconciles WP-2026-0089 (WP-IMP-0). Ladder next: WP-IMP-B schema extension (code controls per #171) -> C controls -> D shadow -> E admission."
+}

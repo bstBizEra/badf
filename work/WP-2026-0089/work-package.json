@@ -38,11 +38,13 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "c1840a7"
+    "base_revision": "c1840a7",
+    "composition_verified": false,
+    "landed_as": "914309bedb34eb1c1c9922dac85e1fe75c7d8d86"
   },
   "note": "Lands IN_PROGRESS by design; next WP reconciles it. Conformance repair + regression guard; no schema change -> no gate-code change -> no mutation. Isolated worktree (badf-wt-imp0, GIT-I04). Ids WP-0089/DEM-0076/GOV-0070. Reconciles WP-2026-0090 (badf-git re-shadow, landed c1840a7, composition_verified: true; WP-0087 already reconciled on main via #176). First unit of the badf-implementation-plan/G06 capability (operator design 2026-08-30). Resolves #170."
 }

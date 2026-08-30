@@ -1,0 +1,52 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0091",
+  "title": "WP-IMP-A: freeze badf-implementation-plan (G06 planning composition/router; DESIGNED)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0078",
+  "repository": "bstBizEra/badf",
+  "objective": "Freeze the badf-implementation-plan capability contract as DESIGNED: a thin G06 planning composition/router that turns an approved G01-G05 design into a governed Work Package DAG and normalizes it into the EXISTING G06 evidence (work-breakdown/test-plan/release-plan/rollback-plan). Root SKILL.md + 16 references + IMP-I01..I17. Freezes the doctrine Task != Work Package != GitHub Issue != Branch and Implementation Plan != Authority. Composes G06's existing four artifacts (no fifth gate artifact, no lifecycle change); authority DERIVED from change_class C0-C3 (no A0/A2 system); DECLARES execution topology while badf-git REALIZES it; NO scripts/badf_implementation_plan.py, NO schema, NO execution engine; does not duplicate G01-G05.",
+  "business_value": "G06 has a gate and four artifacts but no capability to author them coherently from an approved design. A DESIGNED contract freeze fixes the ownership boundaries first -- the plan composes the existing G06 evidence, derives authority from change_class rather than inventing one, declares topology while badf-git realizes it -- so the later IMPLEMENTED/VALIDATED/SHADOWED/ACTIVE WPs build on a stable contract. It is the point where BADF stops thinking in tasks and produces bounded, governable execution units.",
+  "in_scope": [
+    "skills/badf-implementation-plan/SKILL.md: thin router; IMP-I01..I17; FRAME->INGEST->CLASSIFY->DECOMPOSE->SLICE->GRAPH->GOVERN->PROJECT->PACKAGE; WP!=task!=issue!=branch; composes-G06-four / authority-derived / declares-not-realizes / no-execution boundaries",
+    "skills/badf-implementation-plan/references/: 16 contract docs (g06/work-package/decomposition/vertical-slicing/dependency-graph/composition-order/authority-and-risk/test-planning/evidence-planning/execution-budget/stop-conditions/release-planning/rollback-planning/issue-projection/acceptance/external-methodology)",
+    "badf/skill-registry.json: register badf-implementation-plan DESIGNED (C1, allowed_tools [])",
+    "tests/test_badf_implementation_plan_contract.py: declarative-surface guards (exact reference set, no script/schema, IMP-I01..I17+workflow, composes-existing-G06, authority-derived, declares-topology/git-realizes, external adapt-not-authority, registry DESIGNED)",
+    "GITHUB_CONTROL_PLANE.md doctrine section; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "the backward-compatible WP-schema EXTENSION with new planning fields (WP-IMP-B, optional governed properties; enforced by code controls per #171)",
+    "deterministic G06 controls in badf_gate.py (WP-IMP-C); issue projection + badf-git integration + shadow (WP-IMP-D); admission (WP-IMP-E)",
+    "scripts/badf_implementation_plan.py, any schema, any lifecycle.json change, any execution engine (IMP-I17/I15); duplicating G01-G05"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "SKILL.md states IMP-I01..I17, the 9-step workflow, the four boundaries, and the vertical-slice/expand-migrate-contract topology",
+    "external-methodology.md records Spec Kit / Superpowers / Matt Pocock to-tickets as ADAPT + explicit NOT-adopt (tasks/tickets as authority; duplicating G01-G05)",
+    "no scripts/badf_implementation_plan.py; no implementation-plan schema; lifecycle.json G06 unchanged; badf-implementation-plan registered DESIGNED",
+    "tests pass; repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_implementation_plan_contract.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "914309b"
+  },
+  "note": "Lands IN_PROGRESS by design; next WP reconciles it. DESIGNED contract freeze; no gate code (controls are WP-IMP-C) -> no mutation. Isolated worktree (badf-wt-impa). Ids WP-0091/DEM-0078/GOV-0073. Reconciles WP-2026-0089 (WP-IMP-0, composition_verified: false). Operator design directive 2026-08-30; /loop 'proceed from WP-IMP-A to WP-IMP-E'. Resolves #177."
+}
