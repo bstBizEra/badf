@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0082",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 186,
+    "url": "https://github.com/bstBizEra/badf/issues/186",
+    "exported_at": "2026-08-30T13:12:16Z",
+    "body_digest": "sha256:c0cb6a85906aa943983897a1e122064a36f80f7c42a6604b6f1da8f2d87c8695"
+  },
+  "title": "GOV-0077: WP-IMP-E \u2014 admit badf-implementation-plan SHADOWED -> ACTIVE (representative shadow accepted; re-shadow deferred #185)",
+  "problem": "## Observed\n\nbadf-implementation-plan is SHADOWED (WP-IMP-D / #184) on a REPRESENTATIVE shadow. The final admission rung is ACTIVE, a human admission gate (self-approval prohibited).\n\n## Expected\n\n**WP-IMP-E -- admit SHADOWED -> ACTIVE.** The operator's standing /loop directive 'proceed from WP-IMP-A to WP-IMP-E' (2026-08-30, confirmed by 'proceed your tasks') is the admission decision to activate on the representative shadow, with the real re-shadow tracked as a deferred follow-up (#185). Registry SHADOWED -> ACTIVE; representative caveat preserved (shadow-evidence.md still points at #185); ACTIVE grants NO new authority (IMP-I17/I15/I14/I07 hold); no new control, no lifecycle change, no second validator. Mirrors badf-solution-design WP-SOL-E and badf-security-design WP-SEC-E. Completes the WP-IMP-A..E ladder (DESIGNED->ACTIVE).\n\n## Evidence\n\n- Operator admission via standing /loop 'to E' + 'proceed your tasks' 2026-08-30.\n- shadow-evidence.md (WP-IMP-D) is the calibration backing admission; #185 tracks the owed real re-shadow.\n\n## Unknowns\n\nNone that block admission -- the representative-vs-real risk is explicitly accepted by the operator's directive and bounded by #185.\n\ndiscovered-by: BADF-WP-0094 (badf-implementation-plan landed SHADOWED) \u00b7 status: DISCOVERED\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-30T13:12:16Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "WP-IMP-E admits badf-implementation-plan SHADOWED->ACTIVE on the operator's standing /loop 'to E' directive (2026-08-30). Grants no new authority (IMP-I17/I15/I14/I07). Preserves the representative caveat; real re-shadow deferred to #185. Completes WP-IMP-A..E (3rd capability after solution-design + security-design to traverse DESIGNED->ACTIVE). Ladder-internal. DEM-0082/GOV-0077/WP-0095. Reconciles WP-2026-0094."
+}

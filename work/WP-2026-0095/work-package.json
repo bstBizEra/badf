@@ -1,0 +1,53 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0095",
+  "title": "WP-IMP-E: admit badf-implementation-plan SHADOWED -> ACTIVE (operator admission; representative shadow accepted)",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0082",
+  "repository": "bstBizEra/badf",
+  "objective": "Record the operator's admission decision advancing badf-implementation-plan SHADOWED -> ACTIVE. The operator's standing /loop directive 'proceed from WP-IMP-A to WP-IMP-E' (2026-08-30, confirmed by 'proceed your tasks') is the decision to activate on the REPRESENTATIVE shadow (WP-IMP-D), accepting the representative-vs-real risk, with the real re-shadow tracked as a deferred follow-up (#185). Governed registry advance mirroring badf-solution-design WP-SOL-E and badf-security-design WP-SEC-E: ACTIVE grants NO new authority (IMP-I17 badf_gate.py sole authority; IMP-I15 plan cannot execute; IMP-I14 issue grants no authority; IMP-I07 authority derived), no lifecycle change, no new control, no second validator. The representative caveat is preserved. Completes the WP-IMP-A..E ladder.",
+  "business_value": "ACTIVE is the admission the operator's /loop asked for. Doing it as a governed WP -- with the admission recorded, the caveat preserved in-repo, and the owed real re-shadow filed as #185 -- keeps the admission ladder truthful: the capability is admitted for use, its trust honestly bounded to a representative shadow, the debt tracked rather than lost.",
+  "in_scope": [
+    "badf/skill-registry.json: badf-implementation-plan SHADOWED -> ACTIVE (digest unchanged; SKILL.md untouched)",
+    "skills/badf-implementation-plan/references/acceptance.md: ladder rung ACTIVE, citing the operator admission + deferred re-shadow #185 (registry remains source of truth)",
+    "GITHUB_CONTROL_PLANE.md doctrine section recording the admission, its operator authorization, and the deferred re-shadow #185",
+    "tests/test_badf_g06_planning_controls.py: registry pin SHADOWED -> ACTIVE",
+    "own G07 self-dossier; reconcile WP-2026-0094"
+  ],
+  "out_of_scope": [
+    "the real-project re-shadow (deferred to #185; trigger = first real G06 plan)",
+    "any new control, lifecycle.json change, second validator, new authority; scripts/badf_implementation_plan.py",
+    "erasing/softening the representative caveat in shadow-evidence.md (it stays, pointing at #185)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "badf-implementation-plan registered ACTIVE; digest = sha256(SKILL.md); SKILL.md unchanged; lifecycle.json unchanged; no scripts/badf_implementation_plan.py",
+    "shadow-evidence.md still labels the shadow REPRESENTATIVE and references the deferred re-shadow (#185)",
+    "acceptance.md ladder shows ACTIVE via operator admission, pointing at the registry as source of truth",
+    "tests pass; repo integrity clean; compose green both shapes; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_g06_planning_controls.py",
+    "tests/test_badf_implementation_plan_contract.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR (registry back to SHADOWED)"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "4deb094"
+  },
+  "note": "Lands IN_PROGRESS by design; next WP reconciles it. Registry admission SHADOWED->ACTIVE on the operator's standing /loop 'to E' directive (2026-08-30); grants no authority; caveat preserved; real re-shadow deferred to #185. No new control -> no mutation. Ladder-internal (no shared surface). Isolated worktree (badf-wt-impe). Ids WP-0095/DEM-0082/GOV-0077. Reconciles WP-2026-0094 (composition_verified: false). Completes WP-IMP-A..E -- 3rd capability (after solution-design + security-design) to traverse DESIGNED->ACTIVE. Resolves #186 / GOV-0077."
+}
