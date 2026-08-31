@@ -1,0 +1,166 @@
+diff --git a/badf/demands/BADF-DEM-0104.json b/badf/demands/BADF-DEM-0104.json
+new file mode 100644
+index 0000000..4a6c790
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0104.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0104",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 253,
++    "url": "https://github.com/bstBizEra/badf/issues/253",
++    "exported_at": "2026-08-31T09:30:00Z",
++    "body_digest": "sha256:cea298493a26a0fd1eda2b5b4f8a8016a6d427a616f194d47306f2874a49d352"
++  },
++  "title": "GOV-0111: WP-2026-0117 — content-assert the references pinned only by filename, and restore the assertion spliced into a comment (#216 + #230 + #210 as one WP)",
++  "problem": "🧠 **ARCHI (BARCHI-3)** — WP-UAT-A-style freeze not applicable; this is a remediation WP. Clustering **#216 + #230 + #210** into one governed work package: `WP-2026-0117` / `BADF-DEM-0104`.\n\n## Why one WP and not three\n\nThree issues, **one defect at three addresses**: a reference or an assertion pinned by a **proxy** rather than by its property.\n\n- **#216** — four `badf-engineering-verification` references pinned by filename only.\n- **#230** — six of `badf-build`'s fourteen references carry no content assertion.\n- **#210** — an assertion spliced into a trailing comment, so the `allowed_tools` guard runs for nobody.\n\nThree separate PRs would each re-sign `badf/lockfile.json` and therefore conflict with the other two by construction; every landing would cost the others a rebase plus a full G07 regeneration — the structural cost three seats measured independently tonight. This follows BADF-QA's batching rule (*batch tooling findings once the class is characterized*) rather than the one-issue-one-task default. **The deviation is deliberate and flagged**, and was endorsed by SARCHI as coordinator before work began.\n\n## Ownership, recorded because it matters for author≠reviewer\n\n- **#216** is mine — the fix existed on an unpushed branch since before this session. I flagged it twice as \"must not be lost\" and then silently deprioritised it for the G10 program. **That is a lapse, disclosed rather than quietly cleared.**\n- **#230** is BADF-QA's finding, **ceded explicitly** on the grounds that they intend to review the fix and holding both roles would make them author and reviewer.\n- **#210** is unclaimed; BARCHI-2 confirmed `badf-build` was idle-not-self-assigned and gave a courtesy yes on touching their family.\n\n## Measurement — two independent instruments, agreeing\n\nThe six unpinned `badf-build` references were established twice, by different methods:\n\n```\nempirical:  gut each reference, run the contract module, observe green   (BARCHI-3)\nstatic:     which filenames reach the read() helper at line 39           (BADF-QA)\nboth:       acceptance · evidence-packaging · handoff-to-g08\n            preflight · retry-and-budget · stop-conditions      -- 6 of 14, exact\n```\n\nAgreement carries information **because the instruments differ**; two runs of either would have carried none.\n\n## The rule this WP records, with its precondition\n\n> **Pin the value where the file is the source of truth; pin the structure where the value is owned and guarded elsewhere.**\n> A structure-only anchor detects **deletion**, never **weakening** — *\"a threshold is stated\"* is satisfied by `max_attempts: 999999`.\n\nStructure-anchoring is correct for all six here **only because none of them owns a threshold**: `stop-conditions` lists conditions, `preflight` asks *\"budget remaining?\"* with no figure, and `retry-and-budget`'s `1/2/3` is a worked illustration whose own text defers to the Work Package's `execution_budget` — guarded in code at `badf_gate.py` IMP-C3 / IMP-I11. BADF-QA's test, adopted with the precondition attached, because the next family may not be so convenient.\n\n## Acceptance criteria\n\n- All fourteen `badf-build` references and the four `badf-engineering-verification` references redden their module when emptied, **each observed red**, with the already-asserted eight probed as a negative control.\n- `allowed_tools` is a live assertion again for `badf-engineering-verification`, red-verified by setting it to `['Bash']`.\n- Anchors pin structure only; **no reference content is edited** — this WP changes tests, not doctrine documents.\n- No gate, schema, or lifecycle change.\n\n## Deferred, not fixed (Review notes become issues)\n\nBADF-QA observed that a reader can mistake `retry-and-budget.md`'s illustrative `1/2/3` for normative. Fixing that means **editing a frozen reference's prose**, which is outside a test-only WP's scope. Filed as its own issue rather than absorbed here.\n\n## Not claimed\n\nThat this closes the class. The remedy pins the tokens it names and nothing else, and other families are unprobed. Per BADF-REV's **direction test**, vacuity risk lives where a glob-derived collection is the *iteration source*, not where it is the set being checked against — `REFERENCE_ANCHORS` is a fixed literal map, so it is on the safe side **by construction rather than by luck**, which is a materially different claim from having anticipated it.\n\n**Version tier:** patch (tests only). **Lean mode:** advisory. Shared-surface across two families → QA + REV by BADF-QA and BADF-REV.\n\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-31T09:30:00Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-2026-0117: cluster remediation of one defect at three addresses -- a reference or an assertion pinned by a PROXY rather than its property. #216 (four badf-engineering-verification references pinned by filename only), #230 (six of badf-build's fourteen with no content assertion), #210 (self.assertEqual([], allowed_tools) spliced into a trailing comment, guard dark). One WP rather than three because three PRs would each re-sign the lockfile and conflict by construction -- BADF-QA's batching rule, deviation from one-issue-one-task flagged and endorsed by SARCHI. The six were measured TWO independent ways (empirical gutting; static read()-call analysis) agreeing exactly. Records the rule: pin the value where the file is the source of truth, the structure where the value is owned and guarded elsewhere -- a structure-only anchor detects deletion, never weakening. Deferred to #254: retry-and-budget.md's illustrative 1/2/3 reading as normative, not fixed in-PR because it edits frozen prose."
++}
+diff --git a/tests/test_badf_build_contract.py b/tests/test_badf_build_contract.py
+index 51be983..61f316b 100644
+--- a/tests/test_badf_build_contract.py
++++ b/tests/test_badf_build_contract.py
+@@ -32,6 +32,34 @@ REFS = {
+     "self-review.md", "evidence-packaging.md", "handoff-to-g08.md", "acceptance.md",
+     "external-methodology.md",
+ }
++# #230: six of the fourteen references carried NO content assertion -- `acceptance`,
++# `evidence-packaging`, `handoff-to-g08`, `preflight`, `retry-and-budget` and
++# `stop-conditions` could each be emptied to zero bytes with this module green. REFS above
++# pins FILENAMES; being named is a proxy for being content-asserted, and the proxy was
++# satisfied while nothing checked the text.
++#
++# Anchors pin STRUCTURE, not values, and the precondition matters: a structure-only anchor
++# detects deletion, never weakening ("a threshold is stated" is satisfied by 999999). It is
++# correct HERE only because none of these files owns a threshold -- `stop-conditions` lists
++# conditions, `preflight` asks "budget remaining?" with no figure, and `retry-and-budget`'s
++# 1/2/3 is a worked illustration whose own text defers to the Work Package's
++# `execution_budget`, guarded in code at badf_gate.py IMP-C3/IMP-I11. Pin the value where the
++# file is the source of truth; pin the structure where the value is owned and guarded
++# elsewhere. (BADF-QA's test, adopted with its precondition.)
++REFERENCE_ANCHORS = {
++    "acceptance.md": ("DESIGNED", "IMPLEMENTED", "VALIDATED", "SHADOWED",
++                      "badf/skill-registry.json", "pointer, not a second"),
++    "evidence-packaging.md": ("source-change", "unit-test", "documentation",
++                              "BLD-I16", "BLD-I18", "never a second producer"),
++    "handoff-to-g08.md": ("BLD-I17", "badf-git", "G08 independent verification"),
++    "preflight.md": ("BLD-I01", "expected surfaces", "stop conditions",
++                     "No valid Work Package"),
++    "retry-and-budget.md": ("BLD-I11", "BLD-I12", "execution_budget", "ROOT_CAUSE_MODE",
++                            "retries must add information"),
++    "stop-conditions.md": ("BLD-I13", "stop_conditions", "authority conflict",
++                           "credential exposure", "budget exhaustion"),
++}
++
+ WORKFLOW = ("CLAIM → PREFLIGHT → ISOLATE → BASELINE → SLICE → TEST-FIRST/VERIFY-FIRST → IMPLEMENT → "
+             "LOCAL VERIFY → SELF-REVIEW → RECONCILE → PACKAGE → HANDOFF")
+ 
+@@ -96,6 +124,27 @@ class BadfBuildContractTests(unittest.TestCase):
+             self.assertIn(token, text, token)
+         self.assertIn("not automatically", read("self-review.md").lower())
+ 
++    def test_the_six_unpinned_references_assert_their_own_content(self):
++        """#230: each of the six carries load-bearing tokens, so gutting it reddens this module.
++
++        Positive control observed red on all six before this test was written -- and on a tree
++        verified clean with `git status`, because an earlier probe had been killed mid-iteration
++        and left one reference already gutted, which silently contaminated its own baseline.
++
++        NOT claimed: that this closes the class for badf-build. The eight already-asserted
++        references were spot-checked, not exhaustively re-probed, and an anchor pins the tokens
++        it names and nothing else.
++        """
++        self.assertEqual(6, len(REFERENCE_ANCHORS), "the six #230 named; a seventh needs its own probe")
++        self.assertTrue(set(REFERENCE_ANCHORS) < REFS,
++                        "every anchored name must be a real reference in REFS")
++        for name, anchors in REFERENCE_ANCHORS.items():
++            text = read(name)
++            self.assertGreater(len(text), 400, f"{name} is too short to carry its contract")
++            self.assertGreaterEqual(len(anchors), 3, f"{name} needs >= 3 anchors")
++            for tok in anchors:
++                self.assertIn(tok, text, f"{name}: {tok}")
++
+     def test_registry_pin_is_active_and_tool_empty(self):
+         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
+         entries = [e for e in registry["skills"] if e.get("name") == "badf-build"]
+diff --git a/tests/test_badf_engineering_verification_contract.py b/tests/test_badf_engineering_verification_contract.py
+index c6d8c7b..bc90332 100644
+--- a/tests/test_badf_engineering_verification_contract.py
++++ b/tests/test_badf_engineering_verification_contract.py
+@@ -143,6 +143,28 @@ class BadfEngineeringVerificationContractTests(unittest.TestCase):
+         for token in ("G08", "G09", "C2", "security-validation", "does not replace"):
+             self.assertIn(token, boundary, token)
+ 
++    def test_every_reference_asserts_its_own_content(self):
++        """#216: the REFS set pins filenames; twelve references were content-asserted and four were
++        not, so `acceptance.md`, `integration-test-contract.md`, `non-coverage.md` and
++        `verification-matrix.md` could each be emptied to a stub with every module still green
++        (measured). A filename is a proxy; the load-bearing tokens are the property."""
++        must = {
++            "acceptance.md": ("DESIGNED", "IMPLEMENTED", "VALIDATED", "SHADOWED", "ACTIVE",
++                              "badf/skill-registry.json", "no authority granted"),
++            "integration-test-contract.md": ("integration-test", "runtime", "fixtures_epoch", "seed",
++                                             "output_digest", "non_coverage", "TEST_PLAN_DEFECT"),
++            "non-coverage.md": ("check_non_coverage", "non_coverage: []", "owner",
++                                "Declaring a gap does not resolve it"),
++            "verification-matrix.md": ("VERIFIED", "PARTIAL", "UNVERIFIED", "quality_authority",
++                                       "Composed-tree test", "expected_content_tree"),
++        }
++        self.assertEqual(set(must) | {r for r in REFS if r not in must}, REFS)
++        for name, tokens in must.items():
++            text = read(name)
++            self.assertGreater(len(text.splitlines()), 10, f"{name} is a stub")
++            for tok in tokens:
++                self.assertIn(tok, text, f"{name}: {tok}")
++
+     def test_registry_pin_is_active_and_tool_empty(self):
+         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
+         entries = [e for e in registry["skills"] if e.get("name") == "badf-engineering-verification"]
+diff --git a/tests/test_badf_verification_evidence.py b/tests/test_badf_verification_evidence.py
+index 67be367..f370361 100644
+--- a/tests/test_badf_verification_evidence.py
++++ b/tests/test_badf_verification_evidence.py
+@@ -248,7 +248,11 @@ class RegistryTests(unittest.TestCase):
+     def test_registry_pin_is_at_least_implemented_and_skill_digest_unchanged(self):
+         registry = json.loads((gate.ROOT / "badf/skill-registry.json").read_text(encoding="utf-8"))
+         entry = next(e for e in registry["skills"] if e["name"] == "badf-engineering-verification")
+-        self.assertIn(entry["status"], ("IMPLEMENTED", "VALIDATED", "SHADOWED", "ACTIVE"));  # VER-B floor; later rungs advance it self.assertEqual([], entry["allowed_tools"])
++        # VER-B floor; later rungs advance it.
++        self.assertIn(entry["status"], ("IMPLEMENTED", "VALIDATED", "SHADOWED", "ACTIVE"))
++        # #210: this assertion was spliced INTO the comment above by a semicolon edit and ran
++        # for nobody -- `allowed_tools` appeared exactly once in this module, inside a comment.
++        self.assertEqual([], entry["allowed_tools"])
+         self.assertEqual(entry["digest"], gate.sha256(gate.ROOT / "skills/badf-engineering-verification/SKILL.md"))
+ 
+ 
+diff --git a/work/WP-2026-0116/work-package.json b/work/WP-2026-0116/work-package.json
+index c38ed3a..67b11ae 100644
+--- a/work/WP-2026-0116/work-package.json
++++ b/work/WP-2026-0116/work-package.json
+@@ -68,11 +68,14 @@
+     "EVIDENCE_CORRUPTION",
+     "BUDGET_EXHAUSTED"
+   ],
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "7f81a49718b244c3386cedd7455e603e7f6f3eb2"
++    "base_revision": "7f81a49718b244c3386cedd7455e603e7f6f3eb2",
++    "landed_content_tree": "53ea7398b15a4b24e6d39405128918ae9ab110f1",
++    "composition_verified": true,
++    "landed_as": "da3c28d359859cb163ad7b9509e702fe48d08fa4"
+   },
+   "expected_surfaces": {
+     "files": [
