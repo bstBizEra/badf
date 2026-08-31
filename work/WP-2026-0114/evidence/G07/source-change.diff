@@ -48,10 +48,10 @@ index c054de7..5431fe3 100644
    ]
  }
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 985574e..ac1e354 100644
+index 985574e..1aa1deb 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -1644,6 +1644,53 @@ frozen measurement so that today's tests pass would falsify the measurement —
+@@ -1644,6 +1644,56 @@ frozen measurement so that today's tests pass would falsify the measurement —
  shadow and the present disagree is that the *test* is wrong, or the present is, and never that the past
  should be rewritten. #220's derived-terminality work must not reach for that green either.
  
@@ -89,7 +89,10 @@ index 985574e..ac1e354 100644
 +(I16/I17), the same-artifact rule against per-environment rebuild (I18), and the three gate separations
 +G10 ≠ G11 ≠ G12 (I21/I22). The authority boundary cites **SEC-I13**, **VER-I18** and **UAT-I14/I15** as
 +precedent rather than novelty, and states the generalization across all four: *the capability that
-+produces the evidence for a decision is never the capability that makes it.*
++produces the evidence is never the capability that decides progression.* The narrow wording is
++load-bearing — an earlier draft said "never the capability that makes it", which is false of every
++capability in the list, since each makes real routing, classification or evaluation judgments. The
++boundary is who owns the act that **advances the lifecycle**, not who makes any decision at all.
 +
 +Sixteen references; no `scripts/badf_production_readiness.py`, no schema, no `lifecycle.json` change, no
 +`badf_gate.py` change (PRDY-I24). External sources are **ADAPT / EXTEND / REJECT** with the honest
@@ -346,10 +349,10 @@ index 0000000..e3a0833
 +  PRDY-I19…I22 hold throughout, which is the point of the capability rather than a restriction on it.
 diff --git a/skills/badf-production-readiness/references/authority-boundary.md b/skills/badf-production-readiness/references/authority-boundary.md
 new file mode 100644
-index 0000000..a0cbb4c
+index 0000000..364fbc7
 --- /dev/null
 +++ b/skills/badf-production-readiness/references/authority-boundary.md
-@@ -0,0 +1,56 @@
+@@ -0,0 +1,67 @@
 +# Readiness ≠ authorization — and PRODUCTION_AUTHORIZED is derived, never written
 +
 +PRDY-I19, PRDY-I20, PRDY-I21, PRDY-I22. This is the reference the whole capability is built to protect.
@@ -405,7 +408,18 @@ index 0000000..a0cbb4c
 +re-invented: **SEC-I13** (`badf-security-design` cannot issue its own security approval), **VER-I18**
 +(`badf-engineering-verification` cannot admit itself), **UAT-I14/I15** (`badf-uat` recommends;
 +a human accepts), and `badf-release-validation`'s own G09/G10 line. The generalization across all four:
-+**the capability that produces the evidence for a decision is never the capability that makes it.**
++
++> **The capability that produces the evidence is never the capability that decides progression.**
++
++The wording matters, and an earlier draft of this line got it wrong. It said *"never the capability
++that makes it"* — of the decision, unqualified — which is false of every capability in the list.
++`badf-release-validation` derives its own validation-obligation set, marking classes `REQUIRED` /
++`NOT_APPLICABLE` / `DEFERRED_WITH_REASON` (VAL-I02); `badf-uat` classifies defects and computes
++coverage; this skill evaluates twelve dimensions and reaches a recommendation. All of those are real
++judgments with real consequences. The boundary is not *decides* versus *does not decide* — it is **who
++owns the act that advances the lifecycle.** Routing, classification and evaluation belong to the
++capability; progression belongs to the authority. Narrowed after BARCHI-1 pointed out that the broad
++form was already violated by the very rung it cited.
 diff --git a/skills/badf-production-readiness/references/candidate-binding.md b/skills/badf-production-readiness/references/candidate-binding.md
 new file mode 100644
 index 0000000..2f7de8d
@@ -1037,7 +1051,7 @@ index 0000000..5685143
 +the same staleness rule as everything else here (PRDY-I23).
 diff --git a/tests/test_badf_production_readiness_contract.py b/tests/test_badf_production_readiness_contract.py
 new file mode 100644
-index 0000000..4cb56a7
+index 0000000..d4299dd
 --- /dev/null
 +++ b/tests/test_badf_production_readiness_contract.py
 @@ -0,0 +1,273 @@
@@ -1288,7 +1302,7 @@ index 0000000..4cb56a7
 +        for token in ("PRDY-I19", "PRDY-I20", "PRDY-I21", "PRDY-I22",
 +                      "SEC-I13", "VER-I18", "UAT-I14", "derived predicate"):
 +            self.assertIn(token, boundary, token)
-+        self.assertIn("never the capability that makes it", boundary,
++        self.assertIn("never the capability that decides progression", boundary,
 +                      "the generalization across all four precedents must be stated")
 +
 +    def test_every_reference_carries_its_own_load_bearing_content(self):
