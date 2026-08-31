@@ -2,7 +2,7 @@
   "$schema": "../../schemas/work-package.schema.json",
   "schema_version": "1.0.0",
   "id": "WP-2026-0124",
-  "title": "WP-UAT-B: type the uat evidence binding and validate it in the canonical gate (badf-uat DESIGNED → IMPLEMENTED)",
+  "title": "WP-UAT-B: type the uat evidence binding and validate it in the canonical gate (badf-uat DESIGNED \u2192 IMPLEMENTED)",
   "owner": "engineering_owner",
   "demand": "BADF-DEM-0110",
   "repository": "bstBizEra/badf",
@@ -64,8 +64,8 @@
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "wp/WP-2026-0124-uat-typed-evidence",
-    "base_revision": "a69b922",
+    "base_revision": "292d1be",
     "composition_verified": false
   },
-  "note": "Rung B of the badf-uat A→E ladder; A landed as #241 (c525129). SHARED-SURFACE (schemas/ + badf_gate.py) so this needs QA + REV, unlike rung A which was ladder-internal under the #248 classification. A SIXTH control (U1, acceptance-basis resolvability) was written and REMOVED: schemas/uat.schema.json already makes prd_digest required inside acceptance_basis, so check_schema refuses first and U1 could never fire. Its test passed on the wrong raise because BOTH messages contain 'prd_digest'. Found by this rung's own mutation battery -- #250's class in this rung's own code -- and recorded in a code comment so nobody re-adds it. Separately: the gate patch removing U1 silently FAILED on a first attempt while the test patch succeeded, and the suite went green anyway; caught by grepping for the code rather than trusting the exit status. Ids WP-2026-0124 / BADF-DEM-0110 / GOV-0116 swept clean on all four surfaces including my own unpushed worktrees."
+  "note": "Rung B of the badf-uat A\u2192E ladder; A landed as #241 (c525129). SHARED-SURFACE (schemas/ + badf_gate.py) so this needs QA + REV, unlike rung A which was ladder-internal under the #248 classification. A SIXTH control (U1, acceptance-basis resolvability) was written and REMOVED: schemas/uat.schema.json already makes prd_digest required inside acceptance_basis, so check_schema refuses first and U1 could never fire. Its test passed on the wrong raise because BOTH messages contain 'prd_digest'. Found by this rung's own mutation battery -- #250's class in this rung's own code -- and recorded in a code comment so nobody re-adds it. Separately: the gate patch removing U1 silently FAILED on a first attempt while the test patch succeeded, and the suite went green anyway; caught by grepping for the code rather than trusting the exit status. Ids WP-2026-0124 / BADF-DEM-0110 / GOV-0116 swept clean on all four surfaces including my own unpushed worktrees."
 }
