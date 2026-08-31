@@ -49,6 +49,6 @@
   "risks": [],
   "council": null,
   "disposition": "HUMAN_REQUIRED",
-  "created_at": "2026-08-31T18:31:50Z",
+  "created_at": "2026-08-31T18:33:14Z",
   "held_because": "BADF's own work package WP-2026-0123 at G07: evidence prepared and digest-bound; the independent-reviewer condition C-1 is open under a single collaborator; a human merges. The tool binds evidence, it does not approve."
 }

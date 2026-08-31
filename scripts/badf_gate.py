@@ -4146,7 +4146,8 @@ def validate_verification_record(path: Path) -> str:
                       and findings[fid]["severity"] in BLOCKING_SEVERITIES]
         if cited_open:
             raise ValidationError(f"ballot {b['ballot_id']}: verdict APPROVE contradicts OPEN blocking finding(s) "
-                                  f"{', '.join(sorted(cited_open))} it cites itself; a verdict cannot contradict its own findings")
+                                  f"{', '.join(sorted(cited_open))} associated with it (by its own finding_ids or by the "
+                                  f"finding naming it as reporter); a verdict cannot contradict its own findings")
     for f in rec["findings"]:
         if not f["reported_by"]:
             raise ValidationError(f"finding {f['finding_id']} has no reporting ballot; a finding nobody balloted is invented (VER-I06)")

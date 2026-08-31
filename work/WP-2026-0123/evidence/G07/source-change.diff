@@ -71,10 +71,10 @@ index 677edf3..22875c9 100644
  
  Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
 diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
-index 7c07efd..7658136 100644
+index 7c07efd..f9ebf12 100644
 --- a/scripts/badf_gate.py
 +++ b/scripts/badf_gate.py
-@@ -4122,6 +4122,20 @@ def validate_verification_record(path: Path) -> str:
+@@ -4122,6 +4122,31 @@ def validate_verification_record(path: Path) -> str:
      for d in rec["synthesis"]["downgraded"]:
          if d["finding_id"] not in findings:
              raise ValidationError(f"synthesis downgrades {d['finding_id']}, which the record does not carry (VER-I12)")
@@ -84,9 +84,20 @@ index 7c07efd..7658136 100644
 +        # binding -- but the record's ballots were unchecked, so APPROVE could cite an OPEN MAJOR
 +        # it raised itself. Strict APPROVE only: APPROVE_WITH_CONDITIONS over an open finding is
 +        # the conditional arc and REJECT over open findings is the rejecting arc; both are honest.
++        # status/severity are READ from the record, not recomputed from evidence: the record is
++        # the persisted decision and this module has no independent source of truth for it.
++        # Deliberate, not an oversight (BADF-QA on #267).
 +        if b["verdict"] != "APPROVE":
 +            continue
-+        cited_open = [fid for fid in b["finding_ids"]
++        # The association is two-sided and the record checks neither direction for
++        # reciprocity: a ballot cites via finding_ids, a finding names reporters via
++        # reported_by/also_reported_by, and nothing requires them to agree. Walking only
++        # finding_ids left the same proposition reachable from the other side -- an APPROVE
++        # with finding_ids: [] while the findings side still named it as the reporter of an
++        # OPEN MAJOR. Take the union so neither side alone can hide the contradiction.
++        associated = set(b["finding_ids"]) | {f["finding_id"] for f in rec["findings"]
++                                              if b["ballot_id"] in f["reported_by"] + f["also_reported_by"]}
++        cited_open = [fid for fid in associated
 +                      if fid in findings and findings[fid]["status"] == "OPEN"
 +                      and findings[fid]["severity"] in BLOCKING_SEVERITIES]
 +        if cited_open:
@@ -96,10 +107,10 @@ index 7c07efd..7658136 100644
          if not f["reported_by"]:
              raise ValidationError(f"finding {f['finding_id']} has no reporting ballot; a finding nobody balloted is invented (VER-I06)")
 diff --git a/tests/test_badf_verification_evidence.py b/tests/test_badf_verification_evidence.py
-index f370361..2ffe65c 100644
+index f370361..b1aef08 100644
 --- a/tests/test_badf_verification_evidence.py
 +++ b/tests/test_badf_verification_evidence.py
-@@ -229,6 +229,36 @@ class VerifyRecordTests(unittest.TestCase):
+@@ -229,6 +229,64 @@ class VerifyRecordTests(unittest.TestCase):
          r = record(findings=[finding(status="RESOLVED")]); r["matrix"][0].update(result="VERIFIED", composed_refs=[])
          with self.assertRaisesRegex(gate.ValidationError, "composed|VER-I15"): gate.validate_verification_record(self._path(r))
  
@@ -132,6 +143,34 @@ index f370361..2ffe65c 100644
 +        r = record(findings=[finding(status="RESOLVED")])
 +        r["ballots"][0]["verdict"] = "APPROVE"
 +        gate.validate_verification_record(self._path(r))
++
++    def test_verify_refuses_an_APPROVE_ballot_associated_by_either_join(self):
++        """#211: the association is two-sided, so the refusal must be too.
++
++        A ballot cites findings via `finding_ids`; a finding names its reporters via
++        `reported_by` / `also_reported_by`. The record checks each for CONTAINMENT and
++        neither for RECIPROCITY -- nothing requires the two to agree. So an APPROVE
++        ballot could carry `finding_ids: []` while the findings side still asserted it
++        reported an OPEN MAJOR, and a refusal walking only `finding_ids` admitted it.
++        That is the same proposition, reachable from the other side of the join.
++
++        Found by asking what my own criteria did not name (BADF-QA read it; measured here).
++        """
++        r = record()
++        r["ballots"][0]["verdict"] = "APPROVE"
++        r["ballots"][0]["finding_ids"] = []          # association lives only on the finding
++        for row in r["matrix"]:                      # deny the matrix layer an incidental catch
++            if row["result"] == "VERIFIED":
++                row["result"] = "NOT_VERIFIED"
++        with self.assertRaisesRegex(gate.ValidationError, "APPROVE.*(contradicts|OPEN)|VF-001"):
++            gate.validate_verification_record(self._path(r))
++
++        # and the mirror: cited by the ballot, silent on the finding
++        r = record(findings=[finding(reported_by=["BALLOT-OTHER"])])
++        r["ballots"][0]["verdict"] = "APPROVE"
++        r["findings"][0]["reported_by"] = ["BALLOT-001"]
++        with self.assertRaisesRegex(gate.ValidationError, "APPROVE.*(contradicts|OPEN)|VF-001"):
++            gate.validate_verification_record(self._path(r))
 +
      def test_verify_requires_non_coverage_and_refuses_authority(self):
          r = record(non_coverage=[])
