@@ -136,7 +136,10 @@ class BadfBuildContractTests(unittest.TestCase):
         it names and nothing else.
         """
         self.assertEqual(6, len(REFERENCE_ANCHORS), "the six #230 named; a seventh needs its own probe")
-        self.assertTrue(set(REFERENCE_ANCHORS) < REFS,
+        # `<=`, not `<`: a PROPER subset would fail the day someone anchors all fourteen --
+        # a guard that punishes the improvement it exists to encourage. Latent today behind
+        # the exact-count pin above; correct whenever that pin is relaxed. (BADF-QA, #255.)
+        self.assertTrue(set(REFERENCE_ANCHORS) <= REFS,
                         "every anchored name must be a real reference in REFS")
         for name, anchors in REFERENCE_ANCHORS.items():
             text = read(name)
