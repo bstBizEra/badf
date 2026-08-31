@@ -25,6 +25,10 @@
     {
       "type": "documentation",
       "path": "work/WP-2026-0123/evidence/G07/documentation.json"
+    },
+    {
+      "type": "composition",
+      "path": "work/WP-2026-0123/evidence/G07/composition.json"
     }
   ],
   "approvals": [],
@@ -45,6 +49,6 @@
   "risks": [],
   "council": null,
   "disposition": "HUMAN_REQUIRED",
-  "created_at": "2026-08-31T19:31:27Z",
+  "created_at": "2026-08-31T19:44:53Z",
   "held_because": "BADF's own work package WP-2026-0123 at G07: evidence prepared and digest-bound; the independent-reviewer condition C-1 is open under a single collaborator; a human merges. The tool binds evidence, it does not approve."
 }
