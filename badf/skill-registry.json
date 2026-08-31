@@ -320,6 +320,16 @@
       "allowed_tools": [],
       "status": "IMPLEMENTED",
       "digest": "sha256:ee756f404903f223019bb0193b77067cec51def0a1b577c94acc534dbee4e6ff"
+    },
+    {
+      "name": "badf-uat",
+      "source": "skills/badf-uat/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [],
+      "status": "DESIGNED",
+      "digest": "sha256:07a9828032f4869893cd6a8ce1dd131c520623601538244f25f37bb3a812497a"
     }
   ]
 }

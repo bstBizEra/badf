@@ -1755,6 +1755,45 @@ no delegations, and rewriting a landed record to satisfy today's control is the 
 forward. Red-first: the two positive controls failed against the one-sided gate before the fix (5 ran,
 2 failures); mutation: each new branch neutered turns its test red (2/2 killed).
 
+## badf-uat — G10 business-acceptance router freeze (`BADF-WP-0115` / WP-UAT-A, Issue #239 / GOV-0107)
+
+`badf-uat` is frozen (DESIGNED) as the **G10 business-acceptance capability**, and its whole reason to
+exist is one distinction: technical E2E verification proves the system did not crash; UAT proves the
+observed behavior satisfies the business outcome a PRD's acceptance criteria approved. It produces
+**exactly one** of G10's four evidence types — `uat` — never `release-packet` or
+`operational-readiness` (`badf-production-readiness`, Issue #237 / GOV-0105) and never `go-no-go`
+(`release_authority`'s own act, human-reserved in `badf/authority-matrix.json`). Discovered as a real
+gap independently of this freeze (Issue #238 / GOV-0106: `uat` was a required G10 evidence type with no
+producing capability) and filed separately rather than folded silently into either freeze.
+
+The chain it walks: `schemas/prd.schema.json` → `schemas/acceptance-criteria.schema.json` →
+`schemas/requirements.schema.json`, resolved through `schemas/traceability.schema.json`'s existing
+`requirement_to_objective` and `criterion_to_requirement` link maps — this skill **resolves that chain,
+it does not rebuild it**, the same "resolve, don't reperform" discipline `badf-release-validation` holds
+at G09. The one leaf it adds is the UAT Scenario: business-readable, adapter-independent (UAT-I02), with
+execution adapters (browser/API/manual/hybrid) as pure observers — **none registered as a subskill at
+this rung**, the over-engineering risk this WP explicitly refused per its own Stage-Gate note. An
+eight-stage workflow (`RESOLVE ACCEPTANCE BASIS → DERIVE SCENARIOS → SELECT ADAPTER → EXECUTE →
+CLASSIFY DEFECTS → COMPUTE COVERAGE → PACKAGE RECOMMENDATION → HANDOFF TO HUMAN ACCEPTANCE`) and
+fourteen references carry twenty frozen invariants, UAT-I01…UAT-I20: business/exact-candidate/exact-basis
+provenance (I01/I04/I05), scenario ≠ procedure and technical-E2E ≠ UAT (I02/I03), business-readable
+oracle with diagnostics as supplement not substitute (I06/I10), representative actor and context
+(I07/I08), tool output as observation only (I09), a ten-way explicit defect taxonomy where
+`ACCEPTANCE_CRITERION_DEFECT` routes upstream rather than being silently absorbed as an implementation
+bug (I11), mandatory non-coverage and criticality-aware completion — a critical FAIL cannot hide inside
+an aggregate pass percentage (I12/I13), the two-layer artifact separating this skill's *recommendation*
+from a separate human's *acceptance* (I14/I15/I16, the same "the evidence-producer cannot also be the
+decider" principle SEC-I13 and VER-I18 already hold), candidate-change staleness with extend-only
+superseded records (I17), and UAT ≠ go-no-go ≠ deployment (I18/I19). No competing
+`scripts/badf_uat.py`, no typed schema, no `lifecycle.json` change at this rung (I20). External source
+`webapp-uat` (Playwright-based) is confirmed absent from this repository; its execution mechanics are
+adapt-candidate material for a later adapter WP, its definition of "done" is explicitly rejected as this
+skill's definition of "accepted". Ladder-internal at this rung (SKILL + 14 references, registry
+`badf-uat: DESIGNED`, no gate/schema/lifecycle change); WP-UAT-B (typed schemas) and WP-UAT-C
+(deterministic controls, lean disabled — these are HARD INVARIANTS) are shared-surface and go to
+BADF-QA + BADF-REV. Authored by BARCHI-3 as Senior ARCH & ENGIN, on the operator's explicit directive to
+proceed `badf-uat` then `badf-production-readiness`.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
