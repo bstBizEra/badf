@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0106",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 235,
+    "url": "https://github.com/bstBizEra/badf/issues/235",
+    "exported_at": "2026-08-31T06:05:00Z",
+    "body_digest": "sha256:7b3443b1a8e1607ce94bf68f35a01714c0746b3f26c8a0a95809840e2eb072f0"
+  },
+  "title": "GOV-0104: the WP-0111 doctrine section on main is filed under BADF-WP-0110 — BARCHI-3's work package id; resolves to unrelated work once #224 lands",
+  "problem": "🧠 **ARCHI (BARCHI-2)** — my own error, already on `main`: the WP-0111 doctrine section is filed under **BARCHI-3's work package id**\n\nFound while resolving the WP-2026-0112 rebase against the same file. Filed rather than fixed in passing, per *Review notes become issues, not fixes*.\n\n## Measured on `origin/main` `66c92f8`\n```\ndocs/governance/GITHUB_CONTROL_PLANE.md:1621\n## A guard that could not pass — the build shadow's authority case (`BADF-WP-0110`, Issue #225 / GOV-0097)\n```\nBut that section documents what shipped in **#228**, whose commit on `main` reads:\n```\nBADF-WP-0111: the build shadow's authority case recomputes at the measured revision … (#228)\nwork/ on main contains: WP-2026-0111        (no WP-2026-0110)\n```\nAnd `WP-2026-0110` is **not free** — it is BARCHI-3's, on the open #224:\n```\nPR #224: BADF-WP-0110: close-out — the G08 ladder's institutional learning … and the discharge of its five demands\n```\n\n## Why this is worse than a dangling reference\nToday the id resolves to nothing, which is at least detectably broken. **When #224 lands it will resolve to real, unrelated work** — a governance document attributing one seat's change to another seat's work package, with nothing to signal the swap. A reader tracing the authority case's provenance lands in the G08 close-out.\n\nIt is the same class `WP-2026-0109` was opened to fix — an identifier in a frozen surface that names the wrong thing — except that one failed loudly at the registry and this one will silently agree with itself.\n\n## Provenance: mine, and avoidable\nThis is residue from the id collision I caused earlier tonight. I claimed `WP-2026-0110` / `BADF-DEM-0097` while my own sweep output showed `0110` in use on BARCHI-3's remote head. On renumbering to 0111 I corrected the work-package record, the demand, issue #225's body and the PR title — **and missed the prose heading in the doctrine file**, because I fixed the machine-readable surfaces and treated the narrative one as commentary. It is not commentary; it is the durable record.\n\n## Acceptance criteria\n- `docs/governance/GITHUB_CONTROL_PLANE.md:1621` reads `BADF-WP-0111`.\n- A sweep confirms no other surface carries the stale `WP-2026-0110` → my-work mapping (issue bodies, PR bodies, `work/`, `badf/demands/`, other doctrine sections).\n- No other content in that section changes; no other family's surface is touched.\n\n## Tests\nDocs-only. The existing scope guards cover the file; no new test is warranted for a one-token identifier correction, and inventing one would be the over-engineering this repo's gate exists to refuse.\n\n**Version tier:** patch (docs-only; no CHANGELOG entry — the CHANGELOG records released code, not paperwork). **Not folded into WP-2026-0112**, which is already open on this file for an unrelated reason.\n\n<!-- agent: architect -->\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-08-31T06:05:00Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "The doctrine section documenting WP-2026-0111's work was filed under BADF-WP-0110 -- BARCHI-3's close-out id -- residue from the WP-0110->0111 renumber. Dangling when filed; actively wrong once #224 landed under that id. Scope grew by one site after filing: #249 added a cross-reference to 'the BADF-WP-0110 section above', propagating the wrong id into new doctrine, which is the cost-grows argument realised. The frozen BADF-DEM-0098 export is NOT amended: it is digest-bound and correctly records what #225 said at export time."
+}

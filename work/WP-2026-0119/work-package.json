@@ -1,0 +1,88 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0119",
+  "title": "The doctrine section documenting WP-2026-0111 is filed under BADF-WP-0110 — another seat's work package id",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0106",
+  "repository": "bstBizEra/badf",
+  "objective": "Correct the identifier in the GITHUB_CONTROL_PLANE.md section that documents what shipped in #228 (WP-2026-0111): its heading and one cross-reference both name `BADF-WP-0110`, which is BARCHI-3's G08 close-out. Correct the matching stale comment in tests/test_badf_build_shadow.py. Three sites, two files. No behaviour changes; no frozen record is amended.",
+  "business_value": "The id was dangling when filed and became actively wrong once #224 landed as WP-2026-0110: a reader tracing the authority-case provenance now arrives at real but unrelated work. The cost is demonstrably compounding -- #249 read the mislabelled heading and propagated `BADF-WP-0110` into a NEW cross-reference at line 1754, so the misattribution was spreading into fresh doctrine, not sitting still.",
+  "in_scope": [
+    "docs/governance/GITHUB_CONTROL_PLANE.md: section heading `BADF-WP-0110` -> `BADF-WP-0111`",
+    "docs/governance/GITHUB_CONTROL_PLANE.md: cross-reference '`BADF-WP-0110` section above refuses' -> `BADF-WP-0111` (added by #249 after this issue was filed)",
+    "tests/test_badf_build_shadow.py: docstring comment 'Fixed under WP-2026-0110 / #225' -> WP-2026-0111",
+    "reconcile WP-2026-0118 (gate-forced; landed d910e12)"
+  ],
+  "out_of_scope": [
+    "badf/demands/BADF-DEM-0098.json and BADF-DEM-0097.json: frozen exports, digest-bound, correctly recording what their issues said at export time; amending them to tidy an identifier would break their own binding",
+    "work/WP-2026-0110/**: the REAL WP-2026-0110 (BARCHI-3's close-out) -- correct as it stands",
+    "work/WP-2026-0112/** and work/WP-2026-0116/**: their WP-0110 references are accurate (a reconcile actually performed, and a renumber history note)",
+    "PR #228's body: immutable landed history"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "Zero literal `BADF-WP-0110` / `WP-2026-0110` outside work/WP-2026-0110/**, badf/demands/**, badf/lockfile.json, and the accurate references in work/WP-2026-011{2,6}/**",
+    "badf/demands/BADF-DEM-0098.json byte-identical to origin/main and its body_digest still verifies -- measured, not assumed",
+    "tests/test_badf_build_shadow.py passes unchanged in behaviour (comment-only edit)"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_build_shadow.py (7 tests, green -- comment-only change, no behavioural delta expected)"
+  ],
+  "evidence": [
+    "before: surface absent -> Ran 1 test OK in 0.005s (vacuous)",
+    "after: surface absent -> AssertionError at import / FAILED (errors=1) under discover",
+    "references emptied -> FAILED (failures=2, errors=6)",
+    "intact -> 10 OK; every probe restored byte-identical"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "d910e12"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Docs-lane C1. Routed by SARCHI under the operator's dispatch; doubly mine by provenance -- the same WP-0110->0111 renumber produced this misattribution AND the stale expected_surfaces declaration in my landed WP-2026-0111 that SARCHI found while building #249. Ids swept across five surfaces and ASKED for: the sweep could not see 0117/0118 (unpushed), so 0119/DEM-0106 was bound on SARCHI's ask, published on #235 before any edit, and confirmed against BARCHI-1 who took 0120. Originally carried WP-2026-0116's reconcile; BARCHI-3's #241 landed it first (da3c28d), so that copy collapsed to a byte-identical no-op and was pruned from expected_surfaces in the same pass -- the exact discipline WP-2026-0116's own two-sided control now enforces, applied to itself. Rebuilt on c525129 and rebuilt four times as the queue moved (da3c28d -> c525129 -> 95613a5 -> d910e12); each rebuild the prior reconcile collapsed byte-identically and was pruned from expected_surfaces in the same pass, and it now carries WP-2026-0118's, taken from the gate rather than by claim.",
+  "expected_surfaces": {
+    "files": [
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "tests/test_badf_build_shadow.py",
+      "badf/demands/BADF-DEM-0106.json",
+      "work/WP-2026-0118/work-package.json"
+    ]
+  },
+  "test_obligations": [
+    {
+      "id": "TEST-001",
+      "claim": "the stale identifier is gone from every live surface, while the frozen digest-bound export retains it unchanged",
+      "level": "contract"
+    },
+    {
+      "id": "TEST-002",
+      "claim": "the build-shadow suite is behaviourally unchanged by the docstring edit",
+      "level": "unit"
+    }
+  ],
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "tdd_exception": {
+    "reason": "Docs-lane C1: the change is three identifier tokens -- two in a Markdown heading and cross-reference, one inside a Python docstring. None is executable, so there is no state in which a test could be red before the edit and green after; a manufactured red phase would be theatre. The obligations here are REGRESSION claims (the frozen digest-bound export stays byte-identical; the build-shadow suite is behaviourally unchanged), and both are verified by running the existing suites unchanged rather than by a new failing-first observation. The substantive assertion for this WP is NEGATIVE -- zero residual stale identifiers outside the frozen set -- and it is measured in the PR body and at review."
+  }
+}
