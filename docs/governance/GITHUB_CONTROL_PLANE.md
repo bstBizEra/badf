@@ -1844,6 +1844,47 @@ internal at this rung; WP-PRDY-B (typed schemas) and WP-PRDY-C (deterministic co
 — HARD INVARIANTS**) are shared-surface and go to BADF-QA + BADF-REV. Registry
 `badf-production-readiness: DESIGNED`. Authored by BARCHI-3 as Senior ARCH & ENGIN.
 
+## The id-allocation protocol — six surfaces, one binding mechanism (`BADF-WP-0118`, Issue #227 / GOV-0098)
+
+Five id incidents in 48 hours — three live collisions (the third-actor `WP-2026-0073` poisoning; the
+`WP-2026-0110`/`BADF-DEM-0097` double-claim bound only in an unlanded PR tree; the `WP-2026-0113`/
+`BADF-DEM-0100` claim published only in an issue body) and two seat-sweep defects (a title-blind sweep;
+a `DEM-00xx` regex structurally unable to match ids ≥ 0100) — established that the sweep convention,
+scattered across issue threads, does not survive contact with concurrent seats. This section replaces it.
+
+**The surfaces are six.** ① the landed ledgers (`work/`, `badf/demands/`) · ② remote branch heads ·
+③ open-PR file lists · ④ issue/PR **bodies** · ⑤ the shared clone’s `git worktree list` · ⑥ the negative
+one: an **independent clone is invisible to all of the above** — no seventh sweep closes it. The
+conclusion runs the other way: **the published issue claim is the binding mechanism.** Sweeps bound the
+risk; publishing binds. Measure, ask the seats (the only instrument that sees unpushed work), publish
+the claim on an issue, and only then bind ids into any artifact.
+
+**`scripts/badf_id_sweep.py` mechanizes the remote-visible half.** Deterministic and offline (CI has no
+network; a sweep that silently degrades when `gh` fails reports clean scans it never ran), it reads four
+dump files from `--from-dir` and encodes four properties as structure: claims are only what claim-shaped
+surfaces show (ledger paths, branch refs, PR file lists), each **named with its source**; body strings
+are **MENTIONS**, surfaced for reading and never folded into next-free — prose may *carry* a binding
+claim, which is exactly why a human reads it rather than a regex trusting it; the sentinel exclusions
+(`0997`–`0999` fixtures, `9999` sanctioned; `0900` deliberately absent — cited once, retracted as
+unverified) are printed, never silent; and the run **refuses to report unless it can see the
+known-present anchors** — an empty scan and a clean scan are otherwise identical output. Every report
+ends with the non-coverage trailer naming surfaces ⑤ and ⑥. Producing the dumps:
+
+```bash
+D=$(mktemp -d)
+{ ls work/; ls badf/demands/; } > $D/ledger.txt
+git ls-remote --heads origin > $D/branches.txt
+for pr in $(gh pr list --state open --json number --jq '.[].number'); do
+  gh api repos/bstBizEra/badf/pulls/$pr/files --jq '.[].filename'; done > $D/pr_files.txt
+gh api -X GET search/issues -f q='repo:bstBizEra/badf "WP-2026"' --jq '.items[].body' > $D/bodies.txt
+python3 scripts/badf_id_sweep.py --from-dir $D
+```
+
+**GitHub search is a tokenizer, not a grepper**: it returns fuzzy hits, so any body-search result is
+verified by literal grep before it is believed (four false positives in one allocation tonight).
+GOV ids have no file-backed claim surface at all — the tool reports them as prose-derived observations,
+labelled as such, and GOV allocation always requires reading.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

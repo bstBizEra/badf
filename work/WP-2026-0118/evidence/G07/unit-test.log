@@ -1,0 +1,6 @@
+python3 -m unittest tests.test_badf_id_sweep  # at base 95613a5
+.......
+----------------------------------------------------------------------
+Ran 7 tests in 0.158s
+
+OK

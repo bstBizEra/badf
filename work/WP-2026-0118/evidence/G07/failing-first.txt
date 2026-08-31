@@ -1,0 +1,78 @@
+FFFFFFF
+======================================================================
+FAIL: test_branch_ref_claim_is_reported_claimed (tests.test_badf_id_sweep.ClaimSurfaceTests.test_branch_ref_claim_is_reported_claimed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_id_sweep.py", line 64, in test_branch_ref_claim_is_reported_claimed
+    r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+                      ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0 : /opt/bst-sa/.venv/bin/python3: can't open file '/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/scripts/badf_id_sweep.py': [Errno 2] No such file or directory
+
+
+======================================================================
+FAIL: test_ids_at_or_above_0100_are_matched (tests.test_badf_id_sweep.ClaimSurfaceTests.test_ids_at_or_above_0100_are_matched)
+BADF-QA's own sweep defect: a DEM-00xx regex cannot see DEM-0104.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_id_sweep.py", line 72, in test_ids_at_or_above_0100_are_matched
+    r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+                      ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0 : /opt/bst-sa/.venv/bin/python3: can't open file '/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/scripts/badf_id_sweep.py': [Errno 2] No such file or directory
+
+
+======================================================================
+FAIL: test_open_pr_file_claim_is_reported_claimed_with_its_source (tests.test_badf_id_sweep.ClaimSurfaceTests.test_open_pr_file_claim_is_reported_claimed_with_its_source)
+The 0110/0097 shape: an id bound only in a pushed-but-unlanded PR tree.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_id_sweep.py", line 57, in test_open_pr_file_claim_is_reported_claimed_with_its_source
+    r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+                      ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0 : /opt/bst-sa/.venv/bin/python3: can't open file '/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/scripts/badf_id_sweep.py': [Errno 2] No such file or directory
+
+
+======================================================================
+FAIL: test_body_mention_is_separated_and_does_not_advance_next_free (tests.test_badf_id_sweep.MentionSeparationTests.test_body_mention_is_separated_and_does_not_advance_next_free)
+The 0113/0100 shape: prose may CARRY a binding claim, so mentions are surfaced
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_id_sweep.py", line 82, in test_body_mention_is_separated_and_does_not_advance_next_free
+    r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+                      ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0 : /opt/bst-sa/.venv/bin/python3: can't open file '/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/scripts/badf_id_sweep.py': [Errno 2] No such file or directory
+
+
+======================================================================
+FAIL: test_every_report_ends_by_naming_the_blind_half (tests.test_badf_id_sweep.NonCoverageTests.test_every_report_ends_by_naming_the_blind_half)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_id_sweep.py", line 118, in test_every_report_ends_by_naming_the_blind_half
+    r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+                      ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0 : /opt/bst-sa/.venv/bin/python3: can't open file '/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/scripts/badf_id_sweep.py': [Errno 2] No such file or directory
+
+
+======================================================================
+FAIL: test_report_is_refused_when_the_known_present_anchors_are_invisible (tests.test_badf_id_sweep.PositiveControlTests.test_report_is_refused_when_the_known_present_anchors_are_invisible)
+An empty scan and a clean scan are identical in output; the sweep must prove
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_id_sweep.py", line 112, in test_report_is_refused_when_the_known_present_anchors_are_invisible
+    self.assertIn("POSITIVE CONTROL", r.stdout + r.stderr)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'POSITIVE CONTROL' not found in "/opt/bst-sa/.venv/bin/python3: can't open file '/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/scripts/badf_id_sweep.py': [Errno 2] No such file or directory\n"
+
+======================================================================
+FAIL: test_sentinels_are_excluded_from_next_free_and_declared_in_output (tests.test_badf_id_sweep.SentinelTests.test_sentinels_are_excluded_from_next_free_and_declared_in_output)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_id_sweep.py", line 96, in test_sentinels_are_excluded_from_next_free_and_declared_in_output
+    r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+                      ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0 : /opt/bst-sa/.venv/bin/python3: can't open file '/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/scripts/badf_id_sweep.py': [Errno 2] No such file or directory
+
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.088s
+
+FAILED (failures=7)

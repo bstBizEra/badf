@@ -1,0 +1,381 @@
+diff --git a/badf/demands/BADF-DEM-0105.json b/badf/demands/BADF-DEM-0105.json
+new file mode 100644
+index 0000000..2a144e5
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0105.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0105",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 227,
++    "url": "https://github.com/bstBizEra/badf/issues/227",
++    "exported_at": "2026-08-31T08:59:47Z",
++    "body_digest": "sha256:0194e25987bbd0b6b9b73f8d1332600f6e96e6da7824b7b282799cdf97d48be2"
++  },
++  "title": "GOV-0098: the id sweep misses ids bound only in an unlanded tree -- add open-PR file lists as a fourth surface",
++  "problem": "\ud83e\udde0 **ARCHI (BARCHI-3)** \u2014 the id sweep misses ids that exist only in an unlanded tree; make the open-PR file list part of the protocol\n\n## Observed\n\nOn 2026-08-30 two seats independently allocated **`WP-2026-0110`** and **`BADF-DEM-0097`** within the hour (#224 and #226). Both PRs wrote `work/WP-2026-0110/` and `badf/demands/BADF-DEM-0097.json` with **different content**; whichever landed second would have silently overwritten the other's work-package record, G07 gate dossier, composition record, build ledger and authority anchor. Caught by BADF-QA before either merged.\n\nThe existing convention (`main` + every remote head + issues/PR titles \u2014 the `BADF-DEM-0065` lesson of 2026-08-29) is real and was followed. It is not sufficient: **a work package's id lives in `work/<WP>/` and `badf/demands/` on a branch that may be pushed but unlanded, and it appears in no title, no body and no `main` tree.** The high-water sweep returns the last *landed* id and hands out one that is already bound to a dossier somewhere.\n\n## Expected \u2014 add a fourth surface\n\n```bash\nfor pr in $(gh pr list --state open --json number --jq '.[].number'); do\n  gh api repos/<owner>/<repo>/pulls/$pr/files --jq '.[].filename'\ndone | grep -oE 'WP-2026-[0-9]{4}|DEM-[0-9]{4}' | sort -u\n```\n\nRun alongside the three existing surfaces. It catches exactly the class that collided here \u2014 an id bound in a pushed-but-unmerged tree \u2014 and it is the cheapest of the four.\n\n**It still does not see everything, and the gap is not closable by tooling:** ids claimed in a *local, unpushed* worktree are invisible to every remote query. That is why the **ask-the-other-seats half of measure-then-ask is not a courtesy** \u2014 it is the only instrument that sees unpushed work. Both halves are load-bearing and neither substitutes for the other.\n\n## Why this is worth a control rather than lore\n\n`main` (and even `main` + heads) is a **proxy** for \"every claimed id\"; the property is \"no other tree has bound this id\". The proxy can be true while the property is false \u2014 which is the defect class recorded in `docs/learnings/a-guard-that-cannot-fail-is-not-a-guard.md`, here applied to id allocation. A green sweep attested availability over an id that was already bound.\n\n## Candidate shapes, cheapest first\n\n1. Document the four-surface sweep (this issue) and use it \u2014 zero machinery.\n2. A `badf_gate.py` helper that prints the next free triple from all four surfaces, so the sweep is one command rather than a remembered pipeline.\n3. A CI check on `pull_request` that fails when the PR's declared `Work-Package:` id or any `badf/demands/*.json` it adds already appears in **another open PR's** file list. This is the structural version: it makes the collision impossible to merge rather than merely unlikely to be created, and it fires on the exact condition that occurred.\n\nNot urgent \u2014 the live collision is resolved (#226 renumbered to `WP-2026-0111` / `BADF-DEM-0098` by its author). Filed so the sweep becomes protocol rather than tonight's lore, at BARCHI-2's suggestion. Ids for the implementing WP to be claimed at that time under the (now four-surface) protocol.\n\n<!-- agent: architect -->\n",
++  "status": "AUTHORIZED",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "recorded_at": "2026-08-31T08:59:47Z",
++  "note": "The id-allocation sweep exists only as convention scattered across issue threads; it has failed three times (third-actor 0073, the 0110/0097 double-claim this issue records, the 0113/0100 body-claim collision) plus two seat-sweep defects in one night (title-blind sweep; DEM-00xx regex structurally unable to match >=0100). Remediated by WP-2026-0118: scripts/badf_id_sweep.py (deterministic, offline-testable, mentions!=claims, declared sentinel exclusions, positive-control-before-negatives, non-coverage trailer every run) + a doctrine section replacing the thread-scattered protocol. Operator authorization: dispatch directive of 2026-08-31 ('Dispatch on your team' / 'proceed on your call'). Ids claimed on #227 comment 5476087587 after ceding 0117/0104 to BARCHI-3 per claim-by-publishing."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 5f1a008..764707b 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1844,6 +1844,47 @@ internal at this rung; WP-PRDY-B (typed schemas) and WP-PRDY-C (deterministic co
+ — HARD INVARIANTS**) are shared-surface and go to BADF-QA + BADF-REV. Registry
+ `badf-production-readiness: DESIGNED`. Authored by BARCHI-3 as Senior ARCH & ENGIN.
+ 
++## The id-allocation protocol — six surfaces, one binding mechanism (`BADF-WP-0118`, Issue #227 / GOV-0098)
++
++Five id incidents in 48 hours — three live collisions (the third-actor `WP-2026-0073` poisoning; the
++`WP-2026-0110`/`BADF-DEM-0097` double-claim bound only in an unlanded PR tree; the `WP-2026-0113`/
++`BADF-DEM-0100` claim published only in an issue body) and two seat-sweep defects (a title-blind sweep;
++a `DEM-00xx` regex structurally unable to match ids ≥ 0100) — established that the sweep convention,
++scattered across issue threads, does not survive contact with concurrent seats. This section replaces it.
++
++**The surfaces are six.** ① the landed ledgers (`work/`, `badf/demands/`) · ② remote branch heads ·
++③ open-PR file lists · ④ issue/PR **bodies** · ⑤ the shared clone’s `git worktree list` · ⑥ the negative
++one: an **independent clone is invisible to all of the above** — no seventh sweep closes it. The
++conclusion runs the other way: **the published issue claim is the binding mechanism.** Sweeps bound the
++risk; publishing binds. Measure, ask the seats (the only instrument that sees unpushed work), publish
++the claim on an issue, and only then bind ids into any artifact.
++
++**`scripts/badf_id_sweep.py` mechanizes the remote-visible half.** Deterministic and offline (CI has no
++network; a sweep that silently degrades when `gh` fails reports clean scans it never ran), it reads four
++dump files from `--from-dir` and encodes four properties as structure: claims are only what claim-shaped
++surfaces show (ledger paths, branch refs, PR file lists), each **named with its source**; body strings
++are **MENTIONS**, surfaced for reading and never folded into next-free — prose may *carry* a binding
++claim, which is exactly why a human reads it rather than a regex trusting it; the sentinel exclusions
++(`0997`–`0999` fixtures, `9999` sanctioned; `0900` deliberately absent — cited once, retracted as
++unverified) are printed, never silent; and the run **refuses to report unless it can see the
++known-present anchors** — an empty scan and a clean scan are otherwise identical output. Every report
++ends with the non-coverage trailer naming surfaces ⑤ and ⑥. Producing the dumps:
++
++```bash
++D=$(mktemp -d)
++{ ls work/; ls badf/demands/; } > $D/ledger.txt
++git ls-remote --heads origin > $D/branches.txt
++for pr in $(gh pr list --state open --json number --jq '.[].number'); do
++  gh api repos/bstBizEra/badf/pulls/$pr/files --jq '.[].filename'; done > $D/pr_files.txt
++gh api -X GET search/issues -f q='repo:bstBizEra/badf "WP-2026"' --jq '.items[].body' > $D/bodies.txt
++python3 scripts/badf_id_sweep.py --from-dir $D
++```
++
++**GitHub search is a tokenizer, not a grepper**: it returns fuzzy hits, so any body-search result is
++verified by literal grep before it is believed (four false positives in one allocation tonight).
++GOV ids have no file-backed claim surface at all — the tool reports them as prose-derived observations,
++labelled as such, and GOV allocation always requires reading.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/scripts/badf_id_sweep.py b/scripts/badf_id_sweep.py
+new file mode 100644
+index 0000000..9cebfca
+--- /dev/null
++++ b/scripts/badf_id_sweep.py
+@@ -0,0 +1,142 @@
++"""badf_id_sweep -- the id-allocation sweep, mechanized (GOV-0098 / #227, WP-2026-0118).
++
++Reads surface DUMP FILES from --from-dir and reports, per id family, what is CLAIMED
++(with the source surface named), what is merely MENTIONED in prose, the declared
++sentinel exclusions, and the next-free candidate -- then names what it cannot see.
++
++Deterministic and offline by design: this repository's CI has neither network nor
++credentials, and a sweep that silently degrades when `gh` fails would report clean
++scans it never performed. The dumps are produced by the operator/seat (one-liners in
++GITHUB_CONTROL_PLANE.md, section "The id-allocation protocol"):
++
++  ledger.txt    ls work/ ; ls badf/demands/            (claim-shaped)
++  branches.txt  git ls-remote --heads origin           (claim-shaped)
++  pr_files.txt  gh api repos/<r>/pulls/<N>/files ...   (claim-shaped, per open PR)
++  bodies.txt    gh issue/pr bodies, concatenated       (prose: MENTIONS only)
++
++Four properties are structure, not convention:
++- MENTIONS are never folded into next-free. Prose may CARRY a binding claim (the
++  0113/0100 collision was claimed in an issue body) -- which is exactly why mentions
++  are printed for reading rather than trusted to a regex: a body string that merely
++  DISCUSSES an id (the #199 sentinel discussion) is indistinguishable from one that
++  claims it. The human reads; the tool refuses to guess.
++- Sentinels are excluded from next-free and DECLARED in the output. 0900 is absent
++  from the list deliberately: it was cited once and retracted as unverified.
++- POSITIVE CONTROL before any negative: the sweep refuses to report unless it can see
++  ids known to be present on main forever. An empty scan and a clean scan are
++  otherwise identical.
++- Every report ends with the NON-COVERAGE trailer. Unpushed worktrees and independent
++  clones are invisible to every surface above; the published issue claim is the
++  binding mechanism and this sweep only bounds the risk.
++"""
++from __future__ import annotations
++
++import argparse
++import re
++import sys
++from pathlib import Path
++
++FAMILIES = {
++    "WP-2026": re.compile(r"\bWP-2026-(\d{4})\b"),
++    "BADF-DEM": re.compile(r"\bBADF-DEM-(\d{4})\b"),
++    "GOV": re.compile(r"\bGOV-(\d{4})\b"),
++}
++# 9999 is the sanctioned synthetic sentinel (GOV-0085); 0997-0999 are test fixtures
++# named in #199 as the same latent class. 0900 is deliberately NOT here: unverified.
++SENTINELS = ("0997", "0998", "0999", "9999")
++CLAIM_SURFACES = ("ledger", "branches", "pr_files")
++PROSE_SURFACES = ("bodies",)
++# Present on main since 2026-08-30; if a scan cannot see these, it cannot see.
++ANCHORS = (("WP-2026", "0110"), ("BADF-DEM", "0097"), ("GOV", "0097"))
++TRAILER = ("NON-COVERAGE: unpushed worktrees and independent clones are invisible to every "
++           "surface above; ask the seats, then PUBLISH the claim on an issue before binding. "
++           "The published claim is the binding mechanism -- this sweep only bounds the risk.")
++
++
++def scan(surfaces: dict[str, str]) -> dict[str, dict[str, object]]:
++    """Per family: {'claimed': {num: source}, 'mentions': {num}} from the dump texts."""
++    report: dict[str, dict[str, object]] = {}
++    for fam, rx in FAMILIES.items():
++        claimed: dict[str, str] = {}
++        mentions: set[str] = set()
++        for name in CLAIM_SURFACES:
++            for num in rx.findall(surfaces.get(name, "")):
++                claimed.setdefault(num, name)
++        for name in PROSE_SURFACES:
++            for num in rx.findall(surfaces.get(name, "")):
++                if num not in claimed:
++                    mentions.add(num)
++        report[fam] = {"claimed": claimed, "mentions": mentions}
++    return report
++
++
++def next_free(claimed: dict[str, str]) -> str:
++    """Highest non-sentinel claim + 1, skipping sentinels. Claim-shaped surfaces only."""
++    live = [int(n) for n in claimed if n not in SENTINELS]
++    n = (max(live) + 1) if live else 1
++    while f"{n:04d}" in SENTINELS:
++        n += 1
++    return f"{n:04d}"
++
++
++def positive_control(report: dict[str, dict[str, object]]) -> list[str]:
++    """The anchors the scan must be able to see (claimed or mentioned) before any
++    negative is trusted."""
++    missing = []
++    for fam, num in ANCHORS:
++        entry = report[fam]
++        if num not in entry["claimed"] and num not in entry["mentions"]:
++            missing.append(f"{fam}-{num}")
++    return missing
++
++
++def render(report: dict[str, dict[str, object]]) -> str:
++    lines = ["BADF ID SWEEP (surfaces: " + ", ".join(CLAIM_SURFACES + PROSE_SURFACES) + ")"]
++    lines.append("POSITIVE CONTROL: PASS (anchors visible: "
++                 + ", ".join(f"{f}-{n}" for f, n in ANCHORS) + ")")
++    for fam, entry in report.items():
++        claimed: dict[str, str] = entry["claimed"]  # type: ignore[assignment]
++        mentions: set[str] = entry["mentions"]  # type: ignore[assignment]
++        lines.append(f"== {fam} ==")
++        if fam == "GOV":
++            # GOV has no file-backed claim surface: numbers live in titles and prose.
++            observed = sorted(set(claimed) | mentions)
++            lines.append("OBSERVED USES (prose-derived; GOV has no file-backed claim surface"
++                         " -- READ BEFORE BINDING): "
++                         + (", ".join(f"GOV-{n}" for n in observed) or "none"))
++            continue
++        lines.append("CLAIMED: " + (", ".join(f"{fam}-{n} ({src})" for n, src in sorted(claimed.items())) or "none"))
++        lines.append("SENTINELS EXCLUDED: " + " ".join(SENTINELS))
++        lines.append(f"NEXT FREE (claim-shaped surfaces only): {fam}-{next_free(claimed)}")
++        lines.append("MENTIONS (prose may carry a binding claim -- READ BEFORE BINDING): "
++                     + (", ".join(f"{fam}-{n}" for n in sorted(mentions)) or "none"))
++    lines.append(TRAILER)
++    return "\n".join(lines)
++
++
++def main(argv: list[str] | None = None) -> int:
++    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
++    ap.add_argument("--from-dir", required=True, type=Path,
++                    help="directory holding ledger.txt, branches.txt, pr_files.txt, bodies.txt")
++    args = ap.parse_args(argv)
++    surfaces = {}
++    for name in CLAIM_SURFACES + PROSE_SURFACES:
++        p = args.from_dir / f"{name}.txt"
++        if not p.is_file():
++            print(f"BADF ID SWEEP FAIL: missing surface dump {p.name}; a sweep that skips a "
++                  f"surface silently is the class this tool exists to close", file=sys.stderr)
++            return 1
++        surfaces[name] = p.read_text(encoding="utf-8", errors="replace")
++    report = scan(surfaces)
++    missing = positive_control(report)
++    if missing:
++        print("BADF ID SWEEP FAIL: POSITIVE CONTROL failed -- known-present anchors invisible: "
++              + ", ".join(missing) + "; an empty scan and a clean scan are identical, so no "
++              "allocation advice is offered from a scan that cannot see")
++        return 1
++    print(render(report))
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/tests/test_badf_id_sweep.py b/tests/test_badf_id_sweep.py
+new file mode 100644
+index 0000000..184253c
+--- /dev/null
++++ b/tests/test_badf_id_sweep.py
+@@ -0,0 +1,126 @@
++"""GOV-0098 (#227, WP-2026-0118): the id-allocation sweep, mechanized.
++
++The sweep failed five ways in 48 hours: three live collisions (the third-actor 0073
++poisoning, the 0110/0097 double-claim bound only in an unlanded PR tree, the 0113/0100
++claim published only in an issue body) and two seat-sweep defects (a title-blind sweep;
++a `DEM-00xx` regex structurally unable to match ids >= 0100). Each shape is a fixture
++here, red-observed before the tool existed. The tool is deterministic and offline: it
++reads surface DUMP FILES (--from-dir), never the network -- CI has neither gh nor
++credentials, and the doctrine section documents the one-liners that produce the dumps.
++
++Four properties are structure, not convention (BADF-QA's handover, #227):
++mentions are never claims (prose may CARRY a binding claim, so mentions are surfaced
++for reading, never folded into next-free); sentinel exclusions are declared in the
++output; a report is refused unless the sweep can see its known-present anchors (an
++empty scan and a clean scan are otherwise identical); and every report ends by naming
++the blind half -- unpushed worktrees and independent clones -- out loud.
++"""
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[1]
++TOOL = ROOT / "scripts" / "badf_id_sweep.py"
++
++# Known-present-forever anchors on this repository's main (the positive control set).
++ANCHORS = ("WP-2026-0110", "BADF-DEM-0097", "GOV-0097")
++
++
++class _SweepFixture(unittest.TestCase):
++    def setUp(self):
++        self.dir = Path(tempfile.mkdtemp(prefix="badf-idsweep-"))
++        self.addCleanup(lambda: __import__("shutil").rmtree(self.dir, ignore_errors=True))
++        # Default surfaces: anchors visible, one landed WP, nothing exotic.
++        self.write("ledger.txt", "work/WP-2026-0110\nbadf/demands/BADF-DEM-0097.json\n")
++        self.write("branches.txt", "0" * 40 + "\trefs/heads/main\n")
++        self.write("pr_files.txt", "")
++        self.write("bodies.txt", "GOV-0097 governs the double-claim episode.\n")
++
++    def write(self, name, text):
++        (self.dir / name).write_text(text, encoding="utf-8")
++
++    def append(self, name, text):
++        with open(self.dir / name, "a", encoding="utf-8") as f:
++            f.write(text)
++
++    def sweep(self):
++        return subprocess.run([sys.executable, str(TOOL), "--from-dir", str(self.dir)],
++                              capture_output=True, text=True, cwd=ROOT)
++
++
++class ClaimSurfaceTests(_SweepFixture):
++    def test_open_pr_file_claim_is_reported_claimed_with_its_source(self):
++        """The 0110/0097 shape: an id bound only in a pushed-but-unlanded PR tree."""
++        self.append("pr_files.txt", "work/WP-2026-0555/work-package.json\n")
++        r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        claimed = [l for l in r.stdout.splitlines() if "CLAIMED" in l and "WP-2026-0555" in l]
++        self.assertTrue(claimed, r.stdout)
++        self.assertIn("pr_files", claimed[0], "a claim must name its source surface")
++
++    def test_branch_ref_claim_is_reported_claimed(self):
++        self.append("branches.txt", "a" * 40 + "\trefs/heads/wp/WP-2026-0666-some-slug\n")
++        r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        claimed = [l for l in r.stdout.splitlines() if "CLAIMED" in l and "WP-2026-0666" in l]
++        self.assertTrue(claimed, r.stdout)
++        self.assertIn("branches", claimed[0])
++
++    def test_ids_at_or_above_0100_are_matched(self):
++        """BADF-QA's own sweep defect: a DEM-00xx regex cannot see DEM-0104."""
++        self.append("ledger.txt", "badf/demands/BADF-DEM-0104.json\n")
++        r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        self.assertTrue(any("CLAIMED" in l and "BADF-DEM-0104" in l for l in r.stdout.splitlines()), r.stdout)
++
++
++class MentionSeparationTests(_SweepFixture):
++    def test_body_mention_is_separated_and_does_not_advance_next_free(self):
++        """The 0113/0100 shape: prose may CARRY a binding claim, so mentions are surfaced
++        for human reading -- but a body string must never advance the high-water mark
++        (BADF-QA's sweep read #199's sentinel DISCUSSION as high-water 0997)."""
++        self.append("bodies.txt", "Planning notes discuss WP-2026-0777 hypothetically.\n")
++        r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        out = r.stdout
++        mention = [l for l in out.splitlines() if "MENTIONS" in l or "WP-2026-0777" in l]
++        self.assertTrue(any("WP-2026-0777" in l for l in mention), out)
++        self.assertFalse(any("CLAIMED" in l and "WP-2026-0777" in l for l in out.splitlines()), out)
++        self.assertIn("NEXT FREE", out)
++        self.assertIn("WP-2026-0111", out, "next-free computes from claim-shaped surfaces only")
++        self.assertNotIn("WP-2026-0778", out)
++        self.assertIn("READ BEFORE BINDING", out, "mentions carry the read-before-binding banner")
++
++
++class SentinelTests(_SweepFixture):
++    def test_sentinels_are_excluded_from_next_free_and_declared_in_output(self):
++        self.append("ledger.txt", "work/WP-2026-0999\n")
++        r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        self.assertIn("SENTINELS EXCLUDED", r.stdout)
++        self.assertIn("0999", r.stdout.split("SENTINELS EXCLUDED", 1)[1].splitlines()[0])
++        self.assertIn("WP-2026-0111", r.stdout, "0999 is a fixture sentinel, not the high-water mark")
++        self.assertNotIn("WP-2026-1000", r.stdout)
++        self.assertNotIn("0900", r.stdout, "0900 is unverified (retracted), not a declared sentinel")
++
++
++class PositiveControlTests(_SweepFixture):
++    def test_report_is_refused_when_the_known_present_anchors_are_invisible(self):
++        """An empty scan and a clean scan are identical in output; the sweep must prove
++        it can SEE before any negative is trusted."""
++        self.write("ledger.txt", "work/WP-2026-0555\n")  # anchors gone
++        self.write("bodies.txt", "no anchors here\n")
++        r = self.sweep()
++        self.assertNotEqual(r.returncode, 0, r.stdout)
++        self.assertIn("POSITIVE CONTROL", r.stdout + r.stderr)
++        self.assertNotIn("NEXT FREE", r.stdout, "no allocation advice from a scan that cannot see")
++
++
++class NonCoverageTests(_SweepFixture):
++    def test_every_report_ends_by_naming_the_blind_half(self):
++        r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        tail = "\n".join(r.stdout.splitlines()[-4:])
++        self.assertIn("NON-COVERAGE", tail)
++        for word in ("worktree", "clone", "publish"):
++            self.assertIn(word, tail.lower(), tail)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0114/work-package.json b/work/WP-2026-0114/work-package.json
+index ee01e7f..f5d904a 100644
+--- a/work/WP-2026-0114/work-package.json
++++ b/work/WP-2026-0114/work-package.json
+@@ -44,12 +44,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR (registry entry + skill removed)"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "wp/WP-2026-0114-production-readiness-contract-freeze",
+     "base_revision": "c525129",
+-    "composition_verified": false
++    "composition_verified": true,
++    "landed_content_tree": "ccc28174dede57209d9458bd505dc254ec2386e5",
++    "landed_as": "95613a5baa6b7741b5ddcd3dad3f8a148b02f2d1"
+   },
+   "note": "Ladder-internal DESIGNED contract freeze (SKILL + references, no gate/schema/lifecycle) -> no BADF-QA/BADF-REV review required at A, by the precedent BADF-REV verified across #190/#198/#213; WP-PRDY-B and WP-PRDY-C are shared-surface -> QA+REV. The 24 invariants are frozen VERBATIM from the operator's design message, extracted from the transcript rather than paraphrased. Both external sources were characterized from the operator's directive, NOT independently fetched -- declared in external-methodology.md rather than implied. Authored by BARCHI-3 as Senior ARCH & ENGIN, on the operator's explicit directive to proceed badf-uat then badf-production-readiness. Ids WP-2026-0114/DEM-0101/GOV-0105, re-swept across all four surfaces before binding (0 collisions). Queues behind WP-2026-0115 (#241) and BARCHI-1's WP-VAL-B rebase; expect one registry-adjacent rebase and a G07 regeneration since source-change.diff is base-bound. Delivery ladder WP-PRDY-A(DESIGNED)->B(IMPLEMENTED)->C(VALIDATED, lean disabled)->D(SHADOWED, likely representative)->E(release_authority admission ACTIVE); PRDY-I19..I22 hold at every rung including ACTIVE."
+ }
