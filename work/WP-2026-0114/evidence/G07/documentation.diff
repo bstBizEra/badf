@@ -1,10 +1,10 @@
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 47c9131..f283923 100644
+index 1ab6030..e9a3068 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -1667,6 +1667,56 @@ hit**: applied to the `badf-engineering-verification` modules it correctly found
- already assert counts before iterating. A detection rule that has only ever fired is as suspect as a
- guard that never does.
+@@ -1721,6 +1721,56 @@ fixtures built from landed evidence and near-miss mutations an author would not
+ that no refusal is unreachable by construction. Dossier-level controls — cross-class candidate identity
+ and class substitution beyond the structural floor — are **WP-VAL-C**.
  
 +## badf-production-readiness — G10 readiness aggregator freeze (`BADF-WP-0114` / WP-PRDY-A, Issue #237 / GOV-0105)
 +

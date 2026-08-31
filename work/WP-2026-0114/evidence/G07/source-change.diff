@@ -27,13 +27,13 @@ index 0000000..2322e43
 +  "note": "WP-PRDY-A: freeze the badf-production-readiness G10 readiness aggregator contract. Owns release-packet + operational-readiness (never uat -- badf-uat's, never go-no-go -- release_authority's, human-reserved). The governance correction that shaped it: this skill produces the evidence basis for production authorization and never issues PRODUCTION_AUTHORIZED, which is a derived predicate over valid evidence PLUS valid authority bound to exact candidate/environment/scope/conditions/window, never a hand-written field. Three fundamental rules (aggregation not re-execution; readiness != authorization; PRODUCTION_AUTHORIZED is derived, never written), twenty-four invariants PRDY-I01..I24 frozen verbatim, nine-stage workflow, sixteen references. Authority boundary cites SEC-I13 / VER-I18 / UAT-I14 as precedent. No gate/schema/lifecycle change (PRDY-I24). External sources characterized from the operator's directive, not independently fetched -- declared in the reference."
 +}
 diff --git a/badf/skill-registry.json b/badf/skill-registry.json
-index c054de7..5431fe3 100644
+index 0f505c6..9c7635d 100644
 --- a/badf/skill-registry.json
 +++ b/badf/skill-registry.json
 @@ -320,6 +320,16 @@
        "allowed_tools": [],
-       "status": "DESIGNED",
-       "digest": "sha256:675c59d561fea4c86726877ed3f23a0a9238371ffe95a8cb378298904fe48277"
+       "status": "IMPLEMENTED",
+       "digest": "sha256:ee756f404903f223019bb0193b77067cec51def0a1b577c94acc534dbee4e6ff"
 +    },
 +    {
 +      "name": "badf-production-readiness",
@@ -48,12 +48,12 @@ index c054de7..5431fe3 100644
    ]
  }
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 47c9131..f283923 100644
+index 1ab6030..e9a3068 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -1667,6 +1667,56 @@ hit**: applied to the `badf-engineering-verification` modules it correctly found
- already assert counts before iterating. A detection rule that has only ever fired is as suspect as a
- guard that never does.
+@@ -1721,6 +1721,56 @@ fixtures built from landed evidence and near-miss mutations an author would not
+ that no refusal is unreachable by construction. Dossier-level controls — cross-class candidate identity
+ and class substitution beyond the structural floor — are **WP-VAL-C**.
  
 +## badf-production-readiness — G10 readiness aggregator freeze (`BADF-WP-0114` / WP-PRDY-A, Issue #237 / GOV-0105)
 +
@@ -1303,24 +1303,23 @@ index 0000000..d993887
 +
 +if __name__ == "__main__":
 +    unittest.main()
-diff --git a/work/WP-2026-0112/work-package.json b/work/WP-2026-0112/work-package.json
-index e50abbb..d054296 100644
---- a/work/WP-2026-0112/work-package.json
-+++ b/work/WP-2026-0112/work-package.json
-@@ -42,11 +42,14 @@
+diff --git a/work/WP-2026-0113/work-package.json b/work/WP-2026-0113/work-package.json
+index 6fd134d..2109ee5 100644
+--- a/work/WP-2026-0113/work-package.json
++++ b/work/WP-2026-0113/work-package.json
+@@ -63,11 +63,13 @@
      "reversible": true,
-     "method": "revert the squash commit via PR"
+     "method": "revert the squash commit via PR (schemas, gate control, tests and registry status revert together)"
    },
 -  "status": "IN_PROGRESS",
 +  "status": "CLOSED",
    "external_target": {
      "repository": "bstBizEra/badf",
      "branch": "main",
--    "base_revision": "87dd192"
-+    "base_revision": "87dd192",
-+    "landed_content_tree": "6b85abc47d86bdf675a8060438492eaa441ee462",
-+    "composition_verified": true,
-+    "landed_as": "1c1827c0e99ea86d9ca1119b1a92d90d83ba1628"
+-    "base_revision": "1c1827c"
++    "base_revision": "1c1827c",
++    "composition_verified": false,
++    "landed_as": "7f81a49718b244c3386cedd7455e603e7f6f3eb2"
    },
-   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Instance ten of the evening's proxy-vs-property class, found on my own surface by applying BARCHI-3's checklist (#221) and the second such instance introduced while remediating. Ids measured across four surfaces AND asked for -- confirmed clear by BARCHI-3 (including their local worktrees) and BADF-QA (with positive controls) before binding, the remedy for my WP-0110/DEM-0097 collision. Fix adopts existing prior art rather than inventing a guard. Resolves #229 / GOV-0099. Reconciled WP-2026-0111 locally when the gate refused to open this WP with it unreconciled; #224 reconciled it independently and landed first (87dd192), so my copy collapsed to a byte-identical no-op on rebase -- the fourth instance of derived-reconcile-convergence tonight. Also reconciles WP-2026-0110 (BARCHI-3's close-out, landed 87dd192): no competing open PR at the time this WP opened, so no race -- checked before claiming it, having just been corrected for skipping that check on WP-2026-0111. Ownership was NOT a free choice: the canonical gate refuses to open a new work package while a landed one is unreconciled (\"reconcile landed work packages before opening a new one\"), so the next WP to open owns the reconcile mechanically. I had earlier ceded WP-2026-0111 to BARCHI-3's #224 by agreement; the gate overrode the agreement and both seats were told. An earlier staged reconcile of WP-2026-0109 was dropped as redundant -- #213 had already landed it byte-identically, visible only by diffing against origin/main rather than local HEAD.",
-   "expected_surfaces": {
+   "note": "Shared-surface (badf_gate.py + schemas/) -> QA by BADF-QA and verdict by BADF-REV; NOT self-classified as ladder-internal. Ids WP-0113/DEM-0100/GOV-0103, claimed publicly on #233 before engineering began, after a five-surface sweep found WP-2026-0112 held in a peer's UNPUSHED local worktree (#227's class). Reconciles WP-2026-0110. Declared non-coverage carried into the PR: the fixtures are author-written, so 'the control fires' and 'the control fires on anything real' are separable claims and only the first is in the author's reach -- BADF-QA attacks the second with fixtures built from landed evidence. Delivery ladder WP-VAL-A(DESIGNED, #213) -> B(IMPLEMENTED, this WP) -> C(VALIDATED) -> D(SHADOWED) -> E(quality_authority/operator admission, ACTIVE). COMPOSE-CAUGHT (the branch-local module run did not): WP-VAL-A's contract test pins the registry status, so advancing the rung turned it red on the composed tree -- and inspecting that surfaced a second, unfailed inconsistency, SKILL.md's frontmatter hardcoding `status: DESIGNED` while the registry moved to IMPLEMENTED. Both fixed here because both are direct consequences of this rung. The CLASS defect -- skill files hardcoding a lifecycle status that can drift from the registry, which badf-engineering-verification's SKILL.md explicitly forbids -- is filed separately rather than fixed in-branch. SELF-CAUGHT before push: this record originally declared `expected_surfaces.paths`, but the C3 and C7 controls read `expected_surfaces.files` (badf_gate.py:1610/1666) and the schema defines no `paths` member -- so the declaration was INERT: it looked like a scope commitment and enforced nothing, the same vacuity class the team catalogued tonight. Renamed to `files`. My own by-hand diff-vs-declaration check was real but could not have caught it, because it compared the diff against a list the gate never reads -- checking a declaration by eye verifies the list, not that anything consumes it. REACHABILITY, measured and declared rather than left for review (BADF-QA's pre-registered rule: a refusal that cannot be tripped does not count). validate_evidence invokes EVIDENCE_RULES only when evidence outcome == PASS (badf_gate.py:1916-1918). All 19 endpoints are therefore reachable through the REAL dossier path for PASS evidence, which is the dominant case on this repo: 263 PASS of 337 evidence records under work/*/evidence/*/*.json ON MAIN 87dd192 (71 NOT_RUN, 3 NOT_APPLICABLE). CORRECTED after BADF-QA could not reproduce an earlier figure of 266/72: that count was taken in THIS BRANCH's worktree and therefore included WP-2026-0113's own four unlanded evidence files while calling them landed -- the wrong-tree class, on a number rather than on a green run. QA's 294 is a different and also defensible population (work/** plus examples/**); examples/ are fixture records, so the narrower denominator is the honest one for a claim about how exercised the real dispatch path is. The material claim is unchanged either way: PASS dominates. That is a materially different position from G07's C3 and C7, which BADF-QA measured as having ZERO evaluable instances in the repository's history (C3 gates on DOSSIER disposition PASS -- 77 HUMAN_REQUIRED vs 1 PASS, and that one record declares no expected_surfaces; C7 needs a declared delegation and 0 of 95 WPs declare one). Mine gate on EVIDENCE outcome, not dossier disposition. Two honest caveats: the FAIL boundary test calls the control directly on a path the dispatcher never takes (annotated in the test as a unit-level over-fire guarantee, not a production path), and 'reachable in principle' is still not 'exercised by real data' -- no real G09 evidence exists in this repository yet. SELF-SWEEP after the PR opened, applying the night's own defect class to my own schemas: the walker honours only required/enum/pattern/additionalProperties/type, so my four schemas carry 134 INERT constraint keywords (105 minLength, 21 format, 4 minItems, 4 const). Two were load-bearing without a code backstop and are now fixed: (a) `oracle.locator` relied on an inert minLength, so an empty locator was schema-valid -- an oracle that names nothing cannot be consulted, now refused by V3b; (b) the VAL-I06 threshold-ordering check compared `bound_at` and `runtime.started_at` as RAW STRINGS while `format: date-time` is inert, so a validly-typed timestamp in another ISO spelling ('+00:00' vs 'Z') would render a silently wrong verdict -- now parsed via the gate's own parse_time, which normalises to UTC and refuses malformed input. The four minItems are already backed by code controls (V9/V10/V12 and the abort-conditions check), and `const` on schema_version is inert here exactly as it is in the G07 and G08 schema sets -- house-wide, not specific to this rung, and left alone. Control endpoints 19 -> 20, all mutation-killed; tests 37 -> 40. MECHANISM CORRECTED after tightening a test assertion (prompted by BADF-QA's probe-8 finding, where a mutation died at check_schema and reported RED -- a true adjacent fact that reads as verification): two of my control-layer assertions used regexes ('approved', 'oracle') that check_schema's own messages would also satisfy, since the walker's label embeds the field path; both now match the invariant id instead. Tightening the third -- a bare assertRaises on the VAL-I13 structural floor -- FAILED, revealing that I had named the wrong mechanism: a wholesale class swap is refused by `required` (checked BEFORE additionalProperties), not by additionalProperties. Both floors are real and now separately tested: `required` for a wholesale swap, `additionalProperties:false` for a single foreign key smuggled into an otherwise-complete binding. The bare assertRaises had been passing on the wrong reason. Tests 40 -> 41. FALSE-ACCEPT GUARD added from BADF-QA's near-miss battery: their probes produced three concrete cases where `bound_at` is semantically AFTER `runtime.started_at` yet sorts BEFORE it as a string (2026-08-30T20:00:00-07:00, 2026-08-30T23:30:00-02:00, 2026-08-31T00:30:00-01:00 against 2026-08-31T01:00:00Z) -- i.e. a threshold fitted to the result ADMITTED silently. All three are refused by the parse_time fix, and all three of QA's oracle.locator survivors (empty and whitespace-only) are refused by V3b's .strip(); their battery ran on 65abbb1, before both fixes. The finding that mattered was not the fixes but the GAP IN MY TESTS: equivalence ('+00:00' still passes) and malformation ('yesterday' refused) BOTH survive a revert to string comparison, so neither guarded the fix. The three false-accepts do -- verified by negative control (revert parse_time -> 4 failures; restore byte-identical). Tests 41 -> 42. QA's additive-path proof came back clean by CONSTRUCTION rather than sampling: the four new G09 types appear 0 times across 345 landed evidence records (positive control: source-change = 80), and the gate diff has zero deletion/modification lines -- one appended hunk -- so no landed record's outcome can change. REBASED onto 1c1827c after #242 (WP-2026-0112) landed. The WP-2026-0110 reconcile COLLAPSED -- #242 discharged it first -- so it is dropped from expected_surfaces.files in the same pass, per bst-sa-90's warning: a rebase that collapses a reconcile to a no-op leaves a declared-but-unmatched surface, which is exactly what their two-sided C3 containment control refuses. Reconcile target shifts to WP-2026-0112. Also caught during this rebase: badf-release-validation is ALREADY on main at DESIGNED (landed by my own WP-VAL-A #213), so the registry edit must ADVANCE that entry, not append a second one -- an assertion refused the duplicate before it was written. PRUNED two structurally-unmatchable declarations, found by BADF-REV and verified by me: `badf/lockfile.json` and `work/WP-2026-0113/` can NEVER match a changed path, because C3 builds its names list with the gate's own exclusion pathspec (badf_gate.py:3439). Measured on this branch: 12 paths visible to C3, and exactly those two patterns match nothing. They bought no containment and the lockfile entry actively WIDENED the C7 delegation ceiling, since expected_surfaces.files doubles as it. My own both-directions check missed this for the THIRD time on this same field -- I compared the declaration against the raw `git diff`, not against the exclusion-filtered population the gate actually uses. Checking a declaration against the wrong population verifies nothing, which is the same defect as declaring `paths` where the gate reads `files`."
+ }
