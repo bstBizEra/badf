@@ -539,7 +539,7 @@
     "tests/test_badf_issue_learning.py": "sha256:ad734cf79d8422fedf6f1219633c84f5451306597a8ae70c34e05451d6dbb77c",
     "tests/test_badf_monotonic.py": "sha256:aa3968170b35a4552b959d6343169c2548595c27ebc2b541f7c4ef9664930059",
     "tests/test_badf_principal_type.py": "sha256:c0261d74255417ecd812aed2be419060fc5500643996f12e87142bcc21c746cd",
-    "tests/test_badf_production_readiness_contract.py": "sha256:cdac9329dc34ddb34e3f67ef8369f2f70a06e5f059ca320622a36ea5200f3432",
+    "tests/test_badf_production_readiness_contract.py": "sha256:d18babcc0b976ea6fe8ca8e8dab4c2be54dfad82140f55e35717181fd8737bf7",
     "tests/test_badf_qa_findings.py": "sha256:98b5fa4ea64f1045cbef0761439ecfa2919af2beaac9e65463af8352ef44041e",
     "tests/test_badf_reconcile.py": "sha256:a2a5a6d33c69faeb9a42335e0e1fb8f803634ca07fbd5c50590fd8ae386c637a",
     "tests/test_badf_registry_digest.py": "sha256:267584a08a3420cb40259032b53cc1a635cc5a17867ee6b1931261c9a62be2fb",
