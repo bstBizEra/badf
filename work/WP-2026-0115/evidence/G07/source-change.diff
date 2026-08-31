@@ -791,10 +791,10 @@ index 0000000..1ee075f
 +skill cannot automate) is listed under non-coverage (`references/coverage-matrix.md`) — never dropped.
 diff --git a/tests/test_badf_uat_contract.py b/tests/test_badf_uat_contract.py
 new file mode 100644
-index 0000000..6864560
+index 0000000..7e719cc
 --- /dev/null
 +++ b/tests/test_badf_uat_contract.py
-@@ -0,0 +1,136 @@
+@@ -0,0 +1,184 @@
 +"""badf-uat WP-UAT-A (BADF-WP-0115 / GOV-0107): the G10 business-acceptance router
 +contract freeze (DESIGNED).
 +
@@ -825,6 +825,30 @@ index 0000000..6864560
 +    "defect-classification", "coverage-matrix", "acceptance-disposition",
 +    "reuat-and-staleness", "g09-g10-g11-boundary", "acceptance", "external-methodology",
 +)
++REFERENCE_ANCHORS = {
++    "g10-uat-contract": ("uat", "release-packet", "operational-readiness", "go-no-go", "UAT-I20"),
++    "acceptance-provenance": ("requirement_to_objective", "criterion_to_requirement",
++                              "schemas/traceability.schema.json", "UAT-I01", "UAT-I05"),
++    "scenario-contract": ("UAT-SCN-", "expected_business_outcome", "actor_role",
++                          "criticality", "UAT-I02"),
++    "scenario-derivation": ("criticality", "UAT-I01", "UAT-I13", "not derived", "UAT-I12"),
++    "execution-adapters": ("browser", "manual", "hybrid", "UAT-I09",
++                           "No adapter is registered as a subskill at this rung"),
++    "environment-and-data-fidelity": ("test_data_provenance", "permissions_profile",
++                                      "ENVIRONMENT_DEFECT", "UAT-I08"),
++    "diagnostics-vs-oracle": ("business oracle", "UAT-I10", "UAT-I06", "supplementary"),
++    "defect-classification": ("ACCEPTANCE_CRITERION_DEFECT", "IMPLEMENTATION_DEFECT",
++                              "NON_REPRODUCIBLE", "UAT-I11", "routes UPSTREAM to PRD/AC authoring"),
++    "coverage-matrix": ("not_covered", "Never screens", "UAT-I12", "UAT-I13", "Role coverage"),
++    "acceptance-disposition": ("RECOMMEND_ACCEPT", "ACCEPTED_WITH_CONDITIONS", "Layer 2",
++                               "UAT-I14", "UAT-I15", "authorized human principal"),
++    "reuat-and-staleness": ("SUPERSEDED", "candidate_digest", "UAT-I17", "extend-only"),
++    "g09-g10-g11-boundary": ("UAT-I18", "UAT-I19", "release_authority",
++                             "badf-production-readiness", "G11"),
++    "acceptance": ("WP-UAT-A", "WP-UAT-E", "DESIGNED", "ACTIVE", "pointer, not a second"),
++    "external-methodology": ("webapp-uat", "Confirmed absent from this repository",
++                             "adapt", "reject"),
++}
 +WORKFLOW_STAGES = (
 +    "RESOLVE ACCEPTANCE BASIS", "DERIVE SCENARIOS", "SELECT ADAPTER", "EXECUTE",
 +    "CLASSIFY DEFECTS", "COMPUTE COVERAGE", "PACKAGE RECOMMENDATION",
@@ -925,8 +949,32 @@ index 0000000..6864560
 +
 +    def test_all_fourteen_references_exist(self):
 +        self.assertTrue(REFS_DIR.is_dir(), "references/ dir must exist")
++        self.assertEqual(14, len(REFS), "the reference set is fourteen; update both if that changes")
 +        for r in REFS:
 +            self.assertTrue((REFS_DIR / f"{r}.md").is_file(), f"missing reference {r}.md")
++
++    def test_every_reference_carries_its_own_load_bearing_content(self):
++        """Each reference is pinned INDIVIDUALLY, not through the concatenated REFS_TEXT.
++
++        Emptying a file to zero bytes must redden this suite. Without a per-file
++        assertion, a token in a sibling satisfies a concatenated check and the gutted
++        file passes -- the same defect class as #230 (six of badf-build's fourteen
++        references carried no content assertion). Measured before this test existed:
++        nine of fourteen here survived being emptied. Found by BADF-QA on PR #241 and
++        reproduced independently before fixing.
++        """
++        self.assertEqual(14, len(REFERENCE_ANCHORS),
++                         "every reference needs an anchor; an unanchored file can be emptied silently")
++        self.assertEqual(set(REFS), set(REFERENCE_ANCHORS),
++                         "the anchor map and the reference list must name the same fourteen files")
++        for name, anchors in REFERENCE_ANCHORS.items():
++            path = REFS_DIR / f"{name}.md"
++            self.assertTrue(path.is_file(), f"missing reference {name}.md")
++            text = path.read_text(encoding="utf-8")
++            self.assertGreater(len(text), 400, f"{name}.md is too short to carry its contract")
++            self.assertGreaterEqual(len(anchors), 2, f"{name}.md needs >= 2 anchors to be pinned")
++            for anchor in anchors:
++                self.assertIn(anchor, text, f"{name}.md must state {anchor!r}")
 +
 +
 +if __name__ == "__main__":
