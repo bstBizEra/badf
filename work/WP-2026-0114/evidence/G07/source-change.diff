@@ -48,12 +48,12 @@ index c054de7..5431fe3 100644
    ]
  }
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 985574e..1aa1deb 100644
+index 47c9131..f283923 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -1644,6 +1644,56 @@ frozen measurement so that today's tests pass would falsify the measurement —
- shadow and the present disagree is that the *test* is wrong, or the present is, and never that the past
- should be rewritten. #220's derived-terminality work must not reach for that green either.
+@@ -1667,6 +1667,56 @@ hit**: applied to the `badf-engineering-verification` modules it correctly found
+ already assert counts before iterating. A detection rule that has only ever fired is as suspect as a
+ guard that never does.
  
 +## badf-production-readiness — G10 readiness aggregator freeze (`BADF-WP-0114` / WP-PRDY-A, Issue #237 / GOV-0105)
 +
@@ -1303,24 +1303,24 @@ index 0000000..d993887
 +
 +if __name__ == "__main__":
 +    unittest.main()
-diff --git a/work/WP-2026-0110/work-package.json b/work/WP-2026-0110/work-package.json
-index 8de03f3..2af126d 100644
---- a/work/WP-2026-0110/work-package.json
-+++ b/work/WP-2026-0110/work-package.json
-@@ -47,11 +47,14 @@
+diff --git a/work/WP-2026-0112/work-package.json b/work/WP-2026-0112/work-package.json
+index e50abbb..d054296 100644
+--- a/work/WP-2026-0112/work-package.json
++++ b/work/WP-2026-0112/work-package.json
+@@ -42,11 +42,14 @@
      "reversible": true,
-     "method": "revert the squash commit via PR; the demands return to AUTHORIZED and the learning file is removed"
+     "method": "revert the squash commit via PR"
    },
 -  "status": "IN_PROGRESS",
 +  "status": "CLOSED",
    "external_target": {
      "repository": "bstBizEra/badf",
      "branch": "main",
--    "base_revision": "d292801"
-+    "base_revision": "d292801",
-+    "landed_content_tree": "cb57ef704a9ba1402c1401710b8480aba273f1e4",
+-    "base_revision": "87dd192"
++    "base_revision": "87dd192",
++    "landed_content_tree": "6b85abc47d86bdf675a8060438492eaa441ee462",
 +    "composition_verified": true,
-+    "landed_as": "87dd19213fb0dc12625fd79dfb2ef9ccdf9afd49"
++    "landed_as": "1c1827c0e99ea86d9ca1119b1a92d90d83ba1628"
    },
-   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Close-out of the badf-engineering-verification program under the #195 A->E authorization; the ladder itself is complete and ACTIVE at d292801. Resolves #221 / GOV-0096. BARCHI-1's #213 is landing first by agreement, so this rebases onto it and reconciles the then-current WP. QA + REV by BADF-QA (bst-sa-5b) and BADF-REV (bst-sa-f0); BADF-REV has asked for a scoped delta check on the doctrine file. Engineered by BARCHI-3 under /loop."
- }
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Instance ten of the evening's proxy-vs-property class, found on my own surface by applying BARCHI-3's checklist (#221) and the second such instance introduced while remediating. Ids measured across four surfaces AND asked for -- confirmed clear by BARCHI-3 (including their local worktrees) and BADF-QA (with positive controls) before binding, the remedy for my WP-0110/DEM-0097 collision. Fix adopts existing prior art rather than inventing a guard. Resolves #229 / GOV-0099. Reconciled WP-2026-0111 locally when the gate refused to open this WP with it unreconciled; #224 reconciled it independently and landed first (87dd192), so my copy collapsed to a byte-identical no-op on rebase -- the fourth instance of derived-reconcile-convergence tonight. Also reconciles WP-2026-0110 (BARCHI-3's close-out, landed 87dd192): no competing open PR at the time this WP opened, so no race -- checked before claiming it, having just been corrected for skipping that check on WP-2026-0111. Ownership was NOT a free choice: the canonical gate refuses to open a new work package while a landed one is unreconciled (\"reconcile landed work packages before opening a new one\"), so the next WP to open owns the reconcile mechanically. I had earlier ceded WP-2026-0111 to BARCHI-3's #224 by agreement; the gate overrode the agreement and both seats were told. An earlier staged reconcile of WP-2026-0109 was dropped as redundant -- #213 had already landed it byte-identically, visible only by diffing against origin/main rather than local HEAD.",
+   "expected_surfaces": {
