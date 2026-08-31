@@ -42,12 +42,12 @@ index 74dfd24..4f3ab5c 100644
      {
        "name": "badf-production-readiness",
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index e4dba37..8120f89 100644
+index 677edf3..4cbcd45 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -1912,6 +1912,42 @@ destroys the binding that makes it evidence, to make a cosmetic id consistent. T
- 
- Anyone sweeping for the stale id will hit that demand and be tempted. **The temptation is the trap.**
+@@ -1936,6 +1936,42 @@ the same hours, the id claim for this WP survived a crossed-ids misread (caught
+ print-the-ceiling rule) — the allocation protocol landing in `BADF-WP-0118` doing its job on the very
+ next WP to allocate.
  
 +## badf-uat → IMPLEMENTED — the typed `uat` binding, and an enum that cannot say yes (`BADF-WP-0124` / WP-UAT-B, Issue #263 / GOV-0116)
 +
@@ -1048,24 +1048,24 @@ index 0000000..d5f2d01
 +
 +if __name__ == "__main__":
 +    unittest.main()
-diff --git a/work/WP-2026-0117/work-package.json b/work/WP-2026-0117/work-package.json
-index e9b93a8..14f17be 100644
---- a/work/WP-2026-0117/work-package.json
-+++ b/work/WP-2026-0117/work-package.json
-@@ -70,12 +70,14 @@
-     "reversible": true,
-     "method": "revert the squash commit via PR (test assertions removed; no product surface touched)"
-   },
+diff --git a/work/WP-2026-0122/work-package.json b/work/WP-2026-0122/work-package.json
+index 4e62202..334a97d 100644
+--- a/work/WP-2026-0122/work-package.json
++++ b/work/WP-2026-0122/work-package.json
+@@ -64,11 +64,14 @@
+     "EVIDENCE_CORRUPTION",
+     "BUDGET_EXHAUSTED"
+   ],
 -  "status": "IN_PROGRESS",
 +  "status": "CLOSED",
    "external_target": {
      "repository": "bstBizEra/badf",
-     "branch": "wp/WP-2026-0117-reference-content-assertions",
-     "base_revision": "ab72962",
--    "composition_verified": false
+     "branch": "main",
+-    "base_revision": "a69b92201cb4b354a86d136845705af751f6c655"
++    "base_revision": "a69b92201cb4b354a86d136845705af751f6c655",
++    "landed_content_tree": "e5e700a02c00db59069fe6c622035303dac3c42d",
 +    "composition_verified": true,
-+    "landed_content_tree": "f1554393fd0e93e4f573dd44c1af1ee5a28d6945",
-+    "landed_as": "a69b92201cb4b354a86d136845705af751f6c655"
++    "landed_as": "292d1beba0e97e680323788228d27bfb8b425fe9"
    },
-   "note": "Cluster of #216 + #230 + #210 as ONE WP: one defect class at three addresses. Deviation from one-issue-one-task is deliberate, follows BADF-QA's batching rule, and was endorsed by SARCHI as coordinator before work began -- three PRs would each re-sign badf/lockfile.json and conflict by construction. Ownership recorded for author!=reviewer: #216 is mine (fix existed unpushed since before this session; I flagged it twice then silently deprioritised it -- disclosed, not quietly cleared); #230 is BADF-QA's finding, ceded explicitly so they can review; #210 unclaimed, with BARCHI-2's courtesy yes on touching badf-build. The six were measured TWO independent ways -- empirical gutting and static read()-call analysis -- agreeing exactly, which carries information only because the instruments differ. test_obligations are declared at CONTRACT level, not unit: these assert frozen document content, so the accurate level is contract and BLD-I07/I08 C4's unit red-phase rule does not apply. Field names read from schemas/work-package.schema.json rather than copied from a sibling, after BARCHI-2 lost two composed-tree runs to invented test_obligations keys. Probes restore in a finally (BADF-QA), after an earlier killed probe left a reference gutted and contaminated its own baseline; that run was discarded and re-measured on a tree verified clean."
- }
+   "expected_surfaces": {
+     "files": [

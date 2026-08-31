@@ -1,10 +1,10 @@
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index e4dba37..8120f89 100644
+index 677edf3..4cbcd45 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -1912,6 +1912,42 @@ destroys the binding that makes it evidence, to make a cosmetic id consistent. T
- 
- Anyone sweeping for the stale id will hit that demand and be tempted. **The temptation is the trap.**
+@@ -1936,6 +1936,42 @@ the same hours, the id claim for this WP survived a crossed-ids misread (caught
+ print-the-ceiling rule) — the allocation protocol landing in `BADF-WP-0118` doing its job on the very
+ next WP to allocate.
  
 +## badf-uat → IMPLEMENTED — the typed `uat` binding, and an enum that cannot say yes (`BADF-WP-0124` / WP-UAT-B, Issue #263 / GOV-0116)
 +
