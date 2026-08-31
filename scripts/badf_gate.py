@@ -4122,6 +4122,21 @@ def validate_verification_record(path: Path) -> str:
     for d in rec["synthesis"]["downgraded"]:
         if d["finding_id"] not in findings:
             raise ValidationError(f"synthesis downgrades {d['finding_id']}, which the record does not carry (VER-I12)")
+        # The justified path exists and was not required: a downgrade entry could name any
+        # from/to while the finding carried a third severity. Corroborate the claim against
+        # the finding it describes (#271).
+        if findings[d["finding_id"]]["severity"] != d["to"]:
+            raise ValidationError(f"synthesis downgrades {d['finding_id']} to {d['to']} but the finding carries "
+                                  f"severity {findings[d['finding_id']]['severity']}; a downgrade record that does not "
+                                  f"describe the finding justifies nothing (VER-I12)")
+    # A finding may be WITHDRAWN only through synthesis.withdrawn, which requires a reason and a
+    # `by`. Setting the status directly erases the finding with neither -- the unjustified route was
+    # free while the justified one was optional, which is what VER-I12 exists to prevent (#271).
+    for f in rec["findings"]:
+        if f["status"] == "WITHDRAWN" and f["finding_id"] not in withdrawn:
+            raise ValidationError(f"finding {f['finding_id']} carries status WITHDRAWN with no synthesis.withdrawn "
+                                  f"entry naming a reason and a `by`; a finding withdrawn by fiat is erased, not "
+                                  f"withdrawn (VER-I12)")
     for b in ballots:
         # #211: the ballot layer's own coherence. The matrix layer already refuses a VERIFIED row
         # over an OPEN blocking finding, and check_g08_binding refuses this shape on a review
