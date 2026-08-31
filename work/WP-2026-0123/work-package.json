@@ -17,7 +17,8 @@
   "out_of_scope": [
     "APPROVE_WITH_CONDITIONS condition-mapping (the filed criterion): the record schema carries NO condition structure and 0 of 5 encoded records use that verdict -- building it means inventing a schema field, which this issue's own scope forbids",
     "the matrix layer and C6 at dossier level: both already refuse this shape",
-    "#218 (exactly-one-EXACT-registry-pin): tests-only and ladder-internal, dispatched as a separate WP -- folding it here would drag it into a contract_changed review round"
+    "#218 (exactly-one-EXACT-registry-pin): tests-only and ladder-internal, dispatched as a separate WP -- folding it here would drag it into a contract_changed review round",
+    "synthesis-status governance (#271): a finding can be weakened outside the governed paths by editing status/severity directly -- withdrawn[] and downgraded[] are defined and never required. Pre-existing; declined on BARCHI-1's scope ruling and filed with QA's four probes. This control makes those paths CHEAPER (the honest encoding is now refused) without making them worse, which is the argument for closing #271 rather than for folding it here."
   ],
   "target_gate": "G07",
   "change_class": "C2",
@@ -26,7 +27,8 @@
     "The #211 probe (PR-196 record, verdict flipped to APPROVE, finding left OPEN/MAJOR) exits 1 with a message naming the ballot and the finding; it exited 0 PASS before",
     "All five encoded verification records still VERIFY PASS -- the regression floor",
     "APPROVE_WITH_CONDITIONS over an OPEN finding still passes: it is this module's baseline fixture and the designed conditional arc",
-    "Neutering the new raise turns tests/test_badf_verification_evidence red -- the control is watched, not a 13th unwatched control (#250)"
+    "Neutering the new raise turns tests/test_badf_verification_evidence red -- the control is watched, not a 13th unwatched control (#250)",
+    "The control's claim is scoped in-source: it enforces verdict/finding coherence GIVEN governed statuses; it reads status/severity from the record rather than corroborating them against synthesis.withdrawn[]/downgraded[], so it does not survive an ungoverned status edit (#271)."
   ],
   "permissions": [
     "write: bstBizEra/badf via PR"

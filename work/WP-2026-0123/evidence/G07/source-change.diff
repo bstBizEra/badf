@@ -71,10 +71,10 @@ index 677edf3..22875c9 100644
  
  Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
 diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
-index 7c07efd..f9ebf12 100644
+index 7c07efd..4468677 100644
 --- a/scripts/badf_gate.py
 +++ b/scripts/badf_gate.py
-@@ -4122,6 +4122,31 @@ def validate_verification_record(path: Path) -> str:
+@@ -4122,6 +4122,32 @@ def validate_verification_record(path: Path) -> str:
      for d in rec["synthesis"]["downgraded"]:
          if d["finding_id"] not in findings:
              raise ValidationError(f"synthesis downgrades {d['finding_id']}, which the record does not carry (VER-I12)")
@@ -102,7 +102,8 @@ index 7c07efd..f9ebf12 100644
 +                      and findings[fid]["severity"] in BLOCKING_SEVERITIES]
 +        if cited_open:
 +            raise ValidationError(f"ballot {b['ballot_id']}: verdict APPROVE contradicts OPEN blocking finding(s) "
-+                                  f"{', '.join(sorted(cited_open))} it cites itself; a verdict cannot contradict its own findings")
++                                  f"{', '.join(sorted(cited_open))} associated with it (by its own finding_ids or by the "
++                                  f"finding naming it as reporter); a verdict cannot contradict its own findings")
      for f in rec["findings"]:
          if not f["reported_by"]:
              raise ValidationError(f"finding {f['finding_id']} has no reporting ballot; a finding nobody balloted is invented (VER-I06)")
