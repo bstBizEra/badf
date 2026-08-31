@@ -1,0 +1,1326 @@
+diff --git a/badf/demands/BADF-DEM-0101.json b/badf/demands/BADF-DEM-0101.json
+new file mode 100644
+index 0000000..2322e43
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0101.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0101",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 237,
++    "url": "https://github.com/bstBizEra/badf/issues/237",
++    "exported_at": "2026-08-31T01:05:00Z",
++    "body_digest": "sha256:2a8a1d837f9f03a65d975018f8cf51987849ad3d3ba60a4c27c804c80db6176d"
++  },
++  "title": "GOV-0105: WP-PRDY-A — freeze the badf-production-readiness capability contract (G10 readiness aggregator; produces release-packet + operational-readiness, recommends READY_FOR_AUTHORITY, never issues PRODUCTION_AUTHORIZED; DESIGNED, no second gate)",
++  "problem": "🧠 **ARCHI (BARCHI-3)** — plan for WP-PRDY-A: freeze the `badf-production-readiness` capability contract (G10)\n\n## Stage-Gate\n- **Stage:** 3 self-exercise design → this WP freezes the contract only; no runtime, no validator, no aggregation engine.\n- **Decision:** Continue — operator design directive for the next gate (G10), received 2026-08-30 in the BARCHI-3 session: *\"badf-production-readiness should produce the evidence basis for production authorization; it should not itself issue PRODUCTION_AUTHORIZED\"*, with the full readiness-dimension/candidate-binding/release-delta/authority-boundary design attached.\n- **Over-engineering risk:** 22 references duplicating what G08/G09/UAT already own, a `scripts/badf_production_readiness.py`, or an aggregator that re-runs the validation it's supposed to resolve. Refused: **trimmed to 16 references** (VER-A/VAL-A precedent scale) — dimensions already resolved elsewhere (product acceptance, engineering integrity, quality/security/performance/resilience validation) get one row in `readiness-dimensions.md` pointing at their real evidence source, not a duplicate reference file; only the dimensions with **no existing owner** (recovery, rollback/migration, observability, ops/support ownership, artifact identity) get their own reference. Deterministic G10 semantics stay in `badf_gate.py` at later rungs, never a competing validator.\n- **Glossary stage(s):** 10 UAT and release readiness (partial — see scope). No G11/G12 deliverable pulled in.\n\n## Observed (measured on `main` `87dd192`, 2026-08-30)\n- `badf/lifecycle.json` G10 = `uat · release-packet · operational-readiness · go-no-go`, owner `release_authority`, min C2, exit incl. \"go-no-go authorized\". **No skill produces any of the four today.**\n- **`badf-uat` does not exist** — no `skills/badf-uat`, no issue, no reference anywhere. The proposal's premise (\"with badf-uat from the previous design\") does not hold against the live repo; `uat` is currently an orphaned evidence type. Real, load-bearing gap — filed separately as its own DISCOVERED issue (out of this WP's scope; a WP does not silently absorb a discovery, AGENTS.md \"Discovery ≠ scope expansion\").\n- `badf-release-validation` (G09) is `DESIGNED` (WP-VAL-A, 17 references) and its own frozen boundary already states the exact doctrine this proposal asks for at G10: *\"G09 is quality_authority-owned; G10 stays release_authority-owned and untouched.\"* Not a new principle — the third instance of it in this codebase: `badf-security-design` keeps `security-approval` with `security_authority` (SEC-I13); `badf-engineering-verification` keeps admission with the operator (VER-I18); this WP extends the same doctrine to `release_authority`. Cited, not reinvented.\n- `release_authority` is already a `human_reserved_role` in `badf/authority-matrix.json` — no matrix change needed for the readiness≠authority boundary to hold.\n- `EVIDENCE_RULES` has no entries for any G09 or G10 type — both gates are in the same \"generic `evidence.schema.json` only\" state G08 was in before VER-B.\n\n## Scope, stated up front\nThis WP owns **`release-packet`** and **`operational-readiness`** — the two G10 evidence types with no other claimant. It does **not** own `uat` (deferred to a future `badf-uat`, gap filed separately) and does **not** issue `go-no-go` (that evidence type is authored by `release_authority` itself, *from* this skill's readiness dossier — mirroring SEC-I13, never *by* this skill).\n\n## Acceptance criteria (WP-2026-0114 / BADF-DEM-0101 — re-measured at filing across main + every remote head + all open PR file lists + issues/PRs; no collision)\n- `skills/badf-production-readiness/SKILL.md` — thin declarative router: purpose; the G09→G10 boundary (`badf-release-validation` produces independent validation evidence; this skill **resolves**, never re-performs it); the aggregation doctrine (`PRDY-I01`: production readiness aggregates, it does not re-execute — a positive/negative MAY/MUST NOT list mirroring `badf-release-validation`'s own `routing.md` shape); the workflow `BIND CANDIDATE → RESOLVE UPSTREAM EVIDENCE → COMPUTE RELEASE DELTA → CHECK FRESHNESS → CHECK CONTRADICTIONS → EVALUATE DIMENSIONS → DECLARE NON-COVERAGE → PACKAGE DOSSIER → HANDOFF`; the twenty-four invariants **PRDY-I01…I24 verbatim** as frozen by the operator's design; status points to the registry, never hardcoded.\n- `skills/badf-production-readiness/references/` — exactly sixteen: `g10-contract` (the four G10 types; this skill's ownership vs `badf-uat`'s vs `release_authority`'s own act), `readiness-dimensions` (the twelve-dimension table, each row naming its real evidence source — resolved, not re-owned), `candidate-binding` (exact immutable candidate: source/composed-tree/artifact/sbom/provenance/config/migration digests — `PRDY-I02/I18/I23`), `release-delta` (previous-release-vs-candidate delta matrix, OpenAI `final-release-review` adapted — `PRDY-I03`; \"no diff ≠ ready\"), `evidence-aggregation` (`PRDY-I01`; MAY/MUST NOT), `evidence-freshness` (`PRDY-I05`), `contradiction-resolution` (`PRDY-I06`), `security-readiness` (validation status + accepted residual risk; cannot self-accept — `PRDY-I08/I09`), `recovery-readiness` (backup ≠ restore; RPO/RTO — `PRDY-I11/I12`), `rollback-migration-readiness` (`DEFINED/VALIDATED/REHEARSED`; migration/rollback compatibility matrix, reconciled together per the design's own §12 — `PRDY-I13/I14`), `observability-readiness` (signal→query→threshold→alert→owner→action — `PRDY-I15`), `operations-support-readiness` (service/on-call/support/escalation ownership — `PRDY-I16/I17`), `release-artifact-identity` (same-artifact rule — `PRDY-I18`), `authority-boundary` (readiness ≠ authorization; `PRODUCTION_AUTHORIZED` as a **derived predicate**, never a hand-written field; `G10 ≠ G11 ≠ G12` — `PRDY-I19…I22`, citing SEC-I13/VER-I18/VAL boundary precedent), `acceptance` (ladder A→E), `external-methodology` (OpenAI `final-release-review` + the reviewed production-readiness skill — ADAPT/EXTEND/REJECT, sources characterized by the directive, not independently fetched — declared).\n- `badf/skill-registry.json`: `badf-production-readiness` registered `DESIGNED`, `risk_class` C1 (raise at a later rung only if evidence demands it), `allowed_tools: []`, real digest; lockfile re-signed.\n- **No** `scripts/badf_production_readiness.py`, **no** new schema, **no** lifecycle change (G09/G10/G11/G12 evidence lists untouched), **no** `badf_gate.py` change, **no** edit to `badf-release-validation`, `badf-engineering-verification`, `badf-build`, `badf-git`, `badf-security-design` or `badf-solution-design` files.\n- `docs/governance/GITHUB_CONTROL_PLANE.md` doctrine section (boundary, invariants summary, the doctrine block: *\"production readiness resolves; it does not authorize. Its strongest positive conclusion is `READY_FOR_AUTHORITY`. `PRODUCTION_AUTHORIZED` is derived from valid evidence plus valid authority bound to the exact candidate, environment, scope and window. G11 controls deployment. G12 proves the release in production.\"*); DEM export; own composition record + typed G07 self-dossier; reconciles the land-time-current WP.\n\n## Tests (`tests/test_badf_production_readiness_contract.py`, failing-first)\n- `test_contract_surface_is_declarative_only` — exactly the 16 references; no `scripts/badf_production_readiness.py`; no `schemas/release-packet*.json` / `operational-readiness*.json` yet.\n- `test_root_states_all_invariants_and_the_workflow` — `PRDY-I01…I24` present; the nine-stage workflow string; `AGGREGATION NOT RE-EXECUTION`, `READINESS ≠ AUTHORIZATION`, `PRODUCTION_AUTHORIZED IS DERIVED, NEVER WRITTEN` present.\n- `test_ownership_is_two_of_four_g10_types` — `g10-contract.md` states this skill owns `release-packet` + `operational-readiness` only; names `uat` as deferred to `badf-uat` and `go-no-go` as `release_authority`'s own act.\n- `test_readiness_vocabulary_is_bounded_and_distinct_from_authorization` — `READY / READY_WITH_CONDITIONS / NOT_READY / BLOCKED / INDETERMINATE / NOT_APPLICABLE / STALE` present in `readiness-dimensions.md`; `READY_FOR_AUTHORITY` present; **`PRODUCTION_AUTHORIZED`, `PRODUCTION_AUTHORIZED_WITH_CONDITIONS`, `PRODUCTION_NOT_AUTHORIZED`** appear only inside `authority-boundary.md`'s description of what `release_authority` derives, never as an output this skill emits.\n- `test_recovery_and_migration_are_reconciled_not_duplicated` — `rollback-migration-readiness.md` states both the rollback vocabulary and the compatibility matrix; no separate `migration-readiness.md` exists (Lean consolidation, not a dropped concern).\n- `test_no_lifecycle_change_and_owns_only_its_two_types` — `lifecycle.json` G09/G10/G11/G12 evidence lists unchanged; `EVIDENCE_RULES` carries no G10 type.\n- `test_registry_pin_is_designed_and_tool_empty`; `test_skill_points_to_registry_not_a_hardcoded_status`; `test_external_methodology_is_reference_adapt_only` (REJECT list present — OpenAI's local `GREEN LIGHT TO SHIP` authority and the reviewed skill's own approval decision, both rejected as BADF authority; no vendored executable).\n\n## Out of scope (later rungs, and adjacent gaps)\n- WP-PRDY-B: typed `release-packet` / `operational-readiness` schemas + a verification-matrix-shaped readiness dossier artifact. WP-PRDY-C: deterministic controls in `badf_gate.py` (candidate exactness, freshness, contradiction refusal, delta-invalidation) — lean disabled. WP-PRDY-D: shadow on real BADF releases (there are none yet — likely representative, honestly caveated, mirroring `badf-solution-design`/`badf-security-design`/`badf-implementation-plan`'s WP-D pattern). WP-PRDY-E: `release_authority` admission.\n- **The `badf-uat` gap** — filed as its own DISCOVERED issue after this one; not absorbed here.\n- Any change to `badf-release-validation`'s (G09) evidence production; `badf_compose.py`; the CI workflow.\n\n**Version tier:** minor (new family, backward-compatible). **Lean mode:** advisory for A; **disabled** at C (fail-closed / authority-boundary invariants — HARD INVARIANTS, never traded for leanness).\n\n**Program goal (BARCHI-3):** carry `badf-production-readiness` A→E in design order, one WP per loop, freeze first, no second gate, reuse the G08/G09 evidence-resolution pattern; the root advances only at PRDY-E by `release_authority`'s admission (which, per this WP's own doctrine, is an operator/authority decision — never pre-granted by this plan). Shared-surface rungs (B: schemas; C: `badf_gate.py` controls) go to BADF-QA and BADF-REV.\n\n🛑 **STOP — awaiting operator approval of this plan.** No branch, no files, no registry edit until a human replies here.\n\n<!-- agent: architect -->\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-31T01:05:00Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-PRDY-A: freeze the badf-production-readiness G10 readiness aggregator contract. Owns release-packet + operational-readiness (never uat -- badf-uat's, never go-no-go -- release_authority's, human-reserved). The governance correction that shaped it: this skill produces the evidence basis for production authorization and never issues PRODUCTION_AUTHORIZED, which is a derived predicate over valid evidence PLUS valid authority bound to exact candidate/environment/scope/conditions/window, never a hand-written field. Three fundamental rules (aggregation not re-execution; readiness != authorization; PRODUCTION_AUTHORIZED is derived, never written), twenty-four invariants PRDY-I01..I24 frozen verbatim, nine-stage workflow, sixteen references. Authority boundary cites SEC-I13 / VER-I18 / UAT-I14 as precedent. No gate/schema/lifecycle change (PRDY-I24). External sources characterized from the operator's directive, not independently fetched -- declared in the reference."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index fc2465f..74dfd24 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -330,6 +330,16 @@
+       "allowed_tools": [],
+       "status": "DESIGNED",
+       "digest": "sha256:07a9828032f4869893cd6a8ce1dd131c520623601538244f25f37bb3a812497a"
++    },
++    {
++      "name": "badf-production-readiness",
++      "source": "skills/badf-production-readiness/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [],
++      "status": "DESIGNED",
++      "digest": "sha256:a7cc5a1dc85e1a4bd644d56081d2971dca336ea14fbd5f1cf39260f7129835d0"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 49a4c95..5f1a008 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1794,6 +1794,56 @@ skill's definition of "accepted". Ladder-internal at this rung (SKILL + 14 refer
+ BADF-QA + BADF-REV. Authored by BARCHI-3 as Senior ARCH & ENGIN, on the operator's explicit directive to
+ proceed `badf-uat` then `badf-production-readiness`.
+ 
++## badf-production-readiness — G10 readiness aggregator freeze (`BADF-WP-0114` / WP-PRDY-A, Issue #237 / GOV-0105)
++
++`badf-production-readiness` is frozen (DESIGNED) as the **G10 readiness aggregator**, and the governance
++correction that shaped it is the whole design: it **produces the evidence basis for production
++authorization; it does not issue `PRODUCTION_AUTHORIZED`.** It owns two of G10's four evidence types —
++`release-packet` and `operational-readiness` — never `uat` (`badf-uat`, Issue #239 / GOV-0107) and never
++`go-no-go` (`release_authority`'s own act, human-reserved in `badf/authority-matrix.json`). With
++`badf-uat` landing alongside it, G10's four types now split three ways by construction rather than by
++convention.
++
++Three fundamental rules carry the capability. **AGGREGATION NOT RE-EXECUTION** (PRDY-I01): readiness
++*resolves and evaluates* upstream evidence and never re-performs the owning discipline — a readiness
++skill that re-runs G09's validation has become a second validator with none of G09's independence,
++oracles or execution identity, and its result would then need validating by something else. The
++reference carries an explicit MAY / MUST NOT list. **READINESS ≠ AUTHORIZATION** (PRDY-I19): the
++strongest positive conclusion the skill can reach is `READY_FOR_AUTHORITY`, a recommendation and an
++input to a decision. **PRODUCTION_AUTHORIZED IS DERIVED, NEVER WRITTEN**: it is a predicate over valid
++evidence *plus* valid authority bound to exact candidate, environment, rollout scope, conditions and
++validity window (PRDY-I20) — never a hand-written field, because a hand-written boolean can be `true`
++while any conjunct is false and nothing downstream can tell.
++
++Twenty-four invariants **PRDY-I01…I24**, frozen verbatim from the operator's design: exact-candidate
++binding across source/composed-tree/artifact/SBOM/provenance/config/migration digests (I02/I18/I23),
++previous-release delta with *no diff ≠ ready* (I03), evidence provenance (I04), freshness earning **no
++credit rather than reduced credit** (I05), contradiction yielding `NOT_READY` or `INDETERMINATE` with
++synthesis forbidden from choosing the favorable claim (I06), product acceptance irreplaceable by
++technical validation (I07), security validation irreplaceable by a green suite and residual risk never
++self-accepted (I08/I09), performance bound to predeclared budgets (I10), backup ≠ restore and recovery
++observed not planned (I11/I12), rollback `DEFINED/VALIDATED/REHEARSED` reconciled with migration
++compatibility in one reference because the two constrain each other (I13/I14), observability binding the
++full `signal → query → threshold → alert → owner → action` chain (I15), operations and support ownership
++(I16/I17), the same-artifact rule against per-environment rebuild (I18), and the three gate separations
++G10 ≠ G11 ≠ G12 (I21/I22). The authority boundary cites **SEC-I13**, **VER-I18** and **UAT-I14/I15** as
++precedent rather than novelty, and states the generalization across all four: *the capability that
++produces the evidence is never the capability that decides progression.* The narrow wording is
++load-bearing — an earlier draft said "never the capability that makes it", which is false of every
++capability in the list, since each makes real routing, classification or evaluation judgments. The
++boundary is who owns the act that **advances the lifecycle**, not who makes any decision at all.
++
++Sixteen references; no `scripts/badf_production_readiness.py`, no schema, no `lifecycle.json` change, no
++`badf_gate.py` change (PRDY-I24). External sources are **ADAPT / EXTEND / REJECT** with the honest
++caveat declared in the reference itself: `final-release-review`'s delta matrix is adapted and its local
++`GREEN LIGHT TO SHIP` authority rejected; the reviewed readiness skill's dimension decomposition is
++adapted, extended with owning-gate binding and with the `STALE`/`INDETERMINATE` states it lacks, and its
++own approval decision rejected — and **both sources were characterized from the operator's directive
++rather than independently fetched**, stated in `external-methodology.md` rather than implied. Ladder-
++internal at this rung; WP-PRDY-B (typed schemas) and WP-PRDY-C (deterministic controls, **lean disabled
++— HARD INVARIANTS**) are shared-surface and go to BADF-QA + BADF-REV. Registry
++`badf-production-readiness: DESIGNED`. Authored by BARCHI-3 as Senior ARCH & ENGIN.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/skills/badf-production-readiness/SKILL.md b/skills/badf-production-readiness/SKILL.md
+new file mode 100644
+index 0000000..f7cb51d
+--- /dev/null
++++ b/skills/badf-production-readiness/SKILL.md
+@@ -0,0 +1,201 @@
++---
++name: badf-production-readiness
++description: >-
++  G10 readiness aggregator. Resolves upstream gate evidence against the exact
++  immutable release candidate and evaluates twelve readiness dimensions, then
++  packages a readiness dossier whose strongest positive conclusion is
++  READY_FOR_AUTHORITY. It produces the release-packet and operational-readiness
++  G10 evidence types; it never produces uat (badf-uat's) and never issues
++  go-no-go or PRODUCTION_AUTHORIZED (release_authority's own act, human-reserved).
++  Aggregation, not re-execution: it resolves the owning discipline's evidence and
++  never re-performs it. Use when a G09-validated candidate needs its production
++  readiness evidence assembled for an authority decision. Grants no release,
++  deployment, or authorization authority.
++status: DESIGNED
++gate: G10
++owner_role: release_authority
++allowed_tools: []
++---
++
++# badf-production-readiness — the G10 readiness aggregator
++
++`badf-production-readiness` produces two of G10's four evidence types: `release-packet` and
++`operational-readiness`. It never produces `uat` (that is `badf-uat`'s, registered separately) and
++it never issues `go-no-go` (`release_authority`'s own act, human-reserved in
++`badf/authority-matrix.json`). The skill's admission status is recorded in
++`badf/skill-registry.json`; this file defines behavior and must not hardcode a lifecycle status
++that can drift from the registry.
++
++## Three fundamental rules
++
++```text
++AGGREGATION NOT RE-EXECUTION
++  Production readiness RESOLVES and EVALUATES the owning discipline's evidence.
++  It never re-performs the discipline. A readiness skill that re-runs G09's tests
++  has become a second validator with none of G09's independence.
++
++READINESS ≠ AUTHORIZATION
++  The strongest positive conclusion this skill can reach is READY_FOR_AUTHORITY.
++  It is a recommendation, an input to a decision — never the decision.
++
++PRODUCTION_AUTHORIZED IS DERIVED, NEVER WRITTEN
++  PRODUCTION_AUTHORIZED is a derived predicate over valid evidence PLUS valid
++  authority bound to an exact candidate, environment, scope and window.
++  It is never a hand-written field any capability can set.
++```
++
++## Boundary
++
++```text
++badf-release-validation (G09)      produces independent validation evidence — this skill RESOLVES it, never re-performs it
++badf-uat (G10)                     produces the `uat` evidence type — business acceptance, not this skill's
++badf-production-readiness (G10)    release-packet + operational-readiness (this skill)
++release_authority (G10, human)     go-no-go; derives PRODUCTION_AUTHORIZED — reserved, not delegable
++G11 Deployment / Change Control    executes the deployment the authorization permitted
++G12 Production Verification        proves the release in production
++BADF gate                          evaluates evidence. Authority decides progression.
++```
++
++## Workflow
++
++```text
++BIND CANDIDATE → RESOLVE UPSTREAM EVIDENCE → COMPUTE RELEASE DELTA → CHECK FRESHNESS →
++CHECK CONTRADICTIONS → EVALUATE DIMENSIONS → DECLARE NON-COVERAGE → PACKAGE DOSSIER → HANDOFF
++```
++
++1. **BIND CANDIDATE** — the exact immutable candidate: source, composed-tree, artifact, SBOM,
++   provenance, config and migration digests. `references/candidate-binding.md` (PRDY-I02/I18/I23).
++2. **RESOLVE UPSTREAM EVIDENCE** — resolve, never re-perform. `references/evidence-aggregation.md`
++   carries the MAY / MUST NOT list (PRDY-I01).
++3. **COMPUTE RELEASE DELTA** — against the currently released baseline, not the candidate in
++   isolation. `references/release-delta.md` (PRDY-I03). *No diff ≠ ready.*
++4. **CHECK FRESHNESS** — expired or stale mandatory evidence receives no readiness credit.
++   `references/evidence-freshness.md` (PRDY-I05).
++5. **CHECK CONTRADICTIONS** — contradictory mandatory evidence yields `NOT_READY` or
++   `INDETERMINATE`; synthesis cannot pick the favorable claim.
++   `references/contradiction-resolution.md` (PRDY-I06).
++6. **EVALUATE DIMENSIONS** — the twelve dimensions, each resolved from its real owning source.
++   `references/readiness-dimensions.md`.
++7. **DECLARE NON-COVERAGE** — what was not evaluated, and why. Absence is declared, never implied.
++8. **PACKAGE DOSSIER** — the readiness dossier; strongest positive conclusion `READY_FOR_AUTHORITY`.
++9. **HANDOFF** — to `release_authority`, who derives the authorization this skill cannot issue.
++   `references/authority-boundary.md` (PRDY-I19…I22).
++
++## Invariants (frozen)
++
++```text
++PRDY-I01 — Aggregation, not re-execution
++Production readiness resolves and evaluates upstream evidence;
++it does not re-perform the owning validation discipline.
++
++PRDY-I02 — Exact candidate
++All mandatory readiness evidence resolves to the exact immutable
++release candidate or an explicitly compatible baseline.
++
++PRDY-I03 — Previous-release delta
++Readiness evaluates material change from the currently released
++baseline, not the candidate in isolation.
++
++PRDY-I04 — Evidence provenance
++Every readiness claim binds its canonical evidence source,
++producer, observation time and digest.
++
++PRDY-I05 — Freshness
++Expired or stale mandatory evidence receives no readiness credit.
++
++PRDY-I06 — Cross-artifact consistency
++Contradictory mandatory evidence yields NOT_READY or
++INDETERMINATE; synthesis cannot choose the favorable claim.
++
++PRDY-I07 — Product acceptance required
++Technical validation cannot substitute for business/product acceptance.
++
++PRDY-I08 — Security validation required
++A green engineering/test suite cannot substitute for applicable
++security validation.
++
++PRDY-I09 — Security risk ≠ accepted risk
++Readiness cannot accept its own residual security/privacy risk.
++
++PRDY-I10 — Performance budget bound
++Performance readiness requires evidence against predeclared
++capacity/SLO budgets.
++
++PRDY-I11 — Recovery evidence
++Resilience claims include actual recovery observations where applicable.
++
++PRDY-I12 — Backup ≠ restore
++A backup artifact alone cannot establish recoverability.
++
++PRDY-I13 — Rollback executable
++A rollback document alone does not establish rollback readiness.
++
++PRDY-I14 — Migration/rollback compatibility
++Migration state and rollback strategy must be mutually coherent.
++
++PRDY-I15 — Observability actionable
++Required production signals bind query, threshold, alert route,
++owner and response/rollback action.
++
++PRDY-I16 — Operations ownership
++A mandatory production service cannot be READY without an
++identified accountable service/on-call owner.
++
++PRDY-I17 — Support ownership
++Customer/user-impacting releases identify support and escalation ownership.
++
++PRDY-I18 — Same artifact
++The artifact authorized for production is the artifact that was
++verified; no per-environment rebuild substitution.
++
++PRDY-I19 — Readiness ≠ authorization
++The readiness skill may recommend READY_FOR_AUTHORITY but cannot
++grant production authority.
++
++PRDY-I20 — Authorization exactness
++Production authorization binds exact candidate, environment,
++rollout scope, conditions and validity window.
++
++PRDY-I21 — Authorization ≠ deployment
++G10 production authorization does not satisfy G11 deployment/change control.
++
++PRDY-I22 — Deployment ≠ production success
++A successful deployment does not satisfy G12 production verification.
++
++PRDY-I23 — Candidate mutation invalidates readiness
++Any material candidate, configuration, migration or release-owned
++artifact change invalidates the readiness dossier.
++
++PRDY-I24 — No second gate
++No scripts/badf_production_readiness.py becomes a competing
++lifecycle authority; deterministic G10 semantics remain in badf_gate.py.```
++
++## Doctrine
++
++```text
++Production readiness resolves; it does not authorize.
++Its strongest positive conclusion is READY_FOR_AUTHORITY.
++PRODUCTION_AUTHORIZED is derived from valid evidence plus valid authority
++bound to the exact candidate, environment, scope and window.
++G11 controls deployment. G12 proves the release in production.
++The BADF gate validates the evidence. Authority decides progression.
++```
++
++## References
++
++- `references/g10-contract.md` — the four G10 types; this skill's two vs `badf-uat`'s one vs `release_authority`'s own act.
++- `references/readiness-dimensions.md` — the twelve dimensions, each naming its real evidence source; the bounded readiness vocabulary.
++- `references/candidate-binding.md` — the exact immutable candidate (PRDY-I02/I18/I23).
++- `references/release-delta.md` — previous-release-vs-candidate delta matrix (PRDY-I03); *no diff ≠ ready*.
++- `references/evidence-aggregation.md` — the MAY / MUST NOT list (PRDY-I01).
++- `references/evidence-freshness.md` — stale mandatory evidence earns no credit (PRDY-I05).
++- `references/contradiction-resolution.md` — contradiction yields NOT_READY or INDETERMINATE (PRDY-I06).
++- `references/security-readiness.md` — validation status and accepted residual risk; cannot self-accept (PRDY-I08/I09).
++- `references/recovery-readiness.md` — backup ≠ restore; RPO/RTO (PRDY-I11/I12).
++- `references/rollback-migration-readiness.md` — DEFINED/VALIDATED/REHEARSED; migration/rollback compatibility (PRDY-I13/I14).
++- `references/observability-readiness.md` — signal → query → threshold → alert → owner → action (PRDY-I15).
++- `references/operations-support-readiness.md` — service, on-call, support and escalation ownership (PRDY-I16/I17).
++- `references/release-artifact-identity.md` — the same-artifact rule (PRDY-I18).
++- `references/authority-boundary.md` — readiness ≠ authorization; G10 ≠ G11 ≠ G12 (PRDY-I19…I22).
++- `references/acceptance.md` — the admission ladder PRDY-A…E.
++- `references/external-methodology.md` — `final-release-review` and the reviewed readiness skill: ADAPT / EXTEND / REJECT.
+diff --git a/skills/badf-production-readiness/references/acceptance.md b/skills/badf-production-readiness/references/acceptance.md
+new file mode 100644
+index 0000000..e3a0833
+--- /dev/null
++++ b/skills/badf-production-readiness/references/acceptance.md
+@@ -0,0 +1,26 @@
++# Admission ladder — badf-production-readiness
++
++The skill's status is recorded in `badf/skill-registry.json`; this ladder is a pointer, not a second
++status.
++
++- `DESIGNED` — **WP-PRDY-A** (this freeze): thin router, PRDY-I01…I24, nine-stage workflow, sixteen
++  references, registered C1 with no tools; no runtime, no schema, no lifecycle change, no gate change.
++- `IMPLEMENTED` — **WP-PRDY-B**: typed `release-packet` and `operational-readiness` evidence schemas
++  specializing `evidence.schema.json`; the readiness dossier as a typed artifact shaped like the G08
++  verification matrix; the twelve-dimension evaluation and the bounded readiness vocabulary as typed
++  objects. Extends the canonical gate; adds no second one.
++- `VALIDATED` — **WP-PRDY-C**: deterministic G10 readiness controls in `badf_gate.py` — exact-candidate
++  binding across all mandatory evidence, freshness refusal (no credit, not reduced credit),
++  contradiction refusal (NOT_READY / INDETERMINATE, never the favorable claim), delta-driven
++  mandatoriness, delta-invalidation on candidate mutation, and the authority-boundary refusal (no
++  `PRODUCTION_AUTHORIZED` in any artifact this skill emits) — each failing-first and mutation-killed.
++  **Lean mode disabled**: these are HARD INVARIANTS and are never traded for leanness.
++- `SHADOWED` — **WP-PRDY-D**: shadow on real release material. BADF has shipped no production release,
++  so this will likely be **representative rather than real**, and that limitation is declared in the
++  shadow record rather than glossed — mirroring the WP-D pattern in `badf-solution-design`,
++  `badf-security-design` and `badf-implementation-plan`. Injected defects across all twelve dimensions,
++  measuring missed mandatory dimensions, false READY, contradiction handling and non-coverage quality.
++- `APPROVED` / `ACTIVE` — **WP-PRDY-E**: the `release_authority` / operator admission decision, taken on
++  WP-PRDY-D's evidence and recorded on its own issue; registry status flip only, digest unchanged.
++  **No release, deployment or authorization authority is granted at any rung, including `ACTIVE`** —
++  PRDY-I19…I22 hold throughout, which is the point of the capability rather than a restriction on it.
+diff --git a/skills/badf-production-readiness/references/authority-boundary.md b/skills/badf-production-readiness/references/authority-boundary.md
+new file mode 100644
+index 0000000..364fbc7
+--- /dev/null
++++ b/skills/badf-production-readiness/references/authority-boundary.md
+@@ -0,0 +1,67 @@
++# Readiness ≠ authorization — and PRODUCTION_AUTHORIZED is derived, never written
++
++PRDY-I19, PRDY-I20, PRDY-I21, PRDY-I22. This is the reference the whole capability is built to protect.
++
++## The ceiling (PRDY-I19)
++
++```text
++This skill's strongest positive conclusion:   READY_FOR_AUTHORITY
++This skill can never emit:                    PRODUCTION_AUTHORIZED
++                                              PRODUCTION_AUTHORIZED_WITH_CONDITIONS
++                                              PRODUCTION_NOT_AUTHORIZED
++```
++
++Those three are `release_authority`'s **derived predicates**. They appear in this reference only as a
++description of what the authority derives — never as an output vocabulary this skill can select from.
++`release_authority` is human-reserved in `badf/authority-matrix.json`; nothing in this ladder, at any
++rung including `ACTIVE`, grants it.
++
++## Why "derived, never written"
++
++`PRODUCTION_AUTHORIZED` is not a field someone sets to `true`. It is a predicate over two independent
++things:
++
++```text
++PRODUCTION_AUTHORIZED  ⟺  valid evidence            (this skill's dossier: READY_FOR_AUTHORITY)
++                       ∧  valid authority           (release_authority, human, unexpired)
++                       ∧  bound to exact candidate, environment, rollout scope,
++                          conditions and validity window   (PRDY-I20)
++```
++
++A hand-written boolean can be `true` while any conjunct is false, and nothing downstream can tell. That
++is the same class of defect as a `confirmation: bool` supplied by the caller it is meant to constrain —
++a control-shaped field that carries no control. The derivation is what makes the claim checkable.
++
++## Authorization exactness (PRDY-I20)
++
++An authorization binds **exact candidate, environment, rollout scope, conditions and validity window**.
++An authorization for "the release" is unbounded in all five and authorizes more than anyone decided:
++a different artifact, a different environment, a wider rollout, a later date, conditions unmet.
++
++## The two gate separations downstream
++
++```text
++PRDY-I21  G10 authorization ≠ G11 deployment.
++          Being authorized to deploy is not having passed deployment/change control.
++PRDY-I22  G11 deployment ≠ G12 production success.
++          A deployment that completed is not a release that works in production.
++```
++
++## Precedent, not novelty
++
++This boundary is the same shape BADF already holds in three places, and it is cited rather than
++re-invented: **SEC-I13** (`badf-security-design` cannot issue its own security approval), **VER-I18**
++(`badf-engineering-verification` cannot admit itself), **UAT-I14/I15** (`badf-uat` recommends;
++a human accepts), and `badf-release-validation`'s own G09/G10 line. The generalization across all four:
++
++> **The capability that produces the evidence is never the capability that decides progression.**
++
++The wording matters, and an earlier draft of this line got it wrong. It said *"never the capability
++that makes it"* — of the decision, unqualified — which is false of every capability in the list.
++`badf-release-validation` derives its own validation-obligation set, marking classes `REQUIRED` /
++`NOT_APPLICABLE` / `DEFERRED_WITH_REASON` (VAL-I02); `badf-uat` classifies defects and computes
++coverage; this skill evaluates twelve dimensions and reaches a recommendation. All of those are real
++judgments with real consequences. The boundary is not *decides* versus *does not decide* — it is **who
++owns the act that advances the lifecycle.** Routing, classification and evaluation belong to the
++capability; progression belongs to the authority. Narrowed after BARCHI-1 pointed out that the broad
++form was already violated by the very rung it cited.
+diff --git a/skills/badf-production-readiness/references/candidate-binding.md b/skills/badf-production-readiness/references/candidate-binding.md
+new file mode 100644
+index 0000000..2f7de8d
+--- /dev/null
++++ b/skills/badf-production-readiness/references/candidate-binding.md
+@@ -0,0 +1,28 @@
++# Exact candidate binding
++
++PRDY-I02, PRDY-I18, PRDY-I23. All mandatory readiness evidence resolves to the exact immutable release
++candidate, or to an explicitly declared compatible baseline.
++
++```text
++source_digest         the exact source revision
++composed_tree_digest  the tree that would land / did land (never a two-way diff prediction)
++artifact_digest       the built artifact — the one that will reach production (PRDY-I18)
++sbom_digest           the bill of materials for that artifact
++provenance_digest     build attestation binding artifact to source
++config_digest         the configuration the candidate runs under
++migration_digest      the migration set this release carries
++```
++
++## Compatible baseline, declared not assumed
++
++Some evidence legitimately predates the candidate (a G05 security design, an architecture record). Such
++evidence may be credited only when its compatibility with this candidate is **explicitly declared** with
++a stated basis — never inferred from "nothing relevant changed". The release delta
++(`references/release-delta.md`) is what makes that declaration checkable.
++
++## Mutation invalidates the dossier (PRDY-I23)
++
++Any material change to the candidate, its configuration, its migrations or its release-owned artifacts
++invalidates the readiness dossier. The dossier is not amended in place to match the new candidate — it
++is superseded, and a fresh dossier is assembled against the new binding. A readiness claim that outlives
++the candidate it measured is a claim about a build nobody is shipping.
+diff --git a/skills/badf-production-readiness/references/contradiction-resolution.md b/skills/badf-production-readiness/references/contradiction-resolution.md
+new file mode 100644
+index 0000000..0257e86
+--- /dev/null
++++ b/skills/badf-production-readiness/references/contradiction-resolution.md
+@@ -0,0 +1,36 @@
++# Contradiction — the favorable claim is never the answer
++
++PRDY-I06. When two mandatory evidence artifacts make incompatible claims about the same candidate, the
++dimension resolves to `NOT_READY` or `INDETERMINATE`. Synthesis cannot choose.
++
++```text
++Shape of contradiction                              Resolution
++--------------------------------------------------  -------------------------------
++two artifacts, same dimension, opposite verdicts     INDETERMINATE
++an artifact contradicts the candidate binding        NOT_READY (binding is authoritative)
++an artifact contradicts a declared non-coverage      NOT_READY (a gap was claimed covered)
++a fresh artifact contradicts a stale one             not a contradiction — the stale one has no standing
++producers disagree on the same observation           INDETERMINATE, both recorded
++```
++
++## NOT_READY vs INDETERMINATE
++
++`NOT_READY` is used when the contradiction itself establishes a failure — evidence disagrees with the
++exact candidate binding, or a declared gap turns out to have been claimed as covered. `INDETERMINATE`
++is used when the contradiction means the dimension **cannot be evaluated** — two credible producers
++disagree and nothing in this skill's authority resolves which is right. The difference matters to the
++authority: one says "this is not ready", the other says "I cannot tell you whether this is ready", and
++collapsing them into a single negative loses the remedy.
++
++## Both sides are recorded
++
++An `INDETERMINATE` dimension carries both contradicting artifacts, with their producers, times and
++digests. A dossier that records only "contradiction detected" gives the authority nothing to act on and
++gives the next re-evaluation nothing to compare against.
++
++## Why this cannot be delegated to judgment
++
++The tempting failure is an aggregator that "reconciles" a contradiction by reasoning about which
++producer is more likely correct. That reasoning is re-performing the owning discipline's adjudication
++(PRDY-I01) using none of its instruments. Escalating an unreconcilable contradiction is the correct
++output, not a failure to produce one.
+diff --git a/skills/badf-production-readiness/references/evidence-aggregation.md b/skills/badf-production-readiness/references/evidence-aggregation.md
+new file mode 100644
+index 0000000..1b213c8
+--- /dev/null
++++ b/skills/badf-production-readiness/references/evidence-aggregation.md
+@@ -0,0 +1,38 @@
++# Aggregation, not re-execution — the MAY / MUST NOT list
++
++PRDY-I01. This is the invariant the whole capability rests on. A readiness aggregator that re-performs
++the owning discipline has become a second validator with none of the original's independence,
++oracles, or execution identity — and its result would then need validating by something else.
++
++## MAY
++
++```text
++MAY  resolve an upstream evidence artifact by its canonical id and digest
++MAY  evaluate whether that evidence is present, fresh, and bound to the exact candidate
++MAY  detect that two mandatory artifacts contradict each other
++MAY  compute the release delta from released baseline to candidate
++MAY  derive which dimensions are mandatory for this delta
++MAY  declare a dimension NOT_READY / BLOCKED / INDETERMINATE / STALE / NOT_APPLICABLE with a reason
++MAY  declare non-coverage
++MAY  recommend READY_FOR_AUTHORITY
++```
++
++## MUST NOT
++
++```text
++MUST NOT  re-run G09's quality, security, performance or resilience validation
++MUST NOT  re-run G08's integration, contract or composed-tree verification
++MUST NOT  execute UAT scenarios or re-derive business acceptance (that is badf-uat's, PRDY-I07)
++MUST NOT  substitute its own judgment for a missing upstream oracle
++MUST NOT  accept residual security or privacy risk on the owning authority's behalf (PRDY-I09)
++MUST NOT  choose the favorable claim when mandatory evidence contradicts (PRDY-I06)
++MUST NOT  issue go-no-go, PRODUCTION_AUTHORIZED, or any authorization predicate (PRDY-I19)
++MUST NOT  treat its own recommendation as satisfying the authority decision it feeds
++```
++
++## Evidence provenance is part of resolution (PRDY-I04)
++
++Every readiness claim binds its canonical evidence source, producer, observation time and digest.
++A claim that says `security: READY` without naming which G09 security-validation artifact, produced by
++whom, observed when, at what digest, is not a resolution — it is an assertion wearing a resolution's
++shape, and nothing downstream can re-check it.
+diff --git a/skills/badf-production-readiness/references/evidence-freshness.md b/skills/badf-production-readiness/references/evidence-freshness.md
+new file mode 100644
+index 0000000..b19c72a
+--- /dev/null
++++ b/skills/badf-production-readiness/references/evidence-freshness.md
+@@ -0,0 +1,33 @@
++# Freshness — stale mandatory evidence receives no readiness credit
++
++PRDY-I05. Evidence is a measurement taken at a time, against a tree. Both can expire.
++
++```text
++Staleness axis        What expires
++--------------------  ----------------------------------------------------------
++candidate drift       evidence measured against a superseded candidate (PRDY-I23)
++declared validity     evidence carrying its own expiry (a pen-test window, a scan epoch)
++baseline drift        the released baseline moved, so the delta the evidence assumed is wrong
++environment drift     the environment the evidence was observed in has since changed
++policy drift          the threshold or policy the evidence was judged against has changed
++```
++
++## No credit, not reduced credit
++
++Stale mandatory evidence yields `STALE` for its dimension — it does not yield a weakened `READY` or a
++`READY_WITH_CONDITIONS`. Discounting stale evidence into a partial pass is how an expired measurement
++keeps contributing to a positive posture; the vocabulary is deliberately bounded
++(`references/readiness-dimensions.md`) so there is no gradient to slide down.
++
++## Freshness is checked before contradiction
++
++Order matters: a stale artifact that contradicts a fresh one is not a contradiction to be resolved
++(`references/contradiction-resolution.md`) — it is a stale artifact with no standing. Checking
++contradictions first would let expired evidence force an `INDETERMINATE` and stall a candidate that is
++in fact evaluable.
++
++## Optional evidence
++
++Non-mandatory evidence that has gone stale is dropped from the dossier with its staleness recorded,
++not silently omitted. The distinction between "not gathered" and "gathered and expired" is information
++the authority needs.
+diff --git a/skills/badf-production-readiness/references/external-methodology.md b/skills/badf-production-readiness/references/external-methodology.md
+new file mode 100644
+index 0000000..84cb028
+--- /dev/null
++++ b/skills/badf-production-readiness/references/external-methodology.md
+@@ -0,0 +1,35 @@
++# External methodology — ADAPT / EXTEND / REJECT
++
++Two external sources informed this capability's design. **Both were characterized from the operator's
++directive, not independently fetched or executed** — that limitation is declared here rather than
++implied, because a reference that presents second-hand characterization as first-hand review is the
++same unverified-claim class BADF has been cataloguing.
++
++## `final-release-review` (OpenAI)
++
++```text
++ADAPT   the previous-release-vs-candidate delta matrix — surface / previous / candidate / impact.
++        Adopted in references/release-delta.md as the shape that makes "what changed" checkable.
++ADAPT   the discipline of reviewing a release against its baseline rather than in isolation (PRDY-I03).
++REJECT  its local `GREEN LIGHT TO SHIP` authority. A review capability declaring a release good is
++        exactly the evidence-producer-as-decider collapse PRDY-I19 exists to prevent. BADF's
++        equivalent conclusion is READY_FOR_AUTHORITY, and it is a recommendation.
++```
++
++## The reviewed production-readiness skill
++
++```text
++ADAPT   the readiness-dimension decomposition — that production readiness is many independent
++        dimensions rather than one aggregate judgment.
++EXTEND  each dimension is bound to its OWNING GATE's evidence source (readiness-dimensions.md) rather
++        than re-assessed locally. This is the PRDY-I01 extension: resolve, never re-perform.
++EXTEND  the bounded readiness vocabulary with STALE and INDETERMINATE, which the source lacks and
++        which PRDY-I05 and PRDY-I06 require.
++REJECT  its own approval decision. Same reason as above: a readiness capability that approves is not
++        a readiness capability.
++```
++
++## What is not adopted at any rung
++
++No vendored executable, no external runtime, no third-party service call. This skill has
++`allowed_tools: []` and resolves artifacts already inside BADF's own ledger.
+diff --git a/skills/badf-production-readiness/references/g10-contract.md b/skills/badf-production-readiness/references/g10-contract.md
+new file mode 100644
+index 0000000..9633683
+--- /dev/null
++++ b/skills/badf-production-readiness/references/g10-contract.md
+@@ -0,0 +1,48 @@
++# The contract — two of G10's four evidence types
++
++`badf/lifecycle.json` G10 (`UAT and Release Readiness`, owner `release_authority`) requires four
++evidence types: `uat, release-packet, operational-readiness, go-no-go`. Ownership is split three ways,
++deliberately:
++
++```text
++uat                     badf-uat                      business acceptance of the exact candidate
++release-packet          badf-production-readiness     THIS SKILL
++operational-readiness   badf-production-readiness     THIS SKILL
++go-no-go                release_authority (human)     never any skill's — human-reserved
++```
++
++## Why the split is three ways and not one
++
++A single capability owning all four would produce the acceptance evidence, produce the readiness
++evidence, and then aggregate its own output into a recommendation — grading its own work at two
++removes. The same principle that reserves G08 admission (VER-I18), security approval (SEC-I13) and
++UAT's final acceptance (UAT-I14) applies here at the gate level: `badf-uat` produces `uat` and cannot
++see this skill's dossier; this skill **resolves** `uat` as an input it did not produce (PRDY-I07); and
++neither issues the `go-no-go` that consumes both.
++
++## What `release-packet` must carry
++
++```text
++the exact candidate binding (references/candidate-binding.md)
++the release delta against the currently released baseline (references/release-delta.md)
++artifact identity: the artifact authorized is the artifact verified (references/release-artifact-identity.md)
++the resolved upstream evidence set, each item bound to its producer, time and digest (PRDY-I04)
++```
++
++## What `operational-readiness` must carry
++
++```text
++observability: signal → query → threshold → alert route → owner → response action (PRDY-I15)
++operations ownership: an accountable service / on-call owner (PRDY-I16)
++support ownership: support and escalation for user-impacting releases (PRDY-I17)
++recovery: actual recovery observation, not a backup artifact (PRDY-I11/I12)
++rollback: executable, not documentary (PRDY-I13), coherent with migration state (PRDY-I14)
++```
++
++## What this skill never emits
++
++`READY_FOR_AUTHORITY` is its ceiling. The authorization vocabulary above it belongs to
++`release_authority` and is defined in exactly one place — `references/authority-boundary.md` — so that
++there is a single canonical statement of what this skill cannot say. Naming those predicates here too
++would put the vocabulary in two files that could drift, and the contract test enforces the single
++location (PRDY-I19).
+diff --git a/skills/badf-production-readiness/references/observability-readiness.md b/skills/badf-production-readiness/references/observability-readiness.md
+new file mode 100644
+index 0000000..22a825e
+--- /dev/null
++++ b/skills/badf-production-readiness/references/observability-readiness.md
+@@ -0,0 +1,42 @@
++# Observability — a signal nobody acts on is not observability
++
++PRDY-I15. Required production signals bind the full chain. A dashboard is not readiness evidence; a
++chain that ends in a human doing something is.
++
++```text
++signal → query → threshold → alert route → owner → response/rollback action
++```
++
++Every link is required, and each is where the chain actually breaks in practice:
++
++```text
++signal            the metric/log/trace actually emitted by THIS candidate (not by its predecessor)
++query             the concrete query that reads it — resolvable, not described
++threshold         the value that distinguishes healthy from not, declared BEFORE release (never fitted after)
++alert route       where the alert goes — a channel, a pager, a rotation
++owner             a named accountable party (references/operations-support-readiness.md, PRDY-I16)
++response action   what that owner DOES — including whether the answer is "roll back"
++```
++
++## The two common vacuities
++
++**A signal with no threshold** is a chart. It is visible to anyone who goes looking, and nothing makes
++anyone look. **A threshold with no route and owner** is an alert that fires into an unattended channel;
++the system detected the failure and told no one who could act.
++
++Both pass a check that asks "is observability configured?" — which is why PRDY-I15 binds the whole
++chain rather than its first link. The dimension is `NOT_READY` if any link is missing for a mandatory
++signal, and the missing link is named.
++
++## Thresholds are predeclared
++
++A threshold set after observing the candidate's production behavior describes what the candidate does,
++not what it must do. Predeclaration is what makes the threshold an oracle rather than a description —
++the same discipline `badf-release-validation` holds at G09 (*measurement ≠ PASS*).
++
++## Rollback is a legitimate response action
++
++Naming rollback as the response for a signal is a strong readiness answer, not an admission of
++weakness — but only when the rollback it names is `REHEARSED`
++(`references/rollback-migration-readiness.md`). An observability chain terminating in a rollback that
++has never been executed terminates in nothing.
+diff --git a/skills/badf-production-readiness/references/operations-support-readiness.md b/skills/badf-production-readiness/references/operations-support-readiness.md
+new file mode 100644
+index 0000000..21e49e6
+--- /dev/null
++++ b/skills/badf-production-readiness/references/operations-support-readiness.md
+@@ -0,0 +1,45 @@
++# Operations and support ownership — a service with no owner is not ready
++
++PRDY-I16, PRDY-I17.
++
++## Operations ownership (PRDY-I16)
++
++**A mandatory production service cannot be `READY` without an identified accountable service/on-call
++owner.** Not a team name that resolves to nobody at 3am; an ownership record that answers who is
++paged, from which rotation, with what escalation when they do not answer.
++
++```text
++service owner       accountable for the service's continued operation
++on-call rotation    who is reachable, and when
++runbook             what they do — bound to the observability response actions (PRDY-I15)
++escalation path     who is reached when the first owner does not respond
++```
++
++An unowned service does not fail at release; it fails the first time it degrades, and the failure mode
++is that nothing happens. That is why ownership is a readiness dimension rather than an operational
++detail settled later — "later" is after the incident.
++
++## Support ownership (PRDY-I17)
++
++**Customer/user-impacting releases identify support and escalation ownership.** The delta
++(`references/release-delta.md`) determines whether a release is user-impacting; where it is:
++
++```text
++support ownership      who receives and triages user reports about this change
++change communication   who tells users the change is happening, and when
++escalation             how a support signal reaches the engineering owner above
++```
++
++## Why these two are one reference
++
++Operations ownership answers "who is paged when the system tells us"; support ownership answers "who
++acts when a *user* tells us". They are the same escalation graph entered from two directions, and they
++must terminate at the same accountable owner or the release has two disconnected response paths. Split
++across two documents, each would define an escalation the other did not know about. Consolidated per
++the Lean minimality ladder — a genuinely inseparable concern, not a dropped one.
++
++## Ownership is resolved, not assigned
++
++This skill resolves the ownership records that exist. It does not assign owners, create rotations, or
++nominate an escalation path — that is an operational decision by the owning organization (PRDY-I01).
++Its output where ownership is absent is `NOT_READY` naming the unowned service.
+diff --git a/skills/badf-production-readiness/references/readiness-dimensions.md b/skills/badf-production-readiness/references/readiness-dimensions.md
+new file mode 100644
+index 0000000..c82bcec
+--- /dev/null
++++ b/skills/badf-production-readiness/references/readiness-dimensions.md
+@@ -0,0 +1,45 @@
++# The twelve readiness dimensions — each resolved from its owning source
++
++Every row names where the evidence actually comes from. This skill **resolves** each; it never
++re-performs the owning discipline (PRDY-I01).
++
++```text
++Readiness dimension            Primary evidence source
++-----------------------------  --------------------------------------------------
++Product acceptance             G10 `badf-uat`                                       (PRDY-I07)
++Engineering integrity          G08 `badf-engineering-verification`
++Security                       G05 design + G09 validation                          (PRDY-I08/I09)
++Performance/capacity           G09                                                  (PRDY-I10)
++Resilience/recovery            G09                                                  (PRDY-I11)
++Data/migration                 G04/G06/G09 + release migration evidence             (PRDY-I14)
++Backup/restore                 operational/recovery evidence                        (PRDY-I12)
++Rollback                       G06 release/rollback plan + executable proof         (PRDY-I13)
++Observability                  architecture/operability + runtime configuration     (PRDY-I15)
++Operations/on-call             service owner / runbooks / escalation                (PRDY-I16)
++Support/change communication   product/service/release operations                   (PRDY-I17)
++Artifact/release identity      Git/composition/build/attestation                    (PRDY-I18)
++```
++
++## The bounded readiness vocabulary
++
++Each dimension resolves to exactly one of:
++
++```text
++READY                 mandatory evidence present, fresh, non-contradictory, bound to the exact candidate
++READY_WITH_CONDITIONS ready subject to named conditions, each filed rather than left as prose
++NOT_READY             mandatory evidence absent, failing, or contradicted
++BLOCKED               a dependency prevents evaluation
++INDETERMINATE         evidence present but cannot be reconciled (references/contradiction-resolution.md)
++STALE                 evidence exists but has expired (references/evidence-freshness.md) — no credit
++NOT_APPLICABLE        the dimension does not apply, with a stated reason — never a silent omission
++```
++
++`NOT_APPLICABLE` is a declaration, not a default. A dimension absent from the dossier is a defect;
++a dimension marked `NOT_APPLICABLE` without a reason is the same defect wearing a label.
++
++## The aggregate never hides a mandatory dimension
++
++A dossier cannot report an overall posture that conceals a `NOT_READY`, `BLOCKED` or `STALE` mandatory
++dimension. Every mandatory dimension's individual state is enumerated in the dossier, the same
++discipline `badf-uat` holds for critical-tier scenarios (UAT-I13) and `badf-release-validation` holds
++for its conjunctive G09 dossier.
+diff --git a/skills/badf-production-readiness/references/recovery-readiness.md b/skills/badf-production-readiness/references/recovery-readiness.md
+new file mode 100644
+index 0000000..1d0effd
+--- /dev/null
++++ b/skills/badf-production-readiness/references/recovery-readiness.md
+@@ -0,0 +1,37 @@
++# Recovery — backup ≠ restore
++
++PRDY-I11, PRDY-I12.
++
++## The distinction the invariant exists for (PRDY-I12)
++
++A backup artifact establishes that data was written somewhere. It establishes nothing about whether it
++can be read back, whether it is complete, whether the restore path works under the conditions that would
++require it, or how long a restore takes. Backup is an artifact; recoverability is an observed property.
++Only the second is readiness evidence.
++
++```text
++Claim                                          Establishes recoverability?
++---------------------------------------------  ---------------------------
++"backups are configured"                       no
++"a backup artifact exists, dated <t>"          no
++"the backup passes an integrity check"         no — integrity ≠ restorability
++"a restore was performed and verified at <t>"  yes, for the conditions observed
++```
++
++## Recovery observations where applicable (PRDY-I11)
++
++Resilience claims include **actual recovery observations** — a restore executed, a failover exercised,
++a degraded mode entered and exited — not a plan describing one. Where a recovery observation is
++genuinely impractical for this release, that is declared non-coverage with a reason, not a dimension
++quietly marked `READY` on the strength of the plan.
++
++## RPO and RTO are bound, not aspirational
++
++```text
++RPO   the maximum data loss the release is designed to tolerate — and the loss the OBSERVED restore showed
++RTO   the maximum time to recover — and the time the OBSERVED restore took
++```
++
++A declared RPO/RTO with no observation against it is a target. A dossier that reports the target as
++though it were a measurement is the proxy-for-property error in its operational form: the number is
++real, it is just not a measurement of this system.
+diff --git a/skills/badf-production-readiness/references/release-artifact-identity.md b/skills/badf-production-readiness/references/release-artifact-identity.md
+new file mode 100644
+index 0000000..7b1eaa7
+--- /dev/null
++++ b/skills/badf-production-readiness/references/release-artifact-identity.md
+@@ -0,0 +1,41 @@
++# The same-artifact rule
++
++PRDY-I18. **The artifact authorized for production is the artifact that was verified.** No
++per-environment rebuild substitution.
++
++```text
++verified artifact  ──digest──▶  the artifact G08/G09 evidence was observed against
++authorized artifact ─digest──▶  the artifact release_authority authorizes
++deployed artifact  ──digest──▶  the artifact G11 actually deploys
++
++All three digests are the SAME value, or the chain is broken.
++```
++
++## Why a rebuild breaks the chain
++
++A rebuild from the same source can differ: a floating dependency resolves differently, a base image
++moved, a build timestamp or path is embedded, a toolchain patched. Every piece of evidence upstream was
++observed against the *first* artifact. Rebuilding for production produces an artifact with no evidence
++about it — and the substitution is invisible because the source revision is identical, which is exactly
++what makes it dangerous. Source identity is a **proxy** for artifact identity; the two come apart
++precisely when it matters.
++
++## What is resolved
++
++```text
++artifact_digest      from the candidate binding (references/candidate-binding.md)
++provenance/attestation  binding that artifact to that source revision and that build
++sbom_digest          the bill of materials for that exact artifact
++promotion record     evidence that the artifact was PROMOTED between environments, not rebuilt
++```
++
++A promotion record is the positive evidence; its absence is not neutral. Where the delta makes artifact
++identity mandatory and no promotion record exists, the dimension is `NOT_READY` — "we rebuild per
++environment and it has always been fine" is a description of a habit, not evidence about this release.
++
++## Config is bound separately
++
++The same artifact legitimately runs under different configuration per environment; that is why
++`config_digest` is a separate binding (`references/candidate-binding.md`). The rule constrains the
++*artifact*, not the configuration — but a config change is itself a candidate mutation that invalidates
++the dossier (PRDY-I23).
+diff --git a/skills/badf-production-readiness/references/release-delta.md b/skills/badf-production-readiness/references/release-delta.md
+new file mode 100644
+index 0000000..2b929ce
+--- /dev/null
++++ b/skills/badf-production-readiness/references/release-delta.md
+@@ -0,0 +1,36 @@
++# The release delta — readiness is measured against what changed
++
++PRDY-I03. Readiness evaluates material change from the **currently released baseline**, not the
++candidate in isolation. A candidate can be internally consistent and still be unsafe to release because
++of what it changes relative to what is running.
++
++```text
++Surface        Previous      Candidate           Impact
++-------------  ------------  ------------------  ----------------------
++public API     v3            v4 field added      compatible
++DB schema      17            18                  migration required
++runtime        Python 3.12   3.13                compatibility impact
++dependency     foo 4.x       5.x                 major dependency
++auth           role set A    role set B          authorization impact
++config         no flag       new required flag   operations impact
++queue schema   v2            v3                  rollback concern
++```
++
++Adapted from the `final-release-review` methodology's delta matrix
++(`references/external-methodology.md`) — the matrix shape is adopted; its local authority to declare a
++release good is not.
++
++## No diff ≠ ready
++
++An empty delta is not evidence of readiness. It establishes only that this release changes little
++relative to the last one — which says nothing about whether the last one was ready, whether the
++mandatory evidence for *this* candidate exists, or whether the environment it deploys into has moved.
++A dossier that reasons "nothing changed, therefore READY" has substituted a delta for the twelve
++dimensions.
++
++## The delta drives which dimensions are mandatory
++
++A migration in the delta makes data/migration and rollback mandatory. An auth change makes security
++mandatory. A dependency major makes security and performance mandatory. The delta is the input that
++makes "mandatory" a derived property rather than a fixed checklist — and it is why an out-of-date delta
++invalidates the readiness conclusion drawn from it (PRDY-I23).
+diff --git a/skills/badf-production-readiness/references/rollback-migration-readiness.md b/skills/badf-production-readiness/references/rollback-migration-readiness.md
+new file mode 100644
+index 0000000..756a51e
+--- /dev/null
++++ b/skills/badf-production-readiness/references/rollback-migration-readiness.md
+@@ -0,0 +1,43 @@
++# Rollback and migration — reconciled together, because they constrain each other
++
++PRDY-I13, PRDY-I14. These are one reference rather than two because the design's own §12 reconciles
++them: a rollback strategy is only meaningful against a specific migration state, and a migration is
++only safe if the rollback it permits is the one that exists. Splitting them would produce two documents
++each assuming the other's conclusion. This is a Lean consolidation of two genuinely inseparable
++concerns, not a dropped concern.
++
++## Rollback maturity vocabulary (PRDY-I13)
++
++```text
++DEFINED    a rollback procedure is written down
++VALIDATED  the procedure has been checked against the actual candidate and migration state
++REHEARSED  the procedure has been EXECUTED and observed to restore service
++```
++
++**A rollback document alone does not establish rollback readiness.** `DEFINED` is not a passing state
++for a release whose delta makes rollback mandatory. The same shape as backup ≠ restore
++(`references/recovery-readiness.md`): the artifact exists, the property is unmeasured.
++
++## Migration / rollback compatibility matrix (PRDY-I14)
++
++Migration state and rollback strategy must be mutually coherent:
++
++```text
++Migration shape              Rollback implication
++---------------------------  ------------------------------------------------------
++additive, backward-readable  code rollback safe; no data rollback needed
++destructive (drop/rename)    code rollback UNSAFE without a data restore path
++data backfill in-flight      rollback window bounded by backfill completion
++queue/message schema change  rollback constrained by in-flight message compatibility
++irreversible transform       rollback is restore-only; RPO/RTO become the real bound
++```
++
++An incoherent pair — a destructive migration with only a code-level rollback `DEFINED` — is
++`NOT_READY`, not `READY_WITH_CONDITIONS`. The condition that would make it ready does not exist yet;
++naming it as a condition would record a plan as a mitigation.
++
++## Both resolve, neither re-executes
++
++This skill resolves the G06 release/rollback plan and the migration evidence produced upstream. It does
++not run the migration, rehearse the rollback, or judge the migration's correctness — those belong to
++their owning gates (PRDY-I01).
+diff --git a/skills/badf-production-readiness/references/security-readiness.md b/skills/badf-production-readiness/references/security-readiness.md
+new file mode 100644
+index 0000000..5685143
+--- /dev/null
++++ b/skills/badf-production-readiness/references/security-readiness.md
+@@ -0,0 +1,38 @@
++# Security readiness — status resolved, residual risk never self-accepted
++
++PRDY-I08, PRDY-I09.
++
++## A green suite is not security validation (PRDY-I08)
++
++Engineering test results and security validation answer different questions. A candidate whose G08
++verification is entirely green has established that it does what it was specified to do; it has
++established nothing about whether what it was specified to do is safe, whether its dependencies carry
++known vulnerabilities, or whether its authorization model holds. Security readiness resolves the
++applicable G05 design evidence and G09 `security-validation` evidence, and where the delta
++(`references/release-delta.md`) makes security mandatory, their absence is `NOT_READY` — never a pass
++inherited from the test suite.
++
++## Readiness cannot accept its own residual risk (PRDY-I09)
++
++Every real release carries residual security risk. Accepting it is a decision reserved to the
++`security_authority` (human-reserved in `badf/authority-matrix.json`), exactly as SEC-I13 already
++holds inside `badf-security-design`. This skill:
++
++```text
++MAY  resolve that a residual risk exists, is documented, and has an acceptance record
++MAY  resolve who accepted it, when, and against which candidate
++MAY  declare NOT_READY when a material residual risk has NO acceptance record
++MUST NOT  accept a residual risk itself
++MUST NOT  treat "the risk is documented" as equivalent to "the risk is accepted"
++MUST NOT  infer acceptance from the absence of an objection
++```
++
++A documented-but-unaccepted residual risk is the single most likely place for a readiness aggregator to
++quietly convert an open decision into a closed one, because the documentation looks like the artifact of
++a decision having been made. It is the artifact of a decision having been *described*.
++
++## Acceptance binds the candidate
++
++A residual-risk acceptance is bound to the exact candidate it was issued against. A prior release's
++acceptance does not carry forward to a candidate whose delta changed the surface that risk lives on —
++the same staleness rule as everything else here (PRDY-I23).
+diff --git a/tests/test_badf_production_readiness_contract.py b/tests/test_badf_production_readiness_contract.py
+new file mode 100644
+index 0000000..d993887
+--- /dev/null
++++ b/tests/test_badf_production_readiness_contract.py
+@@ -0,0 +1,248 @@
++"""badf-production-readiness WP-PRDY-A (BADF-WP-0114 / GOV-0105): the G10 readiness
++aggregator contract freeze (DESIGNED).
++
++Pins the frozen contract: the 24 invariants PRDY-I01..I24 by id, the nine-stage workflow,
++the three fundamental rules, that this skill owns exactly two of G10's four evidence types
++(release-packet + operational-readiness -- never uat, never go-no-go), that the readiness
++vocabulary is bounded and structurally distinct from the authorization vocabulary, that
++rollback and migration are reconciled in one reference rather than duplicated, that no
++lifecycle/gate/schema change ships at this rung, and the registry DESIGNED entry
++digest-bound to SKILL.md. Contract-only: no scripts/badf_production_readiness.py, no typed
++schema, no lifecycle change (PRDY-I24).
++
++Every reference is pinned INDIVIDUALLY (>=2 anchors, >400 bytes). Written that way from the
++start rather than retrofitted: on PR #241 nine of badf-uat's fourteen references could be
++emptied to zero bytes with the suite green, because they were only reached through a
++concatenated blob where a sibling's token satisfied the assertion. Same class as #230.
++"""
++import hashlib
++import json
++import sys
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++ROOT = gate.ROOT
++SKILL = ROOT / "skills" / "badf-production-readiness" / "SKILL.md"
++REFS_DIR = ROOT / "skills" / "badf-production-readiness" / "references"
++
++REFERENCE_ANCHORS = {
++    "g10-contract": ("release-packet", "operational-readiness", "go-no-go", "badf-uat",
++                     "READY_FOR_AUTHORITY"),
++    "readiness-dimensions": ("READY_WITH_CONDITIONS", "INDETERMINATE", "NOT_APPLICABLE", "STALE",
++                             "Artifact/release identity", "PRDY-I07"),
++    "candidate-binding": ("composed_tree_digest", "sbom_digest", "migration_digest",
++                          "PRDY-I02", "PRDY-I23"),
++    "release-delta": ("queue schema", "No diff", "PRDY-I03", "currently released baseline"),
++    "evidence-aggregation": ("MUST NOT", "MAY", "PRDY-I01", "PRDY-I04", "re-run G09"),
++    "evidence-freshness": ("PRDY-I05", "No credit, not reduced credit", "baseline drift",
++                           "policy drift"),
++    "contradiction-resolution": ("PRDY-I06", "INDETERMINATE", "NOT_READY",
++                                 "favorable claim", "Both sides are recorded"),
++    "security-readiness": ("PRDY-I08", "PRDY-I09", "residual", "SEC-I13", "security_authority"),
++    "recovery-readiness": ("PRDY-I11", "PRDY-I12", "RPO", "RTO", "backup artifact"),
++    "rollback-migration-readiness": ("DEFINED", "VALIDATED", "REHEARSED", "PRDY-I13", "PRDY-I14",
++                                     "compatibility matrix"),
++    "observability-readiness": ("PRDY-I15", "alert route", "threshold", "response",
++                                "Thresholds are predeclared"),
++    "operations-support-readiness": ("PRDY-I16", "PRDY-I17", "on-call", "escalation",
++                                     "service owner"),
++    "release-artifact-identity": ("PRDY-I18", "promotion record", "rebuild", "sbom_digest"),
++    "authority-boundary": ("PRDY-I19", "PRDY-I20", "PRDY-I21", "PRDY-I22", "derived predicate",
++                           "VER-I18", "SEC-I13"),
++    "acceptance": ("WP-PRDY-A", "WP-PRDY-E", "DESIGNED", "ACTIVE", "pointer, not a second"),
++    "external-methodology": ("final-release-review", "ADAPT", "REJECT", "GREEN LIGHT TO SHIP",
++                             "not independently fetched"),
++}
++REFS = tuple(REFERENCE_ANCHORS)
++
++
++# Every mention of PRODUCTION_AUTHORIZED outside authority-boundary.md, frozen by inventory.
++#
++# Four attempts at a "is there a negation near this term" check failed, each at a finer
++# granularity than the last: paragraph-joining let a sibling MUST NOT vouch for a line
++# asserting the opposite; per-physical-line reported wrapped prose as a bare assertion;
++# flush-line-plus-indented-continuation restored the sibling vouch for anyone who INDENTS
++# the assertion (found by BADF-QA, reproduced here). The seam is real -- indentation means
++# continuation in one construct and subordination in another, and nothing distinguishes them
++# from indentation alone.
++#
++# So the check's SHAPE changed rather than its granularity. An exact inventory has no
++# proximity heuristic to slip past: any new occurrence anywhere, at any indent, fails until
++# it is admitted here deliberately. Adding a legitimate mention costs one line in this set,
++# which is the correct price for an invariant of this weight.
++PERMITTED_AUTHORIZATION_MENTIONS = {
++    ("SKILL.md", "go-no-go or PRODUCTION_AUTHORIZED (release_authority's own act, human-reserved)."),
++    ("SKILL.md", "PRODUCTION_AUTHORIZED IS DERIVED, NEVER WRITTEN"),
++    ("SKILL.md", "PRODUCTION_AUTHORIZED is a derived predicate over valid evidence PLUS valid"),
++    ("SKILL.md", "release_authority (G10, human)     go-no-go; derives PRODUCTION_AUTHORIZED — reserved, not delegable"),
++    ("SKILL.md", "PRODUCTION_AUTHORIZED is derived from valid evidence plus valid authority"),
++    ("acceptance.md", "`PRODUCTION_AUTHORIZED` in any artifact this skill emits) — each failing-first and mutation-killed."),
++    ("evidence-aggregation.md", "MUST NOT  issue go-no-go, PRODUCTION_AUTHORIZED, or any authorization predicate (PRDY-I19)"),
++}
++
++WORKFLOW_STAGES = (
++    "BIND CANDIDATE", "RESOLVE UPSTREAM EVIDENCE", "COMPUTE RELEASE DELTA", "CHECK FRESHNESS",
++    "CHECK CONTRADICTIONS", "EVALUATE DIMENSIONS", "DECLARE NON-COVERAGE", "PACKAGE DOSSIER",
++    "HANDOFF",
++)
++READINESS_VOCAB = ("READY", "READY_WITH_CONDITIONS", "NOT_READY", "BLOCKED", "INDETERMINATE",
++                   "NOT_APPLICABLE", "STALE")
++AUTHORIZATION_VOCAB = ("PRODUCTION_AUTHORIZED", "PRODUCTION_AUTHORIZED_WITH_CONDITIONS",
++                       "PRODUCTION_NOT_AUTHORIZED")
++SKILL_TEXT = SKILL.read_text(encoding="utf-8") if SKILL.is_file() else ""
++
++
++class ProductionReadinessContractTests(unittest.TestCase):
++    def test_contract_surface_is_declarative_only(self):
++        """No runtime, no typed schema, no gate code ships at this rung (PRDY-I24)."""
++        self.assertTrue(SKILL.is_file(), "SKILL.md must exist")
++        for token in ("name: badf-production-readiness", "gate: G10",
++                      "owner_role: release_authority", "status: DESIGNED", "allowed_tools: []"):
++            self.assertIn(token, SKILL_TEXT, token)
++        self.assertFalse((ROOT / "scripts" / "badf_production_readiness.py").exists(),
++                         "PRDY-I24: no competing readiness gate script at the DESIGNED rung")
++        for schema in ("release-packet.schema.json", "operational-readiness.schema.json",
++                       "readiness-dossier.schema.json"):
++            self.assertFalse((ROOT / "schemas" / schema).exists(),
++                             f"no typed {schema} at this rung")
++        self.assertEqual(16, len(REFS), "exactly sixteen references at this rung")
++
++    def test_root_states_all_invariants_and_the_workflow(self):
++        for i in range(1, 25):
++            self.assertIn(f"PRDY-I{i:02d}", SKILL_TEXT, f"PRDY-I{i:02d} must be named in SKILL.md")
++        for stage in WORKFLOW_STAGES:
++            self.assertIn(stage, SKILL_TEXT, f"workflow stage {stage}")
++        for rule in ("AGGREGATION NOT RE-EXECUTION", "READINESS ≠ AUTHORIZATION",
++                     "PRODUCTION_AUTHORIZED IS DERIVED, NEVER WRITTEN"):
++            self.assertIn(rule, SKILL_TEXT, f"fundamental rule {rule!r}")
++
++    def test_ownership_is_two_of_four_g10_types(self):
++        contract = (REFS_DIR / "g10-contract.md").read_text(encoding="utf-8")
++        for owned in ("release-packet", "operational-readiness"):
++            self.assertIn(owned, contract, f"must claim {owned}")
++        self.assertIn("badf-uat", contract, "uat must be named as badf-uat's, not this skill's")
++        self.assertIn("go-no-go", contract)
++        self.assertIn("release_authority", contract)
++        self.assertIn("human-reserved", contract)
++
++    def test_readiness_vocabulary_is_bounded_and_distinct_from_authorization(self):
++        """The readiness vocabulary is this skill's output; the authorization vocabulary is not.
++
++        The first draft of this test asserted the authorization terms appear ONLY in
++        authority-boundary.md, and it went red on `MUST NOT issue ... PRODUCTION_AUTHORIZED`
++        in evidence-aggregation.md -- a PROHIBITION, which is the opposite of the danger.
++        A rule that forbids naming the thing you must never emit would push the prohibitions
++        out of the documents that need them. So the property is stated precisely instead:
++
++          - the two COMPOUND predicates are confined to authority-boundary.md; they have no
++            reason to exist anywhere else except as an output vocabulary being assembled;
++          - the bare predicate may appear elsewhere ONLY on a line that negates it.
++        """
++        dims = (REFS_DIR / "readiness-dimensions.md").read_text(encoding="utf-8")
++        for term in READINESS_VOCAB:
++            self.assertIn(term, dims, f"readiness vocabulary term {term}")
++        self.assertIn("READY_FOR_AUTHORITY", SKILL_TEXT, "the ceiling must be named in the root")
++
++        compound = ("PRODUCTION_AUTHORIZED_WITH_CONDITIONS", "PRODUCTION_NOT_AUTHORIZED")
++        surfaces = {f"{n}.md": (REFS_DIR / f"{n}.md").read_text(encoding="utf-8") for n in REFS}
++        surfaces["SKILL.md"] = SKILL_TEXT
++
++        for fname, text in surfaces.items():
++            if fname == "authority-boundary.md":
++                continue
++            for term in compound:
++                self.assertNotIn(term, text,
++                                 f"{term} belongs only in authority-boundary.md, found in {fname}")
++
++        actual = {(fname, line.strip())
++                  for fname, text in surfaces.items() if fname != "authority-boundary.md"
++                  for line in text.splitlines() if "PRODUCTION_AUTHORIZED" in line}
++        self.assertEqual(PERMITTED_AUTHORIZATION_MENTIONS, actual,
++                         "every mention of PRODUCTION_AUTHORIZED outside authority-boundary.md is "
++                         "frozen by inventory; a new one is admitted here deliberately or not at all")
++
++    def test_recovery_and_migration_are_reconciled_not_duplicated(self):
++        combined = (REFS_DIR / "rollback-migration-readiness.md").read_text(encoding="utf-8")
++        for token in ("DEFINED", "VALIDATED", "REHEARSED", "compatibility matrix",
++                      "PRDY-I13", "PRDY-I14"):
++            self.assertIn(token, combined, token)
++        self.assertFalse((REFS_DIR / "migration-readiness.md").exists(),
++                         "migration is reconciled INTO rollback-migration-readiness.md, not split out")
++        self.assertFalse((REFS_DIR / "rollback-readiness.md").exists(),
++                         "rollback is reconciled INTO rollback-migration-readiness.md, not split out")
++
++    def test_no_lifecycle_change_and_owns_only_its_two_types(self):
++        lifecycle = json.loads((ROOT / "badf" / "lifecycle.json").read_text(encoding="utf-8"))
++        gates = lifecycle.get("gates", [])
++        self.assertEqual(15, len(gates), "no gate added or removed")
++        by_id = {g["id"]: g for g in gates}
++        self.assertEqual(["uat", "release-packet", "operational-readiness", "go-no-go"],
++                         by_id["G10"]["required_evidence"], "G10 evidence list unchanged")
++        for gid in ("G09", "G11", "G12"):
++            self.assertIn(gid, by_id, f"{gid} must exist")
++        for g10_type in ("release-packet", "operational-readiness", "uat", "go-no-go"):
++            self.assertNotIn(g10_type, gate.EVIDENCE_RULES,
++                             f"EVIDENCE_RULES must carry no G10 type at this rung ({g10_type})")
++
++    def test_registry_pin_is_designed_and_tool_empty(self):
++        registry = json.loads((ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))
++        entry = next((e for e in registry["skills"]
++                      if e["name"] == "badf-production-readiness"), None)
++        self.assertIsNotNone(entry, "badf-production-readiness must be registered")
++        self.assertEqual("DESIGNED", entry["status"])
++        self.assertEqual([], entry["allowed_tools"])
++        self.assertEqual("C1", entry["risk_class"])
++        expected = "sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest()
++        self.assertEqual(expected, entry["digest"], "registry digest must equal sha256(SKILL.md)")
++
++    def test_skill_points_to_registry_not_a_hardcoded_status(self):
++        self.assertIn("badf/skill-registry.json", SKILL_TEXT)
++        ladder = (REFS_DIR / "acceptance.md").read_text(encoding="utf-8")
++        self.assertIn("pointer, not a second", ladder)
++        for rung in ("WP-PRDY-A", "WP-PRDY-B", "WP-PRDY-C", "WP-PRDY-D", "WP-PRDY-E"):
++            self.assertIn(rung, ladder, rung)
++
++    def test_external_methodology_is_reference_adapt_only(self):
++        ext = (REFS_DIR / "external-methodology.md").read_text(encoding="utf-8")
++        self.assertIn("final-release-review", ext)
++        for verdict in ("ADAPT", "EXTEND", "REJECT"):
++            self.assertIn(verdict, ext, verdict)
++        self.assertIn("GREEN LIGHT TO SHIP", ext,
++                      "the rejected local authority must be named, not paraphrased")
++        self.assertIn("not independently fetched", ext,
++                      "the second-hand characterization must be declared, not implied")
++
++    def test_authority_boundary_cites_precedent_and_forbids_self_authorization(self):
++        boundary = (REFS_DIR / "authority-boundary.md").read_text(encoding="utf-8")
++        for token in ("PRDY-I19", "PRDY-I20", "PRDY-I21", "PRDY-I22",
++                      "SEC-I13", "VER-I18", "UAT-I14", "derived predicate"):
++            self.assertIn(token, boundary, token)
++        self.assertIn("never the capability that decides progression", boundary,
++                      "the generalization across all four precedents must be stated")
++
++    def test_every_reference_carries_its_own_load_bearing_content(self):
++        """Each reference is pinned INDIVIDUALLY. Emptying one to zero bytes must redden
++        this suite -- see the module docstring for why this is written up front."""
++        self.assertEqual(16, len(REFERENCE_ANCHORS),
++                         "every reference needs an anchor; an unanchored file can be emptied silently")
++        self.assertTrue(REFS_DIR.is_dir(), "references/ dir must exist")
++        for name, anchors in REFERENCE_ANCHORS.items():
++            path = REFS_DIR / f"{name}.md"
++            self.assertTrue(path.is_file(), f"missing reference {name}.md")
++            text = path.read_text(encoding="utf-8")
++            self.assertGreater(len(text), 400, f"{name}.md is too short to carry its contract")
++            self.assertGreaterEqual(len(anchors), 2, f"{name}.md needs >= 2 anchors to be pinned")
++            for anchor in anchors:
++                self.assertIn(anchor, text, f"{name}.md must state {anchor!r}")
++
++    def test_no_reference_beyond_the_sixteen(self):
++        actual = {p.stem for p in REFS_DIR.glob("*.md")}
++        self.assertEqual(set(REFS), actual,
++                         "the reference set is exactly the sixteen named in the plan")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0115/work-package.json b/work/WP-2026-0115/work-package.json
+index d5dd58a..8a72c1a 100644
+--- a/work/WP-2026-0115/work-package.json
++++ b/work/WP-2026-0115/work-package.json
+@@ -43,12 +43,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR (registry entry + skill removed)"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "wp/WP-2026-0115-uat-contract-freeze",
+     "base_revision": "da3c28d",
+-    "composition_verified": false
++    "composition_verified": true,
++    "landed_content_tree": "ac8b0b890ffc936ae6e7d168df53a6d41604e28e",
++    "landed_as": "c5251297f126b32e9a399d09dc4e58d333bd02dc"
+   },
+   "note": "Ladder-internal DESIGNED contract freeze (SKILL + references, no gate/schema/lifecycle) -> no BADF-QA/BADF-REV review required at A; WP-UAT-B (typed uat evidence schema) and WP-UAT-C (deterministic gate controls, lean disabled -- HARD INVARIANTS) are shared-surface -> QA+REV by BADF-QA/BADF-REV. Discovered gap filed separately as Issue #238 / GOV-0106 (uat evidence type had no producing capability), not absorbed into this freeze. Authored by BARCHI-3 as Senior ARCH & ENGIN, on the operator's explicit directive to proceed badf-uat then badf-production-readiness. Ids WP-2026-0115/DEM-0102/GOV-0107. Delivery ladder WP-UAT-A(DESIGNED)->B(IMPLEMENTED)->C(VALIDATED)->D(SHADOWED)->E(release_authority/operator admission ACTIVE); next: WP-PRDY-A (badf-production-readiness, Issue #237 / GOV-0105, ids WP-2026-0114/DEM-0101 already claimed)."
+ }

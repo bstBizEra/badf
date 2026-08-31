@@ -1,0 +1,55 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0114",
+  "title": "WP-PRDY-A: freeze the badf-production-readiness capability contract (G10 readiness aggregator; DESIGNED)",
+  "owner": "engineering_owner",
+  "demand": "BADF-DEM-0101",
+  "repository": "bstBizEra/badf",
+  "objective": "Freeze badf-production-readiness as the G10 READINESS AGGREGATOR under one governance correction: it produces the evidence basis for production authorization and never issues PRODUCTION_AUTHORIZED. It owns two of G10's four evidence types -- release-packet and operational-readiness -- never uat (badf-uat's, WP-2026-0115) and never go-no-go (release_authority's own act, human-reserved in badf/authority-matrix.json). Three fundamental rules govern it: AGGREGATION NOT RE-EXECUTION (PRDY-I01: readiness resolves and evaluates upstream evidence, never re-performs the owning discipline -- a readiness skill that re-runs G09's validation has become a second validator with none of G09's independence); READINESS != AUTHORIZATION (PRDY-I19: the ceiling is READY_FOR_AUTHORITY, a recommendation); and PRODUCTION_AUTHORIZED IS DERIVED, NEVER WRITTEN (a predicate over valid evidence PLUS valid authority bound to exact candidate, environment, rollout scope, conditions and validity window -- never a hand-written field, because a hand-written boolean can be true while any conjunct is false and nothing downstream can tell). Twelve readiness dimensions each resolve from their real owning gate. DESIGNED rung: SKILL.md + references only.",
+  "business_value": "G10 names release-packet and operational-readiness as required evidence types with no authoring capability to bind, resolve and aggregate them. Without this capability there is no BADF-native way to assemble a production-readiness basis, and no structural boundary preventing the capability that produces readiness evidence from also declaring the release authorized -- the evidence-producer-as-decider collapse that SEC-I13, VER-I18 and UAT-I14 already prevent at three other gates. This freezes the model so later rungs can enforce it deterministically without a competing validator.",
+  "in_scope": [
+    "skills/badf-production-readiness/SKILL.md (root: the G10 readiness aggregator, three fundamental rules, PRDY-I01..I24 verbatim, the nine-stage workflow, the G09/G10/G11/G12 boundary)",
+    "skills/badf-production-readiness/references/ (16: g10-contract, readiness-dimensions, candidate-binding, release-delta, evidence-aggregation, evidence-freshness, contradiction-resolution, security-readiness, recovery-readiness, rollback-migration-readiness, observability-readiness, operations-support-readiness, release-artifact-identity, authority-boundary, acceptance, external-methodology)",
+    "tests/test_badf_production_readiness_contract.py (asserts PRDY-I01..I24 by id, the nine-stage workflow, the three fundamental rules, two-of-four ownership, the bounded readiness vocabulary structurally distinct from the authorization vocabulary, rollback/migration reconciled not split, no lifecycle change, registry DESIGNED pin, external adapt-not-authority, and each of the sixteen references pinned individually)",
+    "badf/skill-registry.json: badf-production-readiness = DESIGNED (digest = sha256(SKILL.md))",
+    "docs/governance/GITHUB_CONTROL_PLANE.md doctrine section; badf/demands/BADF-DEM-0101.json; own G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "scripts/badf_production_readiness.py, any schema, any lifecycle.json change, any badf_gate.py change (PRDY-I24: no second gate; deterministic G10 semantics arrive in the canonical gate at WP-PRDY-C, not here)",
+    "the uat evidence type (badf-uat, WP-2026-0115 / Issue #239) and the go-no-go decision (release_authority, human-reserved) -- neither is this skill's at any rung",
+    "any edit to badf-release-validation, badf-engineering-verification, badf-build, badf-git, badf-security-design or badf-solution-design files; any change to G09 evidence production; badf_compose.py; the CI workflow",
+    "WP-PRDY-B (typed release-packet / operational-readiness schemas), WP-PRDY-C (deterministic gate controls, lean disabled -- HARD INVARIANTS), WP-PRDY-D (shadow, likely representative since BADF has shipped no production release), WP-PRDY-E (release_authority admission)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "badf-production-readiness registered DESIGNED; digest = sha256(SKILL.md); no scripts/badf_production_readiness.py, no schema, no lifecycle.json change, no badf_gate.py change",
+    "contract test asserts all 24 invariants PRDY-I01..I24 by id, the nine-stage workflow, the three fundamental rules verbatim, two-of-four G10 ownership, and that the authorization vocabulary never appears as an output this skill emits",
+    "each of the sixteen references is pinned INDIVIDUALLY (>=2 anchors, >400 bytes) with the positive control observed red -- written up front rather than retrofitted, after nine of fourteen references on PR #241 proved emptiable with the suite green",
+    "SKILL.md freezes: aggregation not re-execution with an explicit MAY/MUST NOT list; no diff != ready; stale evidence earns no credit rather than reduced credit; contradiction yields NOT_READY or INDETERMINATE and never the favorable claim; backup != restore; a rollback document is not rollback readiness; the same-artifact rule; and READY_FOR_AUTHORITY as the ceiling",
+    "repo integrity clean (lockfile re-signed in the same change); compose green; PyYAML-absent suite green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_production_readiness_contract.py"
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR (registry entry + skill removed)"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "wp/WP-2026-0114-production-readiness-contract-freeze",
+    "base_revision": "c525129",
+    "composition_verified": false
+  },
+  "note": "Ladder-internal DESIGNED contract freeze (SKILL + references, no gate/schema/lifecycle) -> no BADF-QA/BADF-REV review required at A, by the precedent BADF-REV verified across #190/#198/#213; WP-PRDY-B and WP-PRDY-C are shared-surface -> QA+REV. The 24 invariants are frozen VERBATIM from the operator's design message, extracted from the transcript rather than paraphrased. Both external sources were characterized from the operator's directive, NOT independently fetched -- declared in external-methodology.md rather than implied. Authored by BARCHI-3 as Senior ARCH & ENGIN, on the operator's explicit directive to proceed badf-uat then badf-production-readiness. Ids WP-2026-0114/DEM-0101/GOV-0105, re-swept across all four surfaces before binding (0 collisions). Queues behind WP-2026-0115 (#241) and BARCHI-1's WP-VAL-B rebase; expect one registry-adjacent rebase and a G07 regeneration since source-change.diff is base-bound. Delivery ladder WP-PRDY-A(DESIGNED)->B(IMPLEMENTED)->C(VALIDATED, lean disabled)->D(SHADOWED, likely representative)->E(release_authority admission ACTIVE); PRDY-I19..I22 hold at every rung including ACTIVE."
+}

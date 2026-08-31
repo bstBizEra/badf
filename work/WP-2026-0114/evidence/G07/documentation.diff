@@ -1,0 +1,61 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 49a4c95..5f1a008 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1794,6 +1794,56 @@ skill's definition of "accepted". Ladder-internal at this rung (SKILL + 14 refer
+ BADF-QA + BADF-REV. Authored by BARCHI-3 as Senior ARCH & ENGIN, on the operator's explicit directive to
+ proceed `badf-uat` then `badf-production-readiness`.
+ 
++## badf-production-readiness — G10 readiness aggregator freeze (`BADF-WP-0114` / WP-PRDY-A, Issue #237 / GOV-0105)
++
++`badf-production-readiness` is frozen (DESIGNED) as the **G10 readiness aggregator**, and the governance
++correction that shaped it is the whole design: it **produces the evidence basis for production
++authorization; it does not issue `PRODUCTION_AUTHORIZED`.** It owns two of G10's four evidence types —
++`release-packet` and `operational-readiness` — never `uat` (`badf-uat`, Issue #239 / GOV-0107) and never
++`go-no-go` (`release_authority`'s own act, human-reserved in `badf/authority-matrix.json`). With
++`badf-uat` landing alongside it, G10's four types now split three ways by construction rather than by
++convention.
++
++Three fundamental rules carry the capability. **AGGREGATION NOT RE-EXECUTION** (PRDY-I01): readiness
++*resolves and evaluates* upstream evidence and never re-performs the owning discipline — a readiness
++skill that re-runs G09's validation has become a second validator with none of G09's independence,
++oracles or execution identity, and its result would then need validating by something else. The
++reference carries an explicit MAY / MUST NOT list. **READINESS ≠ AUTHORIZATION** (PRDY-I19): the
++strongest positive conclusion the skill can reach is `READY_FOR_AUTHORITY`, a recommendation and an
++input to a decision. **PRODUCTION_AUTHORIZED IS DERIVED, NEVER WRITTEN**: it is a predicate over valid
++evidence *plus* valid authority bound to exact candidate, environment, rollout scope, conditions and
++validity window (PRDY-I20) — never a hand-written field, because a hand-written boolean can be `true`
++while any conjunct is false and nothing downstream can tell.
++
++Twenty-four invariants **PRDY-I01…I24**, frozen verbatim from the operator's design: exact-candidate
++binding across source/composed-tree/artifact/SBOM/provenance/config/migration digests (I02/I18/I23),
++previous-release delta with *no diff ≠ ready* (I03), evidence provenance (I04), freshness earning **no
++credit rather than reduced credit** (I05), contradiction yielding `NOT_READY` or `INDETERMINATE` with
++synthesis forbidden from choosing the favorable claim (I06), product acceptance irreplaceable by
++technical validation (I07), security validation irreplaceable by a green suite and residual risk never
++self-accepted (I08/I09), performance bound to predeclared budgets (I10), backup ≠ restore and recovery
++observed not planned (I11/I12), rollback `DEFINED/VALIDATED/REHEARSED` reconciled with migration
++compatibility in one reference because the two constrain each other (I13/I14), observability binding the
++full `signal → query → threshold → alert → owner → action` chain (I15), operations and support ownership
++(I16/I17), the same-artifact rule against per-environment rebuild (I18), and the three gate separations
++G10 ≠ G11 ≠ G12 (I21/I22). The authority boundary cites **SEC-I13**, **VER-I18** and **UAT-I14/I15** as
++precedent rather than novelty, and states the generalization across all four: *the capability that
++produces the evidence is never the capability that decides progression.* The narrow wording is
++load-bearing — an earlier draft said "never the capability that makes it", which is false of every
++capability in the list, since each makes real routing, classification or evaluation judgments. The
++boundary is who owns the act that **advances the lifecycle**, not who makes any decision at all.
++
++Sixteen references; no `scripts/badf_production_readiness.py`, no schema, no `lifecycle.json` change, no
++`badf_gate.py` change (PRDY-I24). External sources are **ADAPT / EXTEND / REJECT** with the honest
++caveat declared in the reference itself: `final-release-review`'s delta matrix is adapted and its local
++`GREEN LIGHT TO SHIP` authority rejected; the reviewed readiness skill's dimension decomposition is
++adapted, extended with owning-gate binding and with the `STALE`/`INDETERMINATE` states it lacks, and its
++own approval decision rejected — and **both sources were characterized from the operator's directive
++rather than independently fetched**, stated in `external-methodology.md` rather than implied. Ladder-
++internal at this rung; WP-PRDY-B (typed schemas) and WP-PRDY-C (deterministic controls, **lean disabled
++— HARD INVARIANTS**) are shared-surface and go to BADF-QA + BADF-REV. Registry
++`badf-production-readiness: DESIGNED`. Authored by BARCHI-3 as Senior ARCH & ENGIN.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
