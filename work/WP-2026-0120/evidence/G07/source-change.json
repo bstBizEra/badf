@@ -16,15 +16,15 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-08-31T22:10:39Z",
-  "completed_at": "2026-08-31T22:10:39Z",
+  "started_at": "2026-08-31T22:16:59Z",
+  "completed_at": "2026-08-31T22:16:59Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0120/evidence/G07/source-change.diff",
-  "digest": "sha256:c164ac59cfc55cb36c37c45e3210a625f0eefec18de6d86ac55b2c0c4f21304c",
+  "digest": "sha256:624cc65f53917b0c2b68b15a7db5583b9df56bccdb192583ebdab4ac51b7bb3f",
   "binding": {
     "base_sha": "c8036a6bea559f53fd342eb29c5f3b4d5a0290ef",
-    "head_sha": "53579e245070a448c5d838ef906b88c688fc1902",
-    "content_tree": "6e5da8792394871b1d5e023c697d2b46b34d8e94",
+    "head_sha": "2030fd4ae285d7d41756874b218d800156ff2609",
+    "content_tree": "6d82aac4782e118c5d55297f652ceceb6334016a",
     "changed_paths": [
       "badf/demands/BADF-DEM-0107.json",
       "badf/skill-registry.json",
@@ -45,6 +45,6 @@
       ]
     },
     "unexpected_paths": [],
-    "change_digest": "sha256:c164ac59cfc55cb36c37c45e3210a625f0eefec18de6d86ac55b2c0c4f21304c"
+    "change_digest": "sha256:624cc65f53917b0c2b68b15a7db5583b9df56bccdb192583ebdab4ac51b7bb3f"
   }
 }

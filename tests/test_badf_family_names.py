@@ -238,32 +238,41 @@ class FamilyNameResolutionTests(unittest.TestCase):
             mutate(reg)
             REGISTRY.write_text(json.dumps(reg, indent=2) + "\n", encoding="utf-8")
 
+        # Each plant asserts the SPECIFIC refusal message of the assert it targets -- a bare
+        # AssertionError cannot say WHICH of a method's asserts fired, so a plant could pass
+        # on a sibling (the U1 shape, one layer down; BADF-QA's granularity point, taken).
         probes = [
             ("a name both registered and declared-future must be refused",
              lambda reg: reg["declared_future_families"].append(
                  {"name": reg["skills"][0]["name"], "declared_by": "SEC-I14",
                   "gate": "G05", "reason": "probe"}),
-             self.test_declared_future_names_are_not_also_registered),
+             self.test_declared_future_names_are_not_also_registered,
+             r"both registered and declared-future"),
             ("a declared name no surface references must be refused as dead permission",
              lambda reg: reg["declared_future_families"].append(
                  {"name": "badf-never-referenced-anywhere", "declared_by": "SEC-I14",
                   "gate": "G05", "reason": "probe"}),
-             self.test_a_declared_future_name_is_actually_used),
+             self.test_a_declared_future_name_is_actually_used,
+             r"referenced by no surface"),
             ("an EMPTY declared_by must be refused -- an id that names nothing",
              lambda reg: reg["declared_future_families"][0].update(declared_by=""),
-             self.test_declared_future_entries_carry_their_provenance),
+             self.test_declared_future_entries_carry_their_provenance,
+             r"empty declared_by"),
             ("an UNRESOLVABLE declared_by must be refused",
              lambda reg: reg["declared_future_families"][0].update(declared_by="SEC-I99-FABRICATED"),
-             self.test_declared_future_entries_carry_their_provenance),
+             self.test_declared_future_entries_carry_their_provenance,
+             r"resolves to no doctrine surface"),
             ("a FRAGMENT of a real id must be refused -- prefixes resolve only by substring",
              lambda reg: reg["declared_future_families"][0].update(declared_by="SEC"),
-             self.test_declared_future_entries_carry_their_provenance),
+             self.test_declared_future_entries_carry_their_provenance,
+             r"resolves to no doctrine surface"),
         ]
         try:
-            for label, mutate, guard in probes:
+            for label, mutate, guard, fragment in probes:
                 with self.subTest(label=label):
                     plant(mutate)
-                    with self.assertRaises(AssertionError, msg=f"the guard did not notice: {label}"):
+                    with self.assertRaisesRegex(AssertionError, fragment,
+                                                msg=f"the guard did not notice: {label}"):
                         guard()
         finally:
             REGISTRY.write_bytes(original)

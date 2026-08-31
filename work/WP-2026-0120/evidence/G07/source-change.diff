@@ -141,10 +141,10 @@ index e28fb70..16afda2 100644
  
 diff --git a/tests/test_badf_family_names.py b/tests/test_badf_family_names.py
 new file mode 100644
-index 0000000..68dfe9b
+index 0000000..367c64f
 --- /dev/null
 +++ b/tests/test_badf_family_names.py
-@@ -0,0 +1,277 @@
+@@ -0,0 +1,283 @@
 +"""Every `badf-*` family named in any skill surface resolves — or is declared future.
 +
 +WP-2026-0120 / GOV (#223). BADF-REV generalized #222's badf-build-only guard across every
@@ -341,10 +341,12 @@ index 0000000..68dfe9b
 +        self.assertTrue(entries, "declared_future_families is empty; the guard's exception surface must be explicit")
 +        # declared_by must RESOLVE in the tree, not merely be present -- a field checked for
 +        # presence only is attribution-shaped without attributing (the decorative-const shape,
-+        # BADF-REV #259). This kills UNRESOLVABLE provenance -- an id that names nothing; it
-+        # deliberately does NOT catch resolvable-but-wrong provenance (copied from a real
-+        # entry, or a common real token like a gate id) -- see DECLARED SCOPE OF THE LIST
-+        # CONTROLS above for why that shape is review's to catch.
++        # BADF-REV #259). Resolution is a WORD-BOUNDARY token match, not a substring test:
++        # raw `in` admitted fragments that are mere prefixes of a real id (`SEC`, `SEC-I1`)
++        # and the empty string -- the same vacuous-containment root as BADF-QA's finding 1.
++        # What still passes, deliberately: a REAL token that is wrong provenance (an adjacent
++        # id like SEC-I15, a gate id like G08) -- review's to catch, per the DECLARED SCOPE
++        # OF THE LIST CONTROLS above.
 +        doctrine = list(SKILLS.rglob("*.md")) + list((ROOT / "docs").rglob("*.md"))
 +        for e in entries:
 +            for field in ("name", "declared_by", "gate", "reason"):
@@ -357,7 +359,8 @@ index 0000000..68dfe9b
 +            # above is broken by the emptiest possible input.
 +            self.assertTrue(cited, f"{e['name']}: empty declared_by; provenance that names "
 +                                   "nothing attributes nothing")
-+            hits = [p for p in doctrine if cited in p.read_text(encoding="utf-8")]
++            token = re.compile(rf"(?<![\w-]){re.escape(cited)}(?![\w-])")
++            hits = [p for p in doctrine if token.search(p.read_text(encoding="utf-8"))]
 +            self.assertTrue(hits, f"{e['name']}: declared_by '{cited}' resolves to no doctrine surface "
 +                                  "under skills/ or docs/ -- provenance that names nothing attributes nothing")
 +
@@ -398,6 +401,9 @@ index 0000000..68dfe9b
 +             self.test_declared_future_entries_carry_their_provenance),
 +            ("an UNRESOLVABLE declared_by must be refused",
 +             lambda reg: reg["declared_future_families"][0].update(declared_by="SEC-I99-FABRICATED"),
++             self.test_declared_future_entries_carry_their_provenance),
++            ("a FRAGMENT of a real id must be refused -- prefixes resolve only by substring",
++             lambda reg: reg["declared_future_families"][0].update(declared_by="SEC"),
 +             self.test_declared_future_entries_carry_their_provenance),
 +        ]
 +        try:
