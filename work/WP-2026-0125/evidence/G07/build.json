@@ -16,8 +16,8 @@
     "version": "1"
   },
   "operation": "py_compile",
-  "started_at": "2026-08-31T20:29:01Z",
-  "completed_at": "2026-08-31T20:29:01Z",
+  "started_at": "2026-08-31T20:42:16Z",
+  "completed_at": "2026-08-31T20:42:16Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0125/evidence/G07/build.txt",
   "digest": "sha256:72b8c609edaf2f1bb7f9d4fdefee6a3aa089239b7dc6dac61b5a144e8cf39a57",
@@ -32,7 +32,7 @@
     "artifacts": [
       {
         "ref": "scripts/badf_gate.py",
-        "digest": "sha256:d4b439406bc6d0fbba98aff54084442a4429861fe58a851aa69659fafb48a909"
+        "digest": "sha256:919fead3677330a0f9ae69f7be2f9f146cf0034f75595265d94918ba59300956"
       },
       {
         "ref": "scripts/badf_compose.py",

@@ -1,10 +1,10 @@
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 4cbcd45..daea069 100644
+index fe2927c..3556e53 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -1972,6 +1972,56 @@ Shared-surface (`schemas/` + `badf_gate.py`) → QA + REV, unlike rung A. Next:
- deterministic G10/UAT controls with lean **disabled** — acceptance-basis binding across a dossier,
- freshness, and staleness on candidate change are HARD INVARIANTS.
+@@ -2005,6 +2005,56 @@ that verdict. Mirroring C6 would require inventing a schema field — which the
+ **#250 exists precisely because `check_g07_binding` accumulated correct controls nothing was watching** —
+ adding an unwatched control while claiming to fix that class would have grown the pile.
  
 +## badf-uat → deterministic G10 controls — a defence that names a field must require the field (`BADF-WP-0125` / WP-UAT-C, Issue #273 / GOV-0120)
 +

@@ -27,12 +27,12 @@ index 0000000..d5d1508
 +  "note": "WP-UAT-C: deterministic G10 controls, lean DISABLED (HARD INVARIANTS). Closes BADF-QA's #266 with C7/C8/C9; C10 and C11 come from the ladder's own C-rung text plus QA's routed coverage-exactness note, so C is deliberately wider than #266 and the provenance is stated per-control rather than implied. The governance point: at rung B I defended U4's boundary on the grounds that conditions are where a known critical failure gets named; QA agreed the rationale and showed it was enforced by nothing, since every acknowledgement field is optional. C enforces the precondition rather than withdrawing the judgement -- a defence that names a field is a defence that the field must be non-empty. C10 converts UAT-I17 from a promise into a mechanism: recomputing the scenario-set digest means a scenario added or removed after an acceptance was issued cannot carry that acceptance forward silently. All five mutation-checked individually: 0 survivors, 0 without a liveness witness, under the full protocol including parser anti-vacuity (the battery's first run parsed 3 of 24 tests and reported a clean-looking 'survivors: 5' -- caught by the negative control's own count, which is now an assertion)."
 +}
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 4cbcd45..daea069 100644
+index fe2927c..3556e53 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -1972,6 +1972,56 @@ Shared-surface (`schemas/` + `badf_gate.py`) → QA + REV, unlike rung A. Next:
- deterministic G10/UAT controls with lean **disabled** — acceptance-basis binding across a dossier,
- freshness, and staleness on candidate change are HARD INVARIANTS.
+@@ -2005,6 +2005,56 @@ that verdict. Mirroring C6 would require inventing a schema field — which the
+ **#250 exists precisely because `check_g07_binding` accumulated correct controls nothing was watching** —
+ adding an unwatched control while claiming to fix that class would have grown the pile.
  
 +## badf-uat → deterministic G10 controls — a defence that names a field must require the field (`BADF-WP-0125` / WP-UAT-C, Issue #273 / GOV-0120)
 +
@@ -88,7 +88,7 @@ index 4cbcd45..daea069 100644
  
  Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
 diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
-index 96f5cc4..0850b33 100644
+index b8938ae..6a809df 100644
 --- a/scripts/badf_gate.py
 +++ b/scripts/badf_gate.py
 @@ -2010,6 +2010,66 @@ def check_g10_uat_binding(artifact: Path, dossier: dict[str, Any], evidence: dic
@@ -344,24 +344,24 @@ index f3f9815..c036e02 100644
 +
  if __name__ == "__main__":
      unittest.main()
-diff --git a/work/WP-2026-0124/work-package.json b/work/WP-2026-0124/work-package.json
-index 2e1f503..9b17faa 100644
---- a/work/WP-2026-0124/work-package.json
-+++ b/work/WP-2026-0124/work-package.json
-@@ -61,12 +61,14 @@
+diff --git a/work/WP-2026-0123/work-package.json b/work/WP-2026-0123/work-package.json
+index 95ce8de..8adf88d 100644
+--- a/work/WP-2026-0123/work-package.json
++++ b/work/WP-2026-0123/work-package.json
+@@ -46,11 +46,14 @@
      "reversible": true,
-     "method": "revert the squash commit via PR; the rung is additive, so reverting restores the pre-typed admissibility exactly"
+     "method": "revert the squash commit via PR"
    },
 -  "status": "IN_PROGRESS",
 +  "status": "CLOSED",
    "external_target": {
      "repository": "bstBizEra/badf",
-     "branch": "wp/WP-2026-0124-uat-typed-evidence",
-     "base_revision": "292d1be",
--    "composition_verified": false
+     "branch": "main",
+-    "base_revision": "d0986b0"
++    "base_revision": "d0986b0",
++    "landed_content_tree": "c41b0b25d3402b19aec099c987ece6a43a206de5",
 +    "composition_verified": true,
-+    "landed_content_tree": "2609d03d2425e5064f99e466d4b5fac6b50013b9",
-+    "landed_as": "d0986b0bee50d887d49eac2053da3777ddf41176"
++    "landed_as": "c8036a6bea559f53fd342eb29c5f3b4d5a0290ef"
    },
-   "note": "Rung B of the badf-uat A\u2192E ladder; A landed as #241 (c525129). SHARED-SURFACE (schemas/ + badf_gate.py) so this needs QA + REV, unlike rung A which was ladder-internal under the #248 classification. A SIXTH control (U1, acceptance-basis resolvability) was written and REMOVED: schemas/uat.schema.json already makes prd_digest required inside acceptance_basis, so check_schema refuses first and U1 could never fire. Its test passed on the wrong raise because BOTH messages contain 'prd_digest'. Found by this rung's own mutation battery -- #250's class in this rung's own code -- and recorded in a code comment so nobody re-adds it. Separately: the gate patch removing U1 silently FAILED on a first attempt while the test patch succeeded, and the suite went green anyway; caught by grepping for the code rather than trusting the exit status. Ids WP-2026-0124 / BADF-DEM-0110 / GOV-0116 swept clean on all four surfaces including my own unpushed worktrees.",
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Shared surface (scripts/badf_gate.py) -> contract_changed by construction, so QA + REV, not ladder-internal. Ids swept with SARCHI's badf_id_sweep.py (#252, positive control PASS), ceiling WP-2026-0122/BADF-DEM-0108 printed beside the binding per BARCHI-1's rule, published on #211 before any edit, and ASKED -- BARCHI-1 and BARCHI-3 both confirmed clear, BARCHI-3 from their unpushed worktree, the surface no sweep can see. A filed acceptance criterion was found unbuildable and the deviation was posted to #211 before review rather than discovered at it. Reconciles WP-2026-0122; an earlier copy carried WP-2026-0117 which #258 landed first, so that copy collapsed byte-identically and was pruned in the same pass.",
    "expected_surfaces": {
