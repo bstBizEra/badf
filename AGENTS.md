@@ -47,6 +47,7 @@ Before acting, read only the documents relevant to the task, plus every document
 | Any repository change | `docs/00-operating-model.md`, `docs/01-lifecycle-gates.md`, `docs/05-evidence-and-provenance.md` |
 | Planning or implementation | `docs/02-engineering-loop.md`, `docs/13-artifact-model.md` |
 | Agent delegation or council review | `docs/03-authority-and-agent-councils.md` |
+| Agentic team runtime work (seats, planes, AET rungs) | `docs/14-agentic-engineer-team.md` |
 | Memory, context, or knowledge work | `docs/04-memory-and-context.md` |
 | Session continuation or handoff | `docs/06-sessions-handoffs-recovery.md` |
 | Skill creation/use | `docs/07-skills-governance.md` |

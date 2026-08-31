@@ -1,0 +1,84 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0122",
+  "title": "BADF-AET-A: freeze the Agentic Engineer Team runtime contract -- four planes, persistent seats, non-expansion invariants, durable effects, badf init integration",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0108",
+  "objective": "Freeze the normative AET contract (docs/14) so every later runtime rung (AET-B..E) builds against declared invariants instead of accumulated convention -- the contract only; no runtime, no schemas, no registry entry, no authority change.",
+  "business_value": "The AET program intake (#236) ratified D1 after its three-leg trigger closed at d910e12; the contract is the smallest correct governed unit, and freezing it first is the ladder discipline every capability family in this repo has followed (A-rung before substrate).",
+  "in_scope": [
+    "docs/14-agentic-engineer-team.md: the normative contract -- four planes with per-plane authority sentences; six persistent seats + dynamic-specialist rule; routing rules; invariants AET-I01..I12 (non-expansion, no self-approval, output!=authority, durable-effect PREPARE->AUTHORITY->COMMIT->RECONCILE with the five outcome classes, bounded retries + stop codes, session resume protocol, evidence correlation, learning-never-expands-authority, human-reserved untouched by pointer not copy, badf init team-profile subset invariant, one canonical gate); budgets and stop codes; the badf init integration contract; rungs A-E with explicit gating incl. P1-before-P3",
+    "AGENTS.md: one required-reading row pointing agentic-team runtime work at docs/14 (a pointer, not authority)",
+    "tests/test_badf_aet_contract.py: red-first content-anchor guards per the house REFERENCE_ANCHORS remedy (planes, seats, invariant ids, all five outcome classes as a non-empty reference list, the AGENTS.md row, rung gating, and the absence guard: the contract must POINT at badf/authority-matrix.json rather than restate the human-reserved list)",
+    "badf/demands/BADF-DEM-0108.json; GITHUB_CONTROL_PLANE.md doctrine section; reconcile WP-2026-0117; own composition record + typed G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "any AET-B..E content: no runtime code, no team schema, no coordinator adapter, no shadow -- the rungs are DEFINED and GATED here, not built",
+    "badf/skill-registry.json (the AET is operating doctrine, not a routed capability; also keeps this WP off the most-contended surface), badf/authority-matrix.json, badf/lifecycle.json (authority-policy mutation explicitly out of scope per the ratified packet)",
+    "badf/team.yaml or any INIT-rung artifact; the D4 throughput question (stays with the #236 conversation)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "docs/14 exists and declares: all four planes, all six persistent seats, invariants AET-I01..I12, all five durable-effect outcome classes, the badf init subset invariant, and rungs B-E each with an explicit gate/trigger",
+    "AGENTS.md carries the docs/14 required-reading row; no other AGENTS.md content changes",
+    "the contract references badf/authority-matrix.json for human-reserved authority and does NOT restate the role list (drift guard: a copy would fork the law)",
+    "guard tests red before the document exists, green after; gutting the invariants section, an outcome class, or the AGENTS.md row turns a test red (mutation evidence in the PR)",
+    "repo PASS on branch and composed tree; no diff outside the declared surface (the two-sided containment control judges this record)"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_aet_contract.py (7)"
+  ],
+  "test_obligations": [
+    {
+      "id": "TEST-001",
+      "claim": "the frozen contract carries its load-bearing declarations and the normative root references it; anchors cannot be gutted silently",
+      "level": "unit"
+    }
+  ],
+  "evidence": [
+    "failing-first: all guard tests red before docs/14 exists",
+    "green: module green after the freeze",
+    "mutation: invariants section / outcome class / AGENTS.md row neutered -> red",
+    "compose output incl. composition record",
+    "typed G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "a69b92201cb4b354a86d136845705af751f6c655"
+  },
+  "expected_surfaces": {
+    "files": [
+      "docs/14-agentic-engineer-team.md",
+      "AGENTS.md",
+      "tests/test_badf_aet_contract.py",
+      "badf/demands/BADF-DEM-0108.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "work/WP-2026-0117/work-package.json"
+    ]
+  },
+  "note": "D1 of the ratified #236 checkpoint (operator ratification recorded, comment 5479909835). Ids WP-2026-0122/BADF-DEM-0108 claimed on #236 before binding, measured with the landed sweep tool + worktree list + the hour's seat coordination (0119=#256, 0120=BARCHI-1, 0121=BARCHI-3). Reconcile target moved with the race: the WP-2026-0118 reconcile collapsed byte-identically when #256 landed ab72962 (pruned from expected_surfaces in the same pass -- sixth firing of the drill); the 0119 reconcile then collapsed at #255 (a69b922, seventh firing); now reconciles WP-2026-0117. Change class C1: docs + guard tests only; the packet's C3 boundary (any future admission carrying gate significance) belongs to a later, separately-authorized rung."
+}

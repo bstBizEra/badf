@@ -1912,6 +1912,30 @@ destroys the binding that makes it evidence, to make a cosmetic id consistent. T
 
 Anyone sweeping for the stale id will hit that demand and be tempted. **The temptation is the trap.**
 
+## The AET runtime contract frozen — doctrine gets guards, and authority stays where it lives (`BADF-WP-0122` / AET-A, Issue #236)
+
+The Agentic Engineer Team program opened the way this repository opens everything: freeze the contract
+before building the runtime. `docs/14-agentic-engineer-team.md` now declares the four planes, six
+persistent seats, routing rules, invariants `AET-I01`–`AET-I13`, the durable-effect contract with its
+five outcome classes, budgets/stop codes, the `badf init` subset invariant, and rungs `AET-B`–`AET-E`
+**defined and gated, not built** — `AET-B` behind P1-before-P3 and the #246 ratchet, `AET-E` behind a
+human-reserved authorization in the operator's own channel. The contract grants no authority and holds
+no copies: the reserved-role list stays in `badf/authority-matrix.json`, pointed at, never restated —
+on the one document where a drifted copy would *become* authority.
+
+Two structural choices worth naming. The AET is deliberately **not** a skill-registry entry — it is
+operating doctrine for seats, not a routed capability, and staying off the most-contended shared
+surface is the D4 lesson practiced. And the doctrine ships with **content-anchor guards**
+(`tests/test_badf_aet_contract.py`, red-observed before the document existed, gut-tested by mutation):
+after #216/#230/#235, a normative document without guards is a claim nobody re-measures.
+
+`AET-I13` (channel-bound authorization) was earned during this WP's own drafting: a ratification
+relayed from one session cannot release a hold committed in another — a seat correctly refused exactly
+that, the D3 record on #236 was corrected, and the invariant now freezes what the episode proved. In
+the same hours, the id claim for this WP survived a crossed-ids misread (caught at ask-time by the
+print-the-ceiling rule) — the allocation protocol landing in `BADF-WP-0118` doing its job on the very
+next WP to allocate.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
