@@ -47,7 +47,7 @@
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "wp/WP-2026-0115-uat-contract-freeze",
-    "base_revision": "87dd192",
+    "base_revision": "1c1827c",
     "composition_verified": false
   },
   "note": "Ladder-internal DESIGNED contract freeze (SKILL + references, no gate/schema/lifecycle) -> no BADF-QA/BADF-REV review required at A; WP-UAT-B (typed uat evidence schema) and WP-UAT-C (deterministic gate controls, lean disabled -- HARD INVARIANTS) are shared-surface -> QA+REV by BADF-QA/BADF-REV. Discovered gap filed separately as Issue #238 / GOV-0106 (uat evidence type had no producing capability), not absorbed into this freeze. Authored by BARCHI-3 as Senior ARCH & ENGIN, on the operator's explicit directive to proceed badf-uat then badf-production-readiness. Ids WP-2026-0115/DEM-0102/GOV-0107. Delivery ladder WP-UAT-A(DESIGNED)->B(IMPLEMENTED)->C(VALIDATED)->D(SHADOWED)->E(release_authority/operator admission ACTIVE); next: WP-PRDY-A (badf-production-readiness, Issue #237 / GOV-0105, ids WP-2026-0114/DEM-0101 already claimed)."
