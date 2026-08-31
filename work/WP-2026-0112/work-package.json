@@ -42,11 +42,14 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "87dd192"
+    "base_revision": "87dd192",
+    "landed_content_tree": "6b85abc47d86bdf675a8060438492eaa441ee462",
+    "composition_verified": true,
+    "landed_as": "1c1827c0e99ea86d9ca1119b1a92d90d83ba1628"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Instance ten of the evening's proxy-vs-property class, found on my own surface by applying BARCHI-3's checklist (#221) and the second such instance introduced while remediating. Ids measured across four surfaces AND asked for -- confirmed clear by BARCHI-3 (including their local worktrees) and BADF-QA (with positive controls) before binding, the remedy for my WP-0110/DEM-0097 collision. Fix adopts existing prior art rather than inventing a guard. Resolves #229 / GOV-0099. Reconciled WP-2026-0111 locally when the gate refused to open this WP with it unreconciled; #224 reconciled it independently and landed first (87dd192), so my copy collapsed to a byte-identical no-op on rebase -- the fourth instance of derived-reconcile-convergence tonight. Also reconciles WP-2026-0110 (BARCHI-3's close-out, landed 87dd192): no competing open PR at the time this WP opened, so no race -- checked before claiming it, having just been corrected for skipping that check on WP-2026-0111. Ownership was NOT a free choice: the canonical gate refuses to open a new work package while a landed one is unreconciled (\"reconcile landed work packages before opening a new one\"), so the next WP to open owns the reconcile mechanically. I had earlier ceded WP-2026-0111 to BARCHI-3's #224 by agreement; the gate overrode the agreement and both seats were told. An earlier staged reconcile of WP-2026-0109 was dropped as redundant -- #213 had already landed it byte-identically, visible only by diffing against origin/main rather than local HEAD.",
   "expected_surfaces": {

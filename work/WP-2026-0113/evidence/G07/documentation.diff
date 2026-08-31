@@ -1,0 +1,65 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 47c9131..1ab6030 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1667,6 +1667,60 @@ hit**: applied to the `badf-engineering-verification` modules it correctly found
+ already assert counts before iterating. A detection rule that has only ever fired is as suspect as a
+ guard that never does.
+ 
++## badf-release-validation → IMPLEMENTED — the four G09 evidence contracts, typed (`BADF-WP-0113` / WP-VAL-B, Issue #233 / GOV-0103)
++
++G09 named four evidence types and none of them had a schema, so a G09 dossier could carry any object
++shape and the gate could not refuse a validation claim on its content. WP-VAL-A froze what those claims
++**mean** (VAL-I01…VAL-I20) and shipped no enforcement, saying so in its own non-coverage: *"the contract
++is frozen text plus a contract test — nothing at this rung proves a validation class can actually be
++routed, observed or refused."* This rung closes that gap.
++
++Four typed schemas specialize evidence for `quality-validation`, `security-validation`,
++`performance-test` and `resilience-test` with a **closed** `binding`, and `check_g09_binding` — registered
++over exactly those four types in `EVIDENCE_RULES`, mirroring VER-B's `check_g08_binding` — enforces the
++invariants decidable on a single evidence object: one immutable candidate (**VAL-I01**); no agent as
++producer, and no agent adjudicating its own success (**VAL-I04/I05** — an agent may *attempt* a journey,
++the oracle sits outside it); no PASS on an unapproved runtime (**VAL-I04**); mandatory non-coverage
++(**VAL-I15**); a non-production environment that declares its material deviations, so `staging PASS ≠
++production proven` becomes recorded rather than forgotten (**VAL-I08**); a flake policy that retains
++failed observations (**VAL-I16**); blocking findings preserved against a PASS (**VAL-I14**); thresholds
++bound **before** the run began, because a bound fitted to the result is not conformance (**VAL-I06/I10**);
++and resilience PASS only on observed recovery with verified integrity, never mere survival during
++injection (**VAL-I11/I12**). Two refusals are structural rather than code: `residual_risk.acceptance.state`
++has no bare `ACCEPTED` member, so a validator accepting its own risk is **unrepresentable** (**VAL-I09**,
++the SEC-I12 pattern); and one class's payload cannot fill another's slot — measured as **two** structural floors, not one:
++a wholesale swap is refused by `required` (the walker checks it *before* `additionalProperties`, so the
++foreign keys are never reached), while `additionalProperties: false` is what refuses a single foreign key
++smuggled into an otherwise-complete binding. Both are the floor under **VAL-I13**; an earlier draft named
++only the second and was wrong about which one fires.
++
++**Strictly additive.** A G09 evidence object with no `binding` passes through for all four types, exactly
++as WP-2026-0010's historical dossier survived the G08 rung. Nothing was added to any existing schema's
++`required`, no `additionalProperties` was tightened, and `repo` is green across the whole ledger.
++**No `scripts/badf_release_validation.py`** — VAL-I20 holds at every rung, not only at A — and no
++`lifecycle.json` change: G09 already named these four types; this rung types them and moves no ownership.
++G09 stays `quality_authority`; G10 stays `release_authority`. The frozen contract is untouched: SKILL.md's
++only edit is the frontmatter `status:` field, which had to move because the registry did — the skill file
++and the registry must not disagree about the rung. That SKILL.md carries a hardcoded status at all is a
++defect of its own class, the one `badf-engineering-verification`'s SKILL.md forbids in writing; it is filed
++rather than fixed here.
++
++**Nineteen control endpoints, each demonstrated load-bearing by mutation** (neuter the `raise`, the suite
++notices; 19/19 killed, no survivors). The first mutation pass, run in a throwaway worktree *before this
++branch existed*, found one survivor: VAL-I12's "PASS with an **empty** `integrity_checks` list" had no
++test — `observed: false` and a `FAIL` check were covered, the empty array was not, and it is structurally
++valid because the walker ignores `minItems`. That control could have been deleted under a green suite.
++The missing test was added before the branch was cut. **A green suite is not evidence that a control is
++load-bearing**; only mutation is.
++
++**Declared non-coverage, carried into review rather than left to be found:** the fixtures are
++author-written, so *"the control fires"* and *"the control fires on anything real"* are separable claims
++and only the first is within an author's reach — the same shape as VER-D's representative-shadow
++non-coverage. There is no real G09 dossier in this repo to test against. BADF-QA attacks the second with
++fixtures built from landed evidence and near-miss mutations an author would not write; BADF-REV checks
++that no refusal is unreachable by construction. Dossier-level controls — cross-class candidate identity
++and class substitution beyond the structural floor — are **WP-VAL-C**.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

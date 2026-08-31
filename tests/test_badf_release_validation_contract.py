@@ -35,7 +35,7 @@ class SkillContractTests(unittest.TestCase):
     def test_skill_exists_and_frontmatter(self):
         self.assertTrue(SKILL.is_file(), "SKILL.md must exist")
         for token in ("name: badf-release-validation", "gate: G09",
-                      "owner_role: quality_authority", "status: DESIGNED", "allowed_tools: []"):
+                      "owner_role: quality_authority", "status: IMPLEMENTED", "allowed_tools: []"):
             self.assertIn(token, SKILL_TEXT, token)
 
     def test_all_twenty_invariants_present_by_id(self):
@@ -80,7 +80,10 @@ class SkillContractTests(unittest.TestCase):
         registry = json.loads((ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))
         entry = next((e for e in registry["skills"] if e["name"] == "badf-release-validation"), None)
         self.assertIsNotNone(entry, "badf-release-validation must be registered")
-        self.assertEqual(entry["status"], "DESIGNED")
+        # WP-VAL-B (WP-2026-0113): the typed G09 contracts land at IMPLEMENTED.
+        # The pin advances with the rung rather than loosening -- each advance is
+        # then visible in its own diff, the VER-E pattern.
+        self.assertEqual(entry["status"], "IMPLEMENTED")
         expected = "sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest()
         self.assertEqual(entry["digest"], expected, "registry digest must equal sha256(SKILL.md)")
 

@@ -1,0 +1,73 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0113",
+  "title": "WP-VAL-B: type the four G09 evidence contracts (quality-validation \u00b7 security-validation \u00b7 performance-test \u00b7 resilience-test); badf-release-validation DESIGNED -> IMPLEMENTED",
+  "owner": "engineering_owner",
+  "demand": "BADF-DEM-0100",
+  "repository": "bstBizEra/badf",
+  "objective": "G09 names four evidence types and none of them has a schema, so a G09 dossier can carry any object shape and the gate cannot refuse a validation claim on its content. WP-VAL-A froze what those claims MEAN (VAL-I01..I20) and deliberately shipped no enforcement; this rung makes them checkable. Four typed schemas specialize evidence for the G09 types with a CLOSED binding, and check_g09_binding -- registered over the four types in EVIDENCE_RULES, mirroring VER-B's check_g08_binding -- enforces the invariants that are decidable on a single evidence object: one immutable candidate (VAL-I01), no agent as producer or as its own oracle (VAL-I04/I05), no PASS on an unapproved runtime (VAL-I04), mandatory non-coverage (VAL-I15), declared deviation for a non-production environment (VAL-I08), a flake policy that retains failures (VAL-I16), blocking findings preserved against PASS (VAL-I14), thresholds bound before the run began (VAL-I06/I10), and resilience PASS only on observed recovery with verified integrity (VAL-I11/I12). Strictly additive: a G09 evidence object with no binding stays admissible, exactly as WP-2026-0010's historical dossier survived the G08 rung.",
+  "business_value": "Closes the gap WP-VAL-A named in its own non-coverage: the contract was frozen text plus a contract test, and nothing proved a validation class could actually be routed, observed or refused. After this rung the canonical gate refuses nineteen distinct malformed G09 claims, each mapped to a frozen invariant.",
+  "in_scope": [
+    "schemas/quality-validation.schema.json, security-validation.schema.json, performance-test.schema.json, resilience-test.schema.json (typed binding, closed additionalProperties)",
+    "scripts/badf_gate.py: check_g09_binding + G09_TYPES + the EVIDENCE_RULES registration (additive; binding-less objects pass through)",
+    "tests/test_badf_release_validation_binding.py (29 tests: additive guarantee, 12 named controls, boundary cases, structural substitution floor, registry pin)",
+    "docs/governance/GITHUB_CONTROL_PLANE.md doctrine section; reconcile WP-2026-0112; own G07 self-dossier",
+    "badf/skill-registry.json: badf-release-validation DESIGNED -> IMPLEMENTED, digest re-pinned to the edited SKILL.md",
+    "skills/badf-release-validation/SKILL.md: the frontmatter `status:` field only (DESIGNED -> IMPLEMENTED); no change to any invariant, boundary or workflow",
+    "tests/test_badf_release_validation_contract.py: WP-VAL-A's two status pins advance with the rung (the VER-E pattern), citing this WP"
+  ],
+  "out_of_scope": [
+    "scripts/badf_release_validation.py -- VAL-I20 holds at EVERY rung, not only at A; deterministic G09 dossier semantics arrive in the canonical gate at WP-VAL-C",
+    "any lifecycle.json change: G09 already names these four types, this rung types them and does not add a fifth or move ownership (G09 quality_authority, G10 release_authority both untouched)",
+    "dossier-level controls -- cross-class candidate identity and class substitution (VAL-I13) beyond the structural additionalProperties floor are WP-VAL-C",
+    "any change to SKILL.md's invariants, boundaries, workflow or the 17 references -- the contract stays frozen; only the frontmatter status field advances, because the registry and the skill file must not disagree"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "expected_surfaces": {
+    "files": [
+      "schemas/quality-validation.schema.json",
+      "schemas/security-validation.schema.json",
+      "schemas/performance-test.schema.json",
+      "schemas/resilience-test.schema.json",
+      "scripts/badf_gate.py",
+      "tests/test_badf_release_validation_binding.py",
+      "badf/skill-registry.json",
+      "badf/demands/BADF-DEM-0100.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "skills/badf-release-validation/SKILL.md",
+      "tests/test_badf_release_validation_contract.py",
+      "work/WP-2026-0112/work-package.json"
+    ]
+  },
+  "acceptance_criteria": [
+    "four G09 schemas exist; check_g09_binding registered over exactly the four G09 types in EVIDENCE_RULES",
+    "additive: a G09 evidence object with no binding passes for every one of the four types; the G08 and G07 rules and every landed record are untouched",
+    "19 control endpoints, each demonstrated load-bearing by mutation (neuter the raise, the suite notices); no survivors",
+    "registry badf-release-validation IMPLEMENTED with the digest still equal to sha256(SKILL.md); no scripts/badf_release_validation.py; no lifecycle.json change",
+    "repo integrity clean; compose green; PyYAML-absent shape green"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_release_validation_binding.py"
+  ],
+  "evidence": [
+    "compose output",
+    "mutation ledger"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR (schemas, gate control, tests and registry status revert together)"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "1c1827c"
+  },
+  "note": "Shared-surface (badf_gate.py + schemas/) -> QA by BADF-QA and verdict by BADF-REV; NOT self-classified as ladder-internal. Ids WP-0113/DEM-0100/GOV-0103, claimed publicly on #233 before engineering began, after a five-surface sweep found WP-2026-0112 held in a peer's UNPUSHED local worktree (#227's class). Reconciles WP-2026-0110. Declared non-coverage carried into the PR: the fixtures are author-written, so 'the control fires' and 'the control fires on anything real' are separable claims and only the first is in the author's reach -- BADF-QA attacks the second with fixtures built from landed evidence. Delivery ladder WP-VAL-A(DESIGNED, #213) -> B(IMPLEMENTED, this WP) -> C(VALIDATED) -> D(SHADOWED) -> E(quality_authority/operator admission, ACTIVE). COMPOSE-CAUGHT (the branch-local module run did not): WP-VAL-A's contract test pins the registry status, so advancing the rung turned it red on the composed tree -- and inspecting that surfaced a second, unfailed inconsistency, SKILL.md's frontmatter hardcoding `status: DESIGNED` while the registry moved to IMPLEMENTED. Both fixed here because both are direct consequences of this rung. The CLASS defect -- skill files hardcoding a lifecycle status that can drift from the registry, which badf-engineering-verification's SKILL.md explicitly forbids -- is filed separately rather than fixed in-branch. SELF-CAUGHT before push: this record originally declared `expected_surfaces.paths`, but the C3 and C7 controls read `expected_surfaces.files` (badf_gate.py:1610/1666) and the schema defines no `paths` member -- so the declaration was INERT: it looked like a scope commitment and enforced nothing, the same vacuity class the team catalogued tonight. Renamed to `files`. My own by-hand diff-vs-declaration check was real but could not have caught it, because it compared the diff against a list the gate never reads -- checking a declaration by eye verifies the list, not that anything consumes it. REACHABILITY, measured and declared rather than left for review (BADF-QA's pre-registered rule: a refusal that cannot be tripped does not count). validate_evidence invokes EVIDENCE_RULES only when evidence outcome == PASS (badf_gate.py:1916-1918). All 19 endpoints are therefore reachable through the REAL dossier path for PASS evidence, which is the dominant case on this repo: 263 PASS of 337 evidence records under work/*/evidence/*/*.json ON MAIN 87dd192 (71 NOT_RUN, 3 NOT_APPLICABLE). CORRECTED after BADF-QA could not reproduce an earlier figure of 266/72: that count was taken in THIS BRANCH's worktree and therefore included WP-2026-0113's own four unlanded evidence files while calling them landed -- the wrong-tree class, on a number rather than on a green run. QA's 294 is a different and also defensible population (work/** plus examples/**); examples/ are fixture records, so the narrower denominator is the honest one for a claim about how exercised the real dispatch path is. The material claim is unchanged either way: PASS dominates. That is a materially different position from G07's C3 and C7, which BADF-QA measured as having ZERO evaluable instances in the repository's history (C3 gates on DOSSIER disposition PASS -- 77 HUMAN_REQUIRED vs 1 PASS, and that one record declares no expected_surfaces; C7 needs a declared delegation and 0 of 95 WPs declare one). Mine gate on EVIDENCE outcome, not dossier disposition. Two honest caveats: the FAIL boundary test calls the control directly on a path the dispatcher never takes (annotated in the test as a unit-level over-fire guarantee, not a production path), and 'reachable in principle' is still not 'exercised by real data' -- no real G09 evidence exists in this repository yet. SELF-SWEEP after the PR opened, applying the night's own defect class to my own schemas: the walker honours only required/enum/pattern/additionalProperties/type, so my four schemas carry 134 INERT constraint keywords (105 minLength, 21 format, 4 minItems, 4 const). Two were load-bearing without a code backstop and are now fixed: (a) `oracle.locator` relied on an inert minLength, so an empty locator was schema-valid -- an oracle that names nothing cannot be consulted, now refused by V3b; (b) the VAL-I06 threshold-ordering check compared `bound_at` and `runtime.started_at` as RAW STRINGS while `format: date-time` is inert, so a validly-typed timestamp in another ISO spelling ('+00:00' vs 'Z') would render a silently wrong verdict -- now parsed via the gate's own parse_time, which normalises to UTC and refuses malformed input. The four minItems are already backed by code controls (V9/V10/V12 and the abort-conditions check), and `const` on schema_version is inert here exactly as it is in the G07 and G08 schema sets -- house-wide, not specific to this rung, and left alone. Control endpoints 19 -> 20, all mutation-killed; tests 37 -> 40. MECHANISM CORRECTED after tightening a test assertion (prompted by BADF-QA's probe-8 finding, where a mutation died at check_schema and reported RED -- a true adjacent fact that reads as verification): two of my control-layer assertions used regexes ('approved', 'oracle') that check_schema's own messages would also satisfy, since the walker's label embeds the field path; both now match the invariant id instead. Tightening the third -- a bare assertRaises on the VAL-I13 structural floor -- FAILED, revealing that I had named the wrong mechanism: a wholesale class swap is refused by `required` (checked BEFORE additionalProperties), not by additionalProperties. Both floors are real and now separately tested: `required` for a wholesale swap, `additionalProperties:false` for a single foreign key smuggled into an otherwise-complete binding. The bare assertRaises had been passing on the wrong reason. Tests 40 -> 41. FALSE-ACCEPT GUARD added from BADF-QA's near-miss battery: their probes produced three concrete cases where `bound_at` is semantically AFTER `runtime.started_at` yet sorts BEFORE it as a string (2026-08-30T20:00:00-07:00, 2026-08-30T23:30:00-02:00, 2026-08-31T00:30:00-01:00 against 2026-08-31T01:00:00Z) -- i.e. a threshold fitted to the result ADMITTED silently. All three are refused by the parse_time fix, and all three of QA's oracle.locator survivors (empty and whitespace-only) are refused by V3b's .strip(); their battery ran on 65abbb1, before both fixes. The finding that mattered was not the fixes but the GAP IN MY TESTS: equivalence ('+00:00' still passes) and malformation ('yesterday' refused) BOTH survive a revert to string comparison, so neither guarded the fix. The three false-accepts do -- verified by negative control (revert parse_time -> 4 failures; restore byte-identical). Tests 41 -> 42. QA's additive-path proof came back clean by CONSTRUCTION rather than sampling: the four new G09 types appear 0 times across 345 landed evidence records (positive control: source-change = 80), and the gate diff has zero deletion/modification lines -- one appended hunk -- so no landed record's outcome can change. REBASED onto 1c1827c after #242 (WP-2026-0112) landed. The WP-2026-0110 reconcile COLLAPSED -- #242 discharged it first -- so it is dropped from expected_surfaces.files in the same pass, per bst-sa-90's warning: a rebase that collapses a reconcile to a no-op leaves a declared-but-unmatched surface, which is exactly what their two-sided C3 containment control refuses. Reconcile target shifts to WP-2026-0112. Also caught during this rebase: badf-release-validation is ALREADY on main at DESIGNED (landed by my own WP-VAL-A #213), so the registry edit must ADVANCE that entry, not append a second one -- an assertion refused the duplicate before it was written. PRUNED two structurally-unmatchable declarations, found by BADF-REV and verified by me: `badf/lockfile.json` and `work/WP-2026-0113/` can NEVER match a changed path, because C3 builds its names list with the gate's own exclusion pathspec (badf_gate.py:3439). Measured on this branch: 12 paths visible to C3, and exactly those two patterns match nothing. They bought no containment and the lockfile entry actively WIDENED the C7 delegation ceiling, since expected_surfaces.files doubles as it. My own both-directions check missed this for the THIRD time on this same field -- I compared the declaration against the raw `git diff`, not against the exclusion-filtered population the gate actually uses. Checking a declaration against the wrong population verifies nothing, which is the same defect as declaring `paths` where the gate reads `files`."
+}
