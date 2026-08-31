@@ -1,0 +1,149 @@
+# 14 — The Agentic Engineer Team: runtime contract (AET-A)
+
+Status: **contract frozen** at `BADF-AET-A` (WP-2026-0122, #236, ratified 2026-08-31).
+Rungs `AET-B`–`AET-E` are **defined and gated below, not built**. This document is
+operating doctrine for seats; it is deliberately **not** a `badf/skill-registry.json`
+entry — the AET is not a routed capability, and this contract grants no additional
+authority to anything (§5, AET-I03).
+
+## 1. Purpose and non-goals
+
+The AET is BADF's own engineering team: the seats, planes, routing rules and
+invariants under which agent sessions build BADF through BADF — and, at the INIT
+rungs, the operating model a `badf init` project instance consumes. This contract
+freezes the runtime's *shape* so that every later rung (substrate, deterministic
+controls, shadow, admission) is measured against declared invariants instead of
+accumulated convention.
+
+Non-goals, permanently: the AET never becomes an authority system. Policy,
+work packages, deterministic gates, evidence, independent review and human-reserved
+authority remain superior to every seat, council, coordinator and skill —
+*intelligence proposes and executes; deterministic controls authorize transitions;
+independent evidence proves readiness; organizational authority authorizes what
+policy reserves.*
+
+## 2. The four planes
+
+| Plane | Owns | Authority sentence |
+| :-- | :-- | :-- |
+| **Deterministic control plane** | lifecycle state, authority resolution, gate evaluation, WP state, evidence validation, provenance | This plane is authoritative; nothing below it converts output into permission. |
+| **Agentic execution plane** | seats and routed specialists performing bounded work | Its output is proposal or execution evidence, never self-authority. |
+| **Independent assurance plane** | review, QA, verification, councils, evidence audit | Logically independent of the authoring execution it assesses; "no findings" never means "correct". |
+| **Learning plane** | outcome reconciliation, root cause, knowledge, candidate tests/controls/skills | Learning may improve capability; it never silently expands authority (AET-I09). |
+
+## 3. Persistent seats
+
+Six persistent operating seats; additional specialists are routed dynamically and
+only when a gate, change class, risk or non-coverage requires them — never as a
+standing swarm.
+
+- **Coordinator** (SARCHI seat) — decomposition, ordering, integration, dispatch,
+  evidence completeness. Cannot self-approve; cannot merge what it authored without
+  the independent verdicts policy requires.
+- **Builder controller** — implementation decomposition and bounded specialist
+  execution inside a WP's declared surface.
+- **Independent reviewer** — challenges architecture, implementation and evidence;
+  independent of the authoring run wherever independence is required.
+- **Verifier** — runs or validates deterministic runtime observations; never
+  implements the change under verification.
+- **Release/runtime observer** — release evidence, deployment observation,
+  reconciliation, within granted authority only.
+- **Librarian** — close-out learning, durable knowledge, skill candidates.
+
+## 4. Routing
+
+Work routes to the minimum necessary specialists. Skill routing reads
+`badf/skill-registry.json` **at execution time**; a future or nonexistent family is
+never used because a document names it (the declared-future list, when present,
+lives in the registry — never in prose adjacency, never in a test-local allowlist).
+Review routing follows the shared-surface rule: changes to shared enforcement
+surfaces go to QA + the independent reviewer; ladder-internal rungs may not require
+them, and the classification is verified by diff, not by the author's
+characterization.
+
+## 5. Invariants (AET-I01 – AET-I13)
+
+- **AET-I01 — Non-expansion.** `delegated_authority ⊆ work_package_authority ⊆ repository_policy`,
+  always, at every level of delegation. A subagent task is not a new WP; delegation
+  cannot create authority.
+- **AET-I02 — No self-approval.** The author may not supply the independent approval
+  a gate requires; the same run never counts as author and independent reviewer.
+- **AET-I03 — Output ≠ authority.** Coordinator, council, skill and LLM output —
+  including this contract — is never authority. Capability ≠ permission; successful
+  execution ≠ approval.
+- **AET-I04 — Trees are distinguished.** Source-head green ≠ composed-tree verified ≠
+  landed-tree reconciled; claims bind to the tree that carries them, and the PR body
+  is the squash message — it is verified as a claim surface.
+- **AET-I05 — Durable effects.** Every external side effect runs
+  `PREPARE → AUTHORITY CHECK → COMMIT → RECONCILE` and resolves to one of:
+  `COMMITTED`, `PROVEN_ABSENT`, `OUTCOME_UNKNOWN`, `COMPENSATED`,
+  `MANUAL_REMEDIATION_REQUIRED`. An ambiguous state-changing operation is never
+  blindly retried.
+- **AET-I06 — Bounded retries.** Budgets and stop codes dominate; exhaustion yields
+  `BLOCKED`, never an autonomous extension, and a repeated identical failure is not
+  a new attempt.
+- **AET-I07 — Session resume.** After interruption:
+  `READ STATE → RECONCILE WORLD → VERIFY AUTHORITY → RESUME` — never
+  "remember what probably happened and continue mutating".
+- **AET-I08 — Evidence correlation.** Work correlates `work_package_id`, session,
+  run, gate, base/head SHAs and content trees, so the ledger can answer which run
+  produced which outcome mechanically.
+- **AET-I09 — Learning never expands authority.** The learning plane changes
+  knowledge, methodology, tests, controls, skill capability — never constitutional
+  authority, reserved roles, mandatory gates or production authorization.
+- **AET-I10 — Human-reserved stays human-reserved.** The sole source for reserved
+  roles and actions is `badf/authority-matrix.json`; this contract **points at it
+  and holds no copy** — a copy would fork the law and drift into authority.
+- **AET-I11 — Instance subset.** For every `badf init` project instance:
+  `project_team_capability ⊆ BADF_authorized_capability`. A project-local team
+  profile narrows; it never widens, and it is never an alternate authority system.
+- **AET-I12 — One canonical gate.** `badf_gate.py` remains the deterministic
+  governance path; no seat, adapter or profile introduces a second validator,
+  competing lifecycle engine or agent-side approval logic.
+- **AET-I13 — Channel-bound authorization.** An operator utterance
+  **binds the commitments of the session it was made in**. A coordinator's relay of it is
+  evidence another seat may cite in its *own* ask to its *own* principal — never a
+  substitute for that ask. A ratification in one channel does not release holds,
+  commitments or gates created in another. *(Provenance: the #236 D3 correction,
+  2026-08-31 — a seat correctly refused a relayed release of its own hold.)*
+
+## 6. Budgets and stop codes
+
+Every autonomous execution carries an execution budget and stops — returning an
+explicit stop code, never disguising blockage as progress — on:
+`AUTHORITY_CONFLICT`, `UNEXPECTED_DESTRUCTIVE_SCOPE`, `CREDENTIAL_EXPOSURE`,
+`POLICY_BYPASS`, `EVIDENCE_CORRUPTION`, `BUDGET_EXHAUSTED`, stale or contradictory
+evidence, material target movement, or unavailability of required independent review.
+
+## 7. The `badf init` integration contract
+
+An initialized project consumes this operating model without copying the framework:
+the instance receives the seat/plane doctrine by reference, binds a bounded team
+profile (a later INIT rung; only if repository contracts support it), and pins the
+BADF revision it consumes. The instance may restrict capability locally; under
+AET-I11 it can never extend it, and its authority chain terminates in the canonical
+authority matrix, not in any local file. Instance-side runtime (profiles,
+`badf/team.yaml`, coordinator modes) is INIT-rung scope, not this contract's.
+
+## 8. Rungs and gating
+
+Ladder discipline as practiced by every capability family in this repository:
+freeze, then build, then prove, then shadow, then admit. Each rung is a separate
+governed WP with its own review; **no rung grants no additional authority is
+restated at each** — admission changes *what runs*, never *what is permitted*.
+
+| Rung | Target | Gate/trigger |
+| :-- | :-- | :-- |
+| `AET-A` | contract frozen | **this document** |
+| `AET-B` | runtime substrate | gated on: **P1-before-P3** — the open evidence-correctness defects triaged with owners (at freeze time: #220/#234 dispositioned, #211/#218 owned or parked deliberately) AND the #246 ratchet WP landed, because the substrate's containment leans on it |
+| `AET-C` | deterministic controls validated | gated on AET-B; failing-first + mutation on every control named in the #236 packet's list |
+| `AET-D` | self-build shadow | gated on AET-C; shadow grants no authority and its measurements are frozen as captured |
+| `AET-E` | admission | gated on AET-D evidence AND a human-reserved authorization in the operator's own channel (AET-I13; C3 per the authority matrix) |
+
+## 9. Non-coverage, stated
+
+This contract does not: enumerate specialist prompts or team-profile schemas
+(INIT/AET-B scope); resolve the D4 throughput question (#236's open conversation);
+alter any gate, schema, or authority file; or claim shadow evidence exists for any
+AET behavior — it does not, and that is AET-D's job. The seats operate today under
+the root charter and this doctrine; nothing here changes what any of them may do.
