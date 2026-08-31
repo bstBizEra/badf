@@ -248,7 +248,11 @@ class RegistryTests(unittest.TestCase):
     def test_registry_pin_is_at_least_implemented_and_skill_digest_unchanged(self):
         registry = json.loads((gate.ROOT / "badf/skill-registry.json").read_text(encoding="utf-8"))
         entry = next(e for e in registry["skills"] if e["name"] == "badf-engineering-verification")
-        self.assertIn(entry["status"], ("IMPLEMENTED", "VALIDATED", "SHADOWED", "ACTIVE"));  # VER-B floor; later rungs advance it self.assertEqual([], entry["allowed_tools"])
+        # VER-B floor; later rungs advance it.
+        self.assertIn(entry["status"], ("IMPLEMENTED", "VALIDATED", "SHADOWED", "ACTIVE"))
+        # #210: this assertion was spliced INTO the comment above by a semicolon edit and ran
+        # for nobody -- `allowed_tools` appeared exactly once in this module, inside a comment.
+        self.assertEqual([], entry["allowed_tools"])
         self.assertEqual(entry["digest"], gate.sha256(gate.ROOT / "skills/badf-engineering-verification/SKILL.md"))
 
 

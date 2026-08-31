@@ -143,6 +143,28 @@ class BadfEngineeringVerificationContractTests(unittest.TestCase):
         for token in ("G08", "G09", "C2", "security-validation", "does not replace"):
             self.assertIn(token, boundary, token)
 
+    def test_every_reference_asserts_its_own_content(self):
+        """#216: the REFS set pins filenames; twelve references were content-asserted and four were
+        not, so `acceptance.md`, `integration-test-contract.md`, `non-coverage.md` and
+        `verification-matrix.md` could each be emptied to a stub with every module still green
+        (measured). A filename is a proxy; the load-bearing tokens are the property."""
+        must = {
+            "acceptance.md": ("DESIGNED", "IMPLEMENTED", "VALIDATED", "SHADOWED", "ACTIVE",
+                              "badf/skill-registry.json", "no authority granted"),
+            "integration-test-contract.md": ("integration-test", "runtime", "fixtures_epoch", "seed",
+                                             "output_digest", "non_coverage", "TEST_PLAN_DEFECT"),
+            "non-coverage.md": ("check_non_coverage", "non_coverage: []", "owner",
+                                "Declaring a gap does not resolve it"),
+            "verification-matrix.md": ("VERIFIED", "PARTIAL", "UNVERIFIED", "quality_authority",
+                                       "Composed-tree test", "expected_content_tree"),
+        }
+        self.assertEqual(set(must) | {r for r in REFS if r not in must}, REFS)
+        for name, tokens in must.items():
+            text = read(name)
+            self.assertGreater(len(text.splitlines()), 10, f"{name} is a stub")
+            for tok in tokens:
+                self.assertIn(tok, text, f"{name}: {tok}")
+
     def test_registry_pin_is_active_and_tool_empty(self):
         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
         entries = [e for e in registry["skills"] if e.get("name") == "badf-engineering-verification"]

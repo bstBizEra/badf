@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0117-G07-source-change",
+  "work_package_id": "WP-2026-0117",
+  "gate": "G07",
+  "claim": "the change WP-2026-0117 makes to this repository, outside its own directory and the lockfile",
+  "evidence_type": "source-change",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-08-31T15:21:08Z",
+  "completed_at": "2026-08-31T15:21:08Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0117/evidence/G07/source-change.diff",
+  "digest": "sha256:019f2ad345fa7c8c3f51bbbc0c9eb4efeb261d14dd2e2ab7834eec65fa397353",
+  "binding": {
+    "base_sha": "ab72962250368053c55b510178af1c6a6d9dfb60",
+    "head_sha": "9caf1891d893a97be51776abd559328193d21441",
+    "content_tree": "f1554393fd0e93e4f573dd44c1af1ee5a28d6945",
+    "changed_paths": [
+      "badf/demands/BADF-DEM-0104.json",
+      "tests/test_badf_build_contract.py",
+      "tests/test_badf_engineering_verification_contract.py",
+      "tests/test_badf_verification_evidence.py",
+      "tests/test_no_dead_assertions.py",
+      "work/WP-2026-0119/work-package.json"
+    ],
+    "expected_surfaces": {
+      "declared": false,
+      "files": []
+    },
+    "unexpected_paths": [],
+    "change_digest": "sha256:019f2ad345fa7c8c3f51bbbc0c9eb4efeb261d14dd2e2ab7834eec65fa397353"
+  }
+}
