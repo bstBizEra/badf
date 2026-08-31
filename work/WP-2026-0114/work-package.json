@@ -48,7 +48,7 @@
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "wp/WP-2026-0114-production-readiness-contract-freeze",
-    "base_revision": "87dd192",
+    "base_revision": "1c1827c",
     "composition_verified": false
   },
   "note": "Ladder-internal DESIGNED contract freeze (SKILL + references, no gate/schema/lifecycle) -> no BADF-QA/BADF-REV review required at A, by the precedent BADF-REV verified across #190/#198/#213; WP-PRDY-B and WP-PRDY-C are shared-surface -> QA+REV. The 24 invariants are frozen VERBATIM from the operator's design message, extracted from the transcript rather than paraphrased. Both external sources were characterized from the operator's directive, NOT independently fetched -- declared in external-methodology.md rather than implied. Authored by BARCHI-3 as Senior ARCH & ENGIN, on the operator's explicit directive to proceed badf-uat then badf-production-readiness. Ids WP-2026-0114/DEM-0101/GOV-0105, re-swept across all four surfaces before binding (0 collisions). Queues behind WP-2026-0115 (#241) and BARCHI-1's WP-VAL-B rebase; expect one registry-adjacent rebase and a G07 regeneration since source-change.diff is base-bound. Delivery ladder WP-PRDY-A(DESIGNED)->B(IMPLEMENTED)->C(VALIDATED, lean disabled)->D(SHADOWED, likely representative)->E(release_authority admission ACTIVE); PRDY-I19..I22 hold at every rung including ACTIVE."
