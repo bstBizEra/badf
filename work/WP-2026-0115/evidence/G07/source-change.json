@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0115-G07-source-change",
+  "work_package_id": "WP-2026-0115",
+  "gate": "G07",
+  "claim": "the change WP-2026-0115 makes to this repository, outside its own directory and the lockfile",
+  "evidence_type": "source-change",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-08-31T00:15:25Z",
+  "completed_at": "2026-08-31T00:15:25Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0115/evidence/G07/source-change.diff",
+  "digest": "sha256:4f56e251c597b6f96d51eb42f8c38ecc0b44ffc0e8c87d3543d509b96332c037",
+  "binding": {
+    "base_sha": "87dd19213fb0dc12625fd79dfb2ef9ccdf9afd49",
+    "head_sha": "71cac743f276871a18bc20ce3cf3cca14fe5afa0",
+    "content_tree": "a5109555810743f2ba705b7f690d13f8bb16f1ea",
+    "changed_paths": [
+      "badf/demands/BADF-DEM-0102.json",
+      "badf/skill-registry.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "skills/badf-uat/SKILL.md",
+      "skills/badf-uat/references/acceptance-disposition.md",
+      "skills/badf-uat/references/acceptance-provenance.md",
+      "skills/badf-uat/references/acceptance.md",
+      "skills/badf-uat/references/coverage-matrix.md",
+      "skills/badf-uat/references/defect-classification.md",
+      "skills/badf-uat/references/diagnostics-vs-oracle.md",
+      "skills/badf-uat/references/environment-and-data-fidelity.md",
+      "skills/badf-uat/references/execution-adapters.md",
+      "skills/badf-uat/references/external-methodology.md",
+      "skills/badf-uat/references/g09-g10-g11-boundary.md",
+      "skills/badf-uat/references/g10-uat-contract.md",
+      "skills/badf-uat/references/reuat-and-staleness.md",
+      "skills/badf-uat/references/scenario-contract.md",
+      "skills/badf-uat/references/scenario-derivation.md",
+      "tests/test_badf_uat_contract.py",
+      "work/WP-2026-0110/work-package.json"
+    ],
+    "expected_surfaces": {
+      "declared": false,
+      "files": []
+    },
+    "unexpected_paths": [],
+    "change_digest": "sha256:4f56e251c597b6f96d51eb42f8c38ecc0b44ffc0e8c87d3543d509b96332c037"
+  }
+}

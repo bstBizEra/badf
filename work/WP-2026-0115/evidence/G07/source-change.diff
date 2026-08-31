@@ -1,0 +1,954 @@
+diff --git a/badf/demands/BADF-DEM-0102.json b/badf/demands/BADF-DEM-0102.json
+new file mode 100644
+index 0000000..b35884c
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0102.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0102",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 239,
++    "url": "https://github.com/bstBizEra/badf/issues/239",
++    "exported_at": "2026-08-31T00:10:00Z",
++    "body_digest": "sha256:ab0a45fde3a68d48779edb0aaddf9037eccf7416d0991c0008c564d3763669fb"
++  },
++  "title": "GOV-0107: WP-UAT-A — freeze the badf-uat capability contract (G10 business-acceptance router; produces uat evidence only, technical E2E ≠ UAT; DESIGNED, no second gate)",
++  "problem": "🧠 **ARCHI (BARCHI-3)** — plan for WP-UAT-A: freeze the `badf-uat` capability contract (G10)\n\n## Stage-Gate\n- **Stage:** 3 self-exercise design → this WP freezes the contract only; no runtime, no Playwright adapter, no scenario-derivation engine.\n- **Decision:** Continue — operator design directive received 2026-08-30 in the BARCHI-3 session: *\"Proceed the badf-uat then move to badf-production-readiness\"*, with the full business-acceptance-not-E2E design attached. Approval + A→E authorization recorded here.\n- **Over-engineering risk:** registering `browser-uat`/`api-uat`/`mobile-uat` subskills up front, or a `scripts/badf_uat.py` that runs Playwright. Refused: freeze the semantic contract first — execution methods stay **adapters** described in one reference, not registered subskills (the directive's own §21 says this explicitly); deterministic G10 semantics stay in `badf_gate.py` at later rungs.\n- **Glossary stage(s):** 10 UAT and release readiness (the `uat` slice only — see scope).\n\n## Observed (measured on `main` `87dd192`, 2026-08-30)\n- `webapp-uat` does not exist anywhere in this repository — it is an external reference only, exactly as the directive frames it (a browser-evidence producer to adapt, not a BADF definition).\n- The provenance chain the directive wants (PRD → OBJ → AC → REQ → scenario) **already exists in schema form**: `schemas/acceptance-criteria.schema.json` binds to `prd_id`; `schemas/traceability.schema.json` already carries `requirement_to_objective` and `criterion_to_requirement` maps. A UAT scenario can bind to an existing RTM record rather than re-deriving traceability — reinforcing \"resolve, don't reperform,\" the same discipline `badf-production-readiness` (filed #237) and `badf-release-validation` already hold.\n- `badf/lifecycle.json` G10 requires `uat` among its four evidence types; nothing produces it today (the gap named separately as #238 / GOV-0106).\n- **This WP claims `uat` only.** `release-packet` / `operational-readiness` are `badf-production-readiness`'s (#237); `go-no-go` is `release_authority`'s own act. No overlap between the two G10 programs.\n\n## Acceptance criteria (WP-2026-0115 / BADF-DEM-0102 — measured across main + every remote head + all open PR file lists + issues; no collision)\n- `skills/badf-uat/SKILL.md` — thin declarative router: purpose; the doctrine *\"technical E2E verification does not establish user acceptance; BADF UAT begins from approved product intent, not from the application's screen inventory\"*; the boundary (G09 validates the implementation independently; `badf-uat` records whether the exact candidate's business behavior satisfies what was approved; final acceptance is a separate human decision, mirroring `release-approval`'s and `security-approval`'s reservation to a human-authority role); the workflow `RESOLVE ACCEPTANCE BASIS → DERIVE SCENARIOS → SELECT ADAPTER → EXECUTE → CLASSIFY DEFECTS → COMPUTE COVERAGE → PACKAGE RECOMMENDATION → HANDOFF TO HUMAN ACCEPTANCE`; the twenty invariants **UAT-I01…I20 verbatim** as frozen by the operator's design; status points to the registry, never hardcoded.\n- `skills/badf-uat/references/` — exactly fourteen: `g10-uat-contract` (the single evidence type this skill owns; boundary vs `badf-production-readiness`/`release_authority`), `acceptance-provenance` (the PRD→OBJ→AC→REQ→scenario chain, reusing the existing traceability schema's link maps — `UAT-I01/I05`), `scenario-contract` (the business-readable scenario object: source refs, actor/role, preconditions, expected business outcomes — `UAT-I02/I06/I07`), `scenario-derivation` (deterministic, criticality-aware derivation from AC/REQ; a scenario the RTM cannot anchor is not derived — `UAT-I01/I13`), `execution-adapters` (browser/API/manual/hybrid as adapters, never authorities; none registered as subskills at this rung — `UAT-I02/I09`), `environment-and-data-fidelity` (business-representative environment + declared test-data provenance/epoch — `UAT-I08`), `diagnostics-vs-oracle` (console/network/a11y/i18n are supplementary observation, never the business oracle — the `webapp-uat` adaptation boundary, `UAT-I10`), `defect-classification` (the ten-way failure taxonomy incl. `ACCEPTANCE_CRITERION_DEFECT` routing upstream — `UAT-I11`), `coverage-matrix` (AC/RTM/role/journey coverage, never screen coverage — `UAT-I12/I13`), `acceptance-disposition` (the two-layer artifact: automation's recommendation vs. the human's `ACCEPTED`/`ACCEPTED_WITH_CONDITIONS`/`REJECTED` — `UAT-I09/I14/I15/I16`), `reuat-and-staleness` (candidate/scenario/acceptance digest binding; a changed candidate stales the acceptance — `UAT-I04/I17`), `g09-g10-g11-boundary` (`UAT ≠ go-no-go`, `G10 ≠ deployment` — `UAT-I18/I19`), `acceptance` (ladder A→E), `external-methodology` (`webapp-uat`: ADAPT the Playwright/diagnostic mechanics, REJECT screen-inventory-as-scope and zero-console-errors-as-acceptance; sources characterized by the directive, not independently fetched — declared).\n- `badf/skill-registry.json`: `badf-uat` registered `DESIGNED`, `risk_class` C1, `allowed_tools: []`, real digest; lockfile re-signed.\n- **No** `scripts/badf_uat.py`, **no** new schema, **no** lifecycle change, **no** `badf_gate.py` change, **no** edit to any other skill's files.\n- `docs/governance/GITHUB_CONTROL_PLANE.md` doctrine section; DEM export; own composition record + typed G07 self-dossier; reconciles the land-time-current WP.\n\n## Tests (`tests/test_badf_uat_contract.py`, failing-first)\n- `test_contract_surface_is_declarative_only` — exactly the 14 references; no `scripts/badf_uat.py`; no typed schema yet.\n- `test_root_states_all_invariants_and_the_workflow` — `UAT-I01…I20`; the eight-stage workflow; `TECHNICAL E2E ≠ UAT`, `SCENARIO ≠ PROCEDURE`, `AUTOMATION ESTABLISHES OBSERVATION, NOT ACCEPTANCE` present.\n- `test_ownership_is_uat_only` — `g10-uat-contract.md` names `uat` as the sole owned type; `release-packet`/`operational-readiness`/`go-no-go` named as out of scope.\n- `test_provenance_chain_reuses_existing_traceability` — `acceptance-provenance.md` names `requirement_to_objective` and `criterion_to_requirement` from `schemas/traceability.schema.json`, not a re-derived chain.\n- `test_no_subskills_registered_yet` — `execution-adapters.md` states browser/API/manual/hybrid as adapters; no `browser-uat`/`api-uat` entries in the registry.\n- `test_final_acceptance_stays_human` — `acceptance-disposition.md` states the disposition vocabulary and that the skill issues a recommendation, never the acceptance itself.\n- `test_no_lifecycle_change`; `test_registry_pin_is_designed_and_tool_empty`; `test_skill_points_to_registry_not_a_hardcoded_status`; `test_external_methodology_is_reference_adapt_only` (REJECT list present, no vendored executable).\n\n## Out of scope (later rungs)\n- WP-UAT-B: typed `uat` scenario/execution/coverage/disposition schemas. WP-UAT-C: deterministic controls in `badf_gate.py` — lean disabled. WP-UAT-D: representative shadow (no real BADF UAT corpus exists yet; honestly caveated, mirroring `badf-solution-design`/`badf-security-design`/`badf-implementation-plan`'s WP-D). WP-UAT-E: product-acceptance-authority admission.\n- Any `badf-production-readiness`, `badf-release-validation`, or `badf-engineering-verification` file.\n\n**Version tier:** minor (new family, backward-compatible). **Lean mode:** advisory for A; **disabled** at C (human-acceptance-reservation / fail-closed invariants).\n\n**Program goal (BARCHI-3):** carry `badf-uat` A→E, then move directly to `badf-production-readiness` (already filed as WP-PRDY-A / #237), per the operator's stated sequence. Shared-surface rungs go to BADF-QA and BADF-REV.\n\n🧠 **ARCHI (BARCHI-3)** — approval recorded. Operator directive quoted above (\"Proceed the badf-uat then move to badf-production-readiness\") is read as approval of this plan and A→E authorization, mirroring the #195/#188/#209-style directives every prior rung in this program cited. Proceeding: branch `wp/WP-2026-0115-uat-contract-freeze`, base `87dd192`.\n\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-31T00:10:00Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-UAT-A: freeze the badf-uat G10 business-acceptance router contract. Produces exactly the uat evidence type (never release-packet/operational-readiness/go-no-go). Reuses the existing PRD->OBJ->AC->REQ traceability chain rather than re-deriving it. Registers the UAT Scenario object and an eight-stage workflow; no execution adapter (browser/API/manual/hybrid) registered as a subskill at this rung. Twenty invariants UAT-I01..I20 frozen, most centrally the two-layer artifact separating this skill's recommendation from a separate human's acceptance (I14/I15/I16). No gate/schema/lifecycle change. Operator directive: proceed badf-uat then badf-production-readiness."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index c054de7..ba991fd 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -320,6 +320,16 @@
+       "allowed_tools": [],
+       "status": "DESIGNED",
+       "digest": "sha256:675c59d561fea4c86726877ed3f23a0a9238371ffe95a8cb378298904fe48277"
++    },
++    {
++      "name": "badf-uat",
++      "source": "skills/badf-uat/SKILL.md",
++      "owner": "BADF Governance Authority",
++      "version": "0.1.0",
++      "risk_class": "C1",
++      "allowed_tools": [],
++      "status": "DESIGNED",
++      "digest": "sha256:07a9828032f4869893cd6a8ce1dd131c520623601538244f25f37bb3a812497a"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 985574e..2bd4a12 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1644,6 +1644,45 @@ frozen measurement so that today's tests pass would falsify the measurement —
+ shadow and the present disagree is that the *test* is wrong, or the present is, and never that the past
+ should be rewritten. #220's derived-terminality work must not reach for that green either.
+ 
++## badf-uat — G10 business-acceptance router freeze (`BADF-WP-0115` / WP-UAT-A, Issue #239 / GOV-0107)
++
++`badf-uat` is frozen (DESIGNED) as the **G10 business-acceptance capability**, and its whole reason to
++exist is one distinction: technical E2E verification proves the system did not crash; UAT proves the
++observed behavior satisfies the business outcome a PRD's acceptance criteria approved. It produces
++**exactly one** of G10's four evidence types — `uat` — never `release-packet` or
++`operational-readiness` (`badf-production-readiness`, Issue #237 / GOV-0105) and never `go-no-go`
++(`release_authority`'s own act, human-reserved in `badf/authority-matrix.json`). Discovered as a real
++gap independently of this freeze (Issue #238 / GOV-0106: `uat` was a required G10 evidence type with no
++producing capability) and filed separately rather than folded silently into either freeze.
++
++The chain it walks: `schemas/prd.schema.json` → `schemas/acceptance-criteria.schema.json` →
++`schemas/requirements.schema.json`, resolved through `schemas/traceability.schema.json`'s existing
++`requirement_to_objective` and `criterion_to_requirement` link maps — this skill **resolves that chain,
++it does not rebuild it**, the same "resolve, don't reperform" discipline `badf-release-validation` holds
++at G09. The one leaf it adds is the UAT Scenario: business-readable, adapter-independent (UAT-I02), with
++execution adapters (browser/API/manual/hybrid) as pure observers — **none registered as a subskill at
++this rung**, the over-engineering risk this WP explicitly refused per its own Stage-Gate note. An
++eight-stage workflow (`RESOLVE ACCEPTANCE BASIS → DERIVE SCENARIOS → SELECT ADAPTER → EXECUTE →
++CLASSIFY DEFECTS → COMPUTE COVERAGE → PACKAGE RECOMMENDATION → HANDOFF TO HUMAN ACCEPTANCE`) and
++fourteen references carry twenty frozen invariants, UAT-I01…UAT-I20: business/exact-candidate/exact-basis
++provenance (I01/I04/I05), scenario ≠ procedure and technical-E2E ≠ UAT (I02/I03), business-readable
++oracle with diagnostics as supplement not substitute (I06/I10), representative actor and context
++(I07/I08), tool output as observation only (I09), a ten-way explicit defect taxonomy where
++`ACCEPTANCE_CRITERION_DEFECT` routes upstream rather than being silently absorbed as an implementation
++bug (I11), mandatory non-coverage and criticality-aware completion — a critical FAIL cannot hide inside
++an aggregate pass percentage (I12/I13), the two-layer artifact separating this skill's *recommendation*
++from a separate human's *acceptance* (I14/I15/I16, the same "the evidence-producer cannot also be the
++decider" principle SEC-I13 and VER-I18 already hold), candidate-change staleness with extend-only
++superseded records (I17), and UAT ≠ go-no-go ≠ deployment (I18/I19). No competing
++`scripts/badf_uat.py`, no typed schema, no `lifecycle.json` change at this rung (I20). External source
++`webapp-uat` (Playwright-based) is confirmed absent from this repository; its execution mechanics are
++adapt-candidate material for a later adapter WP, its definition of "done" is explicitly rejected as this
++skill's definition of "accepted". Ladder-internal at this rung (SKILL + 14 references, registry
++`badf-uat: DESIGNED`, no gate/schema/lifecycle change); WP-UAT-B (typed schemas) and WP-UAT-C
++(deterministic controls, lean disabled — these are HARD INVARIANTS) are shared-surface and go to
++BADF-QA + BADF-REV. Authored by BARCHI-3 as Senior ARCH & ENGIN, on the operator's explicit directive to
++proceed `badf-uat` then `badf-production-readiness`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/skills/badf-uat/SKILL.md b/skills/badf-uat/SKILL.md
+new file mode 100644
+index 0000000..1babdb6
+--- /dev/null
++++ b/skills/badf-uat/SKILL.md
+@@ -0,0 +1,208 @@
++---
++name: badf-uat
++description: >-
++  G10 business-acceptance router. Takes the exact G09-validated candidate and
++  records whether its observed behavior satisfies the business outcome the PRD
++  and acceptance criteria approved — never whether a screen renders or a
++  Playwright script completes. Derives scenarios from the existing PRD → OBJ →
++  AC → REQ chain, executes them through adapters (browser/API/manual/hybrid,
++  none registered as subskills yet), classifies failures, computes coverage
++  against acceptance criteria (never screens), and packages a recommendation.
++  Final product acceptance stays a separate human decision. Use when a G09
++  release-validated candidate needs its business behavior recorded against
++  approved acceptance criteria. Grants no acceptance, approval, or gate
++  authority.
++status: DESIGNED
++gate: G10
++owner_role: release_authority
++allowed_tools: []
++---
++
++# badf-uat — the G10 business-acceptance router
++
++`badf-uat` produces exactly one of G10's four evidence types: `uat`. It does not produce
++`release-packet` or `operational-readiness` (`badf-production-readiness`'s — WP-PRDY-A) and
++it does not issue `go-no-go` (`release_authority`'s own act). The skill's admission status is
++recorded in `badf/skill-registry.json`; this file defines behavior and must not hardcode a
++lifecycle status that can drift from the registry.
++
++## Fundamental rule
++
++```text
++TECHNICAL E2E VERIFICATION ≠ USER ACCEPTANCE
++
++E2E asks:  "Does the system technically complete the flow?"
++UAT asks:  "Does this exact behavior satisfy the business outcome that was approved?"
++
++SCENARIO ≠ PROCEDURE
++AUTOMATION ESTABLISHES OBSERVATION, NOT ACCEPTANCE
++```
++
++## The chain this skill walks, and does not re-derive
++
++```text
++PRD
++ └── Product Objective          OBJ-...      (schemas/prd.schema.json)
++      └── Acceptance Criterion  AC-...       (schemas/acceptance-criteria.schema.json, binds prd_id)
++           └── Requirement      REQ-...      (schemas/requirements.schema.json)
++                └── UAT Scenario  UAT-SCN-...
++                     └── Execution → Observed Evidence → Scenario Disposition
++                          └── Business Acceptance Disposition → G10 `uat` evidence
++```
++
++`schemas/traceability.schema.json` **already** carries `requirement_to_objective` and
++`criterion_to_requirement` — this skill resolves those existing RTM links; it does not build a
++second traceability mechanism (the same "resolve, don't reperform" discipline
++`badf-release-validation` and `badf-production-readiness` hold at G09/G10).
++
++## Boundary
++
++```text
++badf-release-validation (G09)   independently validates the implementation (quality/security/performance/resilience)
++badf-uat (G10, this skill)      records whether the exact candidate's BUSINESS BEHAVIOR satisfies approved intent
++badf-production-readiness (G10) release-packet + operational-readiness (the other two G10 types)
++release_authority                go-no-go; the human product-acceptance decision this skill's dossier feeds
++BADF gate                        evaluates evidence
++```
++
++```text
++G09 — Independent validation:  quality-validation · security-validation · performance-test · resilience-test
++G10 — UAT & release readiness: uat · release-packet · operational-readiness · go-no-go
++```
++
++## Authority split
++
++```text
++Agent judgment MAY derive scenarios from the approved AC/REQ chain, select an execution adapter,
++observe behavior, classify a failure, and compute coverage.
++
++Agent judgment MUST NOT issue final product acceptance. Automation establishes observed scenario
++outcomes; it does not establish that the business accepts the product (mirrors SEC-I13's
++security-approval reservation and VER-I18's admission reservation, extended here to product
++acceptance under a human-reserved role).
++```
++
++## Workflow
++
++```text
++RESOLVE ACCEPTANCE BASIS → DERIVE SCENARIOS → SELECT ADAPTER → EXECUTE →
++CLASSIFY DEFECTS → COMPUTE COVERAGE → PACKAGE RECOMMENDATION → HANDOFF TO HUMAN ACCEPTANCE
++```
++
++1. **RESOLVE ACCEPTANCE BASIS** — bind the exact PRD, acceptance-criteria and RTM baselines this
++   candidate is being measured against. No approved basis → **NO UAT**. See `references/acceptance-provenance.md`.
++2. **DERIVE SCENARIOS** — deterministically, from AC/REQ, criticality-aware. A scenario the RTM
++   cannot anchor is not derived. See `references/scenario-derivation.md`, `references/scenario-contract.md`.
++3. **SELECT ADAPTER** — browser, API, manual, or hybrid; an adapter observes, it never decides.
++   See `references/execution-adapters.md`.
++4. **EXECUTE** — against a business-representative environment with declared test-data provenance.
++   See `references/environment-and-data-fidelity.md`.
++5. **CLASSIFY DEFECTS** — a failure is one of ten explicit classes; `ACCEPTANCE_CRITERION_DEFECT`
++   routes upstream, it is not silently absorbed as an implementation bug. See
++   `references/defect-classification.md`.
++6. **COMPUTE COVERAGE** — against acceptance criteria, roles, and critical journeys — never
++   screens. See `references/coverage-matrix.md`.
++7. **PACKAGE RECOMMENDATION** — the two-layer artifact: scenario evidence + a *recommendation*,
++   never a self-issued acceptance. See `references/acceptance-disposition.md`.
++8. **HANDOFF TO HUMAN ACCEPTANCE** — the authorized human product/business principal issues
++   `ACCEPTED` / `ACCEPTED_WITH_CONDITIONS` / `REJECTED`, binding the exact candidate, scenario
++   set, results, and conditions. A later candidate change stales it. See
++   `references/acceptance-disposition.md`, `references/reuat-and-staleness.md`.
++
++## Invariants (frozen)
++
++```text
++UAT-I01 — Business provenance
++Every UAT scenario traces to an approved PRD objective, acceptance criterion and applicable requirement.
++
++UAT-I02 — Scenario ≠ procedure
++Business scenario identity is independent from its browser/API/manual execution implementation.
++
++UAT-I03 — Technical E2E ≠ UAT
++Technical journey success cannot satisfy UAT without business acceptance provenance.
++
++UAT-I04 — Exact candidate
++Every UAT observation binds the immutable candidate being accepted.
++
++UAT-I05 — Exact acceptance basis
++The UAT run binds the exact PRD, acceptance-criteria and RTM baselines.
++
++UAT-I06 — Business-readable oracle
++Expected outcomes are stated as observable business results, not implementation details.
++
++UAT-I07 — Representative actor
++Each scenario identifies the intended business/user role.
++
++UAT-I08 — Representative context
++Environment, permissions, business rules and test data needed for the scenario are declared.
++
++UAT-I09 — Tool output is observation
++Browser/API automation may establish observed behavior but cannot declare business acceptance.
++
++UAT-I10 — Diagnostics ≠ acceptance
++Console/network/a11y/i18n checks supplement UAT but do not replace the business oracle.
++
++UAT-I11 — Failure class explicit
++A failed scenario distinguishes implementation, requirement, design, environment, test-data and acceptance defects.
++
++UAT-I12 — Non-coverage mandatory
++Material business scenarios, roles or conditions not exercised are declared.
++
++UAT-I13 — Criticality-aware completion
++Mandatory critical acceptance criteria cannot be hidden by an aggregate pass percentage.
++
++UAT-I14 — Acceptance authority separate
++The UAT skill cannot issue final product acceptance.
++
++UAT-I15 — Human final acceptance
++Where current BADF policy applies, final product acceptance is issued only by the authorized human principal.
++
++UAT-I16 — Acceptance binds evidence
++Acceptance binds exact candidate, scenario-set, results, known defects, conditions and non-coverage.
++
++UAT-I17 — Candidate change invalidates acceptance
++A material candidate change requires impact analysis and appropriate re-UAT.
++
++UAT-I18 — UAT ≠ go-no-go
++Accepted product behavior cannot self-authorize the G10 go/no-go.
++
++UAT-I19 — G10 ≠ deployment
++G10 success cannot itself deploy the product.
++
++UAT-I20 — No second gate
++No competing scripts/badf_uat.py gate authority; deterministic G10/UAT semantics remain in the canonical BADF gate.
++```
++
++## Doctrine
++
++```text
++Technical E2E verification does not establish User Acceptance.
++BADF UAT begins from approved product intent, not from the application's screen inventory.
++Every UAT scenario traces to an approved business acceptance criterion and requirement.
++Browser, API, mobile and human-guided procedures are execution adapters, not acceptance authorities.
++Automation establishes observable behavior.
++The UAT capability records scenario evidence, defects, non-coverage and an acceptance recommendation.
++Final product acceptance remains a separate authorized human decision under current BADF policy.
++UAT acceptance binds the exact candidate, exact acceptance basis, exact scenario set,
++exact observations and known conditions.
++Passing UAT does not authorize release.
++G10 release readiness and go/no-go remain separate.
++The BADF gate validates the evidence. Authority decides progression.
++```
++
++## References
++
++- `references/g10-uat-contract.md` — the single evidence type this skill owns; boundary vs `badf-production-readiness` and `release_authority`.
++- `references/acceptance-provenance.md` — the PRD→OBJ→AC→REQ→scenario chain, reusing the existing RTM link maps.
++- `references/scenario-contract.md` — the business-readable scenario object: source refs, actor, preconditions, expected business outcomes.
++- `references/scenario-derivation.md` — deterministic, criticality-aware derivation; an unanchored scenario is not derived.
++- `references/execution-adapters.md` — browser/API/manual/hybrid as adapters; none registered as subskills at this rung.
++- `references/environment-and-data-fidelity.md` — business-representative environment; declared test-data provenance/epoch.
++- `references/diagnostics-vs-oracle.md` — technical diagnostics supplement, never replace, the business oracle.
++- `references/defect-classification.md` — the ten-way failure taxonomy; `ACCEPTANCE_CRITERION_DEFECT` routes upstream.
++- `references/coverage-matrix.md` — AC/RTM/role/journey coverage, never screen coverage.
++- `references/acceptance-disposition.md` — the two-layer artifact: recommendation vs. human acceptance.
++- `references/reuat-and-staleness.md` — candidate/scenario/acceptance digest binding; staleness on change.
++- `references/g09-g10-g11-boundary.md` — UAT ≠ go-no-go ≠ deployment.
++- `references/acceptance.md` — the admission ladder UAT-A…E.
++- `references/external-methodology.md` — `webapp-uat`: adapted, rejected, never authority.
+diff --git a/skills/badf-uat/references/acceptance-disposition.md b/skills/badf-uat/references/acceptance-disposition.md
+new file mode 100644
+index 0000000..63532b7
+--- /dev/null
++++ b/skills/badf-uat/references/acceptance-disposition.md
+@@ -0,0 +1,55 @@
++# The two-layer artifact — recommendation vs. human acceptance
++
++UAT-I09, UAT-I14, UAT-I15, UAT-I16. This is the load-bearing boundary of the whole skill: automation
++establishes observation; a human authorized under current BADF policy establishes acceptance. The two
++are recorded as genuinely separate layers, never merged into one field that could be mistaken for the
++other.
++
++## Layer 1 — the recommendation (this skill's output)
++
++```json
++{
++  "candidate_digest": "...",
++  "acceptance_basis_digest": "...",
++  "scenario_results": ["... every scenario, every result ..."],
++  "defects": ["... classified per references/defect-classification.md ..."],
++  "coverage_matrix": "... per references/coverage-matrix.md ...",
++  "recommendation": "RECOMMEND_ACCEPT | RECOMMEND_ACCEPT_WITH_CONDITIONS | RECOMMEND_REJECT | RECOMMEND_INSUFFICIENT_EVIDENCE",
++  "recommendation_rationale": "..."
++}
++```
++
++`recommendation` is evidence, not a decision — the same rule the decision-packet pattern applies
++elsewhere in BADF governance: an agent's recommended option is an input, never the act itself.
++
++## Layer 2 — human acceptance (issued separately, by the authorized principal)
++
++```json
++{
++  "acceptance_id": "...",
++  "candidate_digest": "... must equal Layer 1's ...",
++  "acceptance_basis_digest": "... must equal Layer 1's ...",
++  "scenario_set_digest": "... must equal Layer 1's ...",
++  "disposition": "ACCEPTED | ACCEPTED_WITH_CONDITIONS | REJECTED",
++  "conditions": ["... if ACCEPTED_WITH_CONDITIONS, each one is a real filed condition, not prose ..."],
++  "known_defects_acknowledged": ["..."],
++  "declared_non_coverage_acknowledged": ["..."],
++  "accepted_by": "authorized human principal identity",
++  "accepted_at": "timestamp"
++}
++```
++
++## Why this skill cannot issue Layer 2 (UAT-I14, UAT-I15)
++
++The same "the capability that produces evidence must never be the same capability that decides"
++principle that reserves G08 admission and security approval to a human/quorum outside the producing
++skill applies here: `badf-uat` computed the observations, so `badf-uat` cannot also be the acceptance
++authority — that would let the evidence-producer grade its own evidence. Layer 2 is issued by the human
++product/business principal reserved for this decision under current BADF policy, outside this skill's
++own execution.
++
++## Binding (UAT-I16)
++
++Layer 2 binds Layer 1's exact digests. An acceptance record whose `candidate_digest` or
++`acceptance_basis_digest` does not match its own Layer 1 evidence is void — see
++`references/reuat-and-staleness.md`.
+diff --git a/skills/badf-uat/references/acceptance-provenance.md b/skills/badf-uat/references/acceptance-provenance.md
+new file mode 100644
+index 0000000..7f8a073
+--- /dev/null
++++ b/skills/badf-uat/references/acceptance-provenance.md
+@@ -0,0 +1,28 @@
++# Acceptance provenance — reuse the RTM, do not re-derive it
++
++`badf-uat` resolves the existing chain; it does not build a second one.
++
++```text
++schemas/prd.schema.json                 → Product Objectives (OBJ-...)
++schemas/acceptance-criteria.schema.json → Acceptance Criteria (AC-...), binds prd_id
++schemas/requirements.schema.json        → Requirements (REQ-...)
++schemas/traceability.schema.json        → requirement_to_objective, criterion_to_requirement
++                                           (the link maps this skill resolves, not rebuilds)
++```
++
++## Binding rule (UAT-I01, UAT-I05)
++
++Before any scenario is derived, this skill resolves and records the **exact digests** of:
++
++1. The PRD (`prd_id` + digest) this candidate's acceptance criteria trace to.
++2. The acceptance-criteria document(s) (`schema_version, prd_id, criteria[]`) in force.
++3. The traceability document binding `requirement_to_objective` and `criterion_to_requirement`.
++
++No approved basis resolvable → **NO UAT**. A scenario that cannot be traced back through
++`criterion_to_requirement` and `requirement_to_objective` to an approved `AC-...` and `OBJ-...` is not
++a UAT scenario — it is an untraceable test, out of this skill's contract.
++
++## What this skill adds on top of the existing chain
++
++Only the leaf the RTM does not carry: the **UAT Scenario** (`references/scenario-contract.md`) and its
++execution record. Nothing upstream of that leaf is re-specified here.
+diff --git a/skills/badf-uat/references/acceptance.md b/skills/badf-uat/references/acceptance.md
+new file mode 100644
+index 0000000..6be1502
+--- /dev/null
++++ b/skills/badf-uat/references/acceptance.md
+@@ -0,0 +1,24 @@
++# Admission ladder — badf-uat
++
++The skill's status is recorded in `badf/skill-registry.json`; this ladder is a pointer, not a second
++status.
++
++- `DESIGNED` — **WP-UAT-A** (this freeze): thin router, UAT-I01…I20, eight-stage workflow, fourteen
++  references, registered C1 with no tools; no adapter runtime, no typed schemas, no lifecycle change, no
++  gate change, no subskills registered.
++- `IMPLEMENTED` — **WP-UAT-B**: typed `uat` evidence schema specializing `evidence.schema.json`; the
++  UAT Scenario object, the execution-observation record and the two-layer disposition record as typed
++  artifacts; a `badf_gate.py` path validating a G10 `uat` dossier's typed objects — mirroring `verify`
++  for G08. Extends the canonical gate; adds no second one.
++- `VALIDATED` — **WP-UAT-C**: deterministic G10/UAT controls in `badf_gate.py` — acceptance-basis digest
++  binding, candidate digest binding, non-derivable-criterion declared (never dropped), critical-tier
++  results always enumerated (never flattened into aggregate), Layer 1/Layer 2 digest equality, staleness
++  detection on candidate/basis/scenario-set change — each failing-first and mutation-killed. Lean mode
++  disabled: these are HARD INVARIANTS, the same tier as the G08 controls at VER-C.
++- `SHADOWED` — **WP-UAT-D**: shadow on representative material — a real or synthesized G09-validated
++  candidate with a real PRD/AC/RTM chain, with known and injected defects across all ten
++  `references/defect-classification.md` classes, measuring true findings, false positives, missed
++  criteria, non-coverage quality and criticality-flattening false negatives; gaps declared, not implied.
++- `APPROVED` / `ACTIVE` — **WP-UAT-E**: the operator's admission decision, taken on WP-UAT-D's evidence
++  and recorded on its own issue; registry status flip only, digest unchanged, no acceptance authority
++  granted to the skill itself — UAT-I14/I15 hold at every rung of this ladder, including `ACTIVE`.
+diff --git a/skills/badf-uat/references/coverage-matrix.md b/skills/badf-uat/references/coverage-matrix.md
+new file mode 100644
+index 0000000..f48b1f6
+--- /dev/null
++++ b/skills/badf-uat/references/coverage-matrix.md
+@@ -0,0 +1,28 @@
++# Coverage — acceptance criteria, roles, journeys. Never screens.
++
++UAT-I12, UAT-I13. Technical E2E tooling often reports coverage as "screens visited" or "routes hit".
++That number is not evidence of business acceptance and this skill does not compute it.
++
++## What is measured
++
++```text
++Acceptance-criterion coverage   every AC-... bound to the candidate's PRD: derived / not-derived,
++                                 executed / not-executed, PASS / FAIL / BLOCKED
++Role coverage                   every actor_role named in scenarios: exercised / not-exercised
++Journey coverage                critical business journeys spanning multiple criteria: complete / partial
++Non-coverage (declared)         material scenarios, roles or conditions NOT exercised — with reason
++```
++
++## The non-coverage declaration (UAT-I12)
++
++Absence from the coverage matrix is not the same as "not applicable". Every acceptance criterion bound
++to the candidate's PRD appears in the matrix in one of: `covered_pass`, `covered_fail`,
++`covered_blocked`, or `not_covered` (with a stated reason — ambiguous criterion, no representative
++environment, deferred by explicit decision, etc.). A criterion silently missing from the matrix is the
++defect this reference exists to prevent.
++
++## Criticality is never flattened into the aggregate (UAT-I13)
++
++A single "N/M scenarios passed" figure cannot stand alone in the disposition. Every `critical`-tier
++scenario's individual result is enumerated; a critical FAIL or NOT_EXECUTED blocks the recommendation
++regardless of the aggregate percentage.
+diff --git a/skills/badf-uat/references/defect-classification.md b/skills/badf-uat/references/defect-classification.md
+new file mode 100644
+index 0000000..2b645b7
+--- /dev/null
++++ b/skills/badf-uat/references/defect-classification.md
+@@ -0,0 +1,26 @@
++# Defect classification — ten explicit classes, none silently absorbed
++
++UAT-I11. A `FAIL` or `BLOCKED` result without a class is not a finding — it is noise the disposition
++step cannot act on.
++
++```text
++IMPLEMENTATION_DEFECT        the built candidate does not do what was specified
++REQUIREMENT_DEFECT           the requirement itself is wrong or incomplete
++ACCEPTANCE_CRITERION_DEFECT  the acceptance criterion itself is wrong, ambiguous, or unsatisfiable —
++                              routes UPSTREAM to PRD/AC authoring, never silently reworded here
++DESIGN_DEFECT                the design does not serve the approved objective
++ENVIRONMENT_DEFECT           execution context was not representative (references/environment-and-data-fidelity.md)
++TEST_DATA_DEFECT             the data used could not exercise the scenario as intended
++ADAPTER_DEFECT                the execution adapter itself malfunctioned, not the candidate
++SCENARIO_DEFECT              the derived scenario itself is malformed or mistraced
++NON_REPRODUCIBLE             observed once, not reproducible under the same declared conditions
++BLOCKED_BY_DEPENDENCY         scenario cannot execute due to an external/unrelated blocker
++```
++
++## Why `ACCEPTANCE_CRITERION_DEFECT` is named explicitly
++
++The single most likely place for a business-acceptance skill to quietly absorb a bad requirement as an
++"implementation bug" (and thereby let engineering silently patch around a wrong acceptance criterion) is
++here. This skill never rewrites or reinterprets an acceptance criterion — a defect of this class is
++routed back to PRD/AC authoring, and the disposition (`references/acceptance-disposition.md`) records it
++as an open condition, not a closed one.
+diff --git a/skills/badf-uat/references/diagnostics-vs-oracle.md b/skills/badf-uat/references/diagnostics-vs-oracle.md
+new file mode 100644
+index 0000000..166284c
+--- /dev/null
++++ b/skills/badf-uat/references/diagnostics-vs-oracle.md
+@@ -0,0 +1,18 @@
++# Diagnostics supplement the oracle; they never replace it
++
++UAT-I06, UAT-I10. The business oracle is the scenario's `expected_business_outcome` — a human-readable
++statement of what the business approved. Console errors, network traces, accessibility scans and i18n
++checks are diagnostic signal collected *alongside* an execution; they explain a failure, they do not
++define acceptance.
++
++```text
++Business oracle   "the customer sees their order confirmed with the correct total"   ← authoritative
++Diagnostics       zero console errors, response time, WCAG pass, correct locale       ← supplementary
++```
++
++A scenario can PASS its business oracle while diagnostics show a non-blocking issue (logged, not fatal
++to acceptance) — and a scenario can technically render with zero console errors while failing the
++business oracle. The two are recorded separately (`diagnostics_ref` on the observation, per
++`references/execution-adapters.md`) and never merged into one verdict. Confusing "the page loaded
++cleanly" with "the business accepted this" is exactly the technical-E2E-≠-UAT distinction this skill
++exists to enforce (UAT-I03).
+diff --git a/skills/badf-uat/references/environment-and-data-fidelity.md b/skills/badf-uat/references/environment-and-data-fidelity.md
+new file mode 100644
+index 0000000..7725d30
+--- /dev/null
++++ b/skills/badf-uat/references/environment-and-data-fidelity.md
+@@ -0,0 +1,18 @@
++# Environment and data fidelity — representative context, declared provenance
++
++UAT-I08. A scenario executed against an environment or dataset that does not represent the business
++context it claims to validate produces an observation, not evidence of acceptance.
++
++## Required declarations per execution
++
++```text
++environment_id      which environment the scenario ran in (staging / uat / representative-prod-mirror)
++permissions_profile  which role/permission set the actor operated under, matching actor_role
++business_rules_epoch which configuration/rule-set version was in force
++test_data_provenance where the data came from (synthetic-representative / anonymized-prod-sample / fixture)
++test_data_epoch      when that data was captured or generated
++```
++
++A scenario executed under an undeclared or non-representative environment is not silently accepted as
++PASS — it is flagged as an environment-fidelity defect (`references/defect-classification.md`,
++`ENVIRONMENT_DEFECT`), and the disposition records the gap rather than absorbing it into the result.
+diff --git a/skills/badf-uat/references/execution-adapters.md b/skills/badf-uat/references/execution-adapters.md
+new file mode 100644
+index 0000000..c4284ef
+--- /dev/null
++++ b/skills/badf-uat/references/execution-adapters.md
+@@ -0,0 +1,35 @@
++# Execution adapters — browser, API, manual, hybrid; observation only
++
++UAT-I02, UAT-I09. An adapter executes a scenario and reports an observation. It never classifies the
++observation as "accepted" — that is the disposition step (`references/acceptance-disposition.md`), and
++it is never automatic.
++
++```text
++Adapter        Observes
++browser        rendered UI behavior against the scenario's expected business outcome
++api            request/response behavior against the scenario's expected business outcome
++manual         a human executor's recorded observation, same scenario contract
++hybrid         a scenario split across adapters (e.g. API setup + browser verification)
++```
++
++## Registration state at WP-UAT-A
++
++**No adapter is registered as a subskill at this rung.** Registering `browser-uat` / `api-uat` /
++similar concrete adapters before the contract they implement is frozen is the over-engineering risk this
++WP explicitly refuses (see issue #239's Stage-Gate note). This reference fixes the adapter *contract*
++(inputs: scenario + environment; output: an observation record) so a later WP can register concrete
++adapters against it without renegotiating the shape.
++
++## Adapter output shape (frozen now, implemented later)
++
++```json
++{
++  "scenario_id": "UAT-SCN-...",
++  "adapter": "browser | api | manual | hybrid",
++  "observed_outcome": "what was actually observed, business-readable",
++  "result": "PASS | FAIL | BLOCKED | NOT_EXECUTED",
++  "diagnostics_ref": "optional pointer to console/network/a11y/i18n output (references/diagnostics-vs-oracle.md)",
++  "executed_by": "adapter identity or human executor identity",
++  "executed_at": "timestamp"
++}
++```
+diff --git a/skills/badf-uat/references/external-methodology.md b/skills/badf-uat/references/external-methodology.md
+new file mode 100644
+index 0000000..4196ecb
+--- /dev/null
++++ b/skills/badf-uat/references/external-methodology.md
+@@ -0,0 +1,24 @@
++# `webapp-uat` — adapted for mechanics, rejected as the definition of acceptance
++
++Confirmed absent from this repository (external reference only, not vendored, not a dependency).
++
++## What is adapted
++
++A Playwright-based E2E mechanic: scripted browser interaction, network/console capture, screenshot
++diffing. These are execution-adapter concerns (`references/execution-adapters.md`) — useful as one
++possible `browser` adapter implementation at a later rung.
++
++## What is rejected
++
++Treating "the scripted flow completed without error" as the definition of acceptance. That is exactly
++UAT-I03 (technical E2E ≠ UAT): a Playwright run that completes cleanly proves the system did not crash;
++it proves nothing about whether the observed behavior satisfies an approved business acceptance
++criterion. `webapp-uat`-shaped tooling has no concept of a PRD, an acceptance criterion, or a human
++acceptance layer — it is a technical verification tool, correctly scoped to G08/G09, not G10.
++
++## Why this reference exists
++
++To make the boundary explicit and falsifiable rather than implicit: a future contributor proposing to
++adopt `webapp-uat` wholesale as `badf-uat`'s runtime is answered by this file, not by re-litigating the
++distinction from scratch. Adopt its mechanics as one adapter among several; never adopt its definition
++of done as this skill's definition of accepted.
+diff --git a/skills/badf-uat/references/g09-g10-g11-boundary.md b/skills/badf-uat/references/g09-g10-g11-boundary.md
+new file mode 100644
+index 0000000..47568f5
+--- /dev/null
++++ b/skills/badf-uat/references/g09-g10-g11-boundary.md
+@@ -0,0 +1,20 @@
++# UAT ≠ go-no-go ≠ deployment
++
++UAT-I18, UAT-I19. Three separate acts, three separate owners, none of which this skill performs.
++
++```text
++G09  badf-release-validation   independent technical validation (quality/security/perf/resilience)
++G10  badf-uat (this skill)     records business acceptance of the exact candidate — produces `uat` only
++G10  badf-production-readiness produces `release-packet` + `operational-readiness` (the other two G10 types)
++G10  release_authority (human) issues `go-no-go` — reserved, not delegable to any skill
++G11  Deployment / Change Ctrl  executes the deployment the go-no-go authorized
++```
++
++## Why this line matters here specifically
++
++A fully `ACCEPTED` UAT disposition is strong evidence, but it is not authorization. `badf-uat` finishing
++green does not itself trigger `go-no-go`, and `go-no-go` finishing does not itself deploy anything
++(G11 is a separate gate with its own owner and evidence). Collapsing any of these into the skill that
++produced the evidence one step earlier is the exact failure mode BADF's gate-owner separation exists to
++prevent — the same shape already enforced at the G08/G09 boundary in `badf-engineering-verification` and
++`badf-release-validation`, extended here one gate further.
+diff --git a/skills/badf-uat/references/g10-uat-contract.md b/skills/badf-uat/references/g10-uat-contract.md
+new file mode 100644
+index 0000000..98d8d77
+--- /dev/null
++++ b/skills/badf-uat/references/g10-uat-contract.md
+@@ -0,0 +1,33 @@
++# The contract — `uat` is the only evidence type this skill produces
++
++`badf/lifecycle.json` G10 (`UAT and Release Readiness`, owner `release_authority`) requires four
++evidence types: `uat, release-packet, operational-readiness, go-no-go`. `badf-uat` produces exactly
++one — `uat`. It never produces `release-packet` or `operational-readiness` (`badf-production-readiness`
++— WP-PRDY-A, issue #237) and it never issues `go-no-go` (`release_authority`'s own act, human-reserved
++per `badf/authority-matrix.json`).
++
++## What `uat` evidence must carry
++
++```text
++uat evidence =
++  candidate digest (exact G09-validated build)
++  acceptance basis (exact PRD / acceptance-criteria / RTM digests)
++  scenario set (derived, source-referenced)
++  execution results (per scenario: PASS / FAIL / BLOCKED / NOT_EXECUTED, with adapter + observation)
++  defect classification (per failure)
++  coverage matrix (criteria / roles / journeys, with declared non-coverage)
++  recommendation (not an acceptance) + human acceptance record, once issued
++```
++
++A `uat` record missing the acceptance-basis digest is not evidence of business acceptance — it is
++evidence that something ran. UAT-I01, UAT-I04, UAT-I05.
++
++## What this skill does NOT own
++
++- The release packet, deployment plan, or rollback plan — `badf-production-readiness`.
++- Operational readiness (observability, support runbooks, on-call) — `badf-production-readiness`.
++- The go/no-go decision — `release_authority`, human, out of any skill's authority.
++- Independent technical validation (quality/security/performance/resilience) — `badf-release-validation`
++  at G09, already landed upstream of this gate.
++- A second gate authority — the canonical BADF gate (`scripts/badf_gate.py`) remains the sole
++  deterministic evaluator of any evidence this skill produces. UAT-I20.
+diff --git a/skills/badf-uat/references/reuat-and-staleness.md b/skills/badf-uat/references/reuat-and-staleness.md
+new file mode 100644
+index 0000000..75e044a
+--- /dev/null
++++ b/skills/badf-uat/references/reuat-and-staleness.md
+@@ -0,0 +1,30 @@
++# Candidate change invalidates acceptance
++
++UAT-I04, UAT-I17. Acceptance is bound to an exact candidate digest, not to "the product" in the
++abstract. Once bound, three things can go stale:
++
++```text
++candidate_digest changes           the accepted build is no longer the build being shipped
++acceptance_basis_digest changes    the PRD/AC/RTM the acceptance was measured against has moved
++scenario_set changes materially    scenarios were added/removed/reworded after acceptance was issued
++```
++
++## Re-UAT trigger rule
++
++A material candidate change requires an impact analysis before re-UAT is scoped:
++
++1. Diff the new candidate against the accepted one (source-change evidence, same mechanism G07/G08
++   already use for candidate identity).
++2. Classify the change: cosmetic-only (no re-UAT required, but the acceptance record is amended
++   extend-only to note the superseding digest), scenario-affecting (re-execute only the affected
++   scenarios), or basis-affecting (the AC/RTM chain itself moved — full re-derivation per
++   `references/scenario-derivation.md`).
++3. A stale acceptance record is never silently treated as still valid. It is marked `SUPERSEDED` and a
++   fresh Layer 2 acceptance is required against the new candidate digest before `go-no-go` can rely on
++   it — mirroring the `EVIDENCE_DRIFT -> SUPERSEDED` state already established for BADF decision packets,
++   never re-sent as if nothing changed.
++
++## Extend-only record
++
++Acceptance records are never overwritten in place. A superseded acceptance stays in the ledger with its
++original digests intact; the new acceptance is a new record referencing what it supersedes.
+diff --git a/skills/badf-uat/references/scenario-contract.md b/skills/badf-uat/references/scenario-contract.md
+new file mode 100644
+index 0000000..07b9d7b
+--- /dev/null
++++ b/skills/badf-uat/references/scenario-contract.md
+@@ -0,0 +1,28 @@
++# The UAT Scenario object — business-readable, adapter-independent
++
++UAT-I02: scenario identity is independent from its execution implementation. A scenario is a business
++statement; an adapter run is one way of observing whether it held.
++
++```json
++{
++  "scenario_id": "UAT-SCN-...",
++  "prd_id": "...",
++  "objective_ref": "OBJ-...",
++  "acceptance_criterion_ref": "AC-...",
++  "requirement_refs": ["REQ-..."],
++  "actor_role": "the business/user role this scenario represents (UAT-I07)",
++  "preconditions": "business-representative starting state (UAT-I08)",
++  "steps": "business actions, not implementation steps",
++  "expected_business_outcome": "observable business result, stated without implementation detail (UAT-I06)",
++  "criticality": "critical | major | minor (UAT-I13)"
++}
++```
++
++## What a scenario is not
++
++- Not a Playwright/Cypress script — that is an adapter's execution of the scenario
++  (`references/execution-adapters.md`).
++- Not a screen-by-screen checklist — coverage is measured against acceptance criteria and journeys, never
++  screens (`references/coverage-matrix.md`).
++- Not owned by this skill's runtime at WP-UAT-A — no adapter is registered yet
++  (`references/acceptance.md`); this rung freezes the object's shape, not an execution engine.
+diff --git a/skills/badf-uat/references/scenario-derivation.md b/skills/badf-uat/references/scenario-derivation.md
+new file mode 100644
+index 0000000..1ee075f
+--- /dev/null
++++ b/skills/badf-uat/references/scenario-derivation.md
+@@ -0,0 +1,27 @@
++# Scenario derivation — deterministic, criticality-aware, never invented
++
++UAT-I01, UAT-I13. A scenario the RTM cannot anchor is not derived — it is authored, and authored
++scenarios are out of this skill's contract at any rung.
++
++## Derivation rule
++
++For every `AC-...` bound to the candidate's approved PRD (via `criterion_to_requirement` and
++`requirement_to_objective`):
++
++1. Resolve the requirement(s) it traces to.
++2. Resolve the objective it ultimately serves.
++3. Emit one or more `UAT-SCN-...` objects whose `expected_business_outcome` is a direct, business-readable
++   restatement of the acceptance criterion — not a paraphrase that drifts from it.
++4. Carry the criterion's declared criticality onto the scenario; do not flatten it to a single default.
++
++## Criticality-aware completion (UAT-I13)
++
++An aggregate pass percentage cannot substitute for explicit accounting of every `critical`-tier scenario.
++A dossier that reports "94% pass" while a critical scenario is `FAIL` or `NOT_EXECUTED` is not complete —
++critical-tier results are always enumerated individually in the disposition, never folded into the
++aggregate alone.
++
++## Non-derivation is a declared gap, not a silent omission (UAT-I12)
++
++An acceptance criterion with no derivable scenario (ambiguous, or requiring a business judgment this
++skill cannot automate) is listed under non-coverage (`references/coverage-matrix.md`) — never dropped.
+diff --git a/tests/test_badf_uat_contract.py b/tests/test_badf_uat_contract.py
+new file mode 100644
+index 0000000..6864560
+--- /dev/null
++++ b/tests/test_badf_uat_contract.py
+@@ -0,0 +1,136 @@
++"""badf-uat WP-UAT-A (BADF-WP-0115 / GOV-0107): the G10 business-acceptance router
++contract freeze (DESIGNED).
++
++Pins the frozen contract: the 20 invariants UAT-I01..I20 by id, the eight-stage workflow,
++that this skill owns exactly the `uat` G10 evidence type (never release-packet,
++operational-readiness or go-no-go), that scenario derivation reuses the existing
++PRD->OBJ->AC->REQ traceability chain rather than re-deriving it, that no execution adapter
++is registered as a subskill at this rung, that final product acceptance stays a separate
++human decision, that no lifecycle/gate/schema change ships at this rung, and the registry
++DESIGNED entry digest-bound to SKILL.md. Contract-only: no scripts/badf_uat.py, no typed
++schema, no lifecycle change (UAT-I20).
++"""
++import hashlib
++import json
++import sys
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++ROOT = gate.ROOT
++SKILL = ROOT / "skills" / "badf-uat" / "SKILL.md"
++REFS_DIR = ROOT / "skills" / "badf-uat" / "references"
++REFS = (
++    "g10-uat-contract", "acceptance-provenance", "scenario-contract", "scenario-derivation",
++    "execution-adapters", "environment-and-data-fidelity", "diagnostics-vs-oracle",
++    "defect-classification", "coverage-matrix", "acceptance-disposition",
++    "reuat-and-staleness", "g09-g10-g11-boundary", "acceptance", "external-methodology",
++)
++WORKFLOW_STAGES = (
++    "RESOLVE ACCEPTANCE BASIS", "DERIVE SCENARIOS", "SELECT ADAPTER", "EXECUTE",
++    "CLASSIFY DEFECTS", "COMPUTE COVERAGE", "PACKAGE RECOMMENDATION",
++    "HANDOFF TO HUMAN ACCEPTANCE",
++)
++SKILL_TEXT = SKILL.read_text(encoding="utf-8") if SKILL.is_file() else ""
++REFS_TEXT = "\n".join(
++    (REFS_DIR / f"{r}.md").read_text(encoding="utf-8")
++    for r in REFS if (REFS_DIR / f"{r}.md").is_file()
++)
++
++
++class UatContractTests(unittest.TestCase):
++    def test_contract_surface_is_declarative_only(self):
++        """No runtime, no typed schema, no gate code ships at this rung (UAT-I20)."""
++        self.assertTrue(SKILL.is_file(), "SKILL.md must exist")
++        for token in ("name: badf-uat", "gate: G10", "owner_role: release_authority",
++                      "status: DESIGNED", "allowed_tools: []"):
++            self.assertIn(token, SKILL_TEXT, token)
++        self.assertFalse((ROOT / "scripts" / "badf_uat.py").exists(),
++                          "UAT-I20: no competing UAT gate script at the DESIGNED rung")
++        self.assertFalse((ROOT / "schemas" / "uat.schema.json").exists(),
++                          "no typed uat evidence schema at this rung")
++        self.assertFalse((ROOT / "schemas" / "uat-scenario.schema.json").exists(),
++                          "no typed scenario schema at this rung")
++
++    def test_root_states_all_invariants_and_the_workflow(self):
++        for i in range(1, 21):
++            self.assertIn(f"UAT-I{i:02d}", SKILL_TEXT, f"UAT-I{i:02d} must be named in SKILL.md")
++        for stage in WORKFLOW_STAGES:
++            self.assertIn(stage, SKILL_TEXT, f"workflow stage {stage}")
++
++    def test_ownership_is_uat_only(self):
++        """This skill produces exactly the `uat` G10 evidence type -- never the other three."""
++        low = SKILL_TEXT.lower()
++        self.assertIn("produces exactly one", low)
++        for other in ("release-packet", "operational-readiness", "go-no-go"):
++            self.assertIn(other, low, f"must name {other} as explicitly out of scope")
++        self.assertIn("badf-production-readiness", SKILL_TEXT)
++
++    def test_provenance_chain_reuses_existing_traceability(self):
++        """Scenario derivation resolves the existing RTM link maps; it does not rebuild them."""
++        prov = (REFS_DIR / "acceptance-provenance.md").read_text(encoding="utf-8")
++        for token in ("requirement_to_objective", "criterion_to_requirement",
++                      "schemas/traceability.schema.json", "schemas/acceptance-criteria.schema.json"):
++            self.assertIn(token, prov, token)
++        self.assertIn("resolve", prov.lower())
++        self.assertIn("does not build a second one", prov.lower())
++
++    def test_no_subskills_registered_yet(self):
++        """No browser-uat / api-uat / manual-uat adapter is registered as a subskill at WP-UAT-A."""
++        registry = json.loads((ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))
++        names = {e["name"] for e in registry["skills"]}
++        for sub in ("browser-uat", "api-uat", "manual-uat", "hybrid-uat"):
++            self.assertNotIn(sub, names, f"{sub} must not be registered at WP-UAT-A")
++        adapters = (REFS_DIR / "execution-adapters.md").read_text(encoding="utf-8")
++        self.assertIn("No adapter is registered as a subskill at this rung", adapters)
++
++    def test_final_acceptance_stays_human(self):
++        disp = (REFS_DIR / "acceptance-disposition.md").read_text(encoding="utf-8")
++        for token in ("UAT-I14", "UAT-I15", "Layer 2", "authorized human principal",
++                      "cannot issue"):
++            self.assertIn(token, disp, token)
++        self.assertIn("recommendation", disp.lower())
++        self.assertIn("evidence, not a decision", disp.lower())
++
++    def test_no_lifecycle_change(self):
++        lifecycle_before = json.loads((ROOT / "badf" / "lifecycle.json").read_text(encoding="utf-8"))
++        gates = lifecycle_before.get("gates", [])
++        g10 = next((g for g in gates if g.get("id") == "G10"), None)
++        self.assertIsNotNone(g10, "G10 must already exist in lifecycle.json")
++        self.assertIn("uat", g10.get("required_evidence", []))
++        self.assertEqual(len(gates), 15, "no gate added or removed")
++
++    def test_registry_pin_is_designed_and_tool_empty(self):
++        registry = json.loads((ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))
++        entry = next((e for e in registry["skills"] if e["name"] == "badf-uat"), None)
++        self.assertIsNotNone(entry, "badf-uat must be registered")
++        self.assertEqual(entry["status"], "DESIGNED")
++        self.assertEqual(entry["allowed_tools"], [])
++        self.assertEqual(entry["risk_class"], "C1")
++        expected = "sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest()
++        self.assertEqual(entry["digest"], expected, "registry digest must equal sha256(SKILL.md)")
++
++    def test_skill_points_to_registry_not_a_hardcoded_status(self):
++        self.assertIn("badf/skill-registry.json", SKILL_TEXT)
++        ladder = (REFS_DIR / "acceptance.md").read_text(encoding="utf-8")
++        self.assertIn("pointer, not a second", ladder)
++        for rung in ("WP-UAT-A", "WP-UAT-B", "WP-UAT-C", "WP-UAT-D", "WP-UAT-E"):
++            self.assertIn(rung, ladder, rung)
++
++    def test_external_methodology_is_reference_adapt_only(self):
++        ext = (REFS_DIR / "external-methodology.md").read_text(encoding="utf-8")
++        self.assertIn("webapp-uat", ext)
++        self.assertIn("adapt", ext.lower())
++        self.assertIn("rejected", ext.lower())
++        self.assertIn("Confirmed absent from this repository", ext)
++
++    def test_all_fourteen_references_exist(self):
++        self.assertTrue(REFS_DIR.is_dir(), "references/ dir must exist")
++        for r in REFS:
++            self.assertTrue((REFS_DIR / f"{r}.md").is_file(), f"missing reference {r}.md")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0110/work-package.json b/work/WP-2026-0110/work-package.json
+index 8de03f3..2af126d 100644
+--- a/work/WP-2026-0110/work-package.json
++++ b/work/WP-2026-0110/work-package.json
+@@ -47,11 +47,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR; the demands return to AUTHORIZED and the learning file is removed"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "d292801"
++    "base_revision": "d292801",
++    "landed_content_tree": "cb57ef704a9ba1402c1401710b8480aba273f1e4",
++    "composition_verified": true,
++    "landed_as": "87dd19213fb0dc12625fd79dfb2ef9ccdf9afd49"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Close-out of the badf-engineering-verification program under the #195 A->E authorization; the ladder itself is complete and ACTIVE at d292801. Resolves #221 / GOV-0096. BARCHI-1's #213 is landing first by agreement, so this rebases onto it and reconciles the then-current WP. QA + REV by BADF-QA (bst-sa-5b) and BADF-REV (bst-sa-f0); BADF-REV has asked for a scoped delta check on the doctrine file. Engineered by BARCHI-3 under /loop."
+ }
