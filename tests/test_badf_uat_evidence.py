@@ -106,7 +106,13 @@ class UatTypedEvidenceTests(unittest.TestCase):
         enum = d["properties"]["binding"]["properties"]["recommendation"]["enum"]
         for verdict in ("ACCEPTED", "ACCEPTED_WITH_CONDITIONS", "REJECTED"):
             self.assertNotIn(verdict, enum, f"{verdict} must not be a recommendation")
-        self.assertEqual(4, len(enum))
+        # The INVARIANT is the prefix, not the count. `assertEqual(4, len(enum))` would fail the
+        # day someone legitimately adds RECOMMEND_DEFER -- a snapshot (#268). The prefix rule is
+        # STRONGER anyway: assertNotIn only catches the three verdicts I happened to name, while
+        # this catches any acceptance-shaped value nobody has thought of yet.
+        self.assertTrue(all(v.startswith("RECOMMEND_") for v in enum),
+                        f"every recommendation must be a RECOMMEND_*; got {enum}")
+        self.assertGreaterEqual(len(enum), 4, "the four frozen recommendations are a floor")
         with self.assertRaises(gate.ValidationError):
             check(evidence(binding=binding(recommendation="ACCEPTED")))
 
@@ -133,15 +139,22 @@ class UatTypedEvidenceTests(unittest.TestCase):
         an author generalising that true sentence four lines to the `const` would delete U5 and
         keep the appearance of the rule. (BADF-QA, #264 review; repo-wide as #265.)
         """
-        self.assertNotIn('"const"', (gate.ROOT / "scripts" / "badf_gate.py")
-                         .read_text(encoding="utf-8").split("def check_schema")[1][:4000],
-                         "check_schema gained a const branch -- if so, re-measure before relying on it")
         a = {"acceptance_id": "ACC-1", "candidate_digest": DIG, "acceptance_basis_digest": DIG,
              "scenario_set_digest": DIG, "disposition": "ACCEPTED",
              "accepted_by": {"principal": "bot", "principal_type": "agent"},
              "accepted_at": "2026-01-01T00:00:00Z"}
-        # the SCHEMA layer alone admits it -- this is the measurement, asserted
-        gate.check_schema("uat", evidence(binding=binding(acceptance=a)))
+        # The measurement, asserted as BEHAVIOUR rather than as source text. An earlier version
+        # of this test grepped check_schema for '"const"' -- which would have failed the day #265
+        # IMPLEMENTS const support, i.e. failed for being right about an improvement. That is the
+        # snapshot-worn-as-invariant class (#268), instance four, in my own test, found by the
+        # sweep BARCHI-2 suggested. If const is ever implemented THIS assertion fails too, but it
+        # fails with an instruction rather than a puzzle:
+        try:
+            gate.check_schema("uat", evidence(binding=binding(acceptance=a)))
+        except gate.ValidationError:
+            self.fail("check_schema now REFUSES principal_type='agent', so const is implemented. "
+                      "That is an improvement, not a regression: delete this test and remove the "
+                      "SOLE ENFORCER comment on U5, which is now false.")
         # and the full rule refuses it, so U5 is doing all of the work
         with self.assertRaisesRegex(gate.ValidationError, "non-human principal"):
             check(evidence(binding=binding(acceptance=a)))
@@ -210,6 +223,70 @@ class UatTypedEvidenceTests(unittest.TestCase):
         # the same evidence is admissible when it stops claiming acceptance
         b["recommendation"] = "RECOMMEND_INSUFFICIENT_EVIDENCE"
         check(evidence(binding=b))
+
+    def test_duplicate_observations_are_refused_not_resolved(self):
+        """U6 -- BADF-QA's #264 blocking finding: U4's verdict depended on ARRAY ORDER.
+
+        `by_scn = {o["scenario_id"]: o["result"] for o in observations}` is last-occurrence-wins,
+        so the same multiset in two orders gave opposite verdicts -- [FAIL, PASS] ADMITTED under
+        RECOMMEND_ACCEPT, [PASS, FAIL] refused. Meanwhile U3 ten lines up read the same array
+        set-wise: two controls in one function disagreeing about what the array means.
+
+        Fixed by removing the ambiguity rather than by picking an interpretation. A `uat` object
+        is ONE execution pass; a re-run is a new object with its own candidate digest (UAT-I17).
+        Any resolution rule -- last, worst, newest -- would be the gate deciding something the
+        producer never stated.
+        """
+        crit = scenario(crit="critical")
+        for order in ([observation(result="FAIL"), observation(result="PASS")],
+                      [observation(result="PASS"), observation(result="FAIL")]):
+            b = binding(scenarios=[crit], observations=order,
+                        defects=[{"scenario_id": "UAT-SCN-001",
+                                  "defect_class": "IMPLEMENTATION_DEFECT", "statement": "x"}],
+                        recommendation="RECOMMEND_ACCEPT")
+            with self.assertRaisesRegex(gate.ValidationError, "more than one observation"):
+                check(evidence(binding=b))
+
+    def test_the_same_multiset_in_either_order_yields_the_same_verdict(self):
+        """The property QA's probe actually tested, asserted directly rather than via U6.
+
+        Whatever the semantics, ORDER MUST NOT DECIDE. This holds by construction now (duplicates
+        are refused, so no multiset has two orderings that reach the verdict logic) -- but it is
+        the property that was violated, so it is pinned in its own right and survives any future
+        change to how duplicates are handled.
+        """
+        crit = scenario(crit="critical")
+        other = scenario(sid="UAT-SCN-002")
+        a = [observation(result="PASS"), observation(sid="UAT-SCN-002", result="FAIL")]
+        b_ = list(reversed(a))
+        verdicts = []
+        for order in (a, b_):
+            bnd = binding(scenarios=[crit, other], observations=order,
+                          defects=[{"scenario_id": "UAT-SCN-002",
+                                    "defect_class": "IMPLEMENTATION_DEFECT", "statement": "x"}],
+                          recommendation="RECOMMEND_ACCEPT")
+            try:
+                check(evidence(binding=bnd)); verdicts.append("ADMITTED")
+            except gate.ValidationError as e:
+                verdicts.append(f"REFUSED:{'dup' if 'more than one' in str(e) else 'other'}")
+        self.assertEqual(verdicts[0], verdicts[1],
+                         f"array order changed the verdict: {verdicts}")
+
+    def test_executed_at_is_provenance_not_an_ordering_key(self):
+        """QA observed `executed_at` is required and never read -- newest-as-FAIL was admitted.
+
+        With U6 refusing duplicates that is now correct BY DESIGN rather than by omission: no
+        conflict can be expressed, so nothing resolves one. Pinned so a later change that starts
+        reading it has to confront that it is re-introducing an ordering semantics.
+        """
+        newest_fail = [observation(result="PASS"),
+                       dict(observation(result="FAIL"), executed_at="2099-01-01T00:00:00Z")]
+        b = binding(scenarios=[scenario(crit="critical")], observations=newest_fail,
+                    defects=[{"scenario_id": "UAT-SCN-001",
+                              "defect_class": "IMPLEMENTATION_DEFECT", "statement": "x"}],
+                    recommendation="RECOMMEND_ACCEPT")
+        with self.assertRaisesRegex(gate.ValidationError, "more than one observation"):
+            check(evidence(binding=b))
 
     def test_an_unresolvable_acceptance_basis_is_refused_by_the_SCHEMA(self):
         """UAT-I05: no approved basis -> NO UAT -- and the refusal is the SCHEMA's, not a control.

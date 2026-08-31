@@ -1925,6 +1925,8 @@ def check_g10_uat_binding(artifact: Path, dossier: dict[str, Any], evidence: dic
                                     RECOMMEND_ACCEPT (UAT-I13: an aggregate cannot bury it)
       U5  layer separation       -- an acceptance, when present, binds THIS binding's candidate
                                     digest and carries a human principal (UAT-I15/I16)
+      U6  one obs per scenario   -- duplicate observations are ambiguous input, refused rather
+                                    than resolved by an invented rule (UAT-I09/I17; BADF-QA #264)
 
     The recommendation vocabulary IS closed by the schema: check_schema implements `enum`, so
     an acceptance verdict cannot be written into `recommendation` at all.
@@ -1965,7 +1967,31 @@ def check_g10_uat_binding(artifact: Path, dossier: dict[str, Any], evidence: dic
     if unclassified:
         raise ValidationError(f"{label}: scenario(s) {', '.join(unclassified)} failed or were blocked with no defect class; a failure without a class is noise the disposition cannot act on (UAT-I11)")
 
-    # U4 -- a critical scenario cannot be buried under an aggregate recommendation
+    # U6 -- one scenario, one observation. A `uat` evidence object is ONE execution pass over a
+    # scenario set; a re-run after a fix is a NEW uat object with its own candidate digest, which
+    # is what UAT-I17 already implies. Two observations of one scenario inside one binding is
+    # AMBIGUOUS INPUT with no stated resolution -- retry? flake? two adapters? -- and any rule the
+    # gate picked (last-wins, worst-wins, newest-wins) would be the gate deciding something the
+    # producer never said. Refusing ambiguity beats interpreting it.
+    #
+    # This also makes `observations` a set BY CONSTRUCTION, so U3 and U4 agree structurally rather
+    # than by both happening to be written set-wise. They did not: U4 was a dict comprehension
+    # (LAST occurrence wins) while U3 ten lines up was set-based, so the same multiset in a
+    # different order produced opposite verdicts -- [FAIL, PASS] admitted under RECOMMEND_ACCEPT,
+    # [PASS, FAIL] refused. Found by BADF-QA on #264.
+    #
+    # And it settles `executed_at`, which QA noted is required and never read: with duplicates
+    # refused it is PROVENANCE (when this was observed), never an ordering key. Nothing resolves
+    # a conflict, because a conflict cannot be expressed.
+    seen: dict[str, int] = {}
+    for o in b.get("observations") or []:
+        seen[o["scenario_id"]] = seen.get(o["scenario_id"], 0) + 1
+    dupes = sorted(s for s, n in seen.items() if n > 1)
+    if dupes:
+        raise ValidationError(f"{label}: scenario(s) {', '.join(dupes)} carry more than one observation; a uat evidence object is one execution pass and a re-run is a new object, so duplicate observations are ambiguous input rather than a result to be resolved (UAT-I09 / UAT-I17)")
+
+    # U4 -- a critical scenario cannot be buried under an aggregate recommendation.
+    # Order-independent by construction now that U6 refuses duplicates.
     if b.get("recommendation") == "RECOMMEND_ACCEPT":
         critical = {s["scenario_id"] for s in b.get("scenarios") or [] if s["criticality"] == "critical"}
         by_scn = {o["scenario_id"]: o["result"] for o in b.get("observations") or []}

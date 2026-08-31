@@ -86,8 +86,17 @@ class UatContractTests(unittest.TestCase):
                           "UAT-I20: no competing UAT gate; deterministic semantics stay in badf_gate.py")
         registry = json.loads((ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))
         names = {e["name"] for e in registry["skills"]}
+        # RESIDUAL of the #268 class, kept deliberately and disclosed rather than deleted:
+        # adapters ARE scheduled for a later rung (references/execution-adapters.md: "concrete
+        # adapters are a later rung"), so this pin WILL fail when that rung lands. It stays
+        # because it is the correct contract for every rung up to that one -- but the message
+        # tells the next author what to do, which is the difference between a contract and the
+        # freezes in #268 instances 1-3.
         for sub in ("browser-uat", "api-uat", "manual-uat", "hybrid-uat"):
-            self.assertNotIn(sub, names, f"{sub} is deferred past rung B")
+            self.assertNotIn(sub, names,
+                             f"{sub} is registered. If the adapter rung has landed, that is "
+                             f"correct: update THIS assertion and references/acceptance.md's "
+                             f"ladder in the same PR. If not, an adapter was registered early.")
 
     def test_root_states_all_invariants_and_the_workflow(self):
         for i in range(1, 21):
@@ -117,7 +126,9 @@ class UatContractTests(unittest.TestCase):
         registry = json.loads((ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))
         names = {e["name"] for e in registry["skills"]}
         for sub in ("browser-uat", "api-uat", "manual-uat", "hybrid-uat"):
-            self.assertNotIn(sub, names, f"{sub} must not be registered at WP-UAT-A")
+            self.assertNotIn(sub, names,
+                             f"{sub} is registered -- see the note on the sibling assertion; "
+                             f"deferred to the adapter rung, not forbidden forever")
         adapters = (REFS_DIR / "execution-adapters.md").read_text(encoding="utf-8")
         self.assertIn("No adapter is registered as a subskill at this rung", adapters)
 
