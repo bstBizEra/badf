@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0120-G07-source-change",
+  "work_package_id": "WP-2026-0120",
+  "gate": "G07",
+  "claim": "the change WP-2026-0120 makes to this repository, outside its own directory and the lockfile",
+  "evidence_type": "source-change",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-08-31T20:59:01Z",
+  "completed_at": "2026-08-31T20:59:01Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0120/evidence/G07/source-change.diff",
+  "digest": "sha256:4cdfda5e8200a67c77bbd9f8db78b96dc1fa73ed7cd3a3583b6a66f0498d4f2d",
+  "binding": {
+    "base_sha": "c8036a6bea559f53fd342eb29c5f3b4d5a0290ef",
+    "head_sha": "13eecb564e5e572b803030e4a8a1fa8cf13352bd",
+    "content_tree": "aa15321954e2303ba698de6184ae361b78c27175",
+    "changed_paths": [
+      "badf/demands/BADF-DEM-0107.json",
+      "badf/skill-registry.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "skills/badf-solution-design/references/routing.md",
+      "tests/test_badf_family_names.py",
+      "work/WP-2026-0123/work-package.json"
+    ],
+    "expected_surfaces": {
+      "declared": true,
+      "files": [
+        "skills/badf-solution-design/references/routing.md",
+        "badf/skill-registry.json",
+        "tests/test_badf_family_names.py",
+        "badf/demands/BADF-DEM-0107.json",
+        "docs/governance/GITHUB_CONTROL_PLANE.md",
+        "work/WP-2026-0122/work-package.json"
+      ]
+    },
+    "unexpected_paths": [
+      "work/WP-2026-0123/work-package.json"
+    ],
+    "change_digest": "sha256:4cdfda5e8200a67c77bbd9f8db78b96dc1fa73ed7cd3a3583b6a66f0498d4f2d"
+  }
+}
