@@ -2010,6 +2010,66 @@ def check_g10_uat_binding(artifact: Path, dossier: dict[str, Any], evidence: dic
         if (acc.get("accepted_by") or {}).get("principal_type") != "human":
             raise ValidationError(f"{label}: acceptance carries a non-human principal; final product acceptance is a separate authorized human decision, never the producing capability's (UAT-I14 / UAT-I15)")
 
+    # ---- WP-UAT-C: deterministic G10 controls. Lean mode DISABLED -- HARD INVARIANTS. ----
+    #
+    # U4 (rung B) refuses a critical failure only under RECOMMEND_ACCEPT. I defended that
+    # boundary at B on the grounds that "conditions are exactly where a known critical failure
+    # gets named" -- BADF-QA's #266 observed that the rationale was right and ENFORCED BY
+    # NOTHING: conditions, known_defects_acknowledged and declared_non_coverage_acknowledged are
+    # all optional, so a disposition whose NAME asserts conditions exist required none, and
+    # UAT-I13's aggregate-burying was reachable one enum value over. C7-C9 enforce the
+    # precondition rather than withdraw the judgement.
+
+    def _not_passing_criticals() -> list[str]:
+        crit = {s["scenario_id"] for s in b.get("scenarios") or [] if s["criticality"] == "critical"}
+        seen = {o["scenario_id"]: o["result"] for o in b.get("observations") or []}
+        return sorted(s for s in crit if seen.get(s, "NOT_EXECUTED") != "PASS")
+
+    # C7 -- a critical failure carried under WITH_CONDITIONS must actually be NAMED (UAT-I13).
+    # Preserves B's judgement that conditions are the legitimate home for a known failure, and
+    # requires that the home be occupied.
+    if b.get("recommendation") == "RECOMMEND_ACCEPT_WITH_CONDITIONS":
+        named = " ".join(str(x) for x in ((acc or {}).get("conditions") or [])
+                         + ((acc or {}).get("known_defects_acknowledged") or [])) if isinstance(acc, dict) else ""
+        unnamed = [s for s in _not_passing_criticals() if s not in named]
+        if unnamed:
+            raise ValidationError(f"{label}: RECOMMEND_ACCEPT_WITH_CONDITIONS with critical scenario(s) {', '.join(unnamed)} not passing and named in no condition or acknowledged defect; conditions are where a known critical failure is named, so an unnamed one is the aggregate UAT-I13 refuses, one enum value over (UAT-I13 / GOV #266)")
+
+    if isinstance(acc, dict):
+        # C8 -- a disposition whose NAME asserts conditions exist must carry some.
+        if acc["disposition"] == "ACCEPTED_WITH_CONDITIONS" and not (acc.get("conditions") or []):
+            raise ValidationError(f"{label}: acceptance disposition ACCEPTED_WITH_CONDITIONS carries no conditions; a disposition whose name asserts conditions exist cannot have none (UAT-I16 / GOV #266)")
+
+        # C9 -- an UNCONDITIONAL human acceptance over an unacknowledged critical failure. A
+        # human may accept a known critical failure; acknowledging it is what makes it known.
+        if acc["disposition"] == "ACCEPTED":
+            ack = " ".join(str(x) for x in (acc.get("known_defects_acknowledged") or [])
+                           + (acc.get("conditions") or []))
+            unacked = [s for s in _not_passing_criticals() if s not in ack]
+            if unacked:
+                raise ValidationError(f"{label}: unconditional ACCEPTED over critical scenario(s) {', '.join(unacked)} not passing and not acknowledged; a human may accept a known critical failure, but acknowledging it is what makes it known (UAT-I16 / GOV #266)")
+
+        # C10 -- STALENESS on the scenario set (UAT-I17). The acceptance binds a scenario_set_digest;
+        # if it does not equal a digest recomputed over the scenarios actually carried, the
+        # acceptance describes a scenario set that is not this one. UAT-I17 says a material change
+        # invalidates the acceptance -- this is what makes that mechanical rather than a promise.
+        canonical = json.dumps(sorted(s["scenario_id"] for s in b.get("scenarios") or []),
+                               separators=(",", ":")).encode("utf-8")
+        recomputed = "sha256:" + hashlib.sha256(canonical).hexdigest()
+        if acc["scenario_set_digest"] != recomputed:
+            raise ValidationError(f"{label}: acceptance.scenario_set_digest does not equal a digest recomputed over the scenarios in this binding; the acceptance describes a different scenario set, so a scenario added or removed after it was issued would carry the acceptance forward silently (UAT-I17)")
+
+    # C11 -- COVERAGE EXACTNESS (UAT-I12). A criterion marked not_covered without a matching
+    # non_coverage entry is the defect the matrix exists to prevent, wearing a label: absence
+    # from the matrix and an unexplained not_covered are the same silence.
+    cov = b.get("coverage") or {}
+    declared_gaps = " ".join(str(x.get("item", "")) for x in (cov.get("non_coverage") or []))
+    unexplained = sorted(c["acceptance_criterion_ref"] for c in (cov.get("criteria") or [])
+                         if c["state"] == "not_covered"
+                         and not c.get("reason") and c["acceptance_criterion_ref"] not in declared_gaps)
+    if unexplained:
+        raise ValidationError(f"{label}: criteri(a) {', '.join(unexplained)} are not_covered with neither a reason nor a declared non_coverage entry; a criterion marked not_covered without one is the same silence as a criterion missing from the matrix (UAT-I12)")
+
 
 EVIDENCE_RULES["uat"] = check_g10_uat_binding
 

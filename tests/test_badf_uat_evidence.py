@@ -77,6 +77,23 @@ def evidence(**over):
     return e
 
 
+def acceptance(**over):
+    """A Layer 2 acceptance whose scenario_set_digest matches the DEFAULT single-scenario set."""
+    import hashlib as _h, json as _j
+    a = {"acceptance_id": "ACC-1", "candidate_digest": DIG, "acceptance_basis_digest": DIG,
+         "scenario_set_digest": scenario_set_digest(["UAT-SCN-001"]),
+         "disposition": "ACCEPTED",
+         "accepted_by": {"principal": "operator", "principal_type": "human"},
+         "accepted_at": "2026-01-01T00:00:00Z"}
+    a.update(over)
+    return a
+
+
+def scenario_set_digest(ids):
+    import hashlib as _h, json as _j
+    return "sha256:" + _h.sha256(_j.dumps(sorted(ids), separators=(",", ":")).encode()).hexdigest()
+
+
 def check(e):
     gate.EVIDENCE_RULES["uat"](Path("unused"), {"disposition": "PASS"}, e)
 
@@ -123,7 +140,8 @@ class UatTypedEvidenceTests(unittest.TestCase):
         self.assertEqual({"const": "human"},
                          acc["properties"]["accepted_by"]["properties"]["principal_type"])
         a = {"acceptance_id": "ACC-1", "candidate_digest": DIG, "acceptance_basis_digest": DIG,
-             "scenario_set_digest": DIG, "disposition": "ACCEPTED",
+             "scenario_set_digest": scenario_set_digest(["UAT-SCN-001"]),
+             "disposition": "ACCEPTED",
              "accepted_by": {"principal": "bot", "principal_type": "agent"},
              "accepted_at": "2026-01-01T00:00:00Z"}
         with self.assertRaises(gate.ValidationError):
@@ -140,7 +158,8 @@ class UatTypedEvidenceTests(unittest.TestCase):
         keep the appearance of the rule. (BADF-QA, #264 review; repo-wide as #265.)
         """
         a = {"acceptance_id": "ACC-1", "candidate_digest": DIG, "acceptance_basis_digest": DIG,
-             "scenario_set_digest": DIG, "disposition": "ACCEPTED",
+             "scenario_set_digest": scenario_set_digest(["UAT-SCN-001"]),
+             "disposition": "ACCEPTED",
              "accepted_by": {"principal": "bot", "principal_type": "agent"},
              "accepted_at": "2026-01-01T00:00:00Z"}
         # The measurement, asserted as BEHAVIOUR rather than as source text. An earlier version
@@ -168,7 +187,8 @@ class UatTypedEvidenceTests(unittest.TestCase):
         property for a B rung and the wrong thing to overstate.
         """
         a = {"acceptance_id": "ACC-1", "candidate_digest": DIG, "acceptance_basis_digest": DIG,
-             "scenario_set_digest": DIG, "disposition": "ACCEPTED",
+             "scenario_set_digest": scenario_set_digest(["UAT-SCN-001"]),
+             "disposition": "ACCEPTED",
              "accepted_by": {"principal": "BARCHI-3 (agent)", "principal_type": "human"},
              "accepted_at": "2026-01-01T00:00:00Z"}
         check(evidence(binding=binding(acceptance=a)))   # admitted, and that is the limit
@@ -176,7 +196,8 @@ class UatTypedEvidenceTests(unittest.TestCase):
     def test_layer2_must_bind_layer1s_candidate(self):
         """UAT-I16: an acceptance bound to a different candidate is void."""
         a = {"acceptance_id": "ACC-1", "candidate_digest": DIG2, "acceptance_basis_digest": DIG,
-             "scenario_set_digest": DIG, "disposition": "ACCEPTED",
+             "scenario_set_digest": scenario_set_digest(["UAT-SCN-001"]),
+             "disposition": "ACCEPTED",
              "accepted_by": {"principal": "operator", "principal_type": "human"},
              "accepted_at": "2026-01-01T00:00:00Z"}
         with self.assertRaisesRegex(gate.ValidationError, "candidate_digest"):
@@ -332,6 +353,87 @@ class UatTypedEvidenceTests(unittest.TestCase):
         self.assertEqual(["uat", "release-packet", "operational-readiness", "go-no-go"],
                          g10["required_evidence"])
         self.assertIs(gate.EVIDENCE_RULES["uat"], gate.check_g10_uat_binding)
+
+
+class UatDeterministicControlTests(unittest.TestCase):
+    """WP-UAT-C. Lean mode DISABLED -- these are HARD INVARIANTS.
+
+    Closes BADF-QA's #266. At rung B I defended U4's boundary -- it refuses a critical failure
+    only under RECOMMEND_ACCEPT -- on the grounds that *conditions are exactly where a known
+    critical failure gets named*. QA agreed the rationale and showed it was enforced by nothing:
+    every acknowledgement field is optional, so a disposition whose NAME asserts conditions exist
+    required none, and UAT-I13's aggregate-burying was reachable one enum value over. These
+    controls enforce the precondition rather than withdraw the judgement.
+    """
+
+    def _crit_fail(self, **bind):
+        b = binding(scenarios=[scenario(crit="critical")],
+                    observations=[observation(result="FAIL")],
+                    defects=[{"scenario_id": "UAT-SCN-001",
+                              "defect_class": "IMPLEMENTATION_DEFECT", "statement": "x"}])
+        b.update(bind)
+        return b
+
+    def test_c7_unnamed_critical_failure_under_with_conditions_is_refused(self):
+        """The gap QA measured: critical FAIL + RECOMMEND_ACCEPT_WITH_CONDITIONS was ADMITTED."""
+        b = self._crit_fail(recommendation="RECOMMEND_ACCEPT_WITH_CONDITIONS")
+        with self.assertRaisesRegex(gate.ValidationError, "named in no condition"):
+            check(evidence(binding=b))
+        # naming it is what makes the boundary legitimate -- B's judgement, now enforced
+        b["acceptance"] = acceptance(disposition="ACCEPTED_WITH_CONDITIONS",
+                                     conditions=["UAT-SCN-001 total is wrong; fix before GA"])
+        check(evidence(binding=b))
+
+    def test_c8_accepted_with_conditions_requires_conditions(self):
+        """A disposition whose NAME asserts conditions exist cannot carry none."""
+        b = self._crit_fail(recommendation="RECOMMEND_ACCEPT_WITH_CONDITIONS")
+        b["acceptance"] = acceptance(disposition="ACCEPTED_WITH_CONDITIONS",
+                                     known_defects_acknowledged=["UAT-SCN-001"])
+        with self.assertRaisesRegex(gate.ValidationError, "carries no conditions"):
+            check(evidence(binding=b))
+
+    def test_c9_unconditional_acceptance_over_unacknowledged_critical_failure_is_refused(self):
+        """A human MAY accept a known critical failure. Acknowledging it is what makes it known."""
+        b = self._crit_fail(recommendation="RECOMMEND_REJECT")
+        b["acceptance"] = acceptance(disposition="ACCEPTED")
+        with self.assertRaisesRegex(gate.ValidationError, "not acknowledged"):
+            check(evidence(binding=b))
+        b["acceptance"] = acceptance(disposition="ACCEPTED",
+                                     known_defects_acknowledged=["UAT-SCN-001 known bad total"])
+        check(evidence(binding=b))
+
+    def test_c10_a_scenario_added_after_acceptance_invalidates_it(self):
+        """UAT-I17 made mechanical: the acceptance binds a scenario-set digest, so a scenario
+        added or removed after it was issued cannot carry the acceptance forward silently."""
+        b = binding(acceptance=acceptance())
+        check(evidence(binding=b))                       # digest matches the one-scenario set
+        b2 = binding(scenarios=[scenario(), scenario(sid="UAT-SCN-002")],
+                     observations=[observation(), observation(sid="UAT-SCN-002")],
+                     acceptance=acceptance())            # stale digest: still names only SCN-001
+        with self.assertRaisesRegex(gate.ValidationError, "scenario_set_digest"):
+            check(evidence(binding=b2))
+        b2["acceptance"] = acceptance(
+            scenario_set_digest=scenario_set_digest(["UAT-SCN-001", "UAT-SCN-002"]))
+        check(evidence(binding=b2))
+
+    def test_c11_not_covered_without_a_reason_or_declared_gap_is_refused(self):
+        """UAT-I12: an unexplained not_covered is the same silence as absence from the matrix."""
+        b = binding()
+        b["coverage"]["criteria"] = [{"acceptance_criterion_ref": "AC-1", "state": "not_covered"}]
+        with self.assertRaisesRegex(gate.ValidationError, "not_covered with neither"):
+            check(evidence(binding=b))
+        b["coverage"]["criteria"][0]["reason"] = "ambiguous criterion; routed upstream"
+        check(evidence(binding=b))
+        del b["coverage"]["criteria"][0]["reason"]
+        b["coverage"]["non_coverage"] = [{"item": "AC-1", "reason": "no representative environment"}]
+        check(evidence(binding=b))
+
+    def test_untyped_binding_still_admissible_after_the_c_rung(self):
+        """Additivity survives C. The rung adds refusals for TYPED bindings only."""
+        e = evidence()
+        del e["binding"]
+        check(e)
+
 
 
 if __name__ == "__main__":
