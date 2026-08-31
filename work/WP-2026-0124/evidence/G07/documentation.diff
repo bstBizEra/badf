@@ -1,0 +1,47 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index e4dba37..8120f89 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1912,6 +1912,42 @@ destroys the binding that makes it evidence, to make a cosmetic id consistent. T
+ 
+ Anyone sweeping for the stale id will hit that demand and be tempted. **The temptation is the trap.**
+ 
++## badf-uat → IMPLEMENTED — the typed `uat` binding, and an enum that cannot say yes (`BADF-WP-0124` / WP-UAT-B, Issue #263 / GOV-0116)
++
++Rung A froze `badf-uat`'s contract and shipped **no runtime**, which left `uat` — a required G10
++evidence type — checkable by nothing. This rung types the artifact and extends the canonical gate:
++`schemas/uat.schema.json` specializing `evidence.schema.json`, and `check_g10_uat_binding` registered
++`EVIDENCE_RULES["uat"]`. **Strictly additive**, exactly as VER-B and VAL-B before it — an untyped
++`uat` binding stays admissible, so nothing already landed breaks.
++
++**The load-bearing decision is a closed enum.** UAT-I14 says the capability that produced the evidence
++does not issue the decision. Rung A stated that in prose across fourteen references; a schema admitting
++`recommendation: "ACCEPTED"` would have defeated it with a permissive vocabulary rather than an
++argument — a producer would not need to disobey the rule, only decline to read it. So
++`recommendation` is exactly four `RECOMMEND_*` values, the acceptance verdicts exist **only** inside
++the optional Layer 2 `acceptance` object, and that object pins `accepted_by.principal_type` to
++`const: "human"`. **An agent cannot issue product acceptance by any encoding this schema admits.**
++The rule stopped being a norm and became a shape.
++
++Five code controls carry the cross-field constraints the schema walker cannot express: an observation
++naming a scenario absent from the binding is unanchored (U2, UAT-I01); a `FAIL`/`BLOCKED` observation
++with no classified defect is noise the disposition cannot act on (U3, UAT-I11); `RECOMMEND_ACCEPT`
++with a critical scenario not passing is refused, so an aggregate cannot bury a mandatory criterion
++(U4, UAT-I13); and a Layer 2 acceptance must bind this binding's own candidate digest and carry a
++human principal (U5, UAT-I15/I16). All five **observed red** against a neutered gate.
++
++**A sixth control was written and removed, and the removal is the instructive part.** `U1` checked
++that `acceptance_basis` carries a `prd_digest` — but the schema already makes that field `required`,
++so `check_schema` refuses first and `U1` could never fire. Its test passed **on the wrong raise**,
++because both messages contain the string `prd_digest`. The mutation battery caught it: neutering `U1`
++left the suite green. **A control the schema makes unreachable is not a control; it is the shape of
++one** — #250's class, found by this rung's own battery in this rung's own code, and recorded in a
++comment where it stood so nobody re-adds it.
++
++Shared-surface (`schemas/` + `badf_gate.py`) → QA + REV, unlike rung A. Next: **WP-UAT-C**,
++deterministic G10/UAT controls with lean **disabled** — acceptance-basis binding across a dossier,
++freshness, and staleness on candidate change are HARD INVARIANTS.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
