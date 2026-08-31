@@ -1,0 +1,224 @@
+diff --git a/badf/demands/BADF-DEM-0109.json b/badf/demands/BADF-DEM-0109.json
+new file mode 100644
+index 0000000..3b2af66
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0109.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0109",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 211,
++    "url": "https://github.com/bstBizEra/badf/issues/211",
++    "exported_at": "2026-09-01T00:10:00Z",
++    "body_digest": "sha256:1e806ad953086d4cb618bf690f9e69e2c71dd1f38ca9d7bbe1ebb3f2f1fe0336"
++  },
++  "title": "GOV: ballot-verdict/finding coherence in validate_verification_record — an APPROVE ballot citing its own OPEN MAJOR finding renders VERIFY PASS",
++  "problem": "🔎 **QA (BADF-QA)** — deferred finding from the #208 review (F-2), filed per the review-notes-become-issues rule. Out of #208's scope by construction: VER-D is ladder-internal (no gate change), and this is a `badf_gate.py` change.\n\n## Defect\n`validate_verification_record` accepts a ballot whose verdict contradicts its own cited findings. Measured probe (on `31fbc41`, #208's head, but the behavior is `main`'s — the validator is untouched by #208):\n\n- Take `examples/verification-record-pr196-request-changes.json` (ballot cites `VF-001`, an OPEN `MAJOR` DEFECT), flip `ballots[0].verdict` `REJECT → APPROVE`, run `badf_gate.py verify` → **`BADF VERIFY PASS`**.\n\nThe #201 review's design line — \"a verdict can't contradict its own findings\" — is enforced at the **matrix** layer (`VERIFIED` with an OPEN blocking finding → refused, verified) but not at the **ballot** layer.\n\n## Mitigations (why this is deferred, not urgent)\n- The record \"grants no verification authority\" (printed on every PASS).\n- A `VERIFIED` matrix row over an OPEN MAJOR is refused (VER-I15/VER-I12 family — probe confirmed).\n- At dossier level, C6 refuses an OPEN MAJOR passed over / unmapped (shadow cases `open-major-passed-over`, `open-major-unmapped-pwc`).\n\nSo the incoherent ballot cannot become authority or a green dossier — but the record itself, the artifact future tooling will read, can carry a self-contradiction.\n\n## Acceptance criteria (for the Architect to refine)\n- A deterministic check in `validate_verification_record`: a PASS-class ballot verdict (`APPROVE`; `APPROVE_WITH_CONDITIONS` only with the finding condition-mapped, mirroring C6's mapped-vs-unmapped discrimination) may not cite a finding that is OPEN and blocking (`MAJOR`+). `REJECT` with OPEN findings stays valid (that is the honest arc).\n- Failing-first: the probe above as the red test; existing five encoded records (incl. the RC record with `REJECT` + OPEN MAJOR) must still `VERIFY PASS`.\n- No signature change to `validate_verification_record`; additive refusal only.\n\n## Test list\n- `test_pass_class_ballot_citing_open_blocking_finding_is_refused` (the probe, red-first)\n- `test_reject_ballot_with_open_findings_still_passes` (the #196 RC record as fixture)\n- `test_conditions_mapped_approve_with_conditions_passes` (the C6-mirroring discrimination)\n\n**Version tier:** patch (additive refusal in an existing validator; ARCHI validates). **Status:** DISCOVERED (found by BADF-QA adversarial probe during the #208 review; details in #208 comment 5470744640).\n\n<!-- agent: reviewer -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-09-01T00:10:00Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "validate_verification_record accepted a ballot whose verdict contradicted its own cited findings: APPROVE citing an OPEN MAJOR rendered VERIFY PASS. The matrix layer and check_g08_binding already refused the shape; the record's ballot layer did not. Strict APPROVE only -- APPROVE_WITH_CONDITIONS over an open finding is the module's own baseline fixture and the designed conditional arc, and the filed criterion to condition-map it cannot be built: the record schema carries no condition structure and no encoded record uses that verdict."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 4cbcd45..fe2927c 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1972,6 +1972,39 @@ Shared-surface (`schemas/` + `badf_gate.py`) → QA + REV, unlike rung A. Next:
+ deterministic G10/UAT controls with lean **disabled** — acceptance-basis binding across a dossier,
+ freshness, and staleness on candidate change are HARD INVARIANTS.
+ 
++## A verdict that contradicted the findings it cited (`BADF-WP-0123`, Issue #211 / GOV)
++
++`validate_verification_record` checked coherence at the **matrix** layer — a `VERIFIED` row over an OPEN
++blocking finding is refused — and `check_g08_binding` checked it on an independent-review **evidence
++binding** (`badf_gate.py:1742`). The record's own **ballot** layer was unchecked, so flipping the PR-196
++record's verdict `REJECT → APPROVE` while it cited an OPEN `MAJOR` it had raised itself rendered
++`BADF VERIFY PASS`. Two layers guarded the property and the one in between did not.
++
++**The blast radius was already bounded and that is why this was deferred, not urgent:** the record grants
++no verification authority, a `VERIFIED` matrix row over an OPEN MAJOR is refused, and C6 refuses an OPEN
++MAJOR passed over at dossier level. The defect was never that an incoherent ballot could become authority.
++It was that **the artifact future tooling reads could carry a self-contradiction**, and a downstream reader
++has no way to know the verdict and the findings disagree.
++
++**Strict `APPROVE` only — and the codebase settled that, not judgement.** The instinct was to refuse
++`APPROVE_WITH_CONDITIONS` over an open finding too, treating every one as unmapped-by-construction since
++the schema has no condition structure. `tests/test_badf_verification_evidence.py`'s baseline fixture is
++*exactly that shape* — `APPROVE_WITH_CONDITIONS` citing an OPEN `MAJOR` — and an existing test asserts it
++**passes**. A conditional approval over an open finding is the designed arc; refusing it would have broken
++a test that encodes the intent and called the breakage a fix. It also matches the sibling control, which
++tests `verdict == "APPROVE"` and nothing else. **Both layers now refuse the same shape and no more.**
++
++**A filed acceptance criterion was found unbuildable and the deviation was published before review.** The
++issue asked for `APPROVE_WITH_CONDITIONS` to be permitted "only with the finding condition-mapped,
++mirroring C6". Measured: the record schema carries **no** condition key, and **0 of 5** encoded records use
++that verdict. Mirroring C6 would require inventing a schema field — which the issue's own scope forbids
++("additive refusal only") and which would be a schema change on zero instances. Stating that on the issue
++*before* the review round is the difference between a plan defect and a review finding.
++
++**The control is watched.** Neutering the new `raise` turns the owning module red. That is asserted because
++**#250 exists precisely because `check_g07_binding` accumulated correct controls nothing was watching** —
++adding an unwatched control while claiming to fix that class would have grown the pile.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 96f5cc4..b8938ae 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -4228,6 +4228,32 @@ def validate_verification_record(path: Path) -> str:
+     for d in rec["synthesis"]["downgraded"]:
+         if d["finding_id"] not in findings:
+             raise ValidationError(f"synthesis downgrades {d['finding_id']}, which the record does not carry (VER-I12)")
++    for b in ballots:
++        # #211: the ballot layer's own coherence. The matrix layer already refuses a VERIFIED row
++        # over an OPEN blocking finding, and check_g08_binding refuses this shape on a review
++        # binding -- but the record's ballots were unchecked, so APPROVE could cite an OPEN MAJOR
++        # it raised itself. Strict APPROVE only: APPROVE_WITH_CONDITIONS over an open finding is
++        # the conditional arc and REJECT over open findings is the rejecting arc; both are honest.
++        # status/severity are READ from the record, not recomputed from evidence: the record is
++        # the persisted decision and this module has no independent source of truth for it.
++        # Deliberate, not an oversight (BADF-QA on #267).
++        if b["verdict"] != "APPROVE":
++            continue
++        # The association is two-sided and the record checks neither direction for
++        # reciprocity: a ballot cites via finding_ids, a finding names reporters via
++        # reported_by/also_reported_by, and nothing requires them to agree. Walking only
++        # finding_ids left the same proposition reachable from the other side -- an APPROVE
++        # with finding_ids: [] while the findings side still named it as the reporter of an
++        # OPEN MAJOR. Take the union so neither side alone can hide the contradiction.
++        associated = set(b["finding_ids"]) | {f["finding_id"] for f in rec["findings"]
++                                              if b["ballot_id"] in f["reported_by"] + f["also_reported_by"]}
++        cited_open = [fid for fid in associated
++                      if fid in findings and findings[fid]["status"] == "OPEN"
++                      and findings[fid]["severity"] in BLOCKING_SEVERITIES]
++        if cited_open:
++            raise ValidationError(f"ballot {b['ballot_id']}: verdict APPROVE contradicts OPEN blocking finding(s) "
++                                  f"{', '.join(sorted(cited_open))} associated with it (by its own finding_ids or by the "
++                                  f"finding naming it as reporter); a verdict cannot contradict its own findings")
+     for f in rec["findings"]:
+         if not f["reported_by"]:
+             raise ValidationError(f"finding {f['finding_id']} has no reporting ballot; a finding nobody balloted is invented (VER-I06)")
+diff --git a/tests/test_badf_verification_evidence.py b/tests/test_badf_verification_evidence.py
+index f370361..ef5538a 100644
+--- a/tests/test_badf_verification_evidence.py
++++ b/tests/test_badf_verification_evidence.py
+@@ -229,6 +229,89 @@ class VerifyRecordTests(unittest.TestCase):
+         r = record(findings=[finding(status="RESOLVED")]); r["matrix"][0].update(result="VERIFIED", composed_refs=[])
+         with self.assertRaisesRegex(gate.ValidationError, "composed|VER-I15"): gate.validate_verification_record(self._path(r))
+ 
++    def test_verify_refuses_an_APPROVE_ballot_citing_its_own_open_blocking_finding(self):
++        """#211: a ballot may not carry a verdict its own cited findings contradict.
++
++        The matrix layer already refuses a VERIFIED row over an OPEN blocking finding, and
++        `check_g08_binding` refuses the same shape on an independent-review evidence binding
++        (badf_gate.py:1742). The record's own ballot layer did not, so `verify` PASSed a record
++        whose ballot said APPROVE while citing an OPEN MAJOR it had raised itself.
++
++        Scope is strict APPROVE only, deliberately. APPROVE_WITH_CONDITIONS over an OPEN finding
++        is the honest conditional arc -- it is this module's own baseline fixture -- and REJECT
++        over open findings is the honest rejecting arc. Both are pinned below so a later change
++        cannot quietly widen this refusal into them.
++        """
++        r = record()
++        r["ballots"][0]["verdict"] = "APPROVE"
++        with self.assertRaisesRegex(gate.ValidationError, "APPROVE.*(contradicts|OPEN)|VF-001"):
++            gate.validate_verification_record(self._path(r))
++
++        # the two honest arcs stay valid -- negative controls, not decoration
++        r = record()
++        r["ballots"][0]["verdict"] = "REJECT"
++        gate.validate_verification_record(self._path(r))
++
++        gate.validate_verification_record(self._path(record()))  # APPROVE_WITH_CONDITIONS baseline
++
++        # APPROVE is fine once nothing open is cited
++        r = record(findings=[finding(status="RESOLVED")])
++        r["ballots"][0]["verdict"] = "APPROVE"
++        gate.validate_verification_record(self._path(r))
++
++    def test_verify_refuses_an_APPROVE_ballot_associated_by_either_join(self):
++        """#211: the association is two-sided, so the refusal must be too.
++
++        A ballot cites findings via `finding_ids`; a finding names its reporters via
++        `reported_by` / `also_reported_by`. The record checks each for CONTAINMENT and
++        neither for RECIPROCITY -- nothing requires the two to agree. So an APPROVE
++        ballot could carry `finding_ids: []` while the findings side still asserted it
++        reported an OPEN MAJOR, and a refusal walking only `finding_ids` admitted it.
++        That is the same proposition, reachable from the other side of the join.
++
++        Found by asking what my own criteria did not name (BADF-QA read it; measured here).
++        """
++        r = record()
++        r["ballots"][0]["verdict"] = "APPROVE"
++        r["ballots"][0]["finding_ids"] = []          # association lives only on the finding
++        for row in r["matrix"]:                      # deny the matrix layer an incidental catch
++            if row["result"] == "VERIFIED":
++                row["result"] = "NOT_VERIFIED"
++        with self.assertRaisesRegex(gate.ValidationError, "APPROVE.*(contradicts|OPEN)|VF-001"):
++            gate.validate_verification_record(self._path(r))
++
++        # and the mirror: cited by the ballot, silent on the finding
++        r = record(findings=[finding(reported_by=["BALLOT-OTHER"])])
++        r["ballots"][0]["verdict"] = "APPROVE"
++        r["findings"][0]["reported_by"] = ["BALLOT-001"]
++        with self.assertRaisesRegex(gate.ValidationError, "APPROVE.*(contradicts|OPEN)|VF-001"):
++            gate.validate_verification_record(self._path(r))
++
++    def test_verify_refuses_an_APPROVE_ballot_associated_only_via_also_reported_by(self):
++        """#211 vector C: the third attribution surface, pinned separately from B.
++
++        A finding's `reported_by` is mandatory and can be satisfied by a DIFFERENT ballot while
++        the approving ballot's involvement rides `also_reported_by`. The union already covers
++        this -- it walks `reported_by + also_reported_by` -- but nothing pinned it, so a later
++        simplification dropping `also_reported_by` would pass every existing test.
++
++        Raised by BADF-REV against 03dae4d (pre-union head, where it was genuinely open) and
++        measured closed here; the code was right and the coverage was not. One case per vector,
++        because a B-only test goes green while C is silent.
++        """
++        r = record()
++        r["ballots"].append({**r["ballots"][0], "ballot_id": "BALLOT-002", "reviewer": "reviewer-b",
++                             "reviewer_run_id": "run-b", "verdict": "REJECT", "finding_ids": ["VF-001"]})
++        r["ballots"][0].update(verdict="APPROVE", finding_ids=[])
++        r["findings"][0].update(reported_by=["BALLOT-002"], also_reported_by=["BALLOT-001"])
++        for row in r["matrix"]:
++            if row["result"] == "VERIFIED":
++                row["result"] = "NOT_VERIFIED"
++        # discriminates on THIS control's unique wording, not the substring it shares with the
++        # older binding-layer control at badf_gate.py:1743 (BADF-REV's mechanical note)
++        with self.assertRaisesRegex(gate.ValidationError, r"ballot BALLOT-001:.*associated with it"):
++            gate.validate_verification_record(self._path(r))
++
+     def test_verify_requires_non_coverage_and_refuses_authority(self):
+         r = record(non_coverage=[])
+         with self.assertRaisesRegex(gate.ValidationError, "non-coverage|VER-I11"): gate.validate_verification_record(self._path(r))
+diff --git a/work/WP-2026-0124/work-package.json b/work/WP-2026-0124/work-package.json
+index 2e1f503..9b17faa 100644
+--- a/work/WP-2026-0124/work-package.json
++++ b/work/WP-2026-0124/work-package.json
+@@ -61,12 +61,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR; the rung is additive, so reverting restores the pre-typed admissibility exactly"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "wp/WP-2026-0124-uat-typed-evidence",
+     "base_revision": "292d1be",
+-    "composition_verified": false
++    "composition_verified": true,
++    "landed_content_tree": "2609d03d2425e5064f99e466d4b5fac6b50013b9",
++    "landed_as": "d0986b0bee50d887d49eac2053da3777ddf41176"
+   },
+   "note": "Rung B of the badf-uat A\u2192E ladder; A landed as #241 (c525129). SHARED-SURFACE (schemas/ + badf_gate.py) so this needs QA + REV, unlike rung A which was ladder-internal under the #248 classification. A SIXTH control (U1, acceptance-basis resolvability) was written and REMOVED: schemas/uat.schema.json already makes prd_digest required inside acceptance_basis, so check_schema refuses first and U1 could never fire. Its test passed on the wrong raise because BOTH messages contain 'prd_digest'. Found by this rung's own mutation battery -- #250's class in this rung's own code -- and recorded in a code comment so nobody re-adds it. Separately: the gate patch removing U1 silently FAILED on a first attempt while the test patch succeeded, and the suite went green anyway; caught by grepping for the code rather than trusting the exit status. Ids WP-2026-0124 / BADF-DEM-0110 / GOV-0116 swept clean on all four surfaces including my own unpushed worktrees.",
+   "expected_surfaces": {
