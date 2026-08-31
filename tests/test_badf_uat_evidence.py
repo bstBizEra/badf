@@ -428,6 +428,47 @@ class UatDeterministicControlTests(unittest.TestCase):
         b["coverage"]["non_coverage"] = [{"item": "AC-1", "reason": "no representative environment"}]
         check(evidence(binding=b))
 
+    def test_c11_declared_gap_must_match_the_ref_exactly_not_merely_contain_it(self):
+        """BADF-QA on 09f3fab: C11 joined every non_coverage `item` into ONE STRING and asked
+        `ref not in <that string>`, so a gap declared for AC-12 reported AC-1 as explained.
+
+        The control read as exact and was not -- this rung's own class, in this rung's own
+        code. `AC-1` beside `AC-10` is the ordinary shape of an unpadded criteria set, which
+        the schema pattern permits, so this is reachable on normal data rather than contrived.
+        """
+        for declared, must_refuse in (("AC-1", False),      # the real explanation
+                                      ("AC-12", True),      # ref is a PREFIX of the gap
+                                      ("AC-10", True),      # same, adjacent id
+                                      ("AC-1-extra", True), # ref is a prefix with a suffix
+                                      ("AC-999", True)):    # unrelated -- always refused
+            with self.subTest(declared=declared):
+                b = binding()
+                b["coverage"]["criteria"] = [
+                    {"acceptance_criterion_ref": "AC-1", "state": "not_covered"}]
+                b["coverage"]["non_coverage"] = [{"item": declared, "reason": "no environment"}]
+                if must_refuse:
+                    with self.assertRaisesRegex(gate.ValidationError, "not_covered with neither"):
+                        check(evidence(binding=b))
+                else:
+                    check(evidence(binding=b))
+        # a LONGER ref against a SHORTER declared gap -- containment in the other direction
+        b = binding()
+        b["coverage"]["criteria"] = [
+            {"acceptance_criterion_ref": "AC-123", "state": "not_covered"}]
+        b["coverage"]["non_coverage"] = [{"item": "AC-1234", "reason": "no environment"}]
+        with self.assertRaisesRegex(gate.ValidationError, "not_covered with neither"):
+            check(evidence(binding=b))
+
+    def test_c11_reads_item_only_so_reason_prose_cannot_explain_a_gap(self):
+        """The leak was confined to `item`; QA measured that `reason` prose does not leak.
+        Pinned so a future 'be helpful, search the reason too' edit has to argue with a test."""
+        b = binding()
+        b["coverage"]["criteria"] = [{"acceptance_criterion_ref": "AC-1", "state": "not_covered"}]
+        b["coverage"]["non_coverage"] = [
+            {"item": "AC-999", "reason": "deferred together with AC-1 pending environment"}]
+        with self.assertRaisesRegex(gate.ValidationError, "not_covered with neither"):
+            check(evidence(binding=b))
+
     def test_untyped_binding_still_admissible_after_the_c_rung(self):
         """Additivity survives C. The rung adds refusals for TYPED bindings only."""
         e = evidence()

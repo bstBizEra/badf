@@ -2063,7 +2063,10 @@ def check_g10_uat_binding(artifact: Path, dossier: dict[str, Any], evidence: dic
     # non_coverage entry is the defect the matrix exists to prevent, wearing a label: absence
     # from the matrix and an unexplained not_covered are the same silence.
     cov = b.get("coverage") or {}
-    declared_gaps = " ".join(str(x.get("item", "")) for x in (cov.get("non_coverage") or []))
+    # SET, not a joined string. Joining made `ref not in declared_gaps` a SUBSTRING test, so a
+    # gap declared for AC-12 reported AC-1 as explained (BADF-QA, PR #274). `item` holds a ref,
+    # not prose about one -- membership is the intended semantics and the only exact one.
+    declared_gaps = {str(x.get("item", "")) for x in (cov.get("non_coverage") or [])}
     unexplained = sorted(c["acceptance_criterion_ref"] for c in (cov.get("criteria") or [])
                          if c["state"] == "not_covered"
                          and not c.get("reason") and c["acceptance_criterion_ref"] not in declared_gaps)
