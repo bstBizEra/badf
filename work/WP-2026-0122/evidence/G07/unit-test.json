@@ -15,12 +15,12 @@
     "name": "unittest",
     "version": "1"
   },
-  "operation": "python3 -m unittest tests.test_badf_aet_contract  # at base a69b922",
-  "started_at": "2026-08-31T16:21:55Z",
-  "completed_at": "2026-08-31T16:21:55Z",
+  "operation": "python3 -m unittest tests.test_badf_aet_contract  # at base a69b922, payload guard added (REV attack-2 fix)",
+  "started_at": "2026-08-31T17:09:57Z",
+  "completed_at": "2026-08-31T17:09:57Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0122/evidence/G07/unit-test.log",
-  "digest": "sha256:670802a0235fbd94d5136749629f5bd7dc60d718fe20c5c7ca3dbd32bb42b72f",
+  "digest": "sha256:853f3e7dc681802d805fcc0dfd3a664659709886d486af6aa7158c23cb34f1dc",
   "binding": {
     "obligations": [
       {
@@ -37,11 +37,11 @@
         "green": {
           "observed": true,
           "ref": "work/WP-2026-0122/evidence/G07/unit-test.log",
-          "digest": "sha256:670802a0235fbd94d5136749629f5bd7dc60d718fe20c5c7ca3dbd32bb42b72f"
+          "digest": "sha256:853f3e7dc681802d805fcc0dfd3a664659709886d486af6aa7158c23cb34f1dc"
         }
       }
     ],
-    "command": "python3 -m unittest tests.test_badf_aet_contract  # at base a69b922",
+    "command": "python3 -m unittest tests.test_badf_aet_contract  # at base a69b922, payload guard added (REV attack-2 fix)",
     "result": "PASS",
     "tests_run": 8,
     "failures": 0,

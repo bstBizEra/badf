@@ -16,8 +16,8 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-08-31T16:21:55Z",
-  "completed_at": "2026-08-31T16:21:55Z",
+  "started_at": "2026-08-31T17:09:57Z",
+  "completed_at": "2026-08-31T17:09:57Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0122/evidence/G07/documentation.diff",
   "digest": "sha256:91187f0695c97f517fb601199ba3cf4d407aabc21fed8c5b37f4b59ee6771743",

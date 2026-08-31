@@ -54,16 +54,21 @@ class ContractAnchors(unittest.TestCase):
     def test_authority_is_referenced_never_restated(self):
         """A copy of the reserved-role list would fork the law (#216-class drift, on the
         one document where drift grants authority). The contract points; it never holds.
-        Asserted on the PAYLOAD, not a key spelling: BADF-REV evaded the original
-        quoted-key check with a prose restatement (#258 review, attack 2) -- the guard
-        must protect the law, not one spelling of its container."""
+        Matched on the NORMALISED payload, not any spelling: BADF-REV evaded the original
+        quoted-key check with a prose restatement, and BADF-QA then evaded the payload
+        check with prose/hyphen/Title/UPPER forms (#258 review) -- key -> payload ->
+        payload-spelling is the same proxy class three times, so separators and casing
+        are erased before matching. Zero false positives on the document today, measured
+        by QA before this form was adopted."""
         self.assertIn("badf/authority-matrix.json", self.text)
         self.assertNotIn('"human_reserved_roles"', self.text,
                          "the contract must not carry a copy of the reserved-role list")
-        for role in ("human_sponsor", "security_authority", "release_authority"):
-            self.assertNotIn(role, self.text,
-                             f"the contract restates the reserved role {role}; a restated "
-                             f"list is a forked law however it is spelled")
+        import re
+        norm = re.sub(r"[\s_\-]+", " ", self.text.lower())
+        for role in ("human sponsor", "security authority", "release authority"):
+            self.assertNotIn(role, norm,
+                             f"the contract restates the reserved role {role!r}; a restated "
+                             f"list is a forked law in any spelling, casing or separator")
 
     def test_channel_bound_authorization_invariant_present(self):
         """AET-I13, earned live: a coordinator's relay of an operator utterance is context

@@ -16,15 +16,15 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-08-31T16:21:55Z",
-  "completed_at": "2026-08-31T16:21:55Z",
+  "started_at": "2026-08-31T17:09:57Z",
+  "completed_at": "2026-08-31T17:09:57Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0122/evidence/G07/source-change.diff",
-  "digest": "sha256:e7ef0bc3c9fe836ac80b9fd13f51f5e5bbc575ef1e8a9456f7b87ef056298046",
+  "digest": "sha256:78a6c673c229a4936f52fc81c77e3cd2cba4b82be312bdae21c3365ff92ac687",
   "binding": {
     "base_sha": "a69b92201cb4b354a86d136845705af751f6c655",
-    "head_sha": "9e0b454e4799ca6971a6ca161262d97e72144bb0",
-    "content_tree": "ee61ead026a9e8b1fd381c13a51c02577f586c75",
+    "head_sha": "347d89767fa990fd4175a00b2ef09b5705215046",
+    "content_tree": "c59e0cc6f128de13af09f34f95dbaccac127232d",
     "changed_paths": [
       "AGENTS.md",
       "badf/demands/BADF-DEM-0108.json",
@@ -45,6 +45,6 @@
       ]
     },
     "unexpected_paths": [],
-    "change_digest": "sha256:e7ef0bc3c9fe836ac80b9fd13f51f5e5bbc575ef1e8a9456f7b87ef056298046"
+    "change_digest": "sha256:78a6c673c229a4936f52fc81c77e3cd2cba4b82be312bdae21c3365ff92ac687"
   }
 }
