@@ -46,11 +46,14 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "d0986b0"
+    "base_revision": "d0986b0",
+    "landed_content_tree": "c41b0b25d3402b19aec099c987ece6a43a206de5",
+    "composition_verified": true,
+    "landed_as": "c8036a6bea559f53fd342eb29c5f3b4d5a0290ef"
   },
   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Shared surface (scripts/badf_gate.py) -> contract_changed by construction, so QA + REV, not ladder-internal. Ids swept with SARCHI's badf_id_sweep.py (#252, positive control PASS), ceiling WP-2026-0122/BADF-DEM-0108 printed beside the binding per BARCHI-1's rule, published on #211 before any edit, and ASKED -- BARCHI-1 and BARCHI-3 both confirmed clear, BARCHI-3 from their unpushed worktree, the surface no sweep can see. A filed acceptance criterion was found unbuildable and the deviation was posted to #211 before review rather than discovered at it. Reconciles WP-2026-0122; an earlier copy carried WP-2026-0117 which #258 landed first, so that copy collapsed byte-identically and was pruned in the same pass.",
   "expected_surfaces": {

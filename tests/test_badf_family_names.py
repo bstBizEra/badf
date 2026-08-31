@@ -18,9 +18,10 @@ written apologetically.
 
 So the guard reads a GOVERNED DECLARATION instead: `declared_future_families` in
 badf/skill-registry.json. That is the authoritative surface for family names already
-(digest-pinned, lockfile-covered), it makes intent declared rather than inferred from prose,
-and it satisfies BADF-REV's warning that a test-local allowlist would let a typo hide behind
-a listed name -- the test asserts nothing of its own, it reads a governed artifact.
+(digest-pinned, lockfile-covered), and it makes intent declared rather than inferred from
+prose. The controls below NARROW the ways the list itself could become a hole; the one shape
+they cannot catch is stated in the DECLARED SCOPE OF THE LIST CONTROLS block, with the
+measurement that shows why no mechanism here closes it.
 """
 import json
 import pathlib
@@ -70,6 +71,23 @@ def _fold_dashes(text):
 #
 # A family reference written in either form is not caught. That is the boundary, and closing
 # it would require distinguishing intent from spelling, which the corpus does not support.
+
+# DECLARED SCOPE OF THE LIST CONTROLS -- what the declared_future_families checks below do
+# and deliberately do not close (BADF-REV's #259 pre-pass, measured, ruled in-rung):
+#
+#   They REFUSE: dead permission (a declared name no surface references), double registration
+#   (a name both registered and declared-future), and absent or unresolvable provenance.
+#
+#   They CANNOT catch a typo introduced TOGETHER WITH its listing in the same edit -- that
+#   shape satisfies every property by construction. Measured before declining to build a
+#   closer: a similarity guard would be calibrated on a list with ONE legitimate member, and
+#   no threshold separates the legitimate forward reference (0.744 to its nearest registered
+#   neighbour) from the original #223 defect (0.788). A threshold tuned on n=1 is a proxy for
+#   "is a typo" -- a new proxy, in the guard whose subject is that proxies are not properties.
+#
+#   The same-edit case is caught by REVIEW of the digest-pinned registry edit. Review does
+#   that work, not this guard; the improvement this guard delivers is that the bar moved from
+#   a word in prose to a governed edit under review.
 
 SURFACES = sorted(SKILLS.rglob("*.md"))
 
@@ -149,6 +167,10 @@ class FamilyNameResolutionTests(unittest.TestCase):
         self.assertIn(marker, head, "the scope note must live in the module region, not only in this test")
         for token in ("UPPERCASE", "UNDERSCORE", "BADF-QA", "badf_gate"):
             self.assertIn(token, head, f"the scope note must name {token}")
+        # the LIST controls' boundary must be stated too, with its measurement -- a limit
+        # backed by a number survives the next reviewer who has the same closing idea
+        for token in ("TOGETHER WITH", "0.744", "0.788", "REVIEW of the digest-pinned"):
+            self.assertIn(token, head, f"the list-controls scope note must carry {token!r}")
 
     def test_uppercase_prose_uses_are_not_flagged(self):
         # The reason uppercase is out of scope: these are real, correct uses in the corpus.
@@ -170,11 +192,21 @@ class FamilyNameResolutionTests(unittest.TestCase):
         reg = json.loads(REGISTRY.read_text(encoding="utf-8"))
         entries = reg.get("declared_future_families") or []
         self.assertTrue(entries, "declared_future_families is empty; the guard's exception surface must be explicit")
+        # declared_by must RESOLVE in the tree, not merely be present -- a field checked for
+        # presence only is attribution-shaped without attributing (the decorative-const shape,
+        # BADF-REV #259). This kills fabricated or mistyped provenance; it deliberately does
+        # NOT catch provenance copied from a real entry -- see DECLARED SCOPE OF THE LIST
+        # CONTROLS above for why that shape is review's to catch.
+        doctrine = list(SKILLS.rglob("*.md")) + list((ROOT / "docs").rglob("*.md"))
         for e in entries:
             for field in ("name", "declared_by", "gate", "reason"):
                 self.assertIn(field, e, f"declared-future entry {e.get('name','?')} is missing {field}; "
                                         "an undocumented exception is indistinguishable from a typo")
             self.assertTrue(str(e["reason"]).strip(), f"{e['name']}: empty reason")
+            cited = str(e["declared_by"]).strip()
+            hits = [p for p in doctrine if cited in p.read_text(encoding="utf-8")]
+            self.assertTrue(hits, f"{e['name']}: declared_by '{cited}' resolves to no doctrine surface "
+                                  "under skills/ or docs/ -- provenance that names nothing attributes nothing")
 
     def test_a_declared_future_name_is_actually_used(self):
         # An entry nobody references is dead permission: it would silently admit that name
