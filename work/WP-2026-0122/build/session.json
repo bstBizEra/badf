@@ -1,8 +1,8 @@
 {
   "work_package_id": "WP-2026-0122",
   "producer": "badf-self-dossier",
-  "started_at": "2026-08-31T17:09:57Z",
+  "started_at": "2026-08-31T17:14:27Z",
   "base_sha": "a69b92201cb4b354a86d136845705af751f6c655",
-  "head_sha": "347d89767fa990fd4175a00b2ef09b5705215046",
-  "content_tree": "c59e0cc6f128de13af09f34f95dbaccac127232d"
+  "head_sha": "a009fec4659dc94f99112531e2dd9ab198c3a274",
+  "content_tree": "7e9e1a8226b80968bda20653cfef36fe1b448c02"
 }

@@ -59,7 +59,13 @@ class ContractAnchors(unittest.TestCase):
         check with prose/hyphen/Title/UPPER forms (#258 review) -- key -> payload ->
         payload-spelling is the same proxy class three times, so separators and casing
         are erased before matching. Zero false positives on the document today, measured
-        by QA before this form was adopted."""
+        by QA before this form was adopted.
+
+        Threat model, stated so the boundary is a decision rather than a finding (REV,
+        round 3): normalised matching covers RESTATEMENT DRIFT -- underscore, hyphen,
+        prose, casing. It does not defend against deliberate evasion (homoglyphs,
+        zero-width characters, unusual separators); that is not this control's threat
+        model, and a test asserting on document text is the wrong layer for it."""
         self.assertIn("badf/authority-matrix.json", self.text)
         self.assertNotIn('"human_reserved_roles"', self.text,
                          "the contract must not carry a copy of the reserved-role list")

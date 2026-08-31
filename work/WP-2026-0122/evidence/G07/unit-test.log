@@ -1,4 +1,4 @@
-python3 -m unittest tests.test_badf_aet_contract  # at base a69b922, normalise-then-match (QA request-changes fix)
+python3 -m unittest tests.test_badf_aet_contract  # at base a69b922, threat-model boundary stated (REV round-3)
 ........
 ----------------------------------------------------------------------
 Ran 8 tests in 0.001s
