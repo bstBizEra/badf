@@ -16,20 +16,23 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-08-31T17:39:00Z",
-  "completed_at": "2026-08-31T17:39:00Z",
+  "started_at": "2026-08-31T17:58:13Z",
+  "completed_at": "2026-08-31T17:58:13Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0124/evidence/G07/source-change.diff",
-  "digest": "sha256:1b539eeedf1d737061e26a78e9236954535f0c117b6ba5463edfc9441023ceba",
+  "digest": "sha256:4fb4f3a214649418454c3b132e3b6a79ffabdb122f46cb13c1edd2c6c2526c2b",
   "binding": {
     "base_sha": "a69b92201cb4b354a86d136845705af751f6c655",
-    "head_sha": "19d22b44c27177da431a38579f4dd44d92eabf1f",
-    "content_tree": "e42cfe6683bc442d65a8b575dd2fce1e00d7bf01",
+    "head_sha": "d0313b612df865c38a7a1d5c651b4a812867aa2b",
+    "content_tree": "5625ec471617aa42d596df4a973a43c0f3c30105",
     "changed_paths": [
       "badf/demands/BADF-DEM-0110.json",
+      "badf/skill-registry.json",
       "docs/governance/GITHUB_CONTROL_PLANE.md",
       "schemas/uat.schema.json",
       "scripts/badf_gate.py",
+      "skills/badf-uat/SKILL.md",
+      "tests/test_badf_uat_contract.py",
       "tests/test_badf_uat_evidence.py",
       "work/WP-2026-0117/work-package.json"
     ],
@@ -38,6 +41,6 @@
       "files": []
     },
     "unexpected_paths": [],
-    "change_digest": "sha256:1b539eeedf1d737061e26a78e9236954535f0c117b6ba5463edfc9441023ceba"
+    "change_digest": "sha256:4fb4f3a214649418454c3b132e3b6a79ffabdb122f46cb13c1edd2c6c2526c2b"
   }
 }
