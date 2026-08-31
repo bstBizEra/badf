@@ -1,0 +1,22 @@
+{
+  "record": "git-composition",
+  "schema_version": "1.0.0",
+  "observed_at": "2026-08-31T04:03:05Z",
+  "repository": "bstBizEra/badf",
+  "work_package_id": "WP-2026-0116",
+  "target_ref": "refs/heads/main",
+  "target_base_sha": "7f81a49718b244c3386cedd7455e603e7f6f3eb2",
+  "source_ref": "refs/heads/wp/WP-2026-0116-two-sided-containment",
+  "source_head_sha": "301094ab76c539dddb837e2c02bf83d9a7bd9154",
+  "merge_base_sha": "7f81a49718b244c3386cedd7455e603e7f6f3eb2",
+  "merge_method": "squash",
+  "expected_result_tree": "5b722d44aa2969a0f48ecb9093112ab50b6983de",
+  "expected_content_tree": "53ea7398b15a4b24e6d39405128918ae9ab110f1",
+  "policy_epoch": "BADF-2026-08-25",
+  "test_set_epoch": null,
+  "suite_pattern": "test_badf_build_controls.py",
+  "non_coverage": [
+    "test_set_epoch: BADF defines no test-set/toolchain epoch; not recorded rather than invented",
+    "source_head_sha and expected_result_tree are informational: committing this record moves both; the binding is expected_content_tree (work/<WP>/ and the lockfile excluded)"
+  ]
+}

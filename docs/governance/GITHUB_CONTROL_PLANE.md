@@ -1721,6 +1721,40 @@ fixtures built from landed evidence and near-miss mutations an author would not 
 that no refusal is unreachable by construction. Dossier-level controls — cross-class candidate identity
 and class substitution beyond the structural floor — are **WP-VAL-C**.
 
+## Scope containment made two-sided — a declared surface that matches nothing is named and refused (`BADF-WP-0116`, Issue #232 / GOV-0102)
+
+C3 computed containment in one direction only: for each **changed** path, is it declared. No pass asked
+the inverse — did each declared pattern match anything the work changed. That asymmetry was not cosmetic,
+because `expected_surfaces.files` is simultaneously the surface C3 checks and the **ceiling C7 enforces
+on delegations** (BLD-I10): a declaration could be arbitrarily wide, both controls stayed green, and every
+extra pattern handed a delegate real authority over paths the work never needed. The gap had a live
+instance before the fix landed: `WP-2026-0111`'s landed record declares
+`work/WP-2026-0109/work-package.json`, which the landed diff `66c92f8` never touched — the reconcile
+target moved across a night of rebases and nothing flagged the stale declaration (measured on #232).
+
+The fix is the mirror of the existing loop, at the two sites that already own the one-sided halves.
+Assembly computes the declared `files` patterns that matched no changed path and, when any exist, adds an
+OPEN Major condition and a `held_because` line naming them. `check_g07_binding` refuses a **PASS**
+source-change whose record declares a pattern matching nothing in `binding.changed_paths` — recomputed at
+check time from the record and the equality-bound binding, never stored, so there is nothing for a forged
+binding to omit and no schema change (the binding stays `additionalProperties: false`).
+
+The design question the issue deferred resolves through the schema that already existed: **`files` is
+must-touch** (it is the C7 ceiling, so an entry is authority, and unexercised authority is pruned);
+**`discovery_allowance` is may-touch** and exempt from the mirror by construction — a pattern that is
+*supposed* to match nothing in the ordinary case belongs there, and it never widens C7 (C7 reads `files`
+only). Corollary: never declare the work package's own `work/<WP>/` directory or the lockfile in `files`
+— both are excluded from the governed diff, so the pattern can never match.
+
+**Not covered, stated:** C7 grants a delegation mid-flight against the declared ceiling, before `actual`
+exists — an over-broad grant can live transiently inside a work package that never reaches PASS. Binding
+that would need delegation-time knowledge of the future; it becomes design work if delegations ever carry
+it. **Not done, deliberately:** `WP-2026-0111`'s landed record was not amended — it is historical, carries
+no delegations, and rewriting a landed record to satisfy today's control is the same falsification the
+`BADF-WP-0110` section above refuses. The instance is reported on #232; the control binds from here
+forward. Red-first: the two positive controls failed against the one-sided gate before the fix (5 ran,
+2 failures); mutation: each new branch neutered turns its test red (2/2 killed).
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

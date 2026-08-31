@@ -1,0 +1,214 @@
+diff --git a/badf/demands/BADF-DEM-0103.json b/badf/demands/BADF-DEM-0103.json
+new file mode 100644
+index 0000000..911f77a
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0103.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0103",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 232,
++    "url": "https://github.com/bstBizEra/badf/issues/232",
++    "exported_at": "2026-08-30T23:50:51Z",
++    "body_digest": "sha256:038b80a26028990e0d85accc9919ae3e59b79c4c7423202064db92bcace4afdc"
++  },
++  "title": "GOV-0102: DISCOVERED \u2014 C3 scope containment is one-sided; an over-broad expected_surfaces silently widens the C7 delegation ceiling",
++  "problem": "\ud83e\udde0 **ARCHI (BARCHI-2)** \u2014 DISCOVERED on my own family's controls: C3 containment is **one-sided**, so an over-broad `expected_surfaces` silently widens the C7 delegation ceiling\n\nFound while correcting WP-2026-0112's own record, which declared a surface it does not touch. The declaration was wrong and **nothing in the controls would have caught it.**\n\n## The gap, conclusive by inspection\n`scripts/badf_gate.py:3455`:\n```python\nunexpected = [n for n in names if declared and not any(_surface_match(n, pat) for pat in patterns)]\n```\nThe set difference is computed in **one direction only**: for each *actually changed* path, is it covered by a declared pattern. No pass asks the inverse \u2014 *does this declared pattern match anything the work actually changed?* C3 therefore catches **over-reach** (changed but undeclared) and is structurally blind to **over-declaration** (declared but untouched).\n\n## Why that is not cosmetic\n`expected_surfaces` is not only a scope description \u2014 it is the **ceiling for delegated authority**. `badf_gate.py:1619`:\n```python\nif not any(_surface_match(probe, pat) for pat in surface):\n    raise ValidationError(f\"... delegation {name} allows path {ap!r} outside the work package's expected_surfaces ...\")\n```\nSo the invariant chain is `delegated \u2286 expected` (C7) and `actual \u2286 expected` (C3) \u2014 and **nothing binds `expected` to `actual`**. `expected_surfaces` can be arbitrarily wide and both controls still pass, while every extra pattern hands a delegate real authority over paths the work never needed. That is the proxy-vs-property class again, on a control I own: the declared surface is used as a proxy for the work's scope with nothing holding it to it.\n\n## Exposure, measured honestly \u2014 this is not a live incident\n```\nlanded WPs carrying BOTH a landed_as and expected_surfaces .... 1\n  of those, declaring >=1 surface they never touched ........... 0\n```\nOnly one work package has ever landed under this control (WP-2026-0109, the first controller run), and it is clean. **I am not claiming a fleet of over-declared packages exists** \u2014 the historical exposure is essentially nil, because `badf-build` went ACTIVE hours ago. The argument for fixing it now is the opposite of an incident report: exposure grows from here, and the cheapest moment to close a one-sided check is before it has history to grandfather.\n\n## Not proposing the remedy in this issue\nThe obvious shape \u2014 refuse or HOLD when a declared pattern matches zero changed paths \u2014 has a real design question behind it: a `discovery_allowance` pattern is *supposed* to match nothing in the ordinary case, and legitimately-anticipated-but-unused surfaces may deserve a warning rather than a refusal. That is a control-design decision for `badf-build`'s next rung, with its own red-first test, not something to bolt onto an in-flight test fix.\n\n**Out of scope for #228 / #229 / #230 / #231.** Filed so it does not evaporate.\n\n<!-- agent: architect -->\n",
++  "status": "AUTHORIZED",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "recorded_at": "2026-08-30T23:50:51Z",
++  "note": "C3 scope containment is one-sided: badf_gate.py computes changed-not-declared only, never declared-matched-nothing, while expected_surfaces.files doubles as the C7 delegation ceiling -- so an over-broad declaration silently widens delegate authority with both controls green. Live instance measured on main: WP-2026-0111's landed record declares work/WP-2026-0109/work-package.json, which the landed diff never touched. Remediated by WP-2026-0116 (two-sided containment: assembly-side condition + PASS-time refusal, recomputed not stored; files = must-touch, discovery_allowance = may-touch). Operator authorization: standing proceed directive of 2026-08-31 on the SARCHI baseline verdict. Renumbered from BADF-DEM-0100/WP-2026-0113 pre-push: #233 claimed those ids in its body 45 minutes earlier (see #232 and #227 comments, 2026-08-31)."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 1ab6030..4eec23d 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1721,6 +1721,40 @@ fixtures built from landed evidence and near-miss mutations an author would not
+ that no refusal is unreachable by construction. Dossier-level controls — cross-class candidate identity
+ and class substitution beyond the structural floor — are **WP-VAL-C**.
+ 
++## Scope containment made two-sided — a declared surface that matches nothing is named and refused (`BADF-WP-0116`, Issue #232 / GOV-0102)
++
++C3 computed containment in one direction only: for each **changed** path, is it declared. No pass asked
++the inverse — did each declared pattern match anything the work changed. That asymmetry was not cosmetic,
++because `expected_surfaces.files` is simultaneously the surface C3 checks and the **ceiling C7 enforces
++on delegations** (BLD-I10): a declaration could be arbitrarily wide, both controls stayed green, and every
++extra pattern handed a delegate real authority over paths the work never needed. The gap had a live
++instance before the fix landed: `WP-2026-0111`'s landed record declares
++`work/WP-2026-0109/work-package.json`, which the landed diff `66c92f8` never touched — the reconcile
++target moved across a night of rebases and nothing flagged the stale declaration (measured on #232).
++
++The fix is the mirror of the existing loop, at the two sites that already own the one-sided halves.
++Assembly computes the declared `files` patterns that matched no changed path and, when any exist, adds an
++OPEN Major condition and a `held_because` line naming them. `check_g07_binding` refuses a **PASS**
++source-change whose record declares a pattern matching nothing in `binding.changed_paths` — recomputed at
++check time from the record and the equality-bound binding, never stored, so there is nothing for a forged
++binding to omit and no schema change (the binding stays `additionalProperties: false`).
++
++The design question the issue deferred resolves through the schema that already existed: **`files` is
++must-touch** (it is the C7 ceiling, so an entry is authority, and unexercised authority is pruned);
++**`discovery_allowance` is may-touch** and exempt from the mirror by construction — a pattern that is
++*supposed* to match nothing in the ordinary case belongs there, and it never widens C7 (C7 reads `files`
++only). Corollary: never declare the work package's own `work/<WP>/` directory or the lockfile in `files`
++— both are excluded from the governed diff, so the pattern can never match.
++
++**Not covered, stated:** C7 grants a delegation mid-flight against the declared ceiling, before `actual`
++exists — an over-broad grant can live transiently inside a work package that never reaches PASS. Binding
++that would need delegation-time knowledge of the future; it becomes design work if delegations ever carry
++it. **Not done, deliberately:** `WP-2026-0111`'s landed record was not amended — it is historical, carries
++no delegations, and rewriting a landed record to satisfy today's control is the same falsification the
++`BADF-WP-0110` section above refuses. The instance is reported on #232; the control binds from here
++forward. Red-first: the two positive controls failed against the one-sided gate before the fix (5 ran,
++2 failures); mutation: each new branch neutered turns its test red (2/2 killed).
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 3f588cc..7c07efd 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -1667,6 +1667,16 @@ def check_g07_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[st
+                 uncovered = [x for x in b["unexpected_paths"] if not any(_surface_match(x, a) for a in allowance)]
+                 if uncovered:
+                     raise ValidationError(f"{label}: PASS claimed with changed paths outside expected_surfaces and no discovery_allowance covering {uncovered}; unexpected scope is refused or re-authorized, never absorbed (BLD-I04 / C3)")
++            # C3 mirror (BLD-I04 / GOV-0102): containment is two-sided -- a PASS may not carry a
++            # declared files pattern that matched no changed path. files is must-touch (it is also
++            # the C7 delegation ceiling, BLD-I10); discovery_allowance is may-touch and exempt by
++            # construction. Recomputed from the record and the equality-bound changed_paths, never
++            # trusted from storage -- there is nothing for a forged binding to omit.
++            if dossier.get("disposition") == "PASS":
++                files_pats = [str(x) for x in ((wp.get("expected_surfaces") or {}).get("files") or [])]
++                unmatched = [p for p in files_pats if not any(_surface_match(n, p) for n in (b.get("changed_paths") or []))]
++                if unmatched:
++                    raise ValidationError(f"{label}: PASS claimed with declared expected_surfaces matching no changed path: {unmatched}; an over-broad declaration widens the C7 delegation ceiling and is pruned or exercised, never carried (BLD-I04 / C3 / GOV-0102)")
+     elif kind == "unit-test":
+         if b["result"] != "NOT_RUN":
+             result, ran, failures = _parse_unittest_log(artifact.read_text(encoding="utf-8", errors="replace"))
+@@ -3584,6 +3594,10 @@ def self_dossier(wp_id: str) -> str:
+     patterns = [str(x) for x in (surfaces.get("files") or [])]
+     declared = bool(patterns)
+     unexpected = [n for n in names if declared and not any(_surface_match(n, pat) for pat in patterns)]
++    # GOV-0102 (#232): the mirror direction -- a declared files pattern that matched no changed
++    # path. files is must-touch (it is also the C7 delegation ceiling, BLD-I10); a pattern that
++    # is supposed to match nothing belongs in discovery_allowance, which never widens C7.
++    unmatched_declared = [pat for pat in patterns if not any(_surface_match(n, pat) for n in names)]
+     build_cmd = f"{sys.executable} -m py_compile scripts/badf_gate.py scripts/badf_compose.py"
+     build_binding = {"command": build_cmd, "cwd": ".", "environment": {"python": platform.python_version(), "platform": platform.platform()},
+                      "exit_code": py.returncode, "artifacts": [{"ref": r, "digest": sha256(ROOT / r)} for r in ("scripts/badf_gate.py", "scripts/badf_compose.py")],
+@@ -3700,6 +3714,13 @@ def self_dossier(wp_id: str) -> str:
+                            "closure_predicate": "planning amends expected_surfaces to admit the paths, or the change is reverted to the declared surface",
+                            "closure_authority": "quality_authority"})
+         held_extra = f" Unexpected paths outside expected_surfaces: {', '.join(unexpected)} (BLD-I04) -- refused or re-authorized, never absorbed."
++    if unmatched_declared:
++        conditions.append({"condition_id": f"C-{len(conditions) + 1}",
++                           "statement": f"GOV-0102 two-sided scope containment: {len(unmatched_declared)} declared expected_surfaces pattern(s) match no changed path: {', '.join(unmatched_declared)}; an unexercised declaration widens the C7 delegation ceiling (BLD-I04 / C3)",
++                           "status": "OPEN", "severity": "Major", "blocking_scope": "G07", "owner": "engineering_owner",
++                           "closure_predicate": "planning prunes the pattern or moves it to discovery_allowance, or the change grows to touch it",
++                           "closure_authority": "quality_authority"})
++        held_extra += f" Declared surfaces matching no changed path: {', '.join(unmatched_declared)} (BLD-I04 / GOV-0102) -- pruned or exercised, never carried."
+     dossier = {
+         "schema_version": "1.0.0", "id": f"DOS-{wp_id}-G07-v1", "work_package_id": wp_id, "gate": "G07",
+         "policy_epoch": load_json(ROOT / "badf/lifecycle.json")["policy_epoch"],
+diff --git a/tests/test_badf_build_controls.py b/tests/test_badf_build_controls.py
+index bd5767c..d11f78c 100644
+--- a/tests/test_badf_build_controls.py
++++ b/tests/test_badf_build_controls.py
+@@ -123,6 +123,31 @@ class C2C3C4C5RuleTests(_Scratch):
+         self.write_wp(expected_surfaces={"files": ["README.md"], "discovery_allowance": ["docs/**"]}); self.lock()
+         r = self.rule("source-change", ev["binding"]); self.assertIn("ACCEPTED", r.stdout, r.stderr)
+ 
++    def test_c3_mirror_pass_with_declared_pattern_matching_nothing_refused(self):
++        """GOV-0102 (#232): the mirror of the loop above -- a declared files pattern the change never
++        touched. Recomputed from the record and the equality-bound changed_paths; a PASS is refused,
++        a request is not (it is held with a condition at assembly instead)."""
++        self.write_wp(expected_surfaces={"files": ["README.md", "docs/never-touched.md"]}); self.lock()
++        art, ev = self.evidence_with("source-change", self._sc_binding(
++            changed_paths=["README.md"],
++            expected_surfaces={"declared": True, "files": ["README.md", "docs/never-touched.md"]},
++            unexpected_paths=[]))
++        ev["binding"]["change_digest"] = ev["digest"]
++        r = self.rule("source-change", ev["binding"])
++        self.assertNotEqual(r.returncode, 0, r.stdout)
++        self.assertIn("docs/never-touched.md", r.stderr); self.assertIn("GOV-0102", r.stderr)
++        r = self.rule("source-change", ev["binding"], disposition="HUMAN_REQUIRED")
++        self.assertIn("ACCEPTED", r.stdout, "a request may carry a stale declaration (conditioned at assembly); only a PASS is refused")
++
++    def test_c3_mirror_allowance_matching_nothing_and_full_match_are_not_refused(self):
++        self.write_wp(expected_surfaces={"files": ["README.md"], "discovery_allowance": ["docs/**"]}); self.lock()
++        art, ev = self.evidence_with("source-change", self._sc_binding(
++            changed_paths=["README.md"],
++            expected_surfaces={"declared": True, "files": ["README.md"]},
++            unexpected_paths=[]))
++        ev["binding"]["change_digest"] = ev["digest"]
++        r = self.rule("source-change", ev["binding"]); self.assertIn("ACCEPTED", r.stdout, r.stderr)
++
+     def test_c4_red_required_when_unit_obligations_declared_and_exception_must_be_explicit(self):
+         self.write_wp(test_obligations=[{"id": "TEST-001", "claim": "x", "level": "unit"}]); self.lock()
+         ev = self.wp_dir / "evidence/G07"; ev.mkdir(parents=True, exist_ok=True)
+diff --git a/tests/test_badf_build_evidence.py b/tests/test_badf_build_evidence.py
+index 2ba51c1..4b8e002 100644
+--- a/tests/test_badf_build_evidence.py
++++ b/tests/test_badf_build_evidence.py
+@@ -126,6 +126,34 @@ class SourceChangeBindingTests(_SelfDossierScratch):
+         self.assertEqual(self.evidence("source-change")["binding"]["unexpected_paths"], [])
+         self.assertFalse([c for c in self.dossier()["conditions"] if "BLD-I04" in c["statement"]])
+ 
++    def test_declared_pattern_matching_no_changed_path_conditions_the_dossier(self):
++        """GOV-0102 (#232) mirror direction: a declared surface the work never touches is named,
++        because expected_surfaces is also the C7 delegation ceiling -- silence widens authority."""
++        self.write_wp(expected_surfaces={"files": ["README.md", "docs/never-touched-0998.md"]}); self.lock()
++        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        d = self.dossier(); cond = [c for c in d["conditions"] if "GOV-0102" in c["statement"]]
++        self.assertEqual(1, len(cond), d["conditions"])
++        self.assertIn("docs/never-touched-0998.md", cond[0]["statement"])
++        self.assertEqual(cond[0]["status"], "OPEN")
++        self.assertIn("docs/never-touched-0998.md", d["held_because"])
++        self.assertEqual(self.gate_cmd("dossier", f"work/{WP}/gate-dossier.G07.json").returncode, 3)
++
++    def test_fully_matched_declaration_leaves_no_mirror_condition(self):
++        self.write_wp(expected_surfaces={"files": ["README.md"]}); self.lock()
++        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        d = self.dossier()
++        self.assertTrue(self.evidence("source-change")["binding"]["expected_surfaces"]["declared"])
++        self.assertFalse([c for c in d["conditions"] if "GOV-0102" in c["statement"]], d["conditions"])
++
++    def test_discovery_allowance_matching_nothing_is_exempt_from_the_mirror(self):
++        """files is must-touch; discovery_allowance is may-touch -- a pattern that is SUPPOSED to
++        match nothing in the ordinary case lives there, and never widens the C7 ceiling."""
++        self.write_wp(expected_surfaces={"files": ["README.md"], "discovery_allowance": ["docs/**"]}); self.lock()
++        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        d = self.dossier()
++        self.assertEqual(self.evidence("source-change")["binding"]["unexpected_paths"], [])
++        self.assertFalse([c for c in d["conditions"] if "GOV-0102" in c["statement"]], d["conditions"])
++
+ 
+ class UnitTestBuildDocumentationBindingTests(_SelfDossierScratch):
+     def test_unit_test_binding_parses_the_authors_log_and_names_the_fresh_run(self):
+diff --git a/work/WP-2026-0113/work-package.json b/work/WP-2026-0113/work-package.json
+index 6fd134d..2109ee5 100644
+--- a/work/WP-2026-0113/work-package.json
++++ b/work/WP-2026-0113/work-package.json
+@@ -63,11 +63,13 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR (schemas, gate control, tests and registry status revert together)"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "1c1827c"
++    "base_revision": "1c1827c",
++    "composition_verified": false,
++    "landed_as": "7f81a49718b244c3386cedd7455e603e7f6f3eb2"
+   },
+   "note": "Shared-surface (badf_gate.py + schemas/) -> QA by BADF-QA and verdict by BADF-REV; NOT self-classified as ladder-internal. Ids WP-0113/DEM-0100/GOV-0103, claimed publicly on #233 before engineering began, after a five-surface sweep found WP-2026-0112 held in a peer's UNPUSHED local worktree (#227's class). Reconciles WP-2026-0110. Declared non-coverage carried into the PR: the fixtures are author-written, so 'the control fires' and 'the control fires on anything real' are separable claims and only the first is in the author's reach -- BADF-QA attacks the second with fixtures built from landed evidence. Delivery ladder WP-VAL-A(DESIGNED, #213) -> B(IMPLEMENTED, this WP) -> C(VALIDATED) -> D(SHADOWED) -> E(quality_authority/operator admission, ACTIVE). COMPOSE-CAUGHT (the branch-local module run did not): WP-VAL-A's contract test pins the registry status, so advancing the rung turned it red on the composed tree -- and inspecting that surfaced a second, unfailed inconsistency, SKILL.md's frontmatter hardcoding `status: DESIGNED` while the registry moved to IMPLEMENTED. Both fixed here because both are direct consequences of this rung. The CLASS defect -- skill files hardcoding a lifecycle status that can drift from the registry, which badf-engineering-verification's SKILL.md explicitly forbids -- is filed separately rather than fixed in-branch. SELF-CAUGHT before push: this record originally declared `expected_surfaces.paths`, but the C3 and C7 controls read `expected_surfaces.files` (badf_gate.py:1610/1666) and the schema defines no `paths` member -- so the declaration was INERT: it looked like a scope commitment and enforced nothing, the same vacuity class the team catalogued tonight. Renamed to `files`. My own by-hand diff-vs-declaration check was real but could not have caught it, because it compared the diff against a list the gate never reads -- checking a declaration by eye verifies the list, not that anything consumes it. REACHABILITY, measured and declared rather than left for review (BADF-QA's pre-registered rule: a refusal that cannot be tripped does not count). validate_evidence invokes EVIDENCE_RULES only when evidence outcome == PASS (badf_gate.py:1916-1918). All 19 endpoints are therefore reachable through the REAL dossier path for PASS evidence, which is the dominant case on this repo: 263 PASS of 337 evidence records under work/*/evidence/*/*.json ON MAIN 87dd192 (71 NOT_RUN, 3 NOT_APPLICABLE). CORRECTED after BADF-QA could not reproduce an earlier figure of 266/72: that count was taken in THIS BRANCH's worktree and therefore included WP-2026-0113's own four unlanded evidence files while calling them landed -- the wrong-tree class, on a number rather than on a green run. QA's 294 is a different and also defensible population (work/** plus examples/**); examples/ are fixture records, so the narrower denominator is the honest one for a claim about how exercised the real dispatch path is. The material claim is unchanged either way: PASS dominates. That is a materially different position from G07's C3 and C7, which BADF-QA measured as having ZERO evaluable instances in the repository's history (C3 gates on DOSSIER disposition PASS -- 77 HUMAN_REQUIRED vs 1 PASS, and that one record declares no expected_surfaces; C7 needs a declared delegation and 0 of 95 WPs declare one). Mine gate on EVIDENCE outcome, not dossier disposition. Two honest caveats: the FAIL boundary test calls the control directly on a path the dispatcher never takes (annotated in the test as a unit-level over-fire guarantee, not a production path), and 'reachable in principle' is still not 'exercised by real data' -- no real G09 evidence exists in this repository yet. SELF-SWEEP after the PR opened, applying the night's own defect class to my own schemas: the walker honours only required/enum/pattern/additionalProperties/type, so my four schemas carry 134 INERT constraint keywords (105 minLength, 21 format, 4 minItems, 4 const). Two were load-bearing without a code backstop and are now fixed: (a) `oracle.locator` relied on an inert minLength, so an empty locator was schema-valid -- an oracle that names nothing cannot be consulted, now refused by V3b; (b) the VAL-I06 threshold-ordering check compared `bound_at` and `runtime.started_at` as RAW STRINGS while `format: date-time` is inert, so a validly-typed timestamp in another ISO spelling ('+00:00' vs 'Z') would render a silently wrong verdict -- now parsed via the gate's own parse_time, which normalises to UTC and refuses malformed input. The four minItems are already backed by code controls (V9/V10/V12 and the abort-conditions check), and `const` on schema_version is inert here exactly as it is in the G07 and G08 schema sets -- house-wide, not specific to this rung, and left alone. Control endpoints 19 -> 20, all mutation-killed; tests 37 -> 40. MECHANISM CORRECTED after tightening a test assertion (prompted by BADF-QA's probe-8 finding, where a mutation died at check_schema and reported RED -- a true adjacent fact that reads as verification): two of my control-layer assertions used regexes ('approved', 'oracle') that check_schema's own messages would also satisfy, since the walker's label embeds the field path; both now match the invariant id instead. Tightening the third -- a bare assertRaises on the VAL-I13 structural floor -- FAILED, revealing that I had named the wrong mechanism: a wholesale class swap is refused by `required` (checked BEFORE additionalProperties), not by additionalProperties. Both floors are real and now separately tested: `required` for a wholesale swap, `additionalProperties:false` for a single foreign key smuggled into an otherwise-complete binding. The bare assertRaises had been passing on the wrong reason. Tests 40 -> 41. FALSE-ACCEPT GUARD added from BADF-QA's near-miss battery: their probes produced three concrete cases where `bound_at` is semantically AFTER `runtime.started_at` yet sorts BEFORE it as a string (2026-08-30T20:00:00-07:00, 2026-08-30T23:30:00-02:00, 2026-08-31T00:30:00-01:00 against 2026-08-31T01:00:00Z) -- i.e. a threshold fitted to the result ADMITTED silently. All three are refused by the parse_time fix, and all three of QA's oracle.locator survivors (empty and whitespace-only) are refused by V3b's .strip(); their battery ran on 65abbb1, before both fixes. The finding that mattered was not the fixes but the GAP IN MY TESTS: equivalence ('+00:00' still passes) and malformation ('yesterday' refused) BOTH survive a revert to string comparison, so neither guarded the fix. The three false-accepts do -- verified by negative control (revert parse_time -> 4 failures; restore byte-identical). Tests 41 -> 42. QA's additive-path proof came back clean by CONSTRUCTION rather than sampling: the four new G09 types appear 0 times across 345 landed evidence records (positive control: source-change = 80), and the gate diff has zero deletion/modification lines -- one appended hunk -- so no landed record's outcome can change. REBASED onto 1c1827c after #242 (WP-2026-0112) landed. The WP-2026-0110 reconcile COLLAPSED -- #242 discharged it first -- so it is dropped from expected_surfaces.files in the same pass, per bst-sa-90's warning: a rebase that collapses a reconcile to a no-op leaves a declared-but-unmatched surface, which is exactly what their two-sided C3 containment control refuses. Reconcile target shifts to WP-2026-0112. Also caught during this rebase: badf-release-validation is ALREADY on main at DESIGNED (landed by my own WP-VAL-A #213), so the registry edit must ADVANCE that entry, not append a second one -- an assertion refused the duplicate before it was written. PRUNED two structurally-unmatchable declarations, found by BADF-REV and verified by me: `badf/lockfile.json` and `work/WP-2026-0113/` can NEVER match a changed path, because C3 builds its names list with the gate's own exclusion pathspec (badf_gate.py:3439). Measured on this branch: 12 paths visible to C3, and exactly those two patterns match nothing. They bought no containment and the lockfile entry actively WIDENED the C7 delegation ceiling, since expected_surfaces.files doubles as it. My own both-directions check missed this for the THIRD time on this same field -- I compared the declaration against the raw `git diff`, not against the exclusion-filtered population the gate actually uses. Checking a declaration against the wrong population verifies nothing, which is the same defect as declaring `paths` where the gate reads `files`."
+ }

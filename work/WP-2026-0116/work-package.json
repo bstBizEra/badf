@@ -1,0 +1,88 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0116",
+  "title": "Two-sided C3 scope containment: a declared expected_surfaces pattern that matches no changed path is conditioned at assembly and refused on a PASS",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0103",
+  "objective": "Close GOV-0102 (#232): bind expected_surfaces to what the work actually changes, so an over-broad declaration can no longer silently widen the C7 delegation ceiling while both controls report green.",
+  "business_value": "expected_surfaces is simultaneously the surface C3 checks and the ceiling C7 enforces; nothing binds it to reality. One of the two records landed under this control (WP-2026-0111) already carries a stale declaration. Closing the gap while two records exist is cheaper than after fifty, and it is a trigger leg of the AET program intake (#236).",
+  "in_scope": [
+    "scripts/badf_gate.py: self-dossier assembly computes the mirror comparison (declared files patterns matching no changed path) and, when non-empty, adds an OPEN Major condition and a held_because line naming them",
+    "scripts/badf_gate.py: check_g07_binding (source-change) refuses a PASS dossier whose record declares a files pattern matching no path in binding.changed_paths; recomputed at check time from record x equality-bound binding, never stored",
+    "discovery_allowance semantics pinned: files = must-touch (the C7 ceiling), discovery_allowance = may-touch and exempt from the mirror by construction",
+    "tests/test_badf_build_evidence.py: assembly-side red-first tests (condition present, negative control, allowance exemption)",
+    "tests/test_badf_build_controls.py: PASS-refusal red-first tests at the function level in the scratch (refused on PASS, accepted on HUMAN_REQUIRED, accepted when all patterns match)",
+    "badf/demands/BADF-DEM-0103.json; GITHUB_CONTROL_PLANE.md doctrine section; own composition record + typed G07 self-dossier; reconcile WP-2026-0113"
+  ],
+  "out_of_scope": [
+    "WP-2026-0111's landed record -- the measured stale declaration is reported on #232, not amended; the record is historical, carries no delegations, and its reconcile is concurrently in flight in #224/WP-2026-0112",
+    "C7 delegation-time enforcement (a mid-flight grant against a declared-but-never-touched surface inside a WP that never reaches PASS) -- stated as non-coverage, design work for a later rung if delegations ever carry it",
+    "any schema change (the source-change binding is additionalProperties:false and stays closed); skills/badf-build/** (the family digest stays pinned); any other family's surface; #227; #229-#231; #233-#235",
+    "making expected_surfaces mandatory or driving PASS-dossier production adoption -- BADF-QA's reachability measurement (77 HUMAN_REQUIRED / 1 PASS dossier on main; the one PASS declares no surfaces; 0 of 95 WPs delegate; 2 of 95 declare surfaces) is REAL and is stated as non-coverage, not resolved here: the PASS refusal is production-dormant until PASS G07 dossiers exist, and is proven reachable by its constructed positive control + mutation kill; the assembly-side condition is the production-live half and fires on every assembly regardless of disposition. Input mandatoriness is BARCHI-3's forthcoming filing, not this WP"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "assembly on a record declaring a files pattern that matches no changed path exits 0 and the dossier carries an OPEN Major condition naming the pattern and citing GOV-0102; held_because names it; the dossier command renders HELD (exit 3)",
+    "a dossier edited to disposition PASS over such a record is refused (exit 1) with the unmatched pattern named; the same PASS over a fully-matched declaration is not refused by this rule; HUMAN_REQUIRED is never refused by this rule",
+    "a pattern listed in discovery_allowance that matches nothing produces neither condition nor refusal",
+    "all pre-existing tests stay green; badf_gate.py repo PASS on the branch and on the composed tree (the ledger's two historical declarations produce no new red: 0109 is mirror-clean, 0111's dossier is HUMAN_REQUIRED)",
+    "each new control branch is load-bearing: neutering the assembly mirror or the PASS refusal turns at least one new test red (mutation evidence in the PR)"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_build_evidence.py (14; 3 mirror cases added)",
+    "tests/test_badf_build_controls.py (10; 2 mirror cases added)"
+  ],
+  "test_obligations": [
+    {
+      "id": "TEST-001",
+      "claim": "a declared expected_surfaces pattern matching no changed path is conditioned at assembly and refused on a PASS; discovery_allowance is exempt",
+      "level": "unit"
+    }
+  ],
+  "evidence": [
+    "failing-first: the two positive controls red against the one-sided gate (Ran 5, FAILED failures=2)",
+    "green: both modules green after the two-sided implementation (Ran 24, OK)",
+    "mutation: assembly mirror neutered -> red; PASS refusal neutered -> red (2/2 killed)",
+    "compose output incl. composition record",
+    "typed G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "7f81a49718b244c3386cedd7455e603e7f6f3eb2"
+  },
+  "expected_surfaces": {
+    "files": [
+      "scripts/badf_gate.py",
+      "tests/test_badf_build_evidence.py",
+      "tests/test_badf_build_controls.py",
+      "badf/demands/BADF-DEM-0103.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "work/WP-2026-0113/work-package.json"
+    ]
+  },
+  "note": "Renumbered from WP-2026-0113/BADF-DEM-0100 pre-push (#233's body claimed them first; ceded, see #232). THRICE-rebased under the reconcile race, each time applying this WP's own discipline to itself: the WP-2026-0111 reconcile collapsed at #224 (87dd192), the WP-2026-0110 reconcile collapsed at #242 (1c1827c), the WP-2026-0112 reconcile collapsed at #247 (7f81a49) -- each time the collapsed file left expected_surfaces in the same pass. Now reconciles WP-2026-0113 (gate-forced)."
+}

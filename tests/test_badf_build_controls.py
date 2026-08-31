@@ -123,6 +123,31 @@ class C2C3C4C5RuleTests(_Scratch):
         self.write_wp(expected_surfaces={"files": ["README.md"], "discovery_allowance": ["docs/**"]}); self.lock()
         r = self.rule("source-change", ev["binding"]); self.assertIn("ACCEPTED", r.stdout, r.stderr)
 
+    def test_c3_mirror_pass_with_declared_pattern_matching_nothing_refused(self):
+        """GOV-0102 (#232): the mirror of the loop above -- a declared files pattern the change never
+        touched. Recomputed from the record and the equality-bound changed_paths; a PASS is refused,
+        a request is not (it is held with a condition at assembly instead)."""
+        self.write_wp(expected_surfaces={"files": ["README.md", "docs/never-touched.md"]}); self.lock()
+        art, ev = self.evidence_with("source-change", self._sc_binding(
+            changed_paths=["README.md"],
+            expected_surfaces={"declared": True, "files": ["README.md", "docs/never-touched.md"]},
+            unexpected_paths=[]))
+        ev["binding"]["change_digest"] = ev["digest"]
+        r = self.rule("source-change", ev["binding"])
+        self.assertNotEqual(r.returncode, 0, r.stdout)
+        self.assertIn("docs/never-touched.md", r.stderr); self.assertIn("GOV-0102", r.stderr)
+        r = self.rule("source-change", ev["binding"], disposition="HUMAN_REQUIRED")
+        self.assertIn("ACCEPTED", r.stdout, "a request may carry a stale declaration (conditioned at assembly); only a PASS is refused")
+
+    def test_c3_mirror_allowance_matching_nothing_and_full_match_are_not_refused(self):
+        self.write_wp(expected_surfaces={"files": ["README.md"], "discovery_allowance": ["docs/**"]}); self.lock()
+        art, ev = self.evidence_with("source-change", self._sc_binding(
+            changed_paths=["README.md"],
+            expected_surfaces={"declared": True, "files": ["README.md"]},
+            unexpected_paths=[]))
+        ev["binding"]["change_digest"] = ev["digest"]
+        r = self.rule("source-change", ev["binding"]); self.assertIn("ACCEPTED", r.stdout, r.stderr)
+
     def test_c4_red_required_when_unit_obligations_declared_and_exception_must_be_explicit(self):
         self.write_wp(test_obligations=[{"id": "TEST-001", "claim": "x", "level": "unit"}]); self.lock()
         ev = self.wp_dir / "evidence/G07"; ev.mkdir(parents=True, exist_ok=True)

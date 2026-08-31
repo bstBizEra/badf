@@ -1667,6 +1667,16 @@ def check_g07_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[st
                 uncovered = [x for x in b["unexpected_paths"] if not any(_surface_match(x, a) for a in allowance)]
                 if uncovered:
                     raise ValidationError(f"{label}: PASS claimed with changed paths outside expected_surfaces and no discovery_allowance covering {uncovered}; unexpected scope is refused or re-authorized, never absorbed (BLD-I04 / C3)")
+            # C3 mirror (BLD-I04 / GOV-0102): containment is two-sided -- a PASS may not carry a
+            # declared files pattern that matched no changed path. files is must-touch (it is also
+            # the C7 delegation ceiling, BLD-I10); discovery_allowance is may-touch and exempt by
+            # construction. Recomputed from the record and the equality-bound changed_paths, never
+            # trusted from storage -- there is nothing for a forged binding to omit.
+            if dossier.get("disposition") == "PASS":
+                files_pats = [str(x) for x in ((wp.get("expected_surfaces") or {}).get("files") or [])]
+                unmatched = [p for p in files_pats if not any(_surface_match(n, p) for n in (b.get("changed_paths") or []))]
+                if unmatched:
+                    raise ValidationError(f"{label}: PASS claimed with declared expected_surfaces matching no changed path: {unmatched}; an over-broad declaration widens the C7 delegation ceiling and is pruned or exercised, never carried (BLD-I04 / C3 / GOV-0102)")
     elif kind == "unit-test":
         if b["result"] != "NOT_RUN":
             result, ran, failures = _parse_unittest_log(artifact.read_text(encoding="utf-8", errors="replace"))
@@ -3584,6 +3594,10 @@ def self_dossier(wp_id: str) -> str:
     patterns = [str(x) for x in (surfaces.get("files") or [])]
     declared = bool(patterns)
     unexpected = [n for n in names if declared and not any(_surface_match(n, pat) for pat in patterns)]
+    # GOV-0102 (#232): the mirror direction -- a declared files pattern that matched no changed
+    # path. files is must-touch (it is also the C7 delegation ceiling, BLD-I10); a pattern that
+    # is supposed to match nothing belongs in discovery_allowance, which never widens C7.
+    unmatched_declared = [pat for pat in patterns if not any(_surface_match(n, pat) for n in names)]
     build_cmd = f"{sys.executable} -m py_compile scripts/badf_gate.py scripts/badf_compose.py"
     build_binding = {"command": build_cmd, "cwd": ".", "environment": {"python": platform.python_version(), "platform": platform.platform()},
                      "exit_code": py.returncode, "artifacts": [{"ref": r, "digest": sha256(ROOT / r)} for r in ("scripts/badf_gate.py", "scripts/badf_compose.py")],
@@ -3700,6 +3714,13 @@ def self_dossier(wp_id: str) -> str:
                            "closure_predicate": "planning amends expected_surfaces to admit the paths, or the change is reverted to the declared surface",
                            "closure_authority": "quality_authority"})
         held_extra = f" Unexpected paths outside expected_surfaces: {', '.join(unexpected)} (BLD-I04) -- refused or re-authorized, never absorbed."
+    if unmatched_declared:
+        conditions.append({"condition_id": f"C-{len(conditions) + 1}",
+                           "statement": f"GOV-0102 two-sided scope containment: {len(unmatched_declared)} declared expected_surfaces pattern(s) match no changed path: {', '.join(unmatched_declared)}; an unexercised declaration widens the C7 delegation ceiling (BLD-I04 / C3)",
+                           "status": "OPEN", "severity": "Major", "blocking_scope": "G07", "owner": "engineering_owner",
+                           "closure_predicate": "planning prunes the pattern or moves it to discovery_allowance, or the change grows to touch it",
+                           "closure_authority": "quality_authority"})
+        held_extra += f" Declared surfaces matching no changed path: {', '.join(unmatched_declared)} (BLD-I04 / GOV-0102) -- pruned or exercised, never carried."
     dossier = {
         "schema_version": "1.0.0", "id": f"DOS-{wp_id}-G07-v1", "work_package_id": wp_id, "gate": "G07",
         "policy_epoch": load_json(ROOT / "badf/lifecycle.json")["policy_epoch"],

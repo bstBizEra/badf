@@ -126,6 +126,34 @@ class SourceChangeBindingTests(_SelfDossierScratch):
         self.assertEqual(self.evidence("source-change")["binding"]["unexpected_paths"], [])
         self.assertFalse([c for c in self.dossier()["conditions"] if "BLD-I04" in c["statement"]])
 
+    def test_declared_pattern_matching_no_changed_path_conditions_the_dossier(self):
+        """GOV-0102 (#232) mirror direction: a declared surface the work never touches is named,
+        because expected_surfaces is also the C7 delegation ceiling -- silence widens authority."""
+        self.write_wp(expected_surfaces={"files": ["README.md", "docs/never-touched-0998.md"]}); self.lock()
+        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        d = self.dossier(); cond = [c for c in d["conditions"] if "GOV-0102" in c["statement"]]
+        self.assertEqual(1, len(cond), d["conditions"])
+        self.assertIn("docs/never-touched-0998.md", cond[0]["statement"])
+        self.assertEqual(cond[0]["status"], "OPEN")
+        self.assertIn("docs/never-touched-0998.md", d["held_because"])
+        self.assertEqual(self.gate_cmd("dossier", f"work/{WP}/gate-dossier.G07.json").returncode, 3)
+
+    def test_fully_matched_declaration_leaves_no_mirror_condition(self):
+        self.write_wp(expected_surfaces={"files": ["README.md"]}); self.lock()
+        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        d = self.dossier()
+        self.assertTrue(self.evidence("source-change")["binding"]["expected_surfaces"]["declared"])
+        self.assertFalse([c for c in d["conditions"] if "GOV-0102" in c["statement"]], d["conditions"])
+
+    def test_discovery_allowance_matching_nothing_is_exempt_from_the_mirror(self):
+        """files is must-touch; discovery_allowance is may-touch -- a pattern that is SUPPOSED to
+        match nothing in the ordinary case lives there, and never widens the C7 ceiling."""
+        self.write_wp(expected_surfaces={"files": ["README.md"], "discovery_allowance": ["docs/**"]}); self.lock()
+        r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        d = self.dossier()
+        self.assertEqual(self.evidence("source-change")["binding"]["unexpected_paths"], [])
+        self.assertFalse([c for c in d["conditions"] if "GOV-0102" in c["statement"]], d["conditions"])
+
 
 class UnitTestBuildDocumentationBindingTests(_SelfDossierScratch):
     def test_unit_test_binding_parses_the_authors_log_and_names_the_fresh_run(self):
