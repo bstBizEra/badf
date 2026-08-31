@@ -66,7 +66,7 @@
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "wp/WP-2026-0117-reference-content-assertions",
-    "base_revision": "da3c28d",
+    "base_revision": "c525129",
     "composition_verified": false
   },
   "note": "Cluster of #216 + #230 + #210 as ONE WP: one defect class at three addresses. Deviation from one-issue-one-task is deliberate, follows BADF-QA's batching rule, and was endorsed by SARCHI as coordinator before work began -- three PRs would each re-sign badf/lockfile.json and conflict by construction. Ownership recorded for author!=reviewer: #216 is mine (fix existed unpushed since before this session; I flagged it twice then silently deprioritised it -- disclosed, not quietly cleared); #230 is BADF-QA's finding, ceded explicitly so they can review; #210 unclaimed, with BARCHI-2's courtesy yes on touching badf-build. The six were measured TWO independent ways -- empirical gutting and static read()-call analysis -- agreeing exactly, which carries information only because the instruments differ. test_obligations are declared at CONTRACT level, not unit: these assert frozen document content, so the accurate level is contract and BLD-I07/I08 C4's unit red-phase rule does not apply. Field names read from schemas/work-package.schema.json rather than copied from a sibling, after BARCHI-2 lost two composed-tree runs to invented test_obligations keys. Probes restore in a finally (BADF-QA), after an earlier killed probe left a reference gutted and contaminated its own baseline; that run was discarded and re-measured on a tree verified clean."
