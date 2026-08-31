@@ -10,3 +10,16 @@ Ran 1 test in 0.011s
 FAILED (failures=1)
 
 exit=1
+
+
+RED #2 -- VF-001: the one-sided join, against the control as of 03dae4d
+The association is two-sided; the refusal walked only b['finding_ids'], so an APPROVE
+with finding_ids: [] passed while the findings side still named it reporter of an OPEN MAJOR.
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.010s
+
+FAILED (failures=1)
+
+exit=1

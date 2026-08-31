@@ -259,6 +259,34 @@ class VerifyRecordTests(unittest.TestCase):
         r["ballots"][0]["verdict"] = "APPROVE"
         gate.validate_verification_record(self._path(r))
 
+    def test_verify_refuses_an_APPROVE_ballot_associated_by_either_join(self):
+        """#211: the association is two-sided, so the refusal must be too.
+
+        A ballot cites findings via `finding_ids`; a finding names its reporters via
+        `reported_by` / `also_reported_by`. The record checks each for CONTAINMENT and
+        neither for RECIPROCITY -- nothing requires the two to agree. So an APPROVE
+        ballot could carry `finding_ids: []` while the findings side still asserted it
+        reported an OPEN MAJOR, and a refusal walking only `finding_ids` admitted it.
+        That is the same proposition, reachable from the other side of the join.
+
+        Found by asking what my own criteria did not name (BADF-QA read it; measured here).
+        """
+        r = record()
+        r["ballots"][0]["verdict"] = "APPROVE"
+        r["ballots"][0]["finding_ids"] = []          # association lives only on the finding
+        for row in r["matrix"]:                      # deny the matrix layer an incidental catch
+            if row["result"] == "VERIFIED":
+                row["result"] = "NOT_VERIFIED"
+        with self.assertRaisesRegex(gate.ValidationError, "APPROVE.*(contradicts|OPEN)|VF-001"):
+            gate.validate_verification_record(self._path(r))
+
+        # and the mirror: cited by the ballot, silent on the finding
+        r = record(findings=[finding(reported_by=["BALLOT-OTHER"])])
+        r["ballots"][0]["verdict"] = "APPROVE"
+        r["findings"][0]["reported_by"] = ["BALLOT-001"]
+        with self.assertRaisesRegex(gate.ValidationError, "APPROVE.*(contradicts|OPEN)|VF-001"):
+            gate.validate_verification_record(self._path(r))
+
     def test_verify_requires_non_coverage_and_refuses_authority(self):
         r = record(non_coverage=[])
         with self.assertRaisesRegex(gate.ValidationError, "non-coverage|VER-I11"): gate.validate_verification_record(self._path(r))
