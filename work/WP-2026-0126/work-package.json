@@ -1,0 +1,83 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0126",
+  "title": "The enforcement-input ratchet: expected_surfaces mandatory from WP-2026-0126 forward, coverage counted out loud, unmatchable declarations refused, one may-touch semantic across both containment sites",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0112",
+  "objective": "Close GOV-0108's class for the expected_surfaces instance: an optional enforcement input becomes loudly non-covered at the point of judgment AND mandatory by id-threshold ratchet, while the #272 site-disagreement about discovery_allowance is unified under one stated semantic.",
+  "business_value": "AET-B's gate leg 3: the runtime substrate's containment leans on this control being populated and unambiguous. Ratified as D2 of the #236 checkpoint.",
+  "in_scope": [
+    "scripts/badf_gate.py: (a) ratchet -- every work/WP-2026-NNNN record with NNNN >= 0126 (sentinels 0997-0999/9999 exempt) must declare non-empty expected_surfaces.files: refused at self-dossier assembly and RED in validate_repo, both naming the id; (b) coverage counter emitted by repo: declared/grandfathered counts with the threshold named, over-reach and over-declaration counted under DISTINCT labels (#257 discipline); (c) structurally-unmatchable declarations (own work/<id>/ dir, badf/lockfile.json) refused for >= threshold records; (d) the #272 unification -- assembly's unexpected computation consults discovery_allowance exactly as binding does; binding keeps its allowance filter for pre-unification bindings (stated in doctrine)",
+    "tests/test_badf_surface_ratchet.py: red-first per the seven conditions incl. one case PER SITE for the unification and the counter's observed-failing case",
+    "docs/governance/GITHUB_CONTROL_PLANE.md: doctrine -- the class rule, the threshold, the grandfather statement, and the ONE-SENTENCE may-touch semantic: files = must-touch (C7 ceiling, mirror-required); discovery_allowance = may-touch (never unexpected at assembly, never refused at binding, never mirror-required, never widens C7); reserved-unconsumed status of services/interfaces/data stated",
+    "badf/demands/BADF-DEM-0112.json; reconcile WP-2026-0125; own composition record + typed G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "any schema change (stop condition: if the unification needs a new schema key, STOP and return to the reviewer); #265/#240 walker/schema work (their own lane and rungs); #231 (candidate second instance, decided after this pattern is real); enforcement or removal of services/interfaces/data (stated, not changed); rewriting any landed record (grandfathered history is counted, never edited)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "a >= threshold record without expected_surfaces.files is refused at assembly AND turns repo RED, each naming the id (observed failing case bound as evidence); grandfathered (< threshold) records are counted in the emitted coverage line, never refused, never edited",
+    "the coverage line's counts are asserted against independently computed expectations, and adding a record changes them (the counter has been SEEN wrong, not only right)",
+    "a >= threshold declaration containing the record's own work/ dir or the lockfile is refused (the VAL-B near-miss shape)",
+    "an allowance-covered changed path draws NO C-2 condition at assembly and NO refusal at binding, while a pre-unification binding carrying such a path in unexpected_paths is still exempted at binding (per-site red-first for the former; pinned regression for the latter)",
+    "over-reach and over-declaration remain textually and numerically DISTINCT in conditions and counters -- no emitted number can mean two things (#257)",
+    "the may-touch semantic exists as ONE doctrine sentence; all pre-existing tests stay green; repo PASS on branch and composed tree; the record's own declaration is exact under the mirror",
+    "and no other encoding of the same defect survives: the sub-key x consumer matrix (measured on #272) is re-verified post-change -- no pair of consumers disagrees about any key (the #270 adversarial clause)"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_surface_ratchet.py (10)"
+  ],
+  "test_obligations": [
+    {
+      "id": "TEST-001",
+      "claim": "the ratchet refuses undeclared >= threshold records at both reporting sites, counts the grandfathered honestly, refuses unmatchable declarations, and unifies the may-touch semantic without disturbing pre-unification bindings",
+      "level": "unit"
+    }
+  ],
+  "evidence": [
+    "failing-first: the ratchet/unification positives red against the current gate",
+    "green after",
+    "mutation: each control branch neutered -> red",
+    "compose output incl. composition record",
+    "typed G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "bc7ca27088eb5e6bb3bf7a27b61540a19971f659"
+  },
+  "expected_surfaces": {
+    "files": [
+      "scripts/badf_gate.py",
+      "tests/test_badf_surface_ratchet.py",
+      "badf/demands/BADF-DEM-0112.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "work/WP-2026-0125/work-package.json"
+    ]
+  },
+  "note": "D2 of the ratified #236 checkpoint; build/review swap + seven conditions + fold boundary recorded on #246. Ids 0126/0112 claimed with ceiling 0125/0111 (#274's) printed, after ceding those to #274's bound artifacts per the #233 precedent. Reconciles WP-2026-0120 (composition_verified true). The threshold is THIS record's own id: the first record the ratchet binds is the one that ships it. Fold-boundary stop condition is doctrine on #246 (the schema enum refused the free-text form -- the walker DOES enforce enum; it is const it ignores, #265). Rebased onto bc7ca27 (#274): the 0120 reconcile collapsed byte-identically and left expected_surfaces in the same pass (eighth drill firing); now reconciles WP-2026-0125."
+}

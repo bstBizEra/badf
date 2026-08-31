@@ -766,6 +766,63 @@ def verify_work_ledger() -> list[str]:
     return [wp for wp, _ in unreconciled]
 
 
+# ---- GOV-0108 (#246, WP-2026-0126): the enforcement-input ratchet ----
+SURFACE_RATCHET_THRESHOLD = 126
+SURFACE_RATCHET_SENTINELS = frozenset({997, 998, 999, 9999})
+
+
+def _surface_ratchet_applies(wp_id: str) -> bool:
+    """expected_surfaces.files is mandatory from WP-2026-0126 forward -- the record
+    that shipped the ratchet is the first one it binds. Earlier records are
+    grandfathered (counted at the point of judgment, never edited); the sentinel ids
+    (#199 / GOV-0085 synthetic fixtures) are exempt by declaration, not by silence."""
+    m = WP_ID_FORMS.match(str(wp_id))
+    if not m:
+        return False
+    n = int(m.group(1))
+    return n >= SURFACE_RATCHET_THRESHOLD and n not in SURFACE_RATCHET_SENTINELS
+
+
+def _unmatchable_declared(wp_id: str, patterns: list[str]) -> list[str]:
+    """Patterns that can NEVER match a governed diff: the record's own work/ dir and
+    the lockfile are excluded from that diff by construction, so declaring either is
+    noise wearing C7 authority (the VAL-B near-miss, #232 thread)."""
+    bad = []
+    for pat in patterns:
+        p = str(pat)
+        if p == "badf/lockfile.json" or p == f"work/{wp_id}" or p.startswith(f"work/{wp_id}/"):
+            bad.append(p)
+    return bad
+
+
+def verify_surface_ratchet() -> None:
+    """GOV-0108: a control whose input is optional is a control that is off by
+    default, and nothing says so. This says so -- coverage is counted out loud on
+    every run, records at or above the threshold are refused without a declaration,
+    and a declaration that can never match is refused outright. Over-reach and
+    over-declaration remain DISTINCT judgments at the assembly/binding sites (#257);
+    this counter never blends them into one number."""
+    declared = grandfathered = ratcheted = 0
+    for path, rec in self_work_packages():
+        wp = rec.get("id") or path.parent.name
+        files = [str(x) for x in ((rec.get("expected_surfaces") or {}).get("files") or [])]
+        under = _surface_ratchet_applies(wp)
+        if under:
+            ratcheted += 1
+        if files:
+            declared += 1
+            if under:
+                bad = _unmatchable_declared(wp, files)
+                if bad:
+                    raise ValidationError(f"{wp}: expected_surfaces.files declares {bad}, which can never match a governed diff (the record's own work/ dir and the lockfile are excluded from it by construction) -- an unmatchable pattern is C7 authority attached to nothing (GOV-0108)")
+        elif under:
+            raise ValidationError(f"{wp}: no expected_surfaces.files declared -- mandatory at and above the threshold WP-2026-0126; C3 containment and the C7 delegation ceiling cannot read an absent input (GOV-0108)")
+        else:
+            grandfathered += 1
+    total = declared + grandfathered
+    print(f"BADF SURFACE RATCHET: declared {declared}/{total}; grandfathered undeclared {grandfathered} (threshold WP-2026-0126; sentinels exempt; {ratcheted} record(s) under the ratchet); over-reach and over-declaration judged separately at assembly/binding (GOV-0108)")
+
+
 def reconcile_work_package(wp_arg: str) -> str:
     m = WP_ID_FORMS.match(wp_arg.strip())
     if not m:
@@ -903,6 +960,7 @@ def validate_repo() -> None:
     verify_demand_learnings()
     verify_monotonic_authority()
     verify_work_ledger()
+    verify_surface_ratchet()
 
 def check_non_coverage(dossier: dict[str, Any], evidence_type: str, outcome: str) -> None:
     """G08 exit criterion: 'non-coverage declared'. Before WP-0014 nothing on a
@@ -3741,6 +3799,15 @@ def self_dossier(wp_id: str) -> str:
     if not base:
         raise ValidationError(f"{wp_id} has no external_target.base_revision to diff against")
     _require_authorized_demand(wp, wp_id)                       # C1: no request without validated authority
+    # GOV-0108: the ratchet bites at assembly too -- the same refusal at the moment
+    # planning would otherwise skate past it, reported where controls report.
+    if _surface_ratchet_applies(wp_id):
+        _files = [str(x) for x in ((wp.get("expected_surfaces") or {}).get("files") or [])]
+        if not _files:
+            raise ValidationError(f"{wp_id}: no expected_surfaces.files declared -- mandatory at and above the threshold WP-2026-0126 (GOV-0108); declare the surface before assembling")
+        _bad = _unmatchable_declared(wp_id, _files)
+        if _bad:
+            raise ValidationError(f"{wp_id}: expected_surfaces.files declares {_bad}, which can never match the governed diff (GOV-0108)")
     _check_build_budget_and_stop(wp_dir, wp, wp_id)             # C6: a stopped or exhausted build is not packaged
     _check_delegations(wp_dir, wp, wp_id)                       # C7: delegations must be subsets before anything is bound
     now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -3762,7 +3829,14 @@ def self_dossier(wp_id: str) -> str:
     surfaces = wp.get("expected_surfaces") or {}
     patterns = [str(x) for x in (surfaces.get("files") or [])]
     declared = bool(patterns)
-    unexpected = [n for n in names if declared and not any(_surface_match(n, pat) for pat in patterns)]
+    allowance = [str(x) for x in (surfaces.get("discovery_allowance") or [])]
+    # #272 unification (GOV-0119): may-touch means ONE thing at both sites. A path
+    # covered by discovery_allowance is never `unexpected` here, exactly as the
+    # binding-side C3 exempts it; binding keeps its own filter because bindings
+    # written before this unification still carry allowance-covered paths.
+    unexpected = [n for n in names if declared
+                  and not any(_surface_match(n, pat) for pat in patterns)
+                  and not any(_surface_match(n, a) for a in allowance)]
     # GOV-0102 (#232): the mirror direction -- a declared files pattern that matched no changed
     # path. files is must-touch (it is also the C7 delegation ceiling, BLD-I10); a pattern that
     # is supposed to match nothing belongs in discovery_allowance, which never widens C7.
