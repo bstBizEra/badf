@@ -88,10 +88,10 @@ index 0d1d341..4155250 100644
  
  Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
 diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
-index b8938ae..6a809df 100644
+index b8938ae..fd20f32 100644
 --- a/scripts/badf_gate.py
 +++ b/scripts/badf_gate.py
-@@ -2010,6 +2010,66 @@ def check_g10_uat_binding(artifact: Path, dossier: dict[str, Any], evidence: dic
+@@ -2010,6 +2010,69 @@ def check_g10_uat_binding(artifact: Path, dossier: dict[str, Any], evidence: dic
          if (acc.get("accepted_by") or {}).get("principal_type") != "human":
              raise ValidationError(f"{label}: acceptance carries a non-human principal; final product acceptance is a separate authorized human decision, never the producing capability's (UAT-I14 / UAT-I15)")
  
@@ -148,7 +148,10 @@ index b8938ae..6a809df 100644
 +    # non_coverage entry is the defect the matrix exists to prevent, wearing a label: absence
 +    # from the matrix and an unexplained not_covered are the same silence.
 +    cov = b.get("coverage") or {}
-+    declared_gaps = " ".join(str(x.get("item", "")) for x in (cov.get("non_coverage") or []))
++    # SET, not a joined string. Joining made `ref not in declared_gaps` a SUBSTRING test, so a
++    # gap declared for AC-12 reported AC-1 as explained (BADF-QA, PR #274). `item` holds a ref,
++    # not prose about one -- membership is the intended semantics and the only exact one.
++    declared_gaps = {str(x.get("item", "")) for x in (cov.get("non_coverage") or [])}
 +    unexplained = sorted(c["acceptance_criterion_ref"] for c in (cov.get("criteria") or [])
 +                         if c["state"] == "not_covered"
 +                         and not c.get("reason") and c["acceptance_criterion_ref"] not in declared_gaps)
@@ -190,7 +193,7 @@ index f17556e..f029193 100644
          self.assertEqual(entry["risk_class"], "C1")
          expected = "sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest()
 diff --git a/tests/test_badf_uat_evidence.py b/tests/test_badf_uat_evidence.py
-index f3f9815..c036e02 100644
+index f3f9815..f66fa83 100644
 --- a/tests/test_badf_uat_evidence.py
 +++ b/tests/test_badf_uat_evidence.py
 @@ -77,6 +77,23 @@ def evidence(**over):
@@ -257,7 +260,7 @@ index f3f9815..c036e02 100644
               "accepted_by": {"principal": "operator", "principal_type": "human"},
               "accepted_at": "2026-01-01T00:00:00Z"}
          with self.assertRaisesRegex(gate.ValidationError, "candidate_digest"):
-@@ -334,5 +355,86 @@ class UatTypedEvidenceTests(unittest.TestCase):
+@@ -334,5 +355,127 @@ class UatTypedEvidenceTests(unittest.TestCase):
          self.assertIs(gate.EVIDENCE_RULES["uat"], gate.check_g10_uat_binding)
  
  
@@ -333,6 +336,47 @@ index f3f9815..c036e02 100644
 +        del b["coverage"]["criteria"][0]["reason"]
 +        b["coverage"]["non_coverage"] = [{"item": "AC-1", "reason": "no representative environment"}]
 +        check(evidence(binding=b))
++
++    def test_c11_declared_gap_must_match_the_ref_exactly_not_merely_contain_it(self):
++        """BADF-QA on 09f3fab: C11 joined every non_coverage `item` into ONE STRING and asked
++        `ref not in <that string>`, so a gap declared for AC-12 reported AC-1 as explained.
++
++        The control read as exact and was not -- this rung's own class, in this rung's own
++        code. `AC-1` beside `AC-10` is the ordinary shape of an unpadded criteria set, which
++        the schema pattern permits, so this is reachable on normal data rather than contrived.
++        """
++        for declared, must_refuse in (("AC-1", False),      # the real explanation
++                                      ("AC-12", True),      # ref is a PREFIX of the gap
++                                      ("AC-10", True),      # same, adjacent id
++                                      ("AC-1-extra", True), # ref is a prefix with a suffix
++                                      ("AC-999", True)):    # unrelated -- always refused
++            with self.subTest(declared=declared):
++                b = binding()
++                b["coverage"]["criteria"] = [
++                    {"acceptance_criterion_ref": "AC-1", "state": "not_covered"}]
++                b["coverage"]["non_coverage"] = [{"item": declared, "reason": "no environment"}]
++                if must_refuse:
++                    with self.assertRaisesRegex(gate.ValidationError, "not_covered with neither"):
++                        check(evidence(binding=b))
++                else:
++                    check(evidence(binding=b))
++        # a LONGER ref against a SHORTER declared gap -- containment in the other direction
++        b = binding()
++        b["coverage"]["criteria"] = [
++            {"acceptance_criterion_ref": "AC-123", "state": "not_covered"}]
++        b["coverage"]["non_coverage"] = [{"item": "AC-1234", "reason": "no environment"}]
++        with self.assertRaisesRegex(gate.ValidationError, "not_covered with neither"):
++            check(evidence(binding=b))
++
++    def test_c11_reads_item_only_so_reason_prose_cannot_explain_a_gap(self):
++        """The leak was confined to `item`; QA measured that `reason` prose does not leak.
++        Pinned so a future 'be helpful, search the reason too' edit has to argue with a test."""
++        b = binding()
++        b["coverage"]["criteria"] = [{"acceptance_criterion_ref": "AC-1", "state": "not_covered"}]
++        b["coverage"]["non_coverage"] = [
++            {"item": "AC-999", "reason": "deferred together with AC-1 pending environment"}]
++        with self.assertRaisesRegex(gate.ValidationError, "not_covered with neither"):
++            check(evidence(binding=b))
 +
 +    def test_untyped_binding_still_admissible_after_the_c_rung(self):
 +        """Additivity survives C. The rung adds refusals for TYPED bindings only."""
