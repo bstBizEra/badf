@@ -230,10 +230,10 @@ index e4dba37..677edf3 100644
  Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
 diff --git a/tests/test_badf_aet_contract.py b/tests/test_badf_aet_contract.py
 new file mode 100644
-index 0000000..f36e031
+index 0000000..990313d
 --- /dev/null
 +++ b/tests/test_badf_aet_contract.py
-@@ -0,0 +1,95 @@
+@@ -0,0 +1,101 @@
 +"""BADF-AET-A (WP-2026-0122, #236): guards on the frozen Agentic Engineer Team contract.
 +
 +The contract is doctrine, and doctrine drifts silently (#216/#230: references pinned by
@@ -295,7 +295,13 @@ index 0000000..f36e031
 +        check with prose/hyphen/Title/UPPER forms (#258 review) -- key -> payload ->
 +        payload-spelling is the same proxy class three times, so separators and casing
 +        are erased before matching. Zero false positives on the document today, measured
-+        by QA before this form was adopted."""
++        by QA before this form was adopted.
++
++        Threat model, stated so the boundary is a decision rather than a finding (REV,
++        round 3): normalised matching covers RESTATEMENT DRIFT -- underscore, hyphen,
++        prose, casing. It does not defend against deliberate evasion (homoglyphs,
++        zero-width characters, unusual separators); that is not this control's threat
++        model, and a test asserting on document text is the wrong layer for it."""
 +        self.assertIn("badf/authority-matrix.json", self.text)
 +        self.assertNotIn('"human_reserved_roles"', self.text,
 +                         "the contract must not carry a copy of the reserved-role list")
