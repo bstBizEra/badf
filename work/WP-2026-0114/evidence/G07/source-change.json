@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0114-G07-source-change",
+  "work_package_id": "WP-2026-0114",
+  "gate": "G07",
+  "claim": "the change WP-2026-0114 makes to this repository, outside its own directory and the lockfile",
+  "evidence_type": "source-change",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-08-31T00:44:04Z",
+  "completed_at": "2026-08-31T00:44:04Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0114/evidence/G07/source-change.diff",
+  "digest": "sha256:a9dd2d324817fcf200baeb88b88e01e1dcb19b4c89f507448ff65a60f803dc77",
+  "binding": {
+    "base_sha": "87dd19213fb0dc12625fd79dfb2ef9ccdf9afd49",
+    "head_sha": "f693baab3ec957e90310d5011e269be3065dfd25",
+    "content_tree": "8aa54fa9f8086d5552deaf1c092942f92882b97d",
+    "changed_paths": [
+      "badf/demands/BADF-DEM-0101.json",
+      "badf/skill-registry.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "skills/badf-production-readiness/SKILL.md",
+      "skills/badf-production-readiness/references/acceptance.md",
+      "skills/badf-production-readiness/references/authority-boundary.md",
+      "skills/badf-production-readiness/references/candidate-binding.md",
+      "skills/badf-production-readiness/references/contradiction-resolution.md",
+      "skills/badf-production-readiness/references/evidence-aggregation.md",
+      "skills/badf-production-readiness/references/evidence-freshness.md",
+      "skills/badf-production-readiness/references/external-methodology.md",
+      "skills/badf-production-readiness/references/g10-contract.md",
+      "skills/badf-production-readiness/references/observability-readiness.md",
+      "skills/badf-production-readiness/references/operations-support-readiness.md",
+      "skills/badf-production-readiness/references/readiness-dimensions.md",
+      "skills/badf-production-readiness/references/recovery-readiness.md",
+      "skills/badf-production-readiness/references/release-artifact-identity.md",
+      "skills/badf-production-readiness/references/release-delta.md",
+      "skills/badf-production-readiness/references/rollback-migration-readiness.md",
+      "skills/badf-production-readiness/references/security-readiness.md",
+      "tests/test_badf_production_readiness_contract.py",
+      "work/WP-2026-0110/work-package.json"
+    ],
+    "expected_surfaces": {
+      "declared": false,
+      "files": []
+    },
+    "unexpected_paths": [],
+    "change_digest": "sha256:a9dd2d324817fcf200baeb88b88e01e1dcb19b4c89f507448ff65a60f803dc77"
+  }
+}
