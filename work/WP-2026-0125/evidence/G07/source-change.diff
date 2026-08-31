@@ -158,6 +158,37 @@ index 96f5cc4..0850b33 100644
  
  EVIDENCE_RULES["uat"] = check_g10_uat_binding
  
+diff --git a/tests/test_badf_uat_contract.py b/tests/test_badf_uat_contract.py
+index f17556e..f029193 100644
+--- a/tests/test_badf_uat_contract.py
++++ b/tests/test_badf_uat_contract.py
+@@ -152,11 +152,22 @@ class UatContractTests(unittest.TestCase):
+         registry = json.loads((ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))
+         entry = next((e for e in registry["skills"] if e["name"] == "badf-uat"), None)
+         self.assertIsNotNone(entry, "badf-uat must be registered")
+-        # WP-UAT-B floor: the ladder advances past DESIGNED, so this pins the FLOOR rather than
+-        # a single rung. Pinning one status makes the contract test fail every time the ladder
+-        # moves -- the same snapshot-versus-invariant error as the "no schema yet" assertion
+-        # above. (The registry, not this file, is the live status -- acceptance.md is a pointer.)
++        # The floor: the ladder advances past DESIGNED, so pinning one rung here would fail every
++        # time the ladder legitimately moves -- the snapshot-versus-invariant error of #268.
+         self.assertIn(entry["status"], ("IMPLEMENTED", "VALIDATED", "SHADOWED", "ACTIVE"))
++        # #218: A FLOOR ALONE UNPINS THE STATUS. Every value in that tuple passes, so a silent
++        # regression or advance fails nothing. #218 requires exactly ONE exact pin per capability,
++        # and this family had ZERO -- measured. The floor above was correct for #268 and CREATED
++        # #218: the two issues are in tension, and fixing one naively causes the other.
++        #
++        # The exact pin lives HERE, and it MOVES with the ladder rather than being relaxed away.
++        # WP-UAT-C leaves the rung at IMPLEMENTED (C adds controls; the admission is WP-UAT-E),
++        # so the current rung is IMPLEMENTED. A later rung updates this line and the ladder in
++        # acceptance.md in the SAME PR -- that co-edit is the point, not an inconvenience.
++        self.assertEqual("IMPLEMENTED", entry["status"],
++                         "the ONE exact status pin for badf-uat (#218). If a rung advanced the "
++                         "registry, update this line and references/acceptance.md together; do "
++                         "not relax it to a floor -- a floor alone pins nothing.")
+         self.assertEqual(entry["allowed_tools"], [])
+         self.assertEqual(entry["risk_class"], "C1")
+         expected = "sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest()
 diff --git a/tests/test_badf_uat_evidence.py b/tests/test_badf_uat_evidence.py
 index f3f9815..c036e02 100644
 --- a/tests/test_badf_uat_evidence.py
