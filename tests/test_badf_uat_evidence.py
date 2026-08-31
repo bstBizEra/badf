@@ -248,29 +248,38 @@ class UatTypedEvidenceTests(unittest.TestCase):
                 check(evidence(binding=b))
 
     def test_the_same_multiset_in_either_order_yields_the_same_verdict(self):
-        """The property QA's probe actually tested, asserted directly rather than via U6.
+        """Order must not decide. Pinned on the arrangement where order CAN decide.
 
-        Whatever the semantics, ORDER MUST NOT DECIDE. This holds by construction now (duplicates
-        are refused, so no multiset has two orderings that reach the verdict logic) -- but it is
-        the property that was violated, so it is pinned in its own right and survives any future
-        change to how duplicates are handled.
+        The first version of this test used two DISTINCT scenario_ids -- no dict-key collision,
+        so order could not have mattered whether or not U6 existed. Measured: with U6 neutered,
+        the duplicate-refusal test correctly went red and THIS one stayed green. It exercised the
+        one arrangement where the property holds trivially, while its docstring claimed it
+        "survives any future change to how duplicates are handled".
+
+        That is the defect this whole rework exists to close -- a property checked on the side
+        where it cannot fail -- and it is the third instance in two days of that shape, this one
+        inside the test written to prove the second. Found by BADF-REV on #264.
+
+        Now built on the DUPLICATE-key pair, which is the only arrangement where array order can
+        reach the verdict, and asserted for EQUALITY rather than refusal: equal-and-refused while
+        U6 stands, unequal the moment it is relaxed. The assertion is about order-invariance, so
+        it does not care WHICH verdict -- only that both orders agree.
         """
         crit = scenario(crit="critical")
-        other = scenario(sid="UAT-SCN-002")
-        a = [observation(result="PASS"), observation(sid="UAT-SCN-002", result="FAIL")]
-        b_ = list(reversed(a))
+        defect = [{"scenario_id": "UAT-SCN-001", "defect_class": "IMPLEMENTATION_DEFECT",
+                   "statement": "x"}]
         verdicts = []
-        for order in (a, b_):
-            bnd = binding(scenarios=[crit, other], observations=order,
-                          defects=[{"scenario_id": "UAT-SCN-002",
-                                    "defect_class": "IMPLEMENTATION_DEFECT", "statement": "x"}],
+        for order in ([observation(result="FAIL"), observation(result="PASS")],
+                      [observation(result="PASS"), observation(result="FAIL")]):
+            bnd = binding(scenarios=[crit], observations=order, defects=defect,
                           recommendation="RECOMMEND_ACCEPT")
             try:
                 check(evidence(binding=bnd)); verdicts.append("ADMITTED")
             except gate.ValidationError as e:
-                verdicts.append(f"REFUSED:{'dup' if 'more than one' in str(e) else 'other'}")
+                verdicts.append("REFUSED")
         self.assertEqual(verdicts[0], verdicts[1],
-                         f"array order changed the verdict: {verdicts}")
+                         f"array order changed the verdict on a duplicate-key pair: {verdicts}; "
+                         f"order must never decide, whatever the semantics")
 
     def test_executed_at_is_provenance_not_an_ordering_key(self):
         """QA observed `executed_at` is required and never read -- newest-as-FAIL was admitted.
