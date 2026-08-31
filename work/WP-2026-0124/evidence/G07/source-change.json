@@ -16,14 +16,14 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-08-31T18:35:49Z",
-  "completed_at": "2026-08-31T18:35:49Z",
+  "started_at": "2026-08-31T18:38:37Z",
+  "completed_at": "2026-08-31T18:38:37Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0124/evidence/G07/source-change.diff",
   "digest": "sha256:73297127538322725180b327880d8c78dc14dba5d0dd591a74b017ec8dffe9bd",
   "binding": {
     "base_sha": "292d1beba0e97e680323788228d27bfb8b425fe9",
-    "head_sha": "670b58630e63a667bdeb0e1f6775de03881e0fab",
+    "head_sha": "cc8bb9665f2a09ae894001a0e7ae1f5c4305c48f",
     "content_tree": "856b62ed666b8c9d88b5ebb579537ac1973a8b89",
     "changed_paths": [
       "badf/demands/BADF-DEM-0110.json",
@@ -48,12 +48,11 @@
         "skills/badf-uat/SKILL.md",
         "tests/test_badf_production_readiness_contract.py",
         "tests/test_badf_uat_contract.py",
-        "tests/test_badf_uat_evidence.py"
+        "tests/test_badf_uat_evidence.py",
+        "work/WP-2026-0122/work-package.json"
       ]
     },
-    "unexpected_paths": [
-      "work/WP-2026-0122/work-package.json"
-    ],
+    "unexpected_paths": [],
     "change_digest": "sha256:73297127538322725180b327880d8c78dc14dba5d0dd591a74b017ec8dffe9bd"
   }
 }

@@ -42,16 +42,6 @@
       "owner": "engineering_owner",
       "closure_predicate": "a distinct human independent_reviewer records an approval, or the deviation is accepted in a decision record",
       "closure_authority": "quality_authority"
-    },
-    {
-      "condition_id": "C-2",
-      "statement": "BLD-I04 scope containment: 1 changed path(s) fall outside the declared expected_surfaces: work/WP-2026-0122/work-package.json",
-      "status": "OPEN",
-      "severity": "Major",
-      "blocking_scope": "G07",
-      "owner": "engineering_owner",
-      "closure_predicate": "planning amends expected_surfaces to admit the paths, or the change is reverted to the declared surface",
-      "closure_authority": "quality_authority"
     }
   ],
   "non_coverage": [],
@@ -59,6 +49,6 @@
   "risks": [],
   "council": null,
   "disposition": "HUMAN_REQUIRED",
-  "created_at": "2026-08-31T18:35:49Z",
-  "held_because": "BADF's own work package WP-2026-0124 at G07: evidence prepared and digest-bound; the independent-reviewer condition C-1 is open under a single collaborator; a human merges. The tool binds evidence, it does not approve. Unexpected paths outside expected_surfaces: work/WP-2026-0122/work-package.json (BLD-I04) -- refused or re-authorized, never absorbed."
+  "created_at": "2026-08-31T18:38:37Z",
+  "held_because": "BADF's own work package WP-2026-0124 at G07: evidence prepared and digest-bound; the independent-reviewer condition C-1 is open under a single collaborator; a human merges. The tool binds evidence, it does not approve."
 }

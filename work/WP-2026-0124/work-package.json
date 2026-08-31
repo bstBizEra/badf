@@ -19,7 +19,7 @@
     "scenario derivation logic -- this rung types the artifact, it does not generate it",
     "deterministic G10/UAT controls beyond single-object validity: acceptance-basis digest binding across a dossier, freshness, staleness on candidate change -- that is WP-UAT-C, lean DISABLED (HARD INVARIANTS)",
     "any lifecycle.json change; any second gate (UAT-I20); badf-production-readiness's release-packet and operational-readiness types",
-    "work/WP-2026-0122/work-package.json is CHANGED by this PR (the gate-forced reconcile) but deliberately NOT declared in expected_surfaces.files: a reconcile collapses to a byte-identical no-op for whoever lands second, and a declared surface that then matches nothing is a C-2 declared-but-unmatchable condition under the #249 two-sided control. Declaring it would convert a harmless collapse into a blocking condition."
+    "The gate-forced reconcile (work/WP-2026-0122/work-package.json) IS declared in expected_surfaces.files, with a standing obligation to PRUNE it in the same pass as any rebase where it collapses -- the team practice BARCHI-1 set. discovery_allowance would be the natural instrument (may-touch, exempt from the C7 ceiling) and does exempt it at the BINDING-side C3 control (badf_gate.py:1666), but the ASSEMBLY-side containment at :3702 computes `unexpected` from `files` alone and never consults discovery_allowance -- so it raises C-2 regardless. That asymmetry is filed separately rather than worked around here."
   ],
   "target_gate": "G07",
   "change_class": "C2",
@@ -80,7 +80,11 @@
       "skills/badf-uat/SKILL.md",
       "tests/test_badf_production_readiness_contract.py",
       "tests/test_badf_uat_contract.py",
-      "tests/test_badf_uat_evidence.py"
+      "tests/test_badf_uat_evidence.py",
+      "work/WP-2026-0122/work-package.json"
+    ],
+    "discovery_allowance": [
+      "work/WP-2026-*/work-package.json"
     ]
   }
 }
