@@ -1,0 +1,22 @@
+{
+  "record": "git-composition",
+  "schema_version": "1.0.0",
+  "observed_at": "2026-08-31T16:21:54Z",
+  "repository": "bstBizEra/badf",
+  "work_package_id": "WP-2026-0122",
+  "target_ref": "refs/heads/main",
+  "target_base_sha": "a69b92201cb4b354a86d136845705af751f6c655",
+  "source_ref": "refs/heads/wp/WP-2026-0122-aet-contract-freeze",
+  "source_head_sha": "9e0b454e4799ca6971a6ca161262d97e72144bb0",
+  "merge_base_sha": "a69b92201cb4b354a86d136845705af751f6c655",
+  "merge_method": "squash",
+  "expected_result_tree": "7cfb9a1c33d18559aa094bcb89117f2651ceb434",
+  "expected_content_tree": "ee61ead026a9e8b1fd381c13a51c02577f586c75",
+  "policy_epoch": "BADF-2026-08-25",
+  "test_set_epoch": null,
+  "suite_pattern": "test_badf_aet_contract.py",
+  "non_coverage": [
+    "test_set_epoch: BADF defines no test-set/toolchain epoch; not recorded rather than invented",
+    "source_head_sha and expected_result_tree are informational: committing this record moves both; the binding is expected_content_tree (work/<WP>/ and the lockfile excluded)"
+  ]
+}

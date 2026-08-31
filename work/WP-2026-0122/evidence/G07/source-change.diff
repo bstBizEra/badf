@@ -1,0 +1,340 @@
+diff --git a/AGENTS.md b/AGENTS.md
+index 20336f0..54d7dcd 100644
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -47,6 +47,7 @@ Before acting, read only the documents relevant to the task, plus every document
+ | Any repository change | `docs/00-operating-model.md`, `docs/01-lifecycle-gates.md`, `docs/05-evidence-and-provenance.md` |
+ | Planning or implementation | `docs/02-engineering-loop.md`, `docs/13-artifact-model.md` |
+ | Agent delegation or council review | `docs/03-authority-and-agent-councils.md` |
++| Agentic team runtime work (seats, planes, AET rungs) | `docs/14-agentic-engineer-team.md` |
+ | Memory, context, or knowledge work | `docs/04-memory-and-context.md` |
+ | Session continuation or handoff | `docs/06-sessions-handoffs-recovery.md` |
+ | Skill creation/use | `docs/07-skills-governance.md` |
+diff --git a/badf/demands/BADF-DEM-0108.json b/badf/demands/BADF-DEM-0108.json
+new file mode 100644
+index 0000000..ab7c064
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0108.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0108",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 236,
++    "url": "https://github.com/bstBizEra/badf/issues/236",
++    "exported_at": "2026-08-31T14:37:38Z",
++    "body_digest": "sha256:09129392b81999b58f5dc825572459bc680872eea038cfc31ac83be3866e73e8"
++  },
++  "title": "GOV: deferred -- AET program intake: BADF-AET-A (Agentic Engineering runtime contract freeze); trigger = #224 landed + #232 + #227 resolved",
++  "problem": "\ud83e\udde0 **SARCHI** \u2014 \u00a744 baseline verdict: **PREREQUISITE_REQUIRED**\n\n**Classification:** DISCOVERED \u2192 deferred demand (program intake). No WP and no GOV-#### id claimed \u2014 the id sweep is deliberately skipped while #227 (missing fourth surface) is open.\n\n**Baseline measured:** origin/main = `66c92f8` (detached probe, 2026-08-31). Registry: 8 families ACTIVE, badf-release-validation DESIGNED. No AET contract, work package, demand, or team-profile artifact exists on main, on any remote branch head, or in the open PR file list (grep: agentic engineer / AET / team.yaml / agentic-engineering \u2192 zero hits).\n\n**Verdict:** the Agentic Engineer Team program (AET-A contract freeze \u2192 AET-E admission) is the correct next program rung after the G09 validation program \u2014 but it must not start yet.\n\n**Trigger (all three):**\n1. **#224 landed.** The G08 close-out's institutional learning (\"a guard that cannot fail is not a guard\") is direct input to the AET contract's evidence/test discipline, and landing it stabilizes the WP-2026-0110 id space (#235).\n2. **#232 resolved (P0).** AET-A freezes the invariant `delegated_authority \u2286 work_package_authority \u2286 repository_policy`; freezing it while C3 scope containment is one-sided would bake a known authority-widening channel into the contract.\n3. **#227 resolved.** The AET work package's own id allocation depends on the sweep that currently misses ids bound only in unlanded trees.\n\n**Prioritized ahead of AET-A (scheduling order, not trigger):** the false-green cluster #229 #230 #210 #211 #216 #218 #220 #234 \u2014 P1 (evidence correctness) outranks P3 (new runtime capability) under the priority model. Never build new orchestration on guards that cannot fail.\n\n**AET-A definition (frozen now, executed when the trigger fires):**\n- **Deliverable:** one normative contract document freezing: the four planes (deterministic control / agentic execution / independent assurance / learning); persistent seats (coordinator, builder controller, independent reviewer, verifier, release/runtime observer, librarian); specialist routing rules; delegation and authority non-expansion invariants; the durable-effect contract (PREPARE \u2192 AUTHORITY CHECK \u2192 COMMIT \u2192 RECONCILE; outcome classes COMMITTED / PROVEN_ABSENT / OUTCOME_UNKNOWN / COMPENSATED / MANUAL_REMEDIATION_REQUIRED); budgets and stop codes; session/handoff/evidence binding; and the `badf init` team-profile integration contract.\n- **Target status:** DESIGNED. No runtime code, no schemas beyond what the contract text itself requires, no AET-B/C/D/E content inside AET-A.\n- **Change class:** C1 for the drafting mutation under a governed WP. **Authority-policy mutation is explicitly out of scope** \u2014 the contract composes with `docs/03-authority-and-agent-councils.md` and `badf/authority-matrix.json` and may not expand either; any later admission carrying gate significance is a separately authorized rung (C3, human_sponsor).\n- **Independent review:** reviewer seat independent of the drafting seat.\n\n**Out of scope here:** #217 #212 #185 #166 remain trigger-gated as filed; #233 (WP-VAL-B) proceeds under the already-open G09 program independently of this demand.\n\n<!-- agent: sarchi | baseline: 66c92f8 | probe: detached shallow clone of origin/main -->",
++  "status": "AUTHORIZED",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "recorded_at": "2026-08-31T14:37:38Z",
++  "note": "Filed as a deferred program-intake demand 2026-08-31 with an explicit three-leg trigger; all legs closed at d910e12 (#224 -> 87dd192, #232 -> da3c28d/#249, #227 -> d910e12/#252). Checkpoint packet posted and RATIFIED by the operator via the session channel ('proceed on your call', recorded on #236 comment 5479909835): D1 opens BADF-AET-A as WP-2026-0122 -- one normative contract document (docs/14-agentic-engineer-team.md + one AGENTS.md required-reading row), four planes, persistent seats, routing, non-expansion invariants, durable-effect contract, budgets/stop codes, session/evidence binding, badf init team-profile integration; rungs B-E gated in-contract; authority-policy mutation out of scope; deliberately NOT registered in the skill registry."
++}
+diff --git a/docs/14-agentic-engineer-team.md b/docs/14-agentic-engineer-team.md
+new file mode 100644
+index 0000000..b51f032
+--- /dev/null
++++ b/docs/14-agentic-engineer-team.md
+@@ -0,0 +1,149 @@
++# 14 — The Agentic Engineer Team: runtime contract (AET-A)
++
++Status: **contract frozen** at `BADF-AET-A` (WP-2026-0122, #236, ratified 2026-08-31).
++Rungs `AET-B`–`AET-E` are **defined and gated below, not built**. This document is
++operating doctrine for seats; it is deliberately **not** a `badf/skill-registry.json`
++entry — the AET is not a routed capability, and this contract grants no additional
++authority to anything (§5, AET-I03).
++
++## 1. Purpose and non-goals
++
++The AET is BADF's own engineering team: the seats, planes, routing rules and
++invariants under which agent sessions build BADF through BADF — and, at the INIT
++rungs, the operating model a `badf init` project instance consumes. This contract
++freezes the runtime's *shape* so that every later rung (substrate, deterministic
++controls, shadow, admission) is measured against declared invariants instead of
++accumulated convention.
++
++Non-goals, permanently: the AET never becomes an authority system. Policy,
++work packages, deterministic gates, evidence, independent review and human-reserved
++authority remain superior to every seat, council, coordinator and skill —
++*intelligence proposes and executes; deterministic controls authorize transitions;
++independent evidence proves readiness; organizational authority authorizes what
++policy reserves.*
++
++## 2. The four planes
++
++| Plane | Owns | Authority sentence |
++| :-- | :-- | :-- |
++| **Deterministic control plane** | lifecycle state, authority resolution, gate evaluation, WP state, evidence validation, provenance | This plane is authoritative; nothing below it converts output into permission. |
++| **Agentic execution plane** | seats and routed specialists performing bounded work | Its output is proposal or execution evidence, never self-authority. |
++| **Independent assurance plane** | review, QA, verification, councils, evidence audit | Logically independent of the authoring execution it assesses; "no findings" never means "correct". |
++| **Learning plane** | outcome reconciliation, root cause, knowledge, candidate tests/controls/skills | Learning may improve capability; it never silently expands authority (AET-I09). |
++
++## 3. Persistent seats
++
++Six persistent operating seats; additional specialists are routed dynamically and
++only when a gate, change class, risk or non-coverage requires them — never as a
++standing swarm.
++
++- **Coordinator** (SARCHI seat) — decomposition, ordering, integration, dispatch,
++  evidence completeness. Cannot self-approve; cannot merge what it authored without
++  the independent verdicts policy requires.
++- **Builder controller** — implementation decomposition and bounded specialist
++  execution inside a WP's declared surface.
++- **Independent reviewer** — challenges architecture, implementation and evidence;
++  independent of the authoring run wherever independence is required.
++- **Verifier** — runs or validates deterministic runtime observations; never
++  implements the change under verification.
++- **Release/runtime observer** — release evidence, deployment observation,
++  reconciliation, within granted authority only.
++- **Librarian** — close-out learning, durable knowledge, skill candidates.
++
++## 4. Routing
++
++Work routes to the minimum necessary specialists. Skill routing reads
++`badf/skill-registry.json` **at execution time**; a future or nonexistent family is
++never used because a document names it (the declared-future list, when present,
++lives in the registry — never in prose adjacency, never in a test-local allowlist).
++Review routing follows the shared-surface rule: changes to shared enforcement
++surfaces go to QA + the independent reviewer; ladder-internal rungs may not require
++them, and the classification is verified by diff, not by the author's
++characterization.
++
++## 5. Invariants (AET-I01 – AET-I13)
++
++- **AET-I01 — Non-expansion.** `delegated_authority ⊆ work_package_authority ⊆ repository_policy`,
++  always, at every level of delegation. A subagent task is not a new WP; delegation
++  cannot create authority.
++- **AET-I02 — No self-approval.** The author may not supply the independent approval
++  a gate requires; the same run never counts as author and independent reviewer.
++- **AET-I03 — Output ≠ authority.** Coordinator, council, skill and LLM output —
++  including this contract — is never authority. Capability ≠ permission; successful
++  execution ≠ approval.
++- **AET-I04 — Trees are distinguished.** Source-head green ≠ composed-tree verified ≠
++  landed-tree reconciled; claims bind to the tree that carries them, and the PR body
++  is the squash message — it is verified as a claim surface.
++- **AET-I05 — Durable effects.** Every external side effect runs
++  `PREPARE → AUTHORITY CHECK → COMMIT → RECONCILE` and resolves to one of:
++  `COMMITTED`, `PROVEN_ABSENT`, `OUTCOME_UNKNOWN`, `COMPENSATED`,
++  `MANUAL_REMEDIATION_REQUIRED`. An ambiguous state-changing operation is never
++  blindly retried.
++- **AET-I06 — Bounded retries.** Budgets and stop codes dominate; exhaustion yields
++  `BLOCKED`, never an autonomous extension, and a repeated identical failure is not
++  a new attempt.
++- **AET-I07 — Session resume.** After interruption:
++  `READ STATE → RECONCILE WORLD → VERIFY AUTHORITY → RESUME` — never
++  "remember what probably happened and continue mutating".
++- **AET-I08 — Evidence correlation.** Work correlates `work_package_id`, session,
++  run, gate, base/head SHAs and content trees, so the ledger can answer which run
++  produced which outcome mechanically.
++- **AET-I09 — Learning never expands authority.** The learning plane changes
++  knowledge, methodology, tests, controls, skill capability — never constitutional
++  authority, reserved roles, mandatory gates or production authorization.
++- **AET-I10 — Human-reserved stays human-reserved.** The sole source for reserved
++  roles and actions is `badf/authority-matrix.json`; this contract **points at it
++  and holds no copy** — a copy would fork the law and drift into authority.
++- **AET-I11 — Instance subset.** For every `badf init` project instance:
++  `project_team_capability ⊆ BADF_authorized_capability`. A project-local team
++  profile narrows; it never widens, and it is never an alternate authority system.
++- **AET-I12 — One canonical gate.** `badf_gate.py` remains the deterministic
++  governance path; no seat, adapter or profile introduces a second validator,
++  competing lifecycle engine or agent-side approval logic.
++- **AET-I13 — Channel-bound authorization.** An operator utterance
++  **binds the commitments of the session it was made in**. A coordinator's relay of it is
++  evidence another seat may cite in its *own* ask to its *own* principal — never a
++  substitute for that ask. A ratification in one channel does not release holds,
++  commitments or gates created in another. *(Provenance: the #236 D3 correction,
++  2026-08-31 — a seat correctly refused a relayed release of its own hold.)*
++
++## 6. Budgets and stop codes
++
++Every autonomous execution carries an execution budget and stops — returning an
++explicit stop code, never disguising blockage as progress — on:
++`AUTHORITY_CONFLICT`, `UNEXPECTED_DESTRUCTIVE_SCOPE`, `CREDENTIAL_EXPOSURE`,
++`POLICY_BYPASS`, `EVIDENCE_CORRUPTION`, `BUDGET_EXHAUSTED`, stale or contradictory
++evidence, material target movement, or unavailability of required independent review.
++
++## 7. The `badf init` integration contract
++
++An initialized project consumes this operating model without copying the framework:
++the instance receives the seat/plane doctrine by reference, binds a bounded team
++profile (a later INIT rung; only if repository contracts support it), and pins the
++BADF revision it consumes. The instance may restrict capability locally; under
++AET-I11 it can never extend it, and its authority chain terminates in the canonical
++authority matrix, not in any local file. Instance-side runtime (profiles,
++`badf/team.yaml`, coordinator modes) is INIT-rung scope, not this contract's.
++
++## 8. Rungs and gating
++
++Ladder discipline as practiced by every capability family in this repository:
++freeze, then build, then prove, then shadow, then admit. Each rung is a separate
++governed WP with its own review; **no rung grants no additional authority is
++restated at each** — admission changes *what runs*, never *what is permitted*.
++
++| Rung | Target | Gate/trigger |
++| :-- | :-- | :-- |
++| `AET-A` | contract frozen | **this document** |
++| `AET-B` | runtime substrate | gated on: **P1-before-P3** — the open evidence-correctness defects triaged with owners (at freeze time: #220/#234 dispositioned, #211/#218 owned or parked deliberately) AND the #246 ratchet WP landed, because the substrate's containment leans on it |
++| `AET-C` | deterministic controls validated | gated on AET-B; failing-first + mutation on every control named in the #236 packet's list |
++| `AET-D` | self-build shadow | gated on AET-C; shadow grants no authority and its measurements are frozen as captured |
++| `AET-E` | admission | gated on AET-D evidence AND a human-reserved authorization in the operator's own channel (AET-I13; C3 per the authority matrix) |
++
++## 9. Non-coverage, stated
++
++This contract does not: enumerate specialist prompts or team-profile schemas
++(INIT/AET-B scope); resolve the D4 throughput question (#236's open conversation);
++alter any gate, schema, or authority file; or claim shadow evidence exists for any
++AET behavior — it does not, and that is AET-D's job. The seats operate today under
++the root charter and this doctrine; nothing here changes what any of them may do.
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index e4dba37..677edf3 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1912,6 +1912,30 @@ destroys the binding that makes it evidence, to make a cosmetic id consistent. T
+ 
+ Anyone sweeping for the stale id will hit that demand and be tempted. **The temptation is the trap.**
+ 
++## The AET runtime contract frozen — doctrine gets guards, and authority stays where it lives (`BADF-WP-0122` / AET-A, Issue #236)
++
++The Agentic Engineer Team program opened the way this repository opens everything: freeze the contract
++before building the runtime. `docs/14-agentic-engineer-team.md` now declares the four planes, six
++persistent seats, routing rules, invariants `AET-I01`–`AET-I13`, the durable-effect contract with its
++five outcome classes, budgets/stop codes, the `badf init` subset invariant, and rungs `AET-B`–`AET-E`
++**defined and gated, not built** — `AET-B` behind P1-before-P3 and the #246 ratchet, `AET-E` behind a
++human-reserved authorization in the operator's own channel. The contract grants no authority and holds
++no copies: the reserved-role list stays in `badf/authority-matrix.json`, pointed at, never restated —
++on the one document where a drifted copy would *become* authority.
++
++Two structural choices worth naming. The AET is deliberately **not** a skill-registry entry — it is
++operating doctrine for seats, not a routed capability, and staying off the most-contended shared
++surface is the D4 lesson practiced. And the doctrine ships with **content-anchor guards**
++(`tests/test_badf_aet_contract.py`, red-observed before the document existed, gut-tested by mutation):
++after #216/#230/#235, a normative document without guards is a claim nobody re-measures.
++
++`AET-I13` (channel-bound authorization) was earned during this WP's own drafting: a ratification
++relayed from one session cannot release a hold committed in another — a seat correctly refused exactly
++that, the D3 record on #236 was corrected, and the invariant now freezes what the episode proved. In
++the same hours, the id claim for this WP survived a crossed-ids misread (caught at ask-time by the
++print-the-ceiling rule) — the allocation protocol landing in `BADF-WP-0118` doing its job on the very
++next WP to allocate.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/tests/test_badf_aet_contract.py b/tests/test_badf_aet_contract.py
+new file mode 100644
+index 0000000..29d1e70
+--- /dev/null
++++ b/tests/test_badf_aet_contract.py
+@@ -0,0 +1,83 @@
++"""BADF-AET-A (WP-2026-0122, #236): guards on the frozen Agentic Engineer Team contract.
++
++The contract is doctrine, and doctrine drifts silently (#216/#230: references pinned by
++filename only; #235: a section attributed to the wrong work package for days). So the
++freeze ships with content-anchor guards per the house REFERENCE_ANCHORS remedy: each
++load-bearing declaration is asserted by distinctive anchors compared against NON-EMPTY
++reference lists (the vacuity discriminator -- an assertion against an empty literal can
++never fail), red-observed before the document existed, and gut-tested by mutation.
++"""
++import unittest
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[1]
++DOC = ROOT / "docs" / "14-agentic-engineer-team.md"
++
++PLANES = ("deterministic control plane", "agentic execution plane",
++          "independent assurance plane", "learning plane")
++SEATS = ("coordinator", "builder controller", "independent reviewer",
++         "verifier", "release/runtime observer", "librarian")
++OUTCOME_CLASSES = ("COMMITTED", "PROVEN_ABSENT", "OUTCOME_UNKNOWN",
++                   "COMPENSATED", "MANUAL_REMEDIATION_REQUIRED")
++RUNGS = ("AET-B", "AET-C", "AET-D", "AET-E")
++INVARIANT_IDS = tuple(f"AET-I{n:02d}" for n in range(1, 14))
++
++
++class ContractAnchors(unittest.TestCase):
++    def setUp(self):
++        self.assertTrue(DOC.is_file(), f"{DOC} does not exist -- the contract is not frozen")
++        self.text = DOC.read_text(encoding="utf-8")
++        self.lower = self.text.lower()
++
++    def test_contract_has_substance(self):
++        self.assertGreater(len(self.text), 6000, "a contract this short froze nothing")
++
++    def test_four_planes_and_six_seats_declared(self):
++        self.assertTrue(PLANES and SEATS)  # positive control: the reference lists are non-empty
++        for p in PLANES:
++            self.assertIn(p, self.lower, p)
++        for s in SEATS:
++            self.assertIn(s, self.lower, s)
++
++    def test_non_expansion_invariant_chain_present(self):
++        self.assertIn("AET-I01", self.text)
++        self.assertIn("delegated_authority ⊆ work_package_authority ⊆ repository_policy", self.text)
++        self.assertIn("project_team_capability ⊆ BADF_authorized_capability", self.text)
++
++    def test_all_invariants_and_outcome_classes_present(self):
++        self.assertTrue(INVARIANT_IDS and OUTCOME_CLASSES)
++        for i in INVARIANT_IDS:
++            self.assertIn(i, self.text, i)
++        for oc in OUTCOME_CLASSES:
++            self.assertIn(oc, self.text, oc)
++
++    def test_authority_is_referenced_never_restated(self):
++        """A copy of the reserved-role list would fork the law (#216-class drift, on the
++        one document where drift grants authority). The contract points; it never holds."""
++        self.assertIn("badf/authority-matrix.json", self.text)
++        self.assertNotIn('"human_reserved_roles"', self.text,
++                         "the contract must not carry a copy of the reserved-role list")
++
++    def test_channel_bound_authorization_invariant_present(self):
++        """AET-I13, earned live: a coordinator's relay of an operator utterance is context
++        for another seat's own ask, never a substitute for it (#236 D3 correction)."""
++        self.assertIn("AET-I13", self.text)
++        self.assertIn("binds the commitments of the session it was made in", self.text)
++
++    def test_rungs_declared_and_gated(self):
++        self.assertTrue(RUNGS)
++        for r in RUNGS:
++            self.assertIn(r, self.text, r)
++        self.assertIn("P1-before-P3", self.text)
++        self.assertIn("grants no additional authority", self.lower)
++
++
++class NormativeRootReference(unittest.TestCase):
++    def test_agents_md_points_at_the_contract(self):
++        agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
++        self.assertIn("docs/14-agentic-engineer-team.md", agents,
++                      "an unreferenced normative doc is doctrine nobody loads")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0117/work-package.json b/work/WP-2026-0117/work-package.json
+index e9b93a8..14f17be 100644
+--- a/work/WP-2026-0117/work-package.json
++++ b/work/WP-2026-0117/work-package.json
+@@ -70,12 +70,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR (test assertions removed; no product surface touched)"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "wp/WP-2026-0117-reference-content-assertions",
+     "base_revision": "ab72962",
+-    "composition_verified": false
++    "composition_verified": true,
++    "landed_content_tree": "f1554393fd0e93e4f573dd44c1af1ee5a28d6945",
++    "landed_as": "a69b92201cb4b354a86d136845705af751f6c655"
+   },
+   "note": "Cluster of #216 + #230 + #210 as ONE WP: one defect class at three addresses. Deviation from one-issue-one-task is deliberate, follows BADF-QA's batching rule, and was endorsed by SARCHI as coordinator before work began -- three PRs would each re-sign badf/lockfile.json and conflict by construction. Ownership recorded for author!=reviewer: #216 is mine (fix existed unpushed since before this session; I flagged it twice then silently deprioritised it -- disclosed, not quietly cleared); #230 is BADF-QA's finding, ceded explicitly so they can review; #210 unclaimed, with BARCHI-2's courtesy yes on touching badf-build. The six were measured TWO independent ways -- empirical gutting and static read()-call analysis -- agreeing exactly, which carries information only because the instruments differ. test_obligations are declared at CONTRACT level, not unit: these assert frozen document content, so the accurate level is contract and BLD-I07/I08 C4's unit red-phase rule does not apply. Field names read from schemas/work-package.schema.json rather than copied from a sibling, after BARCHI-2 lost two composed-tree runs to invented test_obligations keys. Probes restore in a finally (BADF-QA), after an earlier killed probe left a reference gutted and contaminated its own baseline; that run was discarded and re-measured on a tree verified clean."
+ }

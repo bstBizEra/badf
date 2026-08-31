@@ -1,4 +1,4 @@
-python3 -m unittest tests.test_badf_aet_contract  # at base a69b922
+python3 -m unittest tests.test_badf_aet_contract  # at base a69b922, payload guard added (REV attack-2 fix)
 ........
 ----------------------------------------------------------------------
 Ran 8 tests in 0.001s

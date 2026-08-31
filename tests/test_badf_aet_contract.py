@@ -53,10 +53,17 @@ class ContractAnchors(unittest.TestCase):
 
     def test_authority_is_referenced_never_restated(self):
         """A copy of the reserved-role list would fork the law (#216-class drift, on the
-        one document where drift grants authority). The contract points; it never holds."""
+        one document where drift grants authority). The contract points; it never holds.
+        Asserted on the PAYLOAD, not a key spelling: BADF-REV evaded the original
+        quoted-key check with a prose restatement (#258 review, attack 2) -- the guard
+        must protect the law, not one spelling of its container."""
         self.assertIn("badf/authority-matrix.json", self.text)
         self.assertNotIn('"human_reserved_roles"', self.text,
                          "the contract must not carry a copy of the reserved-role list")
+        for role in ("human_sponsor", "security_authority", "release_authority"):
+            self.assertNotIn(role, self.text,
+                             f"the contract restates the reserved role {role}; a restated "
+                             f"list is a forked law however it is spelled")
 
     def test_channel_bound_authorization_invariant_present(self):
         """AET-I13, earned live: a coordinator's relay of an operator utterance is context
