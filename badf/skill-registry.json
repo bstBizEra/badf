@@ -318,8 +318,8 @@
       "version": "0.1.0",
       "risk_class": "C1",
       "allowed_tools": [],
-      "status": "DESIGNED",
-      "digest": "sha256:675c59d561fea4c86726877ed3f23a0a9238371ffe95a8cb378298904fe48277"
+      "status": "IMPLEMENTED",
+      "digest": "sha256:ee756f404903f223019bb0193b77067cec51def0a1b577c94acc534dbee4e6ff"
     }
   ]
 }

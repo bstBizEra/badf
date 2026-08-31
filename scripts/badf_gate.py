@@ -1768,6 +1768,137 @@ def check_g08_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[st
 EVIDENCE_RULES.update({t: check_g08_binding for t in ("independent-review", "integration-test", "contract-test", "composed-tree-test")})
 
 
+G09_TYPES = ("quality-validation", "security-validation", "performance-test", "resilience-test")
+
+
+def check_g09_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    """EVIDENCE_RULES entry for the four G09 types (badf-release-validation WP-VAL-B): a typed
+    `binding`, when present, must conform to schemas/<type>.schema.json AND honor the VAL
+    invariants that are checkable on a single evidence object. Generic objects (no binding)
+    stay admissible -- the typed form is additive, exactly as VER-B's G08 rung.
+
+    The walker enforces required/enum/pattern/additionalProperties/type only, so every
+    non-emptiness, ordering and cross-field constraint below is a named code control:
+
+      V1  candidate agreement       -- binding.candidate.source_revision == evidence.source_revision
+                                       (VAL-I01: one immutable candidate; a binding naming a different
+                                       revision than its own envelope is mixed-candidate evidence)
+      V2  observation provenance    -- producer.type != 'agent' for a typed observation (VAL-I04/I05)
+      V3  oracle outside the agent  -- oracle.evaluated_by.type != 'agent' (VAL-I04: an agent may
+                                       attempt a journey; it may not adjudicate its own success)
+      V4  runtime approved          -- outcome PASS requires runtime.approved true (VAL-I04:
+                                       no validation credit without an APPROVED observed execution)
+      V5  non-coverage mandatory    -- binding.non_coverage non-empty (VAL-I15; minItems is inert)
+      V6  deviation declared        -- environment NON_PRODUCTION requires non-empty
+                                       material_deviations (VAL-I08)
+      V7  flake policy              -- failed_observations_retained must be true (VAL-I16:
+                                       rerun-until-green cannot erase a failed observation)
+      V8  blockers preserved        -- outcome PASS cannot coexist with an OPEN finding of
+                                       blocking severity (VAL-I14), any class
+      per-class:
+      V9  security obligations      -- security_obligations non-empty (an empty obligation set
+                                       is a routing decision, not a validation) and residual_risk
+                                       acceptance is structurally NOT_ACCEPTED/REFERRED (VAL-I09;
+                                       the enum bakes it, mirroring SEC-I12)
+      V10 measurement != PASS       -- performance: measurements non-empty; every slo.bound_at
+                                       precedes runtime.started_at (VAL-I06/I10: a threshold bound
+                                       after the run began was fitted to the result)
+      V11 recovery observed         -- resilience: steady_state.observed_before true; abort_conditions
+                                       non-empty and each executable; outcome PASS requires
+                                       recovery.observed true, non-empty integrity_checks, none FAIL
+                                       (VAL-I11/I12: survival during injection is not recovery)
+      V12 quality oracle named      -- quality: quality_dimensions non-empty; a dimension with
+                                       result PASS names its oracle_locator (VAL-I04 applied to the
+                                       class where 'it looked successful' is the failure mode)
+
+    Class substitution (VAL-I13) at the dossier level and cross-class candidate identity are
+    WP-VAL-C's dossier controls; here each binding is internally sound. additionalProperties:false
+    on every binding already refuses one class's payload in another's slot structurally."""
+    if "binding" not in evidence:
+        return
+    kind = evidence["evidence_type"]
+    check_schema(kind, evidence)
+    b = evidence["binding"]
+    label = f"evidence {evidence.get('id', kind)}"
+    # validate_evidence dispatches EVIDENCE_RULES only on outcome PASS, so `passing` is
+    # redundant against today's caller. It is kept deliberately: the controls that gate on it
+    # (V4, V8, V11-recovery) are the ones whose refusal is only correct for a PASS claim, and
+    # an honestly-recorded failure must not be refused if a future caller routes one here.
+    # Defensive, not vestigial -- removing it would make the rule caller-dependent.
+    passing = evidence["outcome"] == "PASS"
+
+    if b["candidate"]["source_revision"] != evidence["source_revision"]:  # V1
+        raise ValidationError(f"{label}: binding.candidate.source_revision {b['candidate']['source_revision']!r} does not equal the evidence source_revision {evidence['source_revision']!r}; mixed-candidate evidence is refused (VAL-I01)")
+    if evidence["producer"]["type"] == "agent":  # V2
+        raise ValidationError(f"{label}: a typed {kind} observation carries producer.type 'agent'; a claimed result is not an observation (VAL-I04/VAL-I05)")
+    if b["oracle"]["evaluated_by"]["type"] == "agent":  # V3
+        raise ValidationError(f"{label}: the oracle is evaluated by an agent; the oracle sits outside the agent under validation (VAL-I04)")
+    if not b["oracle"]["locator"].strip():  # V3b -- schema minLength is inert in this walker
+        raise ValidationError(f"{label}: oracle.locator is empty; an oracle that names nothing cannot be consulted, and an unnameable oracle is not outside the agent (VAL-I04)")
+    if passing and b["runtime"]["approved"] is not True:  # V4
+        raise ValidationError(f"{label}: outcome PASS on an unapproved runtime; no validation credit without approved observed execution (VAL-I04)")
+    if not b["non_coverage"]:  # V5
+        raise ValidationError(f"{label}: non_coverage is empty; every validation class names material surfaces it did not establish (VAL-I15)")
+    env = b["environment"]
+    if env["production_equivalence"] == "NON_PRODUCTION" and not env.get("material_deviations"):  # V6
+        raise ValidationError(f"{label}: a NON_PRODUCTION environment declares no material_deviations; staging PASS is not production proven (VAL-I08)")
+    if b["flake_policy"]["failed_observations_retained"] is not True:  # V7
+        raise ValidationError(f"{label}: flake_policy discards failed observations; rerun-until-green cannot erase a failed validation observation (VAL-I16)")
+    open_blocking = [f["finding_id"] for f in b["findings"] if f["status"] == "OPEN" and f["severity"] in ("BLOCKER", "CRITICAL", "MAJOR")]
+    if passing and open_blocking:  # V8
+        raise ValidationError(f"{label}: outcome PASS coexists with OPEN blocking finding(s) {', '.join(open_blocking)}; normalization cannot erase blocking evidence (VAL-I14)")
+
+    if kind == "security-validation":  # V9
+        if not b["security_obligations"]:
+            raise ValidationError(f"{label}: security_obligations is empty; an empty obligation set is a routing decision, not a security validation (VAL-I02)")
+        # residual_risk acceptance.state is enum-bound to NOT_ACCEPTED/REFERRED_TO_SECURITY_AUTHORITY
+        # by the schema (walker enforces enums): VAL-I09 is structural, mirroring SEC-I12.
+        return
+    if kind == "performance-test":  # V10
+        if not b["measurements"]:
+            raise ValidationError(f"{label}: measurements is empty; a performance-test with nothing measured cannot render an outcome (VAL-I10)")
+        # `format: date-time` is NOT enforced by check_schema, so a validly-typed timestamp
+        # in another ISO form ('+00:00' vs 'Z', differing precision) would compare
+        # lexicographically and render a silently wrong ordering. parse_time normalises to UTC
+        # and refuses malformed input, so the VAL-I06 verdict rests on time, not on spelling.
+        started = parse_time(b["runtime"]["started_at"], f"{label}: binding.runtime.started_at")
+        for i, m in enumerate(b["measurements"]):
+            if parse_time(m["slo"]["bound_at"], f"{label}: measurements[{i}].slo.bound_at") > started:
+                raise ValidationError(f"{label}: measurements[{i}].slo.bound_at {m['slo']['bound_at']} is after the run began {started}; thresholds pre-exist outcomes (VAL-I06), a bound fitted to the result is not conformance (VAL-I10)")
+        return
+    if kind == "resilience-test":  # V11
+        if b["steady_state"]["observed_before"] is not True:
+            raise ValidationError(f"{label}: steady state was not observed before injection; resilience is hypothesis-driven (VAL-I11)")
+        aborts = b["fault"]["abort_conditions"]
+        if not aborts:
+            raise ValidationError(f"{label}: fault carries no abort_conditions; injection without an executable abort is unbounded blast radius (VAL-I11)")
+        dead = [a["condition"] for a in aborts if a["executable"] is not True]
+        if dead:
+            raise ValidationError(f"{label}: abort condition(s) not executable: {', '.join(dead)}; a non-executable abort is a hope, not a bound (VAL-I11)")
+        if passing:
+            rec = b["recovery"]
+            if rec["observed"] is not True:
+                raise ValidationError(f"{label}: outcome PASS without observed recovery; survival during injection is not recovery (VAL-I12)")
+            checks = rec["integrity_checks"]
+            if not checks:
+                raise ValidationError(f"{label}: outcome PASS with no integrity checks; recovery without verified integrity is not established (VAL-I12)")
+            failed = [c["check"] for c in checks if c["result"] == "FAIL"]
+            if failed:
+                raise ValidationError(f"{label}: outcome PASS with failed integrity check(s) {', '.join(failed)} (VAL-I12)")
+        return
+    if kind == "quality-validation":  # V12
+        dims = b["quality_dimensions"]
+        if not dims:
+            raise ValidationError(f"{label}: quality_dimensions is empty; a quality validation that validated nothing cannot render an outcome (VAL-I02)")
+        unoracled = [d["dimension"] for d in dims if d["result"] == "PASS" and not d.get("oracle_locator")]
+        if unoracled:
+            raise ValidationError(f"{label}: dimension(s) {', '.join(unoracled)} render PASS without an oracle_locator; 'it looked successful' is not an oracle (VAL-I04)")
+
+
+EVIDENCE_RULES.update({t: check_g09_binding for t in G09_TYPES})
+
+
+
 G08_OBSERVATIONS = ("integration-test", "contract-test", "composed-tree-test")
 G08_QUORUM = {"C2": 2, "C3": 3}
 G08_REQUIRED_LENSES = {"C2": {"correctness", "quality/test"}, "C3": {"correctness", "quality/test", "data/integration"}}

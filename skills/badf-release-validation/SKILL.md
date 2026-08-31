@@ -9,7 +9,7 @@ description: >-
   validation evidence — it does NOT establish UAT, operational readiness, or
   release authority. G09 is quality_authority-owned; G10 (release readiness /
   go-no-go) stays release_authority-owned and untouched.
-status: DESIGNED
+status: IMPLEMENTED
 gate: G09
 owner_role: quality_authority
 allowed_tools: []

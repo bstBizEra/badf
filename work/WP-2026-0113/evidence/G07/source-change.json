@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0113-G07-source-change",
+  "work_package_id": "WP-2026-0113",
+  "gate": "G07",
+  "claim": "the change WP-2026-0113 makes to this repository, outside its own directory and the lockfile",
+  "evidence_type": "source-change",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-08-31T02:27:03Z",
+  "completed_at": "2026-08-31T02:27:03Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0113/evidence/G07/source-change.diff",
+  "digest": "sha256:277784eb10e8fd0c108d3c0a66b8e014a7366acd953b650609137f55940987fc",
+  "binding": {
+    "base_sha": "1c1827c0e99ea86d9ca1119b1a92d90d83ba1628",
+    "head_sha": "569af856c46f3196709ac4944e39c1292369f0f1",
+    "content_tree": "6027280fc556ac90492cf5a3524d2030b2e98c55",
+    "changed_paths": [
+      "badf/demands/BADF-DEM-0100.json",
+      "badf/skill-registry.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "schemas/performance-test.schema.json",
+      "schemas/quality-validation.schema.json",
+      "schemas/resilience-test.schema.json",
+      "schemas/security-validation.schema.json",
+      "scripts/badf_gate.py",
+      "skills/badf-release-validation/SKILL.md",
+      "tests/test_badf_release_validation_binding.py",
+      "tests/test_badf_release_validation_contract.py",
+      "work/WP-2026-0112/work-package.json"
+    ],
+    "expected_surfaces": {
+      "declared": true,
+      "files": [
+        "schemas/quality-validation.schema.json",
+        "schemas/security-validation.schema.json",
+        "schemas/performance-test.schema.json",
+        "schemas/resilience-test.schema.json",
+        "scripts/badf_gate.py",
+        "tests/test_badf_release_validation_binding.py",
+        "badf/skill-registry.json",
+        "badf/demands/BADF-DEM-0100.json",
+        "docs/governance/GITHUB_CONTROL_PLANE.md",
+        "skills/badf-release-validation/SKILL.md",
+        "tests/test_badf_release_validation_contract.py",
+        "work/WP-2026-0112/work-package.json"
+      ]
+    },
+    "unexpected_paths": [],
+    "change_digest": "sha256:277784eb10e8fd0c108d3c0a66b8e014a7366acd953b650609137f55940987fc"
+  }
+}

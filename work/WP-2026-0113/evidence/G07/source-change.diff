@@ -1,0 +1,2701 @@
+diff --git a/badf/demands/BADF-DEM-0100.json b/badf/demands/BADF-DEM-0100.json
+new file mode 100644
+index 0000000..828b254
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0100.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0100",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 233,
++    "url": "https://github.com/bstBizEra/badf/issues/233",
++    "exported_at": "2026-08-30T23:44:53Z",
++    "body_digest": "sha256:a740ecc8ececfb65894765f549e0424ac76f704836632bc872a73cd66694448d"
++  },
++  "title": "GOV-0103: type the four G09 evidence contracts \u2014 quality-validation \u00b7 security-validation \u00b7 performance-test \u00b7 resilience-test (WP-VAL-B, badf-release-validation DESIGNED \u2192 IMPLEMENTED)",
++  "problem": "\ud83e\udde0 **ARCHI (BARCHI-1)** \u2014 WP-VAL-B, the second rung of the `badf-release-validation` ladder frozen at [#209](https://github.com/bstBizEra/badf/issues/209) and landed as `f5a575d`.\n\n**Ids claimed here, publicly, so no seat has to guess:** `WP-2026-0113` / `BADF-DEM-0100` / `GOV-0103`. Swept across main, every remote head, every open PR's file list and all issues; `WP-2026-0112` / `BADF-DEM-0099` are BARCHI-2's (#229, local-only branch, confirmed by asking \u2014 the case [#227](https://github.com/bstBizEra/badf/issues/227) exists for).\n\n## Problem\n\nG09 names four evidence types \u2014 `quality-validation`, `security-validation`, `performance-test`, `resilience-test` \u2014 and **not one of them has a schema.** `schemas/` has typed contracts for the four G07 types and the four G08 types; the G09 four are untyped, so a G09 dossier today can carry any object shape and the gate cannot refuse a validation claim on its content.\n\nWP-VAL-A froze what those claims *mean* (VAL-I01\u2026I20). It deliberately shipped no enforcement: \"the contract is frozen text plus a contract test \u2014 nothing at this rung proves a validation class can actually be routed, observed or refused.\" This is the rung that closes that gap.\n\n## Approach \u2014 mirror G08's typed rung, additively\n\n`check_g08_binding` (`scripts/badf_gate.py:1712`) is the proven shape and WP-VAL-B reuses it rather than inventing one: a no-op when `binding` is absent, `check_schema` when present, then per-type semantic checks that read **the artifact** \u2014 because \"a binding is not evidence of itself\". A new `check_g09_binding` registered over the four G09 types via `EVIDENCE_RULES.update(...)`, exactly as VER-B did at `:1768`.\n\nEach class enforces the invariant that class exists to defend:\n\n| Type | Control | Invariant |\n| :--- | :--- | :--- |\n| `quality-validation` | the oracle is named and is not the validating agent; non-coverage present | VAL-I04, VAL-I15 |\n| `security-validation` | the validator cannot carry acceptance of its own finding; a blocking finding cannot coexist with PASS | VAL-I09, VAL-I14 |\n| `performance-test` | a metric with no bound SLO/budget cannot render PASS; thresholds bound before interpretation | VAL-I10, VAL-I06 |\n| `resilience-test` | steady state + abort conditions declared; PASS requires observed recovery and integrity, not survival | VAL-I11, VAL-I12 |\n| all four | one candidate identity across classes; environment provenance; no class substitution | VAL-I01, VAL-I07, VAL-I13 |\n\n## Acceptance criteria\n\n1. Four schemas under `schemas/` (`quality-validation`, `security-validation`, `performance-test`, `resilience-test`), each `schema_version` `1.0.0`, modelled on the G08 set.\n2. `check_g09_binding` in the **canonical** `badf_gate.py`, registered over the four G09 types. No `scripts/badf_release_validation.py` \u2014 **VAL-I20 holds at every rung**, not just at A.\n3. **Strictly additive.** A G09 evidence object with no `binding` stays admissible. Nothing new in any existing schema's `required`; no tightening of `additionalProperties`; `badf_gate.py repo` green across the whole ledger \u2014 including the composed world, where `validate_repo` checks every record \u2014 **before** any new test runs.\n4. Registry `badf-release-validation: DESIGNED \u2192 IMPLEMENTED`, digest re-pinned to `SKILL.md` if and only if the file changes.\n5. No `lifecycle.json` change. G09 already names these four types; this rung types them, it does not add a fifth or move ownership. G09 stays `quality_authority`; G10 stays `release_authority`.\n\n## Test list\n\n`tests/test_badf_release_validation_binding.py`:\n\n1. `test_evidence_without_binding_stays_admissible` \u2014 the additive guarantee, per type.\n2. `test_quality_validation_refuses_agent_as_its_own_oracle` (VAL-I04)\n3. `test_quality_validation_requires_declared_noncoverage` (VAL-I15)\n4. `test_security_validation_refuses_self_accepted_risk` (VAL-I09)\n5. `test_security_validation_refuses_pass_with_open_blocking_finding` (VAL-I14)\n6. `test_performance_refuses_pass_without_a_bound_slo` (VAL-I10)\n7. `test_performance_refuses_threshold_bound_after_the_result` (VAL-I06)\n8. `test_resilience_refuses_pass_without_observed_recovery` (VAL-I12)\n9. `test_resilience_requires_steady_state_and_abort_conditions` (VAL-I11)\n10. `test_mixed_candidate_evidence_is_refused` (VAL-I01)\n11. `test_one_result_cannot_satisfy_two_classes` (VAL-I13)\n12. `test_runtime_result_binds_environment_provenance` (VAL-I07)\n13. `test_registry_implemented_and_digest_bound`\n14. `test_existing_g07_and_g08_evidence_is_untouched` \u2014 the additive-path proof, run against real landed records.\n\nFailing-first, then mutation: each control neutered individually must break its own test and no other.\n\n## Declared in advance\n\n- **The schemas will be exercised by fixtures I author.** \"The control fires\" and \"the control fires on anything real\" are separable claims and only the first is within an author's reach \u2014 the same non-coverage VER-D had to declare. There is no real G09 dossier in this repo to test against, and inventing one would not change that.\n- The successor demand `BADF-DEM-0100` will land `AUTHORIZED` with no learning, inheriting the [#220](https://github.com/bstBizEra/badf/issues/220) unreachable-guard pattern. Declared, not tidied.\n\n## Review\n\n**Shared-surface \u2014 not ladder-internal.** Touches `badf_gate.py` and `schemas/`, so it goes to **BADF-QA** (adversarial battery: mutation kills per required field, additive-path proof, tamper probes on the typed bindings, fixture-builder reuse so probes reach the control instead of dying in `check_schema`) and **BADF-REV** (verdict on the exact rebased head, CI green). I am the author and will not self-classify the classification \u2014 verify it by diff.\n\nVersion tier: **minor** (new capability surface, backward-compatible).\n\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-30T23:44:53Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-VAL-B, the second rung of the badf-release-validation ladder frozen at #209 / WP-2026-0107. Four typed G09 evidence schemas (quality-validation, security-validation, performance-test, resilience-test) plus an additive check_g09_binding in the canonical gate, mirroring VER-B's G08 rung. Strictly additive: binding-less G09 objects stay admissible. No scripts/badf_release_validation.py (VAL-I20 holds at every rung), no lifecycle change. Shared-surface -> BADF-QA + BADF-REV. Lands AUTHORIZED with no learning declared, inheriting #220's unreachable-guard pattern -- declared, not tidied."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index c054de7..0f505c6 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -318,8 +318,8 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "DESIGNED",
+-      "digest": "sha256:675c59d561fea4c86726877ed3f23a0a9238371ffe95a8cb378298904fe48277"
++      "status": "IMPLEMENTED",
++      "digest": "sha256:ee756f404903f223019bb0193b77067cec51def0a1b577c94acc534dbee4e6ff"
+     }
+   ]
+ }
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 47c9131..1ab6030 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1667,6 +1667,60 @@ hit**: applied to the `badf-engineering-verification` modules it correctly found
+ already assert counts before iterating. A detection rule that has only ever fired is as suspect as a
+ guard that never does.
+ 
++## badf-release-validation → IMPLEMENTED — the four G09 evidence contracts, typed (`BADF-WP-0113` / WP-VAL-B, Issue #233 / GOV-0103)
++
++G09 named four evidence types and none of them had a schema, so a G09 dossier could carry any object
++shape and the gate could not refuse a validation claim on its content. WP-VAL-A froze what those claims
++**mean** (VAL-I01…VAL-I20) and shipped no enforcement, saying so in its own non-coverage: *"the contract
++is frozen text plus a contract test — nothing at this rung proves a validation class can actually be
++routed, observed or refused."* This rung closes that gap.
++
++Four typed schemas specialize evidence for `quality-validation`, `security-validation`,
++`performance-test` and `resilience-test` with a **closed** `binding`, and `check_g09_binding` — registered
++over exactly those four types in `EVIDENCE_RULES`, mirroring VER-B's `check_g08_binding` — enforces the
++invariants decidable on a single evidence object: one immutable candidate (**VAL-I01**); no agent as
++producer, and no agent adjudicating its own success (**VAL-I04/I05** — an agent may *attempt* a journey,
++the oracle sits outside it); no PASS on an unapproved runtime (**VAL-I04**); mandatory non-coverage
++(**VAL-I15**); a non-production environment that declares its material deviations, so `staging PASS ≠
++production proven` becomes recorded rather than forgotten (**VAL-I08**); a flake policy that retains
++failed observations (**VAL-I16**); blocking findings preserved against a PASS (**VAL-I14**); thresholds
++bound **before** the run began, because a bound fitted to the result is not conformance (**VAL-I06/I10**);
++and resilience PASS only on observed recovery with verified integrity, never mere survival during
++injection (**VAL-I11/I12**). Two refusals are structural rather than code: `residual_risk.acceptance.state`
++has no bare `ACCEPTED` member, so a validator accepting its own risk is **unrepresentable** (**VAL-I09**,
++the SEC-I12 pattern); and one class's payload cannot fill another's slot — measured as **two** structural floors, not one:
++a wholesale swap is refused by `required` (the walker checks it *before* `additionalProperties`, so the
++foreign keys are never reached), while `additionalProperties: false` is what refuses a single foreign key
++smuggled into an otherwise-complete binding. Both are the floor under **VAL-I13**; an earlier draft named
++only the second and was wrong about which one fires.
++
++**Strictly additive.** A G09 evidence object with no `binding` passes through for all four types, exactly
++as WP-2026-0010's historical dossier survived the G08 rung. Nothing was added to any existing schema's
++`required`, no `additionalProperties` was tightened, and `repo` is green across the whole ledger.
++**No `scripts/badf_release_validation.py`** — VAL-I20 holds at every rung, not only at A — and no
++`lifecycle.json` change: G09 already named these four types; this rung types them and moves no ownership.
++G09 stays `quality_authority`; G10 stays `release_authority`. The frozen contract is untouched: SKILL.md's
++only edit is the frontmatter `status:` field, which had to move because the registry did — the skill file
++and the registry must not disagree about the rung. That SKILL.md carries a hardcoded status at all is a
++defect of its own class, the one `badf-engineering-verification`'s SKILL.md forbids in writing; it is filed
++rather than fixed here.
++
++**Nineteen control endpoints, each demonstrated load-bearing by mutation** (neuter the `raise`, the suite
++notices; 19/19 killed, no survivors). The first mutation pass, run in a throwaway worktree *before this
++branch existed*, found one survivor: VAL-I12's "PASS with an **empty** `integrity_checks` list" had no
++test — `observed: false` and a `FAIL` check were covered, the empty array was not, and it is structurally
++valid because the walker ignores `minItems`. That control could have been deleted under a green suite.
++The missing test was added before the branch was cut. **A green suite is not evidence that a control is
++load-bearing**; only mutation is.
++
++**Declared non-coverage, carried into review rather than left to be found:** the fixtures are
++author-written, so *"the control fires"* and *"the control fires on anything real"* are separable claims
++and only the first is within an author's reach — the same shape as VER-D's representative-shadow
++non-coverage. There is no real G09 dossier in this repo to test against. BADF-QA attacks the second with
++fixtures built from landed evidence and near-miss mutations an author would not write; BADF-REV checks
++that no refusal is unreachable by construction. Dossier-level controls — cross-class candidate identity
++and class substitution beyond the structural floor — are **WP-VAL-C**.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/schemas/performance-test.schema.json b/schemas/performance-test.schema.json
+new file mode 100644
+index 0000000..dcd70b0
+--- /dev/null
++++ b/schemas/performance-test.schema.json
+@@ -0,0 +1,506 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "$id": "https://badf.bizera.local/schemas/performance-test.schema.json",
++  "title": "BADF G09 evidence: performance-test (typed binding, WP-VAL-B / BADF-WP-0113)",
++  "type": "object",
++  "required": [
++    "schema_version",
++    "id",
++    "work_package_id",
++    "gate",
++    "claim",
++    "evidence_type",
++    "producer",
++    "source_revision",
++    "target",
++    "toolchain",
++    "operation",
++    "started_at",
++    "completed_at",
++    "outcome",
++    "artifact",
++    "digest",
++    "binding"
++  ],
++  "properties": {
++    "schema_version": {
++      "const": "1.0.0"
++    },
++    "id": {
++      "type": "string",
++      "pattern": "^EVD-[A-Za-z0-9._-]+$"
++    },
++    "work_package_id": {
++      "type": "string",
++      "pattern": "^WP-[A-Za-z0-9._-]+$"
++    },
++    "gate": {
++      "type": "string",
++      "pattern": "^G(0[0-9]|1[0-4])$"
++    },
++    "claim": {
++      "type": "string",
++      "minLength": 1
++    },
++    "evidence_type": {
++      "enum": [
++        "performance-test"
++      ]
++    },
++    "producer": {
++      "type": "object",
++      "required": [
++        "id",
++        "type"
++      ],
++      "properties": {
++        "id": {
++          "type": "string",
++          "minLength": 1
++        },
++        "type": {
++          "enum": [
++            "human",
++            "agent",
++            "service",
++            "controller"
++          ]
++        }
++      }
++    },
++    "source_revision": {
++      "type": "string",
++      "minLength": 1
++    },
++    "target": {
++      "type": "string",
++      "minLength": 1
++    },
++    "toolchain": {
++      "type": "object",
++      "required": [
++        "name",
++        "version"
++      ]
++    },
++    "operation": {
++      "type": "string",
++      "minLength": 1
++    },
++    "started_at": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "completed_at": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "outcome": {
++      "enum": [
++        "PASS",
++        "FAIL",
++        "BLOCKED",
++        "NOT_RUN",
++        "NOT_APPLICABLE"
++      ]
++    },
++    "artifact": {
++      "type": "string",
++      "minLength": 1
++    },
++    "digest": {
++      "type": "string",
++      "pattern": "^sha256:[a-f0-9]{64}$"
++    },
++    "sanitization": {
++      "type": "string"
++    },
++    "binding": {
++      "type": "object",
++      "required": [
++        "candidate",
++        "risk_hypothesis",
++        "method",
++        "oracle",
++        "runtime",
++        "environment",
++        "findings",
++        "non_coverage",
++        "flake_policy",
++        "workload",
++        "measurements"
++      ],
++      "properties": {
++        "candidate": {
++          "type": "object",
++          "required": [
++            "source_revision",
++            "content_tree",
++            "environment_id",
++            "policy_epoch"
++          ],
++          "properties": {
++            "source_revision": {
++              "type": "string",
++              "minLength": 1
++            },
++            "content_tree": {
++              "type": "string",
++              "minLength": 1
++            },
++            "artifact_digests": {
++              "type": "array",
++              "items": {
++                "type": "string",
++                "pattern": "^sha256:[a-f0-9]{64}$"
++              }
++            },
++            "environment_id": {
++              "type": "string",
++              "minLength": 1
++            },
++            "policy_epoch": {
++              "type": "string",
++              "minLength": 1
++            }
++          },
++          "additionalProperties": false
++        },
++        "risk_hypothesis": {
++          "type": "string",
++          "minLength": 1
++        },
++        "method": {
++          "type": "string",
++          "minLength": 1
++        },
++        "oracle": {
++          "type": "object",
++          "required": [
++            "kind",
++            "locator",
++            "evaluated_by"
++          ],
++          "properties": {
++            "kind": {
++              "enum": [
++                "DETERMINISTIC_CHECK",
++                "SYSTEM_OF_RECORD",
++                "EXTERNAL_SERVICE",
++                "HUMAN_ADJUDICATION"
++              ]
++            },
++            "locator": {
++              "type": "string",
++              "minLength": 1
++            },
++            "evaluated_by": {
++              "type": "object",
++              "required": [
++                "id",
++                "type"
++              ],
++              "properties": {
++                "id": {
++                  "type": "string",
++                  "minLength": 1
++                },
++                "type": {
++                  "enum": [
++                    "human",
++                    "agent",
++                    "service",
++                    "controller"
++                  ]
++                }
++              },
++              "additionalProperties": false
++            }
++          },
++          "additionalProperties": false
++        },
++        "runtime": {
++          "type": "object",
++          "required": [
++            "runtime",
++            "approved",
++            "started_at",
++            "finished_at",
++            "output_digest"
++          ],
++          "properties": {
++            "runtime": {
++              "type": "string",
++              "minLength": 1
++            },
++            "command": {
++              "type": "string",
++              "minLength": 1
++            },
++            "approved": {
++              "type": "boolean"
++            },
++            "started_at": {
++              "type": "string",
++              "format": "date-time"
++            },
++            "finished_at": {
++              "type": "string",
++              "format": "date-time"
++            },
++            "exit_code": {
++              "type": "integer"
++            },
++            "output_digest": {
++              "type": "string",
++              "pattern": "^sha256:[a-f0-9]{64}$"
++            }
++          },
++          "additionalProperties": false
++        },
++        "environment": {
++          "type": "object",
++          "required": [
++            "identity",
++            "configuration",
++            "toolchain",
++            "observed_at",
++            "production_equivalence"
++          ],
++          "properties": {
++            "identity": {
++              "type": "string",
++              "minLength": 1
++            },
++            "configuration": {
++              "type": "object"
++            },
++            "fixtures": {
++              "type": "object"
++            },
++            "toolchain": {
++              "type": "object",
++              "required": [
++                "name",
++                "version"
++              ],
++              "properties": {
++                "name": {
++                  "type": "string"
++                },
++                "version": {
++                  "type": "string"
++                }
++              }
++            },
++            "observed_at": {
++              "type": "string",
++              "format": "date-time"
++            },
++            "production_equivalence": {
++              "enum": [
++                "PRODUCTION",
++                "PRODUCTION_LIKE",
++                "NON_PRODUCTION"
++              ]
++            },
++            "material_deviations": {
++              "type": "array",
++              "items": {
++                "type": "object",
++                "required": [
++                  "surface",
++                  "deviation"
++                ],
++                "properties": {
++                  "surface": {
++                    "type": "string",
++                    "minLength": 1
++                  },
++                  "deviation": {
++                    "type": "string",
++                    "minLength": 1
++                  }
++                },
++                "additionalProperties": false
++              }
++            }
++          },
++          "additionalProperties": false
++        },
++        "findings": {
++          "type": "array",
++          "items": {
++            "type": "object",
++            "required": [
++              "finding_id",
++              "severity",
++              "status",
++              "summary"
++            ],
++            "properties": {
++              "finding_id": {
++                "type": "string",
++                "minLength": 1
++              },
++              "severity": {
++                "enum": [
++                  "BLOCKER",
++                  "CRITICAL",
++                  "MAJOR",
++                  "MINOR",
++                  "INFO"
++                ]
++              },
++              "status": {
++                "enum": [
++                  "OPEN",
++                  "RESOLVED",
++                  "DEFERRED_WITH_REASON"
++                ]
++              },
++              "summary": {
++                "type": "string",
++                "minLength": 1
++              },
++              "disposition": {
++                "type": "string"
++              }
++            },
++            "additionalProperties": false
++          }
++        },
++        "non_coverage": {
++          "type": "array",
++          "items": {
++            "type": "object",
++            "required": [
++              "surface",
++              "reason"
++            ],
++            "properties": {
++              "surface": {
++                "type": "string",
++                "minLength": 1
++              },
++              "reason": {
++                "type": "string",
++                "minLength": 1
++              },
++              "impact": {
++                "type": "string"
++              },
++              "owner": {
++                "type": "string"
++              }
++            },
++            "additionalProperties": false
++          }
++        },
++        "flake_policy": {
++          "type": "object",
++          "required": [
++            "reruns_permitted",
++            "failed_observations_retained"
++          ],
++          "properties": {
++            "reruns_permitted": {
++              "type": "integer"
++            },
++            "failed_observations_retained": {
++              "type": "boolean"
++            },
++            "quarantine_reason": {
++              "type": "string"
++            }
++          },
++          "additionalProperties": false
++        },
++        "workload": {
++          "type": "object",
++          "required": [
++            "family",
++            "profile"
++          ],
++          "properties": {
++            "family": {
++              "enum": [
++                "SMOKE",
++                "AVERAGE",
++                "STRESS",
++                "SPIKE",
++                "SOAK",
++                "BREAKPOINT"
++              ]
++            },
++            "profile": {
++              "type": "string",
++              "minLength": 1
++            },
++            "generator_health": {
++              "type": "string"
++            }
++          },
++          "additionalProperties": false
++        },
++        "measurements": {
++          "type": "array",
++          "minItems": 1,
++          "items": {
++            "type": "object",
++            "required": [
++              "metric",
++              "observed",
++              "unit",
++              "slo"
++            ],
++            "properties": {
++              "metric": {
++                "type": "string",
++                "minLength": 1
++              },
++              "observed": {
++                "type": "number"
++              },
++              "unit": {
++                "type": "string",
++                "minLength": 1
++              },
++              "slo": {
++                "type": "object",
++                "required": [
++                  "bound",
++                  "comparator",
++                  "bound_at"
++                ],
++                "properties": {
++                  "bound": {
++                    "type": "number"
++                  },
++                  "comparator": {
++                    "enum": [
++                      "LTE",
++                      "LT",
++                      "GTE",
++                      "GT"
++                    ]
++                  },
++                  "bound_at": {
++                    "type": "string",
++                    "format": "date-time"
++                  },
++                  "source": {
++                    "type": "string"
++                  }
++                },
++                "additionalProperties": false
++              }
++            },
++            "additionalProperties": false
++          }
++        }
++      },
++      "additionalProperties": false
++    }
++  }
++}
+diff --git a/schemas/quality-validation.schema.json b/schemas/quality-validation.schema.json
+new file mode 100644
+index 0000000..3c7f4f7
+--- /dev/null
++++ b/schemas/quality-validation.schema.json
+@@ -0,0 +1,459 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "$id": "https://badf.bizera.local/schemas/quality-validation.schema.json",
++  "title": "BADF G09 evidence: quality-validation (typed binding, WP-VAL-B / BADF-WP-0113)",
++  "type": "object",
++  "required": [
++    "schema_version",
++    "id",
++    "work_package_id",
++    "gate",
++    "claim",
++    "evidence_type",
++    "producer",
++    "source_revision",
++    "target",
++    "toolchain",
++    "operation",
++    "started_at",
++    "completed_at",
++    "outcome",
++    "artifact",
++    "digest",
++    "binding"
++  ],
++  "properties": {
++    "schema_version": {
++      "const": "1.0.0"
++    },
++    "id": {
++      "type": "string",
++      "pattern": "^EVD-[A-Za-z0-9._-]+$"
++    },
++    "work_package_id": {
++      "type": "string",
++      "pattern": "^WP-[A-Za-z0-9._-]+$"
++    },
++    "gate": {
++      "type": "string",
++      "pattern": "^G(0[0-9]|1[0-4])$"
++    },
++    "claim": {
++      "type": "string",
++      "minLength": 1
++    },
++    "evidence_type": {
++      "enum": [
++        "quality-validation"
++      ]
++    },
++    "producer": {
++      "type": "object",
++      "required": [
++        "id",
++        "type"
++      ],
++      "properties": {
++        "id": {
++          "type": "string",
++          "minLength": 1
++        },
++        "type": {
++          "enum": [
++            "human",
++            "agent",
++            "service",
++            "controller"
++          ]
++        }
++      }
++    },
++    "source_revision": {
++      "type": "string",
++      "minLength": 1
++    },
++    "target": {
++      "type": "string",
++      "minLength": 1
++    },
++    "toolchain": {
++      "type": "object",
++      "required": [
++        "name",
++        "version"
++      ]
++    },
++    "operation": {
++      "type": "string",
++      "minLength": 1
++    },
++    "started_at": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "completed_at": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "outcome": {
++      "enum": [
++        "PASS",
++        "FAIL",
++        "BLOCKED",
++        "NOT_RUN",
++        "NOT_APPLICABLE"
++      ]
++    },
++    "artifact": {
++      "type": "string",
++      "minLength": 1
++    },
++    "digest": {
++      "type": "string",
++      "pattern": "^sha256:[a-f0-9]{64}$"
++    },
++    "sanitization": {
++      "type": "string"
++    },
++    "binding": {
++      "type": "object",
++      "required": [
++        "candidate",
++        "risk_hypothesis",
++        "method",
++        "oracle",
++        "runtime",
++        "environment",
++        "findings",
++        "non_coverage",
++        "flake_policy",
++        "quality_dimensions"
++      ],
++      "properties": {
++        "candidate": {
++          "type": "object",
++          "required": [
++            "source_revision",
++            "content_tree",
++            "environment_id",
++            "policy_epoch"
++          ],
++          "properties": {
++            "source_revision": {
++              "type": "string",
++              "minLength": 1
++            },
++            "content_tree": {
++              "type": "string",
++              "minLength": 1
++            },
++            "artifact_digests": {
++              "type": "array",
++              "items": {
++                "type": "string",
++                "pattern": "^sha256:[a-f0-9]{64}$"
++              }
++            },
++            "environment_id": {
++              "type": "string",
++              "minLength": 1
++            },
++            "policy_epoch": {
++              "type": "string",
++              "minLength": 1
++            }
++          },
++          "additionalProperties": false
++        },
++        "risk_hypothesis": {
++          "type": "string",
++          "minLength": 1
++        },
++        "method": {
++          "type": "string",
++          "minLength": 1
++        },
++        "oracle": {
++          "type": "object",
++          "required": [
++            "kind",
++            "locator",
++            "evaluated_by"
++          ],
++          "properties": {
++            "kind": {
++              "enum": [
++                "DETERMINISTIC_CHECK",
++                "SYSTEM_OF_RECORD",
++                "EXTERNAL_SERVICE",
++                "HUMAN_ADJUDICATION"
++              ]
++            },
++            "locator": {
++              "type": "string",
++              "minLength": 1
++            },
++            "evaluated_by": {
++              "type": "object",
++              "required": [
++                "id",
++                "type"
++              ],
++              "properties": {
++                "id": {
++                  "type": "string",
++                  "minLength": 1
++                },
++                "type": {
++                  "enum": [
++                    "human",
++                    "agent",
++                    "service",
++                    "controller"
++                  ]
++                }
++              },
++              "additionalProperties": false
++            }
++          },
++          "additionalProperties": false
++        },
++        "runtime": {
++          "type": "object",
++          "required": [
++            "runtime",
++            "approved",
++            "started_at",
++            "finished_at",
++            "output_digest"
++          ],
++          "properties": {
++            "runtime": {
++              "type": "string",
++              "minLength": 1
++            },
++            "command": {
++              "type": "string",
++              "minLength": 1
++            },
++            "approved": {
++              "type": "boolean"
++            },
++            "started_at": {
++              "type": "string",
++              "format": "date-time"
++            },
++            "finished_at": {
++              "type": "string",
++              "format": "date-time"
++            },
++            "exit_code": {
++              "type": "integer"
++            },
++            "output_digest": {
++              "type": "string",
++              "pattern": "^sha256:[a-f0-9]{64}$"
++            }
++          },
++          "additionalProperties": false
++        },
++        "environment": {
++          "type": "object",
++          "required": [
++            "identity",
++            "configuration",
++            "toolchain",
++            "observed_at",
++            "production_equivalence"
++          ],
++          "properties": {
++            "identity": {
++              "type": "string",
++              "minLength": 1
++            },
++            "configuration": {
++              "type": "object"
++            },
++            "fixtures": {
++              "type": "object"
++            },
++            "toolchain": {
++              "type": "object",
++              "required": [
++                "name",
++                "version"
++              ],
++              "properties": {
++                "name": {
++                  "type": "string"
++                },
++                "version": {
++                  "type": "string"
++                }
++              }
++            },
++            "observed_at": {
++              "type": "string",
++              "format": "date-time"
++            },
++            "production_equivalence": {
++              "enum": [
++                "PRODUCTION",
++                "PRODUCTION_LIKE",
++                "NON_PRODUCTION"
++              ]
++            },
++            "material_deviations": {
++              "type": "array",
++              "items": {
++                "type": "object",
++                "required": [
++                  "surface",
++                  "deviation"
++                ],
++                "properties": {
++                  "surface": {
++                    "type": "string",
++                    "minLength": 1
++                  },
++                  "deviation": {
++                    "type": "string",
++                    "minLength": 1
++                  }
++                },
++                "additionalProperties": false
++              }
++            }
++          },
++          "additionalProperties": false
++        },
++        "findings": {
++          "type": "array",
++          "items": {
++            "type": "object",
++            "required": [
++              "finding_id",
++              "severity",
++              "status",
++              "summary"
++            ],
++            "properties": {
++              "finding_id": {
++                "type": "string",
++                "minLength": 1
++              },
++              "severity": {
++                "enum": [
++                  "BLOCKER",
++                  "CRITICAL",
++                  "MAJOR",
++                  "MINOR",
++                  "INFO"
++                ]
++              },
++              "status": {
++                "enum": [
++                  "OPEN",
++                  "RESOLVED",
++                  "DEFERRED_WITH_REASON"
++                ]
++              },
++              "summary": {
++                "type": "string",
++                "minLength": 1
++              },
++              "disposition": {
++                "type": "string"
++              }
++            },
++            "additionalProperties": false
++          }
++        },
++        "non_coverage": {
++          "type": "array",
++          "items": {
++            "type": "object",
++            "required": [
++              "surface",
++              "reason"
++            ],
++            "properties": {
++              "surface": {
++                "type": "string",
++                "minLength": 1
++              },
++              "reason": {
++                "type": "string",
++                "minLength": 1
++              },
++              "impact": {
++                "type": "string"
++              },
++              "owner": {
++                "type": "string"
++              }
++            },
++            "additionalProperties": false
++          }
++        },
++        "flake_policy": {
++          "type": "object",
++          "required": [
++            "reruns_permitted",
++            "failed_observations_retained"
++          ],
++          "properties": {
++            "reruns_permitted": {
++              "type": "integer"
++            },
++            "failed_observations_retained": {
++              "type": "boolean"
++            },
++            "quarantine_reason": {
++              "type": "string"
++            }
++          },
++          "additionalProperties": false
++        },
++        "quality_dimensions": {
++          "type": "array",
++          "minItems": 1,
++          "items": {
++            "type": "object",
++            "required": [
++              "dimension",
++              "result"
++            ],
++            "properties": {
++              "dimension": {
++                "enum": [
++                  "FUNCTIONAL",
++                  "EXPLORATORY",
++                  "CROSS_BROWSER",
++                  "ACCESSIBILITY",
++                  "DATA_MIGRATION",
++                  "VISUAL",
++                  "AI_EVALUATION",
++                  "TRANSACTIONAL_FLOW"
++                ]
++              },
++              "result": {
++                "enum": [
++                  "PASS",
++                  "FAIL",
++                  "INDETERMINATE"
++                ]
++              },
++              "oracle_locator": {
++                "type": "string",
++                "minLength": 1
++              }
++            },
++            "additionalProperties": false
++          }
++        }
++      },
++      "additionalProperties": false
++    }
++  }
++}
+diff --git a/schemas/resilience-test.schema.json b/schemas/resilience-test.schema.json
+new file mode 100644
+index 0000000..b661b18
+--- /dev/null
++++ b/schemas/resilience-test.schema.json
+@@ -0,0 +1,528 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "$id": "https://badf.bizera.local/schemas/resilience-test.schema.json",
++  "title": "BADF G09 evidence: resilience-test (typed binding, WP-VAL-B / BADF-WP-0113)",
++  "type": "object",
++  "required": [
++    "schema_version",
++    "id",
++    "work_package_id",
++    "gate",
++    "claim",
++    "evidence_type",
++    "producer",
++    "source_revision",
++    "target",
++    "toolchain",
++    "operation",
++    "started_at",
++    "completed_at",
++    "outcome",
++    "artifact",
++    "digest",
++    "binding"
++  ],
++  "properties": {
++    "schema_version": {
++      "const": "1.0.0"
++    },
++    "id": {
++      "type": "string",
++      "pattern": "^EVD-[A-Za-z0-9._-]+$"
++    },
++    "work_package_id": {
++      "type": "string",
++      "pattern": "^WP-[A-Za-z0-9._-]+$"
++    },
++    "gate": {
++      "type": "string",
++      "pattern": "^G(0[0-9]|1[0-4])$"
++    },
++    "claim": {
++      "type": "string",
++      "minLength": 1
++    },
++    "evidence_type": {
++      "enum": [
++        "resilience-test"
++      ]
++    },
++    "producer": {
++      "type": "object",
++      "required": [
++        "id",
++        "type"
++      ],
++      "properties": {
++        "id": {
++          "type": "string",
++          "minLength": 1
++        },
++        "type": {
++          "enum": [
++            "human",
++            "agent",
++            "service",
++            "controller"
++          ]
++        }
++      }
++    },
++    "source_revision": {
++      "type": "string",
++      "minLength": 1
++    },
++    "target": {
++      "type": "string",
++      "minLength": 1
++    },
++    "toolchain": {
++      "type": "object",
++      "required": [
++        "name",
++        "version"
++      ]
++    },
++    "operation": {
++      "type": "string",
++      "minLength": 1
++    },
++    "started_at": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "completed_at": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "outcome": {
++      "enum": [
++        "PASS",
++        "FAIL",
++        "BLOCKED",
++        "NOT_RUN",
++        "NOT_APPLICABLE"
++      ]
++    },
++    "artifact": {
++      "type": "string",
++      "minLength": 1
++    },
++    "digest": {
++      "type": "string",
++      "pattern": "^sha256:[a-f0-9]{64}$"
++    },
++    "sanitization": {
++      "type": "string"
++    },
++    "binding": {
++      "type": "object",
++      "required": [
++        "candidate",
++        "risk_hypothesis",
++        "method",
++        "oracle",
++        "runtime",
++        "environment",
++        "findings",
++        "non_coverage",
++        "flake_policy",
++        "steady_state",
++        "fault",
++        "recovery"
++      ],
++      "properties": {
++        "candidate": {
++          "type": "object",
++          "required": [
++            "source_revision",
++            "content_tree",
++            "environment_id",
++            "policy_epoch"
++          ],
++          "properties": {
++            "source_revision": {
++              "type": "string",
++              "minLength": 1
++            },
++            "content_tree": {
++              "type": "string",
++              "minLength": 1
++            },
++            "artifact_digests": {
++              "type": "array",
++              "items": {
++                "type": "string",
++                "pattern": "^sha256:[a-f0-9]{64}$"
++              }
++            },
++            "environment_id": {
++              "type": "string",
++              "minLength": 1
++            },
++            "policy_epoch": {
++              "type": "string",
++              "minLength": 1
++            }
++          },
++          "additionalProperties": false
++        },
++        "risk_hypothesis": {
++          "type": "string",
++          "minLength": 1
++        },
++        "method": {
++          "type": "string",
++          "minLength": 1
++        },
++        "oracle": {
++          "type": "object",
++          "required": [
++            "kind",
++            "locator",
++            "evaluated_by"
++          ],
++          "properties": {
++            "kind": {
++              "enum": [
++                "DETERMINISTIC_CHECK",
++                "SYSTEM_OF_RECORD",
++                "EXTERNAL_SERVICE",
++                "HUMAN_ADJUDICATION"
++              ]
++            },
++            "locator": {
++              "type": "string",
++              "minLength": 1
++            },
++            "evaluated_by": {
++              "type": "object",
++              "required": [
++                "id",
++                "type"
++              ],
++              "properties": {
++                "id": {
++                  "type": "string",
++                  "minLength": 1
++                },
++                "type": {
++                  "enum": [
++                    "human",
++                    "agent",
++                    "service",
++                    "controller"
++                  ]
++                }
++              },
++              "additionalProperties": false
++            }
++          },
++          "additionalProperties": false
++        },
++        "runtime": {
++          "type": "object",
++          "required": [
++            "runtime",
++            "approved",
++            "started_at",
++            "finished_at",
++            "output_digest"
++          ],
++          "properties": {
++            "runtime": {
++              "type": "string",
++              "minLength": 1
++            },
++            "command": {
++              "type": "string",
++              "minLength": 1
++            },
++            "approved": {
++              "type": "boolean"
++            },
++            "started_at": {
++              "type": "string",
++              "format": "date-time"
++            },
++            "finished_at": {
++              "type": "string",
++              "format": "date-time"
++            },
++            "exit_code": {
++              "type": "integer"
++            },
++            "output_digest": {
++              "type": "string",
++              "pattern": "^sha256:[a-f0-9]{64}$"
++            }
++          },
++          "additionalProperties": false
++        },
++        "environment": {
++          "type": "object",
++          "required": [
++            "identity",
++            "configuration",
++            "toolchain",
++            "observed_at",
++            "production_equivalence"
++          ],
++          "properties": {
++            "identity": {
++              "type": "string",
++              "minLength": 1
++            },
++            "configuration": {
++              "type": "object"
++            },
++            "fixtures": {
++              "type": "object"
++            },
++            "toolchain": {
++              "type": "object",
++              "required": [
++                "name",
++                "version"
++              ],
++              "properties": {
++                "name": {
++                  "type": "string"
++                },
++                "version": {
++                  "type": "string"
++                }
++              }
++            },
++            "observed_at": {
++              "type": "string",
++              "format": "date-time"
++            },
++            "production_equivalence": {
++              "enum": [
++                "PRODUCTION",
++                "PRODUCTION_LIKE",
++                "NON_PRODUCTION"
++              ]
++            },
++            "material_deviations": {
++              "type": "array",
++              "items": {
++                "type": "object",
++                "required": [
++                  "surface",
++                  "deviation"
++                ],
++                "properties": {
++                  "surface": {
++                    "type": "string",
++                    "minLength": 1
++                  },
++                  "deviation": {
++                    "type": "string",
++                    "minLength": 1
++                  }
++                },
++                "additionalProperties": false
++              }
++            }
++          },
++          "additionalProperties": false
++        },
++        "findings": {
++          "type": "array",
++          "items": {
++            "type": "object",
++            "required": [
++              "finding_id",
++              "severity",
++              "status",
++              "summary"
++            ],
++            "properties": {
++              "finding_id": {
++                "type": "string",
++                "minLength": 1
++              },
++              "severity": {
++                "enum": [
++                  "BLOCKER",
++                  "CRITICAL",
++                  "MAJOR",
++                  "MINOR",
++                  "INFO"
++                ]
++              },
++              "status": {
++                "enum": [
++                  "OPEN",
++                  "RESOLVED",
++                  "DEFERRED_WITH_REASON"
++                ]
++              },
++              "summary": {
++                "type": "string",
++                "minLength": 1
++              },
++              "disposition": {
++                "type": "string"
++              }
++            },
++            "additionalProperties": false
++          }
++        },
++        "non_coverage": {
++          "type": "array",
++          "items": {
++            "type": "object",
++            "required": [
++              "surface",
++              "reason"
++            ],
++            "properties": {
++              "surface": {
++                "type": "string",
++                "minLength": 1
++              },
++              "reason": {
++                "type": "string",
++                "minLength": 1
++              },
++              "impact": {
++                "type": "string"
++              },
++              "owner": {
++                "type": "string"
++              }
++            },
++            "additionalProperties": false
++          }
++        },
++        "flake_policy": {
++          "type": "object",
++          "required": [
++            "reruns_permitted",
++            "failed_observations_retained"
++          ],
++          "properties": {
++            "reruns_permitted": {
++              "type": "integer"
++            },
++            "failed_observations_retained": {
++              "type": "boolean"
++            },
++            "quarantine_reason": {
++              "type": "string"
++            }
++          },
++          "additionalProperties": false
++        },
++        "steady_state": {
++          "type": "object",
++          "required": [
++            "definition",
++            "observed_before"
++          ],
++          "properties": {
++            "definition": {
++              "type": "string",
++              "minLength": 1
++            },
++            "observed_before": {
++              "type": "boolean"
++            },
++            "observed_after": {
++              "type": "boolean"
++            }
++          },
++          "additionalProperties": false
++        },
++        "fault": {
++          "type": "object",
++          "required": [
++            "injection",
++            "blast_radius",
++            "abort_conditions"
++          ],
++          "properties": {
++            "injection": {
++              "type": "string",
++              "minLength": 1
++            },
++            "expected_behavior": {
++              "type": "string",
++              "minLength": 1
++            },
++            "blast_radius": {
++              "type": "string",
++              "minLength": 1
++            },
++            "abort_conditions": {
++              "type": "array",
++              "minItems": 1,
++              "items": {
++                "type": "object",
++                "required": [
++                  "condition",
++                  "executable"
++                ],
++                "properties": {
++                  "condition": {
++                    "type": "string",
++                    "minLength": 1
++                  },
++                  "executable": {
++                    "type": "boolean"
++                  }
++                },
++                "additionalProperties": false
++              }
++            }
++          },
++          "additionalProperties": false
++        },
++        "recovery": {
++          "type": "object",
++          "required": [
++            "observed",
++            "integrity_checks"
++          ],
++          "properties": {
++            "observed": {
++              "type": "boolean"
++            },
++            "recovery_time_seconds": {
++              "type": "number"
++            },
++            "integrity_checks": {
++              "type": "array",
++              "items": {
++                "type": "object",
++                "required": [
++                  "check",
++                  "result"
++                ],
++                "properties": {
++                  "check": {
++                    "type": "string",
++                    "minLength": 1
++                  },
++                  "result": {
++                    "enum": [
++                      "PASS",
++                      "FAIL",
++                      "INDETERMINATE"
++                    ]
++                  }
++                },
++                "additionalProperties": false
++              }
++            }
++          },
++          "additionalProperties": false
++        }
++      },
++      "additionalProperties": false
++    }
++  }
++}
+diff --git a/schemas/security-validation.schema.json b/schemas/security-validation.schema.json
+new file mode 100644
+index 0000000..ebd81f4
+--- /dev/null
++++ b/schemas/security-validation.schema.json
+@@ -0,0 +1,504 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "$id": "https://badf.bizera.local/schemas/security-validation.schema.json",
++  "title": "BADF G09 evidence: security-validation (typed binding, WP-VAL-B / BADF-WP-0113)",
++  "type": "object",
++  "required": [
++    "schema_version",
++    "id",
++    "work_package_id",
++    "gate",
++    "claim",
++    "evidence_type",
++    "producer",
++    "source_revision",
++    "target",
++    "toolchain",
++    "operation",
++    "started_at",
++    "completed_at",
++    "outcome",
++    "artifact",
++    "digest",
++    "binding"
++  ],
++  "properties": {
++    "schema_version": {
++      "const": "1.0.0"
++    },
++    "id": {
++      "type": "string",
++      "pattern": "^EVD-[A-Za-z0-9._-]+$"
++    },
++    "work_package_id": {
++      "type": "string",
++      "pattern": "^WP-[A-Za-z0-9._-]+$"
++    },
++    "gate": {
++      "type": "string",
++      "pattern": "^G(0[0-9]|1[0-4])$"
++    },
++    "claim": {
++      "type": "string",
++      "minLength": 1
++    },
++    "evidence_type": {
++      "enum": [
++        "security-validation"
++      ]
++    },
++    "producer": {
++      "type": "object",
++      "required": [
++        "id",
++        "type"
++      ],
++      "properties": {
++        "id": {
++          "type": "string",
++          "minLength": 1
++        },
++        "type": {
++          "enum": [
++            "human",
++            "agent",
++            "service",
++            "controller"
++          ]
++        }
++      }
++    },
++    "source_revision": {
++      "type": "string",
++      "minLength": 1
++    },
++    "target": {
++      "type": "string",
++      "minLength": 1
++    },
++    "toolchain": {
++      "type": "object",
++      "required": [
++        "name",
++        "version"
++      ]
++    },
++    "operation": {
++      "type": "string",
++      "minLength": 1
++    },
++    "started_at": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "completed_at": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "outcome": {
++      "enum": [
++        "PASS",
++        "FAIL",
++        "BLOCKED",
++        "NOT_RUN",
++        "NOT_APPLICABLE"
++      ]
++    },
++    "artifact": {
++      "type": "string",
++      "minLength": 1
++    },
++    "digest": {
++      "type": "string",
++      "pattern": "^sha256:[a-f0-9]{64}$"
++    },
++    "sanitization": {
++      "type": "string"
++    },
++    "binding": {
++      "type": "object",
++      "required": [
++        "candidate",
++        "risk_hypothesis",
++        "method",
++        "oracle",
++        "runtime",
++        "environment",
++        "findings",
++        "non_coverage",
++        "flake_policy",
++        "security_obligations",
++        "residual_risk"
++      ],
++      "properties": {
++        "candidate": {
++          "type": "object",
++          "required": [
++            "source_revision",
++            "content_tree",
++            "environment_id",
++            "policy_epoch"
++          ],
++          "properties": {
++            "source_revision": {
++              "type": "string",
++              "minLength": 1
++            },
++            "content_tree": {
++              "type": "string",
++              "minLength": 1
++            },
++            "artifact_digests": {
++              "type": "array",
++              "items": {
++                "type": "string",
++                "pattern": "^sha256:[a-f0-9]{64}$"
++              }
++            },
++            "environment_id": {
++              "type": "string",
++              "minLength": 1
++            },
++            "policy_epoch": {
++              "type": "string",
++              "minLength": 1
++            }
++          },
++          "additionalProperties": false
++        },
++        "risk_hypothesis": {
++          "type": "string",
++          "minLength": 1
++        },
++        "method": {
++          "type": "string",
++          "minLength": 1
++        },
++        "oracle": {
++          "type": "object",
++          "required": [
++            "kind",
++            "locator",
++            "evaluated_by"
++          ],
++          "properties": {
++            "kind": {
++              "enum": [
++                "DETERMINISTIC_CHECK",
++                "SYSTEM_OF_RECORD",
++                "EXTERNAL_SERVICE",
++                "HUMAN_ADJUDICATION"
++              ]
++            },
++            "locator": {
++              "type": "string",
++              "minLength": 1
++            },
++            "evaluated_by": {
++              "type": "object",
++              "required": [
++                "id",
++                "type"
++              ],
++              "properties": {
++                "id": {
++                  "type": "string",
++                  "minLength": 1
++                },
++                "type": {
++                  "enum": [
++                    "human",
++                    "agent",
++                    "service",
++                    "controller"
++                  ]
++                }
++              },
++              "additionalProperties": false
++            }
++          },
++          "additionalProperties": false
++        },
++        "runtime": {
++          "type": "object",
++          "required": [
++            "runtime",
++            "approved",
++            "started_at",
++            "finished_at",
++            "output_digest"
++          ],
++          "properties": {
++            "runtime": {
++              "type": "string",
++              "minLength": 1
++            },
++            "command": {
++              "type": "string",
++              "minLength": 1
++            },
++            "approved": {
++              "type": "boolean"
++            },
++            "started_at": {
++              "type": "string",
++              "format": "date-time"
++            },
++            "finished_at": {
++              "type": "string",
++              "format": "date-time"
++            },
++            "exit_code": {
++              "type": "integer"
++            },
++            "output_digest": {
++              "type": "string",
++              "pattern": "^sha256:[a-f0-9]{64}$"
++            }
++          },
++          "additionalProperties": false
++        },
++        "environment": {
++          "type": "object",
++          "required": [
++            "identity",
++            "configuration",
++            "toolchain",
++            "observed_at",
++            "production_equivalence"
++          ],
++          "properties": {
++            "identity": {
++              "type": "string",
++              "minLength": 1
++            },
++            "configuration": {
++              "type": "object"
++            },
++            "fixtures": {
++              "type": "object"
++            },
++            "toolchain": {
++              "type": "object",
++              "required": [
++                "name",
++                "version"
++              ],
++              "properties": {
++                "name": {
++                  "type": "string"
++                },
++                "version": {
++                  "type": "string"
++                }
++              }
++            },
++            "observed_at": {
++              "type": "string",
++              "format": "date-time"
++            },
++            "production_equivalence": {
++              "enum": [
++                "PRODUCTION",
++                "PRODUCTION_LIKE",
++                "NON_PRODUCTION"
++              ]
++            },
++            "material_deviations": {
++              "type": "array",
++              "items": {
++                "type": "object",
++                "required": [
++                  "surface",
++                  "deviation"
++                ],
++                "properties": {
++                  "surface": {
++                    "type": "string",
++                    "minLength": 1
++                  },
++                  "deviation": {
++                    "type": "string",
++                    "minLength": 1
++                  }
++                },
++                "additionalProperties": false
++              }
++            }
++          },
++          "additionalProperties": false
++        },
++        "findings": {
++          "type": "array",
++          "items": {
++            "type": "object",
++            "required": [
++              "finding_id",
++              "severity",
++              "status",
++              "summary"
++            ],
++            "properties": {
++              "finding_id": {
++                "type": "string",
++                "minLength": 1
++              },
++              "severity": {
++                "enum": [
++                  "BLOCKER",
++                  "CRITICAL",
++                  "MAJOR",
++                  "MINOR",
++                  "INFO"
++                ]
++              },
++              "status": {
++                "enum": [
++                  "OPEN",
++                  "RESOLVED",
++                  "DEFERRED_WITH_REASON"
++                ]
++              },
++              "summary": {
++                "type": "string",
++                "minLength": 1
++              },
++              "disposition": {
++                "type": "string"
++              }
++            },
++            "additionalProperties": false
++          }
++        },
++        "non_coverage": {
++          "type": "array",
++          "items": {
++            "type": "object",
++            "required": [
++              "surface",
++              "reason"
++            ],
++            "properties": {
++              "surface": {
++                "type": "string",
++                "minLength": 1
++              },
++              "reason": {
++                "type": "string",
++                "minLength": 1
++              },
++              "impact": {
++                "type": "string"
++              },
++              "owner": {
++                "type": "string"
++              }
++            },
++            "additionalProperties": false
++          }
++        },
++        "flake_policy": {
++          "type": "object",
++          "required": [
++            "reruns_permitted",
++            "failed_observations_retained"
++          ],
++          "properties": {
++            "reruns_permitted": {
++              "type": "integer"
++            },
++            "failed_observations_retained": {
++              "type": "boolean"
++            },
++            "quarantine_reason": {
++              "type": "string"
++            }
++          },
++          "additionalProperties": false
++        },
++        "security_obligations": {
++          "type": "array",
++          "minItems": 1,
++          "items": {
++            "type": "object",
++            "required": [
++              "obligation_id",
++              "source",
++              "result"
++            ],
++            "properties": {
++              "obligation_id": {
++                "type": "string",
++                "minLength": 1
++              },
++              "source": {
++                "enum": [
++                  "THREAT_MODEL",
++                  "SECURITY_REQUIREMENT",
++                  "OWASP",
++                  "POLICY"
++                ]
++              },
++              "result": {
++                "enum": [
++                  "PASS",
++                  "FAIL",
++                  "INDETERMINATE",
++                  "NOT_APPLICABLE"
++                ]
++              }
++            },
++            "additionalProperties": false
++          }
++        },
++        "residual_risk": {
++          "type": "array",
++          "items": {
++            "type": "object",
++            "required": [
++              "risk_id",
++              "severity",
++              "acceptance"
++            ],
++            "properties": {
++              "risk_id": {
++                "type": "string",
++                "minLength": 1
++              },
++              "severity": {
++                "enum": [
++                  "BLOCKER",
++                  "CRITICAL",
++                  "MAJOR",
++                  "MINOR",
++                  "INFO"
++                ]
++              },
++              "acceptance": {
++                "type": "object",
++                "required": [
++                  "state"
++                ],
++                "properties": {
++                  "state": {
++                    "enum": [
++                      "NOT_ACCEPTED",
++                      "REFERRED_TO_SECURITY_AUTHORITY"
++                    ]
++                  },
++                  "referred_to": {
++                    "type": "string",
++                    "minLength": 1
++                  }
++                },
++                "additionalProperties": false
++              }
++            },
++            "additionalProperties": false
++          }
++        }
++      },
++      "additionalProperties": false
++    }
++  }
++}
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 2b02ecc..3f588cc 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -1768,6 +1768,137 @@ def check_g08_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[st
+ EVIDENCE_RULES.update({t: check_g08_binding for t in ("independent-review", "integration-test", "contract-test", "composed-tree-test")})
+ 
+ 
++G09_TYPES = ("quality-validation", "security-validation", "performance-test", "resilience-test")
++
++
++def check_g09_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    """EVIDENCE_RULES entry for the four G09 types (badf-release-validation WP-VAL-B): a typed
++    `binding`, when present, must conform to schemas/<type>.schema.json AND honor the VAL
++    invariants that are checkable on a single evidence object. Generic objects (no binding)
++    stay admissible -- the typed form is additive, exactly as VER-B's G08 rung.
++
++    The walker enforces required/enum/pattern/additionalProperties/type only, so every
++    non-emptiness, ordering and cross-field constraint below is a named code control:
++
++      V1  candidate agreement       -- binding.candidate.source_revision == evidence.source_revision
++                                       (VAL-I01: one immutable candidate; a binding naming a different
++                                       revision than its own envelope is mixed-candidate evidence)
++      V2  observation provenance    -- producer.type != 'agent' for a typed observation (VAL-I04/I05)
++      V3  oracle outside the agent  -- oracle.evaluated_by.type != 'agent' (VAL-I04: an agent may
++                                       attempt a journey; it may not adjudicate its own success)
++      V4  runtime approved          -- outcome PASS requires runtime.approved true (VAL-I04:
++                                       no validation credit without an APPROVED observed execution)
++      V5  non-coverage mandatory    -- binding.non_coverage non-empty (VAL-I15; minItems is inert)
++      V6  deviation declared        -- environment NON_PRODUCTION requires non-empty
++                                       material_deviations (VAL-I08)
++      V7  flake policy              -- failed_observations_retained must be true (VAL-I16:
++                                       rerun-until-green cannot erase a failed observation)
++      V8  blockers preserved        -- outcome PASS cannot coexist with an OPEN finding of
++                                       blocking severity (VAL-I14), any class
++      per-class:
++      V9  security obligations      -- security_obligations non-empty (an empty obligation set
++                                       is a routing decision, not a validation) and residual_risk
++                                       acceptance is structurally NOT_ACCEPTED/REFERRED (VAL-I09;
++                                       the enum bakes it, mirroring SEC-I12)
++      V10 measurement != PASS       -- performance: measurements non-empty; every slo.bound_at
++                                       precedes runtime.started_at (VAL-I06/I10: a threshold bound
++                                       after the run began was fitted to the result)
++      V11 recovery observed         -- resilience: steady_state.observed_before true; abort_conditions
++                                       non-empty and each executable; outcome PASS requires
++                                       recovery.observed true, non-empty integrity_checks, none FAIL
++                                       (VAL-I11/I12: survival during injection is not recovery)
++      V12 quality oracle named      -- quality: quality_dimensions non-empty; a dimension with
++                                       result PASS names its oracle_locator (VAL-I04 applied to the
++                                       class where 'it looked successful' is the failure mode)
++
++    Class substitution (VAL-I13) at the dossier level and cross-class candidate identity are
++    WP-VAL-C's dossier controls; here each binding is internally sound. additionalProperties:false
++    on every binding already refuses one class's payload in another's slot structurally."""
++    if "binding" not in evidence:
++        return
++    kind = evidence["evidence_type"]
++    check_schema(kind, evidence)
++    b = evidence["binding"]
++    label = f"evidence {evidence.get('id', kind)}"
++    # validate_evidence dispatches EVIDENCE_RULES only on outcome PASS, so `passing` is
++    # redundant against today's caller. It is kept deliberately: the controls that gate on it
++    # (V4, V8, V11-recovery) are the ones whose refusal is only correct for a PASS claim, and
++    # an honestly-recorded failure must not be refused if a future caller routes one here.
++    # Defensive, not vestigial -- removing it would make the rule caller-dependent.
++    passing = evidence["outcome"] == "PASS"
++
++    if b["candidate"]["source_revision"] != evidence["source_revision"]:  # V1
++        raise ValidationError(f"{label}: binding.candidate.source_revision {b['candidate']['source_revision']!r} does not equal the evidence source_revision {evidence['source_revision']!r}; mixed-candidate evidence is refused (VAL-I01)")
++    if evidence["producer"]["type"] == "agent":  # V2
++        raise ValidationError(f"{label}: a typed {kind} observation carries producer.type 'agent'; a claimed result is not an observation (VAL-I04/VAL-I05)")
++    if b["oracle"]["evaluated_by"]["type"] == "agent":  # V3
++        raise ValidationError(f"{label}: the oracle is evaluated by an agent; the oracle sits outside the agent under validation (VAL-I04)")
++    if not b["oracle"]["locator"].strip():  # V3b -- schema minLength is inert in this walker
++        raise ValidationError(f"{label}: oracle.locator is empty; an oracle that names nothing cannot be consulted, and an unnameable oracle is not outside the agent (VAL-I04)")
++    if passing and b["runtime"]["approved"] is not True:  # V4
++        raise ValidationError(f"{label}: outcome PASS on an unapproved runtime; no validation credit without approved observed execution (VAL-I04)")
++    if not b["non_coverage"]:  # V5
++        raise ValidationError(f"{label}: non_coverage is empty; every validation class names material surfaces it did not establish (VAL-I15)")
++    env = b["environment"]
++    if env["production_equivalence"] == "NON_PRODUCTION" and not env.get("material_deviations"):  # V6
++        raise ValidationError(f"{label}: a NON_PRODUCTION environment declares no material_deviations; staging PASS is not production proven (VAL-I08)")
++    if b["flake_policy"]["failed_observations_retained"] is not True:  # V7
++        raise ValidationError(f"{label}: flake_policy discards failed observations; rerun-until-green cannot erase a failed validation observation (VAL-I16)")
++    open_blocking = [f["finding_id"] for f in b["findings"] if f["status"] == "OPEN" and f["severity"] in ("BLOCKER", "CRITICAL", "MAJOR")]
++    if passing and open_blocking:  # V8
++        raise ValidationError(f"{label}: outcome PASS coexists with OPEN blocking finding(s) {', '.join(open_blocking)}; normalization cannot erase blocking evidence (VAL-I14)")
++
++    if kind == "security-validation":  # V9
++        if not b["security_obligations"]:
++            raise ValidationError(f"{label}: security_obligations is empty; an empty obligation set is a routing decision, not a security validation (VAL-I02)")
++        # residual_risk acceptance.state is enum-bound to NOT_ACCEPTED/REFERRED_TO_SECURITY_AUTHORITY
++        # by the schema (walker enforces enums): VAL-I09 is structural, mirroring SEC-I12.
++        return
++    if kind == "performance-test":  # V10
++        if not b["measurements"]:
++            raise ValidationError(f"{label}: measurements is empty; a performance-test with nothing measured cannot render an outcome (VAL-I10)")
++        # `format: date-time` is NOT enforced by check_schema, so a validly-typed timestamp
++        # in another ISO form ('+00:00' vs 'Z', differing precision) would compare
++        # lexicographically and render a silently wrong ordering. parse_time normalises to UTC
++        # and refuses malformed input, so the VAL-I06 verdict rests on time, not on spelling.
++        started = parse_time(b["runtime"]["started_at"], f"{label}: binding.runtime.started_at")
++        for i, m in enumerate(b["measurements"]):
++            if parse_time(m["slo"]["bound_at"], f"{label}: measurements[{i}].slo.bound_at") > started:
++                raise ValidationError(f"{label}: measurements[{i}].slo.bound_at {m['slo']['bound_at']} is after the run began {started}; thresholds pre-exist outcomes (VAL-I06), a bound fitted to the result is not conformance (VAL-I10)")
++        return
++    if kind == "resilience-test":  # V11
++        if b["steady_state"]["observed_before"] is not True:
++            raise ValidationError(f"{label}: steady state was not observed before injection; resilience is hypothesis-driven (VAL-I11)")
++        aborts = b["fault"]["abort_conditions"]
++        if not aborts:
++            raise ValidationError(f"{label}: fault carries no abort_conditions; injection without an executable abort is unbounded blast radius (VAL-I11)")
++        dead = [a["condition"] for a in aborts if a["executable"] is not True]
++        if dead:
++            raise ValidationError(f"{label}: abort condition(s) not executable: {', '.join(dead)}; a non-executable abort is a hope, not a bound (VAL-I11)")
++        if passing:
++            rec = b["recovery"]
++            if rec["observed"] is not True:
++                raise ValidationError(f"{label}: outcome PASS without observed recovery; survival during injection is not recovery (VAL-I12)")
++            checks = rec["integrity_checks"]
++            if not checks:
++                raise ValidationError(f"{label}: outcome PASS with no integrity checks; recovery without verified integrity is not established (VAL-I12)")
++            failed = [c["check"] for c in checks if c["result"] == "FAIL"]
++            if failed:
++                raise ValidationError(f"{label}: outcome PASS with failed integrity check(s) {', '.join(failed)} (VAL-I12)")
++        return
++    if kind == "quality-validation":  # V12
++        dims = b["quality_dimensions"]
++        if not dims:
++            raise ValidationError(f"{label}: quality_dimensions is empty; a quality validation that validated nothing cannot render an outcome (VAL-I02)")
++        unoracled = [d["dimension"] for d in dims if d["result"] == "PASS" and not d.get("oracle_locator")]
++        if unoracled:
++            raise ValidationError(f"{label}: dimension(s) {', '.join(unoracled)} render PASS without an oracle_locator; 'it looked successful' is not an oracle (VAL-I04)")
++
++
++EVIDENCE_RULES.update({t: check_g09_binding for t in G09_TYPES})
++
++
++
+ G08_OBSERVATIONS = ("integration-test", "contract-test", "composed-tree-test")
+ G08_QUORUM = {"C2": 2, "C3": 3}
+ G08_REQUIRED_LENSES = {"C2": {"correctness", "quality/test"}, "C3": {"correctness", "quality/test", "data/integration"}}
+diff --git a/skills/badf-release-validation/SKILL.md b/skills/badf-release-validation/SKILL.md
+index 8ebc6c5..ad037fc 100644
+--- a/skills/badf-release-validation/SKILL.md
++++ b/skills/badf-release-validation/SKILL.md
+@@ -9,7 +9,7 @@ description: >-
+   validation evidence — it does NOT establish UAT, operational readiness, or
+   release authority. G09 is quality_authority-owned; G10 (release readiness /
+   go-no-go) stays release_authority-owned and untouched.
+-status: DESIGNED
++status: IMPLEMENTED
+ gate: G09
+ owner_role: quality_authority
+ allowed_tools: []
+diff --git a/tests/test_badf_release_validation_binding.py b/tests/test_badf_release_validation_binding.py
+new file mode 100644
+index 0000000..19c9ee1
+--- /dev/null
++++ b/tests/test_badf_release_validation_binding.py
+@@ -0,0 +1,365 @@
++"""badf-release-validation WP-VAL-B (BADF-WP-0113 / GOV-0103 / #233): typed G09 evidence.
++
++WP-VAL-A froze the contract (VAL-I01..I20); this rung makes the four G09 evidence types
++checkable. Four typed schemas specialize evidence for `quality-validation`,
++`security-validation`, `performance-test` and `resilience-test` with a CLOSED `binding`
++(the VER-B pattern, additive: generic objects stay admissible). `check_g09_binding` in
++EVIDENCE_RULES refuses mixed-candidate evidence (VAL-I01), an observation produced or
++adjudicated by an agent (VAL-I04/I05), PASS on an unapproved runtime (VAL-I04), empty
++non-coverage (VAL-I15), an undeclared NON_PRODUCTION deviation (VAL-I08), a flake policy
++that discards failures (VAL-I16), PASS over an open blocking finding (VAL-I14), thresholds
++bound after the run began (VAL-I06/I10), and resilience PASS without observed recovery
++(VAL-I11/I12). Cross-class candidate identity and slot substitution (VAL-I13) are dossier
++controls, deferred to WP-VAL-C; each binding's additionalProperties:false already refuses
++one class's payload in another's slot structurally.
++
++Vacuity discipline (#234): every sweep below iterates a literal tuple, and every filtered
++lookup is followed by an assertion that the filter matched.
++"""
++import copy
++import json
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++WP = "WP-2026-9999"  # the unallocatable sentinel (GOV-0085): never a real ledger id
++G09 = ("quality-validation", "security-validation", "performance-test", "resilience-test")
++SHA = "0" * 40
++DIGEST = "sha256:" + "a" * 64
++T0, T1, T2 = "2026-08-31T00:00:00Z", "2026-08-31T01:00:00Z", "2026-08-31T02:00:00Z"
++
++
++def _envelope(kind, **over):
++    e = {"schema_version": "1.0.0", "id": f"EVD-{WP}-G09-{kind}", "work_package_id": WP,
++         "gate": "G09", "claim": f"{kind} of the candidate", "evidence_type": kind,
++         "producer": {"id": "validation-runtime", "type": "controller"},
++         "source_revision": SHA, "target": "bstBizEra/badf:main",
++         "toolchain": {"name": "badf-validation", "version": "1.0"},
++         "operation": f"g09-{kind}", "started_at": T1, "completed_at": T2,
++         "outcome": "PASS", "artifact": f"evidence/G09/{kind}.txt", "digest": DIGEST}
++    e.update(over)
++    return e
++
++
++def _common_binding():
++    return {
++        "candidate": {"source_revision": SHA, "content_tree": "b" * 40,
++                      "environment_id": "staging-1", "policy_epoch": "BADF-2026-08-25"},
++        "risk_hypothesis": "the candidate fails under its declared risk surface",
++        "method": "scenario execution against a deterministic oracle",
++        "oracle": {"kind": "DETERMINISTIC_CHECK", "locator": "orders.db:order_id",
++                   "evaluated_by": {"id": "oracle-runner", "type": "service"}},
++        "runtime": {"runtime": "validation-runner-1", "approved": True, "started_at": T1,
++                    "finished_at": T2, "exit_code": 0, "output_digest": DIGEST},
++        "environment": {"identity": "staging-1", "configuration": {}, "observed_at": T1,
++                        "toolchain": {"name": "runner", "version": "1.0"},
++                        "production_equivalence": "NON_PRODUCTION",
++                        "material_deviations": [{"surface": "payment gateway", "deviation": "sandbox, not live"}]},
++        "findings": [],
++        "non_coverage": [{"surface": "peak seasonal load", "reason": "not reproducible in staging"}],
++        "flake_policy": {"reruns_permitted": 1, "failed_observations_retained": True},
++    }
++
++
++def _class_extra(kind):
++    if kind == "quality-validation":
++        return {"quality_dimensions": [{"dimension": "FUNCTIONAL", "result": "PASS",
++                                        "oracle_locator": "orders.db:order_id"}]}
++    if kind == "security-validation":
++        return {"security_obligations": [{"obligation_id": "SEC-OB-1", "source": "THREAT_MODEL", "result": "PASS"}],
++                "residual_risk": []}
++    if kind == "performance-test":
++        return {"workload": {"family": "AVERAGE", "profile": "50 VU / 10 min"},
++                "measurements": [{"metric": "p95_latency", "observed": 180.0, "unit": "ms",
++                                  "slo": {"bound": 250.0, "comparator": "LTE", "bound_at": T0,
++                                          "source": "NFR-PERF-01"}}]}
++    if kind == "resilience-test":
++        return {"steady_state": {"definition": "p95 < 250ms, error rate < 0.1%", "observed_before": True,
++                                 "observed_after": True},
++                "fault": {"injection": "kill primary db pod", "blast_radius": "staging namespace",
++                          "expected_behavior": "replica promotion within 30s",
++                          "abort_conditions": [{"condition": "error rate > 5%", "executable": True}]},
++                "recovery": {"observed": True, "recovery_time_seconds": 22.0,
++                             "integrity_checks": [{"check": "order ledger balanced", "result": "PASS"}]}}
++    raise AssertionError(kind)
++
++
++def typed(kind, **over):
++    e = _envelope(kind)
++    b = _common_binding()
++    b.update(_class_extra(kind))
++    e["binding"] = b
++    for dotted, val in over.items():
++        node = e
++        parts = dotted.split("__")
++        for p in parts[:-1]:
++            node = node[p]
++        node[parts[-1]] = val
++    return e
++
++
++ART = Path(tempfile.mkdtemp()) / "artifact.txt"
++ART.write_text("g09 observation artifact\n", encoding="utf-8")
++
++
++def run(evidence):
++    return gate.check_g09_binding(ART, {}, evidence)
++
++
++class AdditiveTests(unittest.TestCase):
++    def test_evidence_without_binding_stays_admissible(self):
++        for kind in G09:  # literal tuple
++            with self.subTest(kind=kind):
++                run(_envelope(kind))  # no binding -> pass-through, exactly VER-B's shape
++
++    def test_registered_over_the_four_g09_types(self):
++        for kind in G09:  # literal tuple
++            self.assertIs(gate.EVIDENCE_RULES.get(kind), gate.check_g09_binding, kind)
++
++    def test_a_well_formed_typed_object_is_admitted_per_class(self):
++        for kind in G09:  # literal tuple; the reachability baseline for every refusal below
++            with self.subTest(kind=kind):
++                run(typed(kind))
++
++
++class SharedControlTests(unittest.TestCase):
++    def test_mixed_candidate_evidence_is_refused(self):  # V1 / VAL-I01
++        e = typed("quality-validation")
++        e["binding"]["candidate"]["source_revision"] = "f" * 40
++        with self.assertRaisesRegex(gate.ValidationError, "VAL-I01"):
++            run(e)
++
++    def test_agent_produced_observation_is_refused(self):  # V2 / VAL-I04-I05
++        for kind in G09:  # literal tuple
++            with self.subTest(kind=kind):
++                e = typed(kind)
++                e["producer"]["type"] = "agent"
++                with self.assertRaisesRegex(gate.ValidationError, "VAL-I04"):
++                    run(e)
++
++    def test_agent_as_its_own_oracle_is_refused(self):  # V3 / VAL-I04
++        e = typed("quality-validation")
++        e["binding"]["oracle"]["evaluated_by"]["type"] = "agent"
++        with self.assertRaisesRegex(gate.ValidationError, "outside the agent"):
++            run(e)
++
++    def test_empty_oracle_locator_is_refused(self):  # V3b / VAL-I04
++        # the schema's minLength:1 is INERT in this walker (it honours only required/enum/
++        # pattern/additionalProperties/type), so an empty locator is schema-valid and the
++        # refusal must be a code control or it does not exist.
++        e = typed("security-validation")
++        e["binding"]["oracle"]["locator"] = "   "
++        with self.assertRaisesRegex(gate.ValidationError, "names nothing"):
++            run(e)
++
++    def test_threshold_ordering_survives_an_equivalent_iso_spelling(self):  # V10 / VAL-I06
++        # bound_at is BEFORE started_at but written '+00:00' instead of 'Z'. A raw string
++        # comparison is not grounded in time here; parse_time is. Guards the fix, not the bug.
++        e = typed("performance-test")
++        e["binding"]["runtime"]["started_at"] = "2026-08-31T01:00:00Z"
++        e["binding"]["measurements"][0]["slo"]["bound_at"] = "2026-08-31T00:30:00+00:00"
++        run(e)  # admissible: the bound genuinely pre-exists the run
++
++    def test_threshold_bound_after_the_run_is_refused_even_when_it_sorts_earlier(self):  # V10 / VAL-I06
++        # THE FALSE-ACCEPT DIRECTION, contributed by BADF-QA's near-miss battery. Each bound_at
++        # below is semantically AFTER started_at but sorts BEFORE it as a string, so a raw
++        # comparison ADMITS a threshold fitted to the result -- a bad verdict passing silently.
++        # The equivalence and malformation tests above both survive a revert to string
++        # comparison; only these three fail, so this is the guard on the parse_time fix.
++        for bound_at in ("2026-08-30T20:00:00-07:00",   # == 03:00Z
++                         "2026-08-30T23:30:00-02:00",   # == 01:30Z
++                         "2026-08-31T00:30:00-01:00"):  # == 01:30Z
++            with self.subTest(bound_at=bound_at):
++                self.assertLess(bound_at, "2026-08-31T01:00:00Z", "must sort earlier to be a real probe")
++                e = typed("performance-test")
++                e["binding"]["runtime"]["started_at"] = "2026-08-31T01:00:00Z"
++                e["binding"]["measurements"][0]["slo"]["bound_at"] = bound_at
++                with self.assertRaisesRegex(gate.ValidationError, "VAL-I06"):
++                    run(e)
++
++    def test_malformed_threshold_timestamp_is_refused(self):  # V10 / VAL-I06
++        # `format: date-time` is inert too, so a non-ISO bound_at reaches the control;
++        # parse_time refuses it rather than comparing nonsense.
++        e = typed("performance-test")
++        e["binding"]["measurements"][0]["slo"]["bound_at"] = "yesterday"
++        with self.assertRaisesRegex(gate.ValidationError, "ISO 8601"):
++            run(e)
++
++    def test_pass_on_unapproved_runtime_is_refused(self):  # V4 / VAL-I04
++        e = typed("performance-test")
++        e["binding"]["runtime"]["approved"] = False
++        # match the INVARIANT id, not the field name: check_schema's own message embeds the
++        # field path ("binding.runtime.approved must be a boolean"), so a bare "approved"
++        # regex is satisfiable by a schema-layer refusal and would not prove the control ran.
++        with self.assertRaisesRegex(gate.ValidationError, "VAL-I04"):
++            run(e)
++
++    def test_empty_noncoverage_is_refused(self):  # V5 / VAL-I15
++        e = typed("security-validation")
++        e["binding"]["non_coverage"] = []
++        with self.assertRaisesRegex(gate.ValidationError, "VAL-I15"):
++            run(e)
++
++    def test_nonproduction_without_declared_deviation_is_refused(self):  # V6 / VAL-I08
++        e = typed("resilience-test")
++        e["binding"]["environment"]["material_deviations"] = []
++        with self.assertRaisesRegex(gate.ValidationError, "VAL-I08"):
++            run(e)
++
++    def test_flake_policy_discarding_failures_is_refused(self):  # V7 / VAL-I16
++        e = typed("quality-validation")
++        e["binding"]["flake_policy"]["failed_observations_retained"] = False
++        with self.assertRaisesRegex(gate.ValidationError, "VAL-I16"):
++            run(e)
++
++    def test_pass_over_an_open_blocking_finding_is_refused(self):  # V8 / VAL-I14
++        e = typed("security-validation")
++        e["binding"]["findings"] = [{"finding_id": "VF-9", "severity": "BLOCKER",
++                                     "status": "OPEN", "summary": "auth bypass"}]
++        with self.assertRaisesRegex(gate.ValidationError, "VAL-I14"):
++            run(e)
++
++    def test_resolved_blocking_finding_does_not_block_pass(self):  # V8 boundary
++        e = typed("security-validation")
++        e["binding"]["findings"] = [{"finding_id": "VF-9", "severity": "BLOCKER",
++                                     "status": "RESOLVED", "summary": "auth bypass",
++                                     "disposition": "fixed in candidate"}]
++        run(e)
++
++
++class PerClassControlTests(unittest.TestCase):
++    def test_security_with_empty_obligations_is_refused(self):  # V9
++        e = typed("security-validation")
++        e["binding"]["security_obligations"] = []
++        with self.assertRaisesRegex(gate.ValidationError, "routing decision"):
++            run(e)
++
++    def test_security_self_accepted_risk_is_unrepresentable(self):  # V9 / VAL-I09 via schema enum
++        e = typed("security-validation")
++        e["binding"]["residual_risk"] = [{"risk_id": "RR-1", "severity": "MAJOR",
++                                          "acceptance": {"state": "ACCEPTED"}}]
++        with self.assertRaisesRegex(gate.ValidationError, "acceptance.state"):
++            run(e)
++
++    def test_performance_with_no_measurements_is_refused(self):  # V10 / VAL-I10
++        e = typed("performance-test")
++        e["binding"]["measurements"] = []
++        with self.assertRaisesRegex(gate.ValidationError, "VAL-I10"):
++            run(e)
++
++    def test_performance_threshold_bound_after_the_run_is_refused(self):  # V10 / VAL-I06
++        e = typed("performance-test")
++        e["binding"]["measurements"][0]["slo"]["bound_at"] = T2  # after started_at=T1
++        with self.assertRaisesRegex(gate.ValidationError, "VAL-I06"):
++            run(e)
++
++    def test_performance_measurement_without_slo_is_refused_by_schema(self):  # VAL-I10 structural
++        e = typed("performance-test")
++        del e["binding"]["measurements"][0]["slo"]
++        with self.assertRaisesRegex(gate.ValidationError, "missing slo"):
++            run(e)
++
++    def test_resilience_without_prior_steady_state_is_refused(self):  # V11 / VAL-I11
++        e = typed("resilience-test")
++        e["binding"]["steady_state"]["observed_before"] = False
++        with self.assertRaisesRegex(gate.ValidationError, "VAL-I11"):
++            run(e)
++
++    def test_resilience_without_abort_conditions_is_refused(self):  # V11 / VAL-I11
++        e = typed("resilience-test")
++        e["binding"]["fault"]["abort_conditions"] = []
++        with self.assertRaisesRegex(gate.ValidationError, "VAL-I11"):
++            run(e)
++
++    def test_resilience_nonexecutable_abort_is_refused(self):  # V11 / VAL-I11
++        e = typed("resilience-test")
++        e["binding"]["fault"]["abort_conditions"][0]["executable"] = False
++        with self.assertRaisesRegex(gate.ValidationError, "not executable"):
++            run(e)
++
++    def test_resilience_pass_without_observed_recovery_is_refused(self):  # V11 / VAL-I12
++        e = typed("resilience-test")
++        e["binding"]["recovery"]["observed"] = False
++        with self.assertRaisesRegex(gate.ValidationError, "VAL-I12"):
++            run(e)
++
++    def test_resilience_pass_with_no_integrity_checks_is_refused(self):  # V11 / VAL-I12
++        # distinct from the FAIL-check case below: an EMPTY check list is structurally
++        # valid (no minItems) and must be refused by the code control, not the schema.
++        e = typed("resilience-test")
++        e["binding"]["recovery"]["integrity_checks"] = []
++        with self.assertRaisesRegex(gate.ValidationError, "no integrity checks"):
++            run(e)
++
++    def test_resilience_pass_with_failed_integrity_check_is_refused(self):  # V11 / VAL-I12
++        e = typed("resilience-test")
++        e["binding"]["recovery"]["integrity_checks"] = [{"check": "ledger balanced", "result": "FAIL"}]
++        with self.assertRaisesRegex(gate.ValidationError, "VAL-I12"):
++            run(e)
++
++    def test_resilience_failed_run_may_record_unobserved_recovery(self):  # V11 boundary
++        # REACHABILITY, stated so it is not mistaken for a production path: validate_evidence
++        # invokes EVIDENCE_RULES only when outcome == PASS (badf_gate.py:1916-1918), so the
++        # dispatcher never routes a FAIL object here. This is a UNIT-level over-fire guarantee
++        # -- the control must not refuse an honestly-recorded failure if it is ever called on
++        # one -- not evidence of a path the gate takes today.
++        e = typed("resilience-test", outcome="FAIL")
++        e["binding"]["recovery"]["observed"] = False
++        run(e)  # honesty about a failed observation is admissible; PASS is what recovery gates
++
++    def test_quality_pass_dimension_without_oracle_is_refused(self):  # V12 / VAL-I04
++        e = typed("quality-validation")
++        e["binding"]["quality_dimensions"] = [{"dimension": "FUNCTIONAL", "result": "PASS"}]
++        # invariant id, not "oracle": the walker's labels contain the field path too.
++        with self.assertRaisesRegex(gate.ValidationError, "VAL-I04"):
++            run(e)
++
++    def test_quality_with_no_dimensions_is_refused(self):  # V12
++        e = typed("quality-validation")
++        e["binding"]["quality_dimensions"] = []
++        with self.assertRaisesRegex(gate.ValidationError, "validated nothing"):
++            run(e)
++
++
++class StructuralTests(unittest.TestCase):
++    def test_one_classes_payload_cannot_fill_anothers_slot(self):  # VAL-I13 structural floor
++        e = typed("performance-test")
++        donor = typed("resilience-test")
++        e["binding"] = donor["binding"]  # a resilience binding in a performance evidence slot
++        # MEASURED, not assumed: the walker checks `required` BEFORE additionalProperties, so a
++        # WHOLESALE class swap is refused for the keys it LACKS, never reaching the foreign-key
++        # check. An earlier version of this test asserted additionalProperties and passed only
++        # because it accepted any ValidationError -- the mechanism was wrong and the bare
++        # assertRaises hid it. Both floors exist; this one is `required`.
++        with self.assertRaisesRegex(gate.ValidationError, "missing measurements"):
++            run(e)
++
++    def test_a_foreign_key_smuggled_into_a_complete_binding_is_refused(self):  # VAL-I13 floor 2
++        # isolates the OTHER floor: a performance binding that satisfies every required key and
++        # then carries one resilience field. `required` is satisfied, so this is the case where
++        # additionalProperties:false is the control actually doing the work.
++        e = typed("performance-test")
++        e["binding"]["recovery"] = {"observed": True, "integrity_checks": []}
++        with self.assertRaisesRegex(gate.ValidationError, "undefined key"):
++            run(e)
++
++    def test_registry_implemented_and_digest_bound(self):
++        registry = json.loads((gate.ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))
++        entry = next((s for s in registry["skills"] if s["name"] == "badf-release-validation"), None)
++        self.assertIsNotNone(entry, "badf-release-validation must be registered")  # filter matched
++        self.assertEqual(entry["status"], "IMPLEMENTED")
++        import hashlib
++        skill = gate.ROOT / "skills" / "badf-release-validation" / "SKILL.md"
++        self.assertEqual(entry["digest"], "sha256:" + hashlib.sha256(skill.read_bytes()).hexdigest())
++
++    def test_no_competing_validator_script_exists(self):  # VAL-I20 at every rung
++        self.assertFalse((gate.ROOT / "scripts" / "badf_release_validation.py").exists())
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/tests/test_badf_release_validation_contract.py b/tests/test_badf_release_validation_contract.py
+index 3ba8cd8..d01f3f7 100644
+--- a/tests/test_badf_release_validation_contract.py
++++ b/tests/test_badf_release_validation_contract.py
+@@ -35,7 +35,7 @@ class SkillContractTests(unittest.TestCase):
+     def test_skill_exists_and_frontmatter(self):
+         self.assertTrue(SKILL.is_file(), "SKILL.md must exist")
+         for token in ("name: badf-release-validation", "gate: G09",
+-                      "owner_role: quality_authority", "status: DESIGNED", "allowed_tools: []"):
++                      "owner_role: quality_authority", "status: IMPLEMENTED", "allowed_tools: []"):
+             self.assertIn(token, SKILL_TEXT, token)
+ 
+     def test_all_twenty_invariants_present_by_id(self):
+@@ -80,7 +80,10 @@ class SkillContractTests(unittest.TestCase):
+         registry = json.loads((ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))
+         entry = next((e for e in registry["skills"] if e["name"] == "badf-release-validation"), None)
+         self.assertIsNotNone(entry, "badf-release-validation must be registered")
+-        self.assertEqual(entry["status"], "DESIGNED")
++        # WP-VAL-B (WP-2026-0113): the typed G09 contracts land at IMPLEMENTED.
++        # The pin advances with the rung rather than loosening -- each advance is
++        # then visible in its own diff, the VER-E pattern.
++        self.assertEqual(entry["status"], "IMPLEMENTED")
+         expected = "sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest()
+         self.assertEqual(entry["digest"], expected, "registry digest must equal sha256(SKILL.md)")
+ 
+diff --git a/work/WP-2026-0112/work-package.json b/work/WP-2026-0112/work-package.json
+index e50abbb..d054296 100644
+--- a/work/WP-2026-0112/work-package.json
++++ b/work/WP-2026-0112/work-package.json
+@@ -42,11 +42,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "87dd192"
++    "base_revision": "87dd192",
++    "landed_content_tree": "6b85abc47d86bdf675a8060438492eaa441ee462",
++    "composition_verified": true,
++    "landed_as": "1c1827c0e99ea86d9ca1119b1a92d90d83ba1628"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Instance ten of the evening's proxy-vs-property class, found on my own surface by applying BARCHI-3's checklist (#221) and the second such instance introduced while remediating. Ids measured across four surfaces AND asked for -- confirmed clear by BARCHI-3 (including their local worktrees) and BADF-QA (with positive controls) before binding, the remedy for my WP-0110/DEM-0097 collision. Fix adopts existing prior art rather than inventing a guard. Resolves #229 / GOV-0099. Reconciled WP-2026-0111 locally when the gate refused to open this WP with it unreconciled; #224 reconciled it independently and landed first (87dd192), so my copy collapsed to a byte-identical no-op on rebase -- the fourth instance of derived-reconcile-convergence tonight. Also reconciles WP-2026-0110 (BARCHI-3's close-out, landed 87dd192): no competing open PR at the time this WP opened, so no race -- checked before claiming it, having just been corrected for skipping that check on WP-2026-0111. Ownership was NOT a free choice: the canonical gate refuses to open a new work package while a landed one is unreconciled (\"reconcile landed work packages before opening a new one\"), so the next WP to open owns the reconcile mechanically. I had earlier ceded WP-2026-0111 to BARCHI-3's #224 by agreement; the gate overrode the agreement and both seats were told. An earlier staged reconcile of WP-2026-0109 was dropped as redundant -- #213 had already landed it byte-identically, visible only by diffing against origin/main rather than local HEAD.",
+   "expected_surfaces": {
