@@ -4228,6 +4228,32 @@ def validate_verification_record(path: Path) -> str:
     for d in rec["synthesis"]["downgraded"]:
         if d["finding_id"] not in findings:
             raise ValidationError(f"synthesis downgrades {d['finding_id']}, which the record does not carry (VER-I12)")
+    for b in ballots:
+        # #211: the ballot layer's own coherence. The matrix layer already refuses a VERIFIED row
+        # over an OPEN blocking finding, and check_g08_binding refuses this shape on a review
+        # binding -- but the record's ballots were unchecked, so APPROVE could cite an OPEN MAJOR
+        # it raised itself. Strict APPROVE only: APPROVE_WITH_CONDITIONS over an open finding is
+        # the conditional arc and REJECT over open findings is the rejecting arc; both are honest.
+        # status/severity are READ from the record, not recomputed from evidence: the record is
+        # the persisted decision and this module has no independent source of truth for it.
+        # Deliberate, not an oversight (BADF-QA on #267).
+        if b["verdict"] != "APPROVE":
+            continue
+        # The association is two-sided and the record checks neither direction for
+        # reciprocity: a ballot cites via finding_ids, a finding names reporters via
+        # reported_by/also_reported_by, and nothing requires them to agree. Walking only
+        # finding_ids left the same proposition reachable from the other side -- an APPROVE
+        # with finding_ids: [] while the findings side still named it as the reporter of an
+        # OPEN MAJOR. Take the union so neither side alone can hide the contradiction.
+        associated = set(b["finding_ids"]) | {f["finding_id"] for f in rec["findings"]
+                                              if b["ballot_id"] in f["reported_by"] + f["also_reported_by"]}
+        cited_open = [fid for fid in associated
+                      if fid in findings and findings[fid]["status"] == "OPEN"
+                      and findings[fid]["severity"] in BLOCKING_SEVERITIES]
+        if cited_open:
+            raise ValidationError(f"ballot {b['ballot_id']}: verdict APPROVE contradicts OPEN blocking finding(s) "
+                                  f"{', '.join(sorted(cited_open))} associated with it (by its own finding_ids or by the "
+                                  f"finding naming it as reporter); a verdict cannot contradict its own findings")
     for f in rec["findings"]:
         if not f["reported_by"]:
             raise ValidationError(f"finding {f['finding_id']} has no reporting ballot; a finding nobody balloted is invented (VER-I06)")
