@@ -18,7 +18,7 @@ external skill = REFERENCE / ADAPT     (not:  external skill = BADF authority)
 | keyboard, focus, semantics, contrast, assistive technology | accessibility adapter |
 | architecture boundary / topology / trust decision | **`badf-architecture`** (the spine, not an adapter) |
 | uncertainty requiring evidence | **`badf-research`** |
-| security threat / risk decision | future **`badf-security`** |
+| security threat / risk decision | **`badf-security-design`** (ACTIVE; owns threat model, privacy assessment, supply-chain plan) |
 
 ## Routing rules
 

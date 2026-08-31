@@ -1,0 +1,460 @@
+diff --git a/badf/demands/BADF-DEM-0107.json b/badf/demands/BADF-DEM-0107.json
+new file mode 100644
+index 0000000..beaf50e
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0107.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0107",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 223,
++    "url": "https://github.com/bstBizEra/badf/issues/223",
++    "exported_at": "2026-08-31T09:14:18Z",
++    "body_digest": "sha256:e8032db04095491c4cc94db7607da67d2fdc7f306bbf0205d7b900d35b6666f2"
++  },
++  "title": "GOV: badf-security in solution-design routing names a family that never existed; generalize #222's registry-resolution guard with a declared-future allowlist",
++  "problem": "\ud83d\udd0e **REV (BADF-REV)** \u2014 surfaced while reviewing #222 (WP-2026-0109). Out of that PR's scope \u2014 different family surface \u2014 so it is filed rather than fixed in-PR.\n\n#222 adds a guard that every `badf-*` token under `skills/badf-build/**` resolves in the registry, after `badf-verification (G08)` sat in badf-build's frozen Boundary block naming a family that does not exist. I ran that guard's logic across **every** family surface. Two distinct classes came back, and only one is a defect.\n\n## The defect \u2014 `badf-security` in `badf-solution-design`\n\n`skills/badf-solution-design/references/routing.md:21`:\n\n```\n| security threat / risk decision | future **`badf-security`** |\n```\n\n`badf-security` is **not a registry family and never has been**. It is a third name matching neither of the two that exist:\n\n- `badf-security-design` \u2014 **`ACTIVE` in the registry today**, and it owns exactly \"security threat / risk decision\".\n- `badf-security-assurance` \u2014 the declared-future assurance family (SAST/SCA/secrets/IaC), consistently labelled \"named, not built\".\n\nSo the routing table sends a live concern to a *future* family when the **ACTIVE** family that owns it already exists. This is the same class as the #219 defect and has a sharper practical consequence: a reader following the table defers a decision that is routable today. My reading is `badf-security-design`, but the owning seat should confirm the intent rather than take my inference.\n\n## Not a defect \u2014 `badf-security-assurance`\n\nAppears in `badf-engineering-verification` (4 files) and `badf-security-design` (6 files), and resolves nowhere \u2014 **correctly**. It is explicitly \"named, not built\" at every use (`GITHUB_CONTROL_PLANE.md:912`, `badf-engineering-verification/SKILL.md:69` and `:131`, routed with declared non-coverage). A naive repo-wide generalization of #222's guard would flag all ten of these and invite someone to delete a deliberate forward reference \u2014 the exact false-positive shape that #210's original criterion had.\n\n## Acceptance criteria\n\n1. `routing.md:21` routes the security threat / risk decision row to the family that actually owns it (`badf-security-design` unless the owner says otherwise); no other row changed.\n2. The #222 guard generalizes to **all** `skills/<family>/**` surfaces, with a **declared-future allowlist** rather than a bare exclusion set: a token may be unresolved only if the same surface labels it \"named, not built\" (or equivalent) at that use. Encode the label check \u2014 an allowlist of bare names would let a genuine typo hide behind a listed name.\n3. Failing-first: with `routing.md:21` unfixed, the generalized guard **fails and names the file and token**; after the fix it passes; and an injected unresolved token in any other family surface also fails (positive control asserted in the test).\n4. The ten `badf-security-assurance` uses stay green throughout \u2014 the allowlist must not be satisfiable by simply listing the name.\n\n**Version tier:** patch. **Lean mode:** advisory. Out of scope: building `badf-security-assurance`; any registry status change.\n\nOwner note: `routing.md` is badf-solution-design's surface (BARCHI-1); the guard generalization touches shared test surface and should come to BADF-QA/BADF-REV.\n\n<!-- agent: reviewer -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-31T09:14:18Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Routes badf-solution-design's security threat / risk decision row to badf-security-design (ACTIVE) instead of `badf-security`, a family that has never existed, and generalizes #222's badf-build-only family-name guard across every skills/<family>/** surface against a GOVERNED declared_future_families list in badf/skill-registry.json. #223's original criterion -- permit an unresolved token when the surface labels it 'named, not built' at that use -- was measured backwards on the real corpus and dropped with SARCHI's endorsement: the defect IS labelled (`future **badf-security**`) while three of seventeen legitimate badf-security-assurance uses are bare. Registry edit makes this contract_changed by construction (badf_gate.py:3623) -> QA + REV."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 4f3ab5c..c9b0cc4 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -1,6 +1,14 @@
+ {
+   "schema_version": "1.0.0",
+   "default_policy": "approved-only",
++  "declared_future_families": [
++    {
++      "name": "badf-security-assurance",
++      "declared_by": "SEC-I14",
++      "gate": "G08/G09",
++      "reason": "Assurance -- code review, SAST, SCA, secret scanning, IaC scanning, remediation -- is deliberately separated from G05 security DESIGN and named before it is built, so badf-security-design can route assurance concerns away from itself rather than absorb them. Named, not built."
++    }
++  ],
+   "skills": [
+     {
+       "name": "badf-delivery",
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index fe2927c..0d1d341 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -2005,6 +2005,76 @@ that verdict. Mirroring C6 would require inventing a schema field — which the
+ **#250 exists precisely because `check_g07_binding` accumulated correct controls nothing was watching** —
+ adding an unwatched control while claiming to fix that class would have grown the pile.
+ 
++## A declared future family, not an apologetic typo (`BADF-WP-0120`, Issue #223)
++
++`badf-solution-design`'s routing table sent the security threat / risk decision row to
++**`badf-security`** — a family that has never been in the registry — while **`badf-security-design` is
++`ACTIVE`** and owns exactly that concern. A reader following the table deferred a decision that was
++routable today. The row now names the family that owns it, and the stale *future* is gone.
++
++The interesting part is the guard. `BADF-WP-0109` added a family-name guard over `skills/badf-build/**`;
++generalizing it across every family surface surfaced two unresolved tokens, only one of which is a
++defect. The other — `badf-security-assurance` — is a deliberate forward reference, named before it is
++built so that `badf-security-design` can route assurance concerns *away* from itself rather than absorb
++them (SEC-I14).
++
++**#223 originally proposed permitting an unresolved token when the same surface labels it "named, not
++built" at that use. That criterion is backwards on this repository's data, measured before it was
++built:**
++
++| token | uses | labelled at the use | bare |
++| :--- | ---: | ---: | ---: |
++| `badf-security-assurance` — legitimate | 17 | 14 | **3** |
++| `badf-security` — **the defect** | 1 | **1** | 0 |
++
++The defect reads `future **badf-security**`, so it *satisfies* the label check; three legitimate uses are
++bare on their line. A guard built to that criterion would admit the one thing the issue exists to catch
++and refuse three things it must not. **"Carries a declared-future label" is a proxy for "is a
++deliberately declared future family", and a typo satisfies the proxy simply by being written
++apologetically** — the same proxy-for-property shape as the vacuity findings, one layer up.
++
++So the exception surface is **governed rather than inferred**: a top-level `declared_future_families`
++list in `badf/skill-registry.json`, already the authoritative surface for family names, digest-pinned and
++lockfile-covered. The guard reads a governed artifact and asserts nothing of its own. **Controls narrow
++the list-becomes-a-hole risk without closing it**: an entry must carry `declared_by` (resolvable in the
++tree, not merely present), `gate` and a non-empty `reason`, and a declared name that **no surface
++references** is refused as dead permission. What they cannot catch — measured, not conceded — is a typo
++introduced *together with* its listing in the same edit: that shape satisfies every property, and no
++mechanism closes it without a worse proxy (a similarity threshold would be calibrated on a list with one
++legitimate member, and no threshold separates the legitimate forward reference at 0.744 from the original
++defect at 0.788). **The same-edit case is caught by review of the digest-pinned registry edit — review
++does that work, not the guard** — which is still the real improvement: the bar moved from a word in prose
++to a governed edit under review. Adding the key is
++schema-additive — there is no registry schema, and `verify_registry_digests` iterates only
++`registry["skills"]`, so no per-family digest moves.
++
++**What this rung does not do:** it establishes one declaration surface with one member. The general
++question — what a gate should do when an *optional* enforcement input is absent, of which an undeclared
++future family is the fourth instance beside C3's `expected_surfaces`, C7's delegation ceiling and GIT-F's
++composition record — is deferred to that class's single answer, because answering them one at a time
++would produce inconsistent answers.
++
++**The guard proved itself mid-build.** `badf-uat` landed while this WP was open, and the generalized scan
++immediately found a third unresolved token on the new surface — `badf-production-readiness`, three uses in
++`skills/badf-uat/SKILL.md`, routing `release-packet` and `operational-readiness` away from `badf-uat`
++rather than claiming them. A legitimate forward reference, and now the list's second member (UAT-I14 /
++#237). That also produced the list's first **discharge**: PR #245 registers that family, and a name may
++not be both registered and declared-future — so whichever lands second deletes the entry, enforced by a
++test rather than remembered, with the instruction written into the entry's own `reason` field because a
++condition living in chat does not outlive the session holding it.
++
++**And the first discharge happened before this rung even landed.** `badf-production-readiness` was added as a
++second member when `badf-uat` landed mid-build; then PR #245 registered that family, and a name may not be
++both registered and declared-future — so the entry was removed here. The list is back to one member, and it
++shrank because a family got *built*, which is exactly the property that keeps it from decaying into a
++permanent allowlist. The instruction that made that happen lived in the entry's own `reason` field rather
++than in a message, and was read in place.
++
++**Known and uncovered:** `GOV-0102`'s own doctrine says *"unexercised authority is pruned"*, which is the right
++remedy when a declaration is over-broad and the **wrong** one when the declaration is correct and the content
++went missing — both emit a byte-identical condition. That gap is filed as **#257 / GOV-0113** and is not fixed
++here: this rung's subject is family names, and editing the same file is not sharing the subject.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/skills/badf-solution-design/references/routing.md b/skills/badf-solution-design/references/routing.md
+index e28fb70..16afda2 100644
+--- a/skills/badf-solution-design/references/routing.md
++++ b/skills/badf-solution-design/references/routing.md
+@@ -18,7 +18,7 @@ external skill = REFERENCE / ADAPT     (not:  external skill = BADF authority)
+ | keyboard, focus, semantics, contrast, assistive technology | accessibility adapter |
+ | architecture boundary / topology / trust decision | **`badf-architecture`** (the spine, not an adapter) |
+ | uncertainty requiring evidence | **`badf-research`** |
+-| security threat / risk decision | future **`badf-security`** |
++| security threat / risk decision | **`badf-security-design`** (ACTIVE; owns threat model, privacy assessment, supply-chain plan) |
+ 
+ ## Routing rules
+ 
+diff --git a/tests/test_badf_family_names.py b/tests/test_badf_family_names.py
+new file mode 100644
+index 0000000..375a6a6
+--- /dev/null
++++ b/tests/test_badf_family_names.py
+@@ -0,0 +1,292 @@
++"""Every `badf-*` family named in any skill surface resolves — or is declared future.
++
++WP-2026-0120 / GOV (#223). BADF-REV generalized #222's badf-build-only guard across every
++family surface and found two unresolved tokens: `badf-security` in badf-solution-design's
++routing table (a family that has never existed, while `badf-security-design` is ACTIVE and
++owns exactly that concern), and `badf-security-assurance` (a deliberate forward reference).
++
++#223's original criterion permitted an unresolved token when the same surface labelled it
++"named, not built" AT THAT USE. Measured across the real corpus, that criterion is backwards:
++
++    badf-security-assurance (legitimate)   17 uses   14 labelled   3 BARE
++    badf-security           (the defect)    1 use     1 labelled   0 bare
++
++The defect reads `future **badf-security**` -- it satisfies the label check -- while three
++legitimate uses are bare on their line. "Carries a declared-future label" is a PROXY for
++"is a deliberately declared future family", and a typo satisfies the proxy simply by being
++written apologetically.
++
++So the guard reads a GOVERNED DECLARATION instead: `declared_future_families` in
++badf/skill-registry.json. That is the authoritative surface for family names already
++(digest-pinned, lockfile-covered), and it makes intent declared rather than inferred from
++prose. The controls below NARROW the ways the list itself could become a hole; the one shape
++they cannot catch is stated in the DECLARED SCOPE OF THE LIST CONTROLS block, with the
++measurement that shows why no mechanism here closes it.
++"""
++import json
++import pathlib
++import re
++import sys
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++ROOT = gate.ROOT
++SKILLS = ROOT / "skills"
++REGISTRY = ROOT / "badf" / "skill-registry.json"
++
++# Non-family badf-* tokens. Keep minimal: every entry is a hole in the guard.
++#   "badf-sa" -- slug of the sibling BST-SA organism repo, never a skill family.
++NON_FAMILY = {"badf-sa"}
++
++# Unicode dashes an editor or a paste substitutes for U+002D. Folded before matching:
++# `badf‑release‑validation` with U+2011 is the same reference a human meant to write, and
++# arrives from copy-paste rather than from an adversary (BADF-QA, #259 review).
++UNICODE_DASHES = "\u2010\u2011\u2012\u2013\u2014\u2212"
++
++
++def _fold_dashes(text):
++    for d in UNICODE_DASHES:
++        text = text.replace(d, "-")
++    return text
++
++
++# DECLARED SCOPE OF THE MATCHER -- stated so it is a decision, not the next reviewer's finding.
++#
++# The scan matches `badf-<lowercase>` after folding Unicode dashes. Two forms are deliberately
++# OUT of scope, and neither is an oversight:
++#
++#   UPPERCASE (`BADF-...`) -- measured, not assumed: case-folding this corpus surfaces
++#     `BADF-QA`, `BADF-REV` (seat names), `BADF-controlled` and `BADF-native` (adjectives),
++#     none of which is a family reference. Uppercase `BADF-` is an ACTIVELY USED DISTINCT
++#     CONVENTION here -- roles, work-package ids, prose modifiers -- not a variant spelling of
++#     a family name. Folding case would conflate two namespaces and flag four correct uses.
++#     So this is not "an evasion we judged unlikely"; it is a fix that would break real usage.
++#
++#   UNDERSCORE (`badf_...`) -- the SCRIPT namespace: `badf_gate`, `badf_compose`,
++#     `badf_id_sweep`. Measured: including it flags 62 tokens, 61 of them `badf_gate`.
++#
++# A family reference written in either form is not caught. That is the boundary, and closing
++# it would require distinguishing intent from spelling, which the corpus does not support.
++
++# DECLARED SCOPE OF THE LIST CONTROLS -- what the declared_future_families checks below do
++# and deliberately do not close (BADF-REV's #259 pre-pass, measured, ruled in-rung):
++#
++#   They REFUSE: dead permission (a declared name no surface references), double registration
++#   (a name both registered and declared-future), and absent or unresolvable provenance.
++#
++#   They CANNOT catch a typo introduced TOGETHER WITH its listing in the same edit -- that
++#   shape satisfies every property by construction. Measured before declining to build a
++#   closer: a similarity guard would be calibrated on a list with ONE legitimate member, and
++#   no threshold separates the legitimate forward reference (0.744 to its nearest registered
++#   neighbour) from the original #223 defect (0.788). A threshold tuned on n=1 is a proxy for
++#   "is a typo" -- a new proxy, in the guard whose subject is that proxies are not properties.
++#
++#   The same-edit case is caught by REVIEW of the digest-pinned registry edit. Review does
++#   that work, not this guard; the improvement this guard delivers is that the bar moved from
++#   a word in prose to a governed edit under review.
++
++SURFACES = sorted(SKILLS.rglob("*.md"))
++
++
++def _scan():
++    """token -> set(files), across every skills/<family>/** markdown surface."""
++    found = {}
++    for path in SURFACES:
++        text = _fold_dashes(path.read_text(encoding="utf-8"))
++        for raw in re.findall(r"badf-[a-z0-9-]+", text):
++            token = raw.rstrip("-")          # a trailing hyphen can enter the match
++            if token in NON_FAMILY:
++                continue
++            found.setdefault(token, set()).add(str(path.relative_to(ROOT)))
++    return found
++
++
++def _registered():
++    reg = json.loads(REGISTRY.read_text(encoding="utf-8"))
++    return {e.get("name") for e in reg.get("skills") or []}
++
++
++def _declared_future():
++    reg = json.loads(REGISTRY.read_text(encoding="utf-8"))
++    return {e.get("name") for e in reg.get("declared_future_families") or []}
++
++
++class FamilyNameResolutionTests(unittest.TestCase):
++    def test_the_scan_is_not_vacuous(self):
++        # Anti-vacuity, per the #229/#234 class: a guard that goes quiet when its subject
++        # disappears is not a guard. These fail loudly if the corpus is moved or emptied.
++        self.assertTrue(SKILLS.is_dir(), "skills/ is absent; every assertion below would pass on nothing")
++        families = sorted(p.name for p in SKILLS.iterdir() if p.is_dir())
++        self.assertGreaterEqual(len(families), 10, f"scanned only {len(families)} family surfaces: {families}")
++        self.assertGreaterEqual(len(SURFACES), 50, f"scanned only {len(SURFACES)} markdown files under skills/")
++        found = _scan()
++        # the scan must have read something meaningful, not merely opened files
++        for anchor in ("badf-build", "badf-solution-design", "badf-release-validation"):
++            self.assertIn(anchor, found, f"the scan never found {anchor}; it read files but learned nothing")
++
++    def test_every_family_named_in_any_surface_resolves_or_is_declared_future(self):
++        found = _scan()
++        permitted = _registered() | _declared_future()
++        unresolved = {t: sorted(f) for t, f in found.items() if t not in permitted}
++        self.assertEqual({}, unresolved,
++                         "badf-* families named in a skill surface but neither registered nor listed in "
++                         "declared_future_families: "
++                         + "; ".join(f"{t} named in {', '.join(fs)}" for t, fs in sorted(unresolved.items())))
++
++    def test_the_scan_itself_folds_unicode_dashes(self):
++        # BADF-QA's #259 finding: U+2011 and friends arrive from paste and dash-substituting
++        # editors. Asserting _fold_dashes() in isolation proves the HELPER works, not that
++        # the scan is wired to it -- a mutation that dropped the fold from _scan() survived
++        # exactly that test. So drive the real _scan() over a real surface file instead.
++        victim = SKILLS / "badf-solution-design" / "references" / "routing.md"
++        original = victim.read_text(encoding="utf-8")
++        try:
++            for dash in UNICODE_DASHES:
++                with self.subTest(dash=hex(ord(dash))):
++                    victim.write_text(original + f"\nrouted to `badf{dash}invented{dash}family`\n",
++                                      encoding="utf-8")
++                    self.assertIn("badf-invented-family", _scan(),
++                                  f"_scan() did not fold U+{ord(dash):04X}; the guard is not wired to the fold")
++        finally:
++            victim.write_text(original, encoding="utf-8")
++        self.assertEqual(original, victim.read_text(encoding="utf-8"), "probe did not restore the surface")
++
++    def test_the_declared_out_of_scope_forms_are_documented_not_merely_absent(self):
++        # The boundary must be STATED. A limit nobody wrote down is indistinguishable from
++        # an oversight, and the next reviewer re-files it (REV's #258 ruling, adopted here).
++        src = pathlib.Path(__file__).read_text(encoding="utf-8")
++        # Scope the search to the module-level region ABOVE the first class. Searching the
++        # whole file lets this assertion be satisfied by its own string literal -- a mutation
++        # that deleted the entire scope note survived, because the needle lived in the needle.
++        head = src.split("\nclass ", 1)[0]
++        marker = "DECLARED" + " SCOPE OF THE MATCHER"      # split so this line is not the match
++        self.assertIn(marker, head, "the scope note must live in the module region, not only in this test")
++        for token in ("UPPERCASE", "UNDERSCORE", "BADF-QA", "badf_gate"):
++            self.assertIn(token, head, f"the scope note must name {token}")
++        # the LIST controls' boundary must be stated too, with its measurement -- a limit
++        # backed by a number survives the next reviewer who has the same closing idea
++        for token in ("TOGETHER WITH", "0.744", "0.788", "REVIEW of the digest-pinned"):
++            self.assertIn(token, head, f"the list-controls scope note must carry {token!r}")
++
++    def test_uppercase_prose_uses_are_not_flagged(self):
++        # The reason uppercase is out of scope: these are real, correct uses in the corpus.
++        # If case-folding is ever added, these four must be excluded explicitly first.
++        joined = " ".join(p.read_text(encoding="utf-8") for p in SURFACES)
++        for real in ("BADF-QA", "BADF-REV"):
++            self.assertIn(real, joined, f"{real} should still appear in the corpus")
++        found = _scan()
++        for wrong in ("badf-qa", "badf-rev", "badf-controlled", "badf-native"):
++            self.assertNotIn(wrong, found, f"{wrong} is prose, not a family; the scan must not see it")
++
++    def test_declared_future_names_are_not_also_registered(self):
++        # A name cannot be both built and declared-future; that would let a real family's
++        # removal go unnoticed behind its own forward-reference entry.
++        both = _registered() & _declared_future()
++        self.assertEqual(set(), both, f"names both registered and declared-future: {sorted(both)}")
++
++    def test_declared_future_entries_carry_their_provenance(self):
++        reg = json.loads(REGISTRY.read_text(encoding="utf-8"))
++        entries = reg.get("declared_future_families") or []
++        self.assertTrue(entries, "declared_future_families is empty; the guard's exception surface must be explicit")
++        # declared_by must RESOLVE in the tree, not merely be present -- a field checked for
++        # presence only is attribution-shaped without attributing (the decorative-const shape,
++        # BADF-REV #259). Resolution is a WORD-BOUNDARY token match, not a substring test:
++        # raw `in` admitted fragments that are mere prefixes of a real id (`SEC`, `SEC-I1`)
++        # and the empty string -- the same vacuous-containment root as BADF-QA's finding 1.
++        # What still passes, deliberately: a REAL token that is wrong provenance (an adjacent
++        # id like SEC-I15, a gate id like G08) -- review's to catch, per the DECLARED SCOPE
++        # OF THE LIST CONTROLS above.
++        doctrine = list(SKILLS.rglob("*.md")) + list((ROOT / "docs").rglob("*.md"))
++        for e in entries:
++            for field in ("name", "declared_by", "gate", "reason"):
++                self.assertIn(field, e, f"declared-future entry {e.get('name','?')} is missing {field}; "
++                                        "an undocumented exception is indistinguishable from a typo")
++            self.assertTrue(str(e["reason"]).strip(), f"{e['name']}: empty reason")
++            cited = str(e["declared_by"]).strip()
++            # BADF-QA #259: an empty string is "an id that names nothing" and `"" in text`
++            # is vacuously true -- assert non-emptiness BEFORE resolution, or the promise
++            # above is broken by the emptiest possible input.
++            self.assertTrue(cited, f"{e['name']}: empty declared_by; provenance that names "
++                                   "nothing attributes nothing")
++            token = re.compile(rf"(?<![\w-]){re.escape(cited)}(?![\w-])")
++            hits = [p for p in doctrine if token.search(p.read_text(encoding="utf-8"))]
++            self.assertTrue(hits, f"{e['name']}: declared_by '{cited}' resolves to no doctrine surface "
++                                  "under skills/ or docs/ -- provenance that names nothing attributes nothing")
++
++    def test_a_declared_future_name_is_actually_used(self):
++        # An entry nobody references is dead permission: it would silently admit that name
++        # anywhere, forever, including as a future typo target.
++        found = _scan()
++        unused = sorted(n for n in _declared_future() if n not in found)
++        self.assertEqual([], unused, f"declared-future names referenced by no surface: {unused}")
++
++    def test_the_list_controls_themselves_are_watched(self):
++        # BADF-QA #259 finding 2: the declared-future controls fired once, by hand, at
++        # authoring time -- nothing re-ran them, so reverting the resolution check to
++        # presence-only (or the exclusivity check to an empty literal) reddened nothing.
++        # These plants drive the REAL test methods against a planted-bad registry (the
++        # same wiring rule as the dash test: exercise the entry point, not the helper),
++        # so a neutered control fails HERE, in-suite, on every run.
++        original = REGISTRY.read_bytes()
++
++        def plant(mutate):
++            reg = json.loads(original)
++            mutate(reg)
++            REGISTRY.write_text(json.dumps(reg, indent=2) + "\n", encoding="utf-8")
++
++        # Each plant asserts the SPECIFIC refusal message of the assert it targets -- a bare
++        # AssertionError cannot say WHICH of a method's asserts fired, so a plant could pass
++        # on a sibling (the U1 shape, one layer down; BADF-QA's granularity point, taken).
++        probes = [
++            ("a name both registered and declared-future must be refused",
++             lambda reg: reg["declared_future_families"].append(
++                 {"name": reg["skills"][0]["name"], "declared_by": "SEC-I14",
++                  "gate": "G05", "reason": "probe"}),
++             self.test_declared_future_names_are_not_also_registered,
++             r"both registered and declared-future"),
++            ("a declared name no surface references must be refused as dead permission",
++             lambda reg: reg["declared_future_families"].append(
++                 {"name": "badf-never-referenced-anywhere", "declared_by": "SEC-I14",
++                  "gate": "G05", "reason": "probe"}),
++             self.test_a_declared_future_name_is_actually_used,
++             r"referenced by no surface"),
++            ("an EMPTY declared_by must be refused -- an id that names nothing",
++             lambda reg: reg["declared_future_families"][0].update(declared_by=""),
++             self.test_declared_future_entries_carry_their_provenance,
++             r"empty declared_by"),
++            ("an UNRESOLVABLE declared_by must be refused",
++             lambda reg: reg["declared_future_families"][0].update(declared_by="SEC-I99-FABRICATED"),
++             self.test_declared_future_entries_carry_their_provenance,
++             r"resolves to no doctrine surface"),
++            ("a FRAGMENT of a real id must be refused -- prefixes resolve only by substring",
++             lambda reg: reg["declared_future_families"][0].update(declared_by="SEC"),
++             self.test_declared_future_entries_carry_their_provenance,
++             r"resolves to no doctrine surface"),
++        ]
++        try:
++            for label, mutate, guard, fragment in probes:
++                with self.subTest(label=label):
++                    plant(mutate)
++                    with self.assertRaisesRegex(AssertionError, fragment,
++                                                msg=f"the guard did not notice: {label}"):
++                        guard()
++        finally:
++            REGISTRY.write_bytes(original)
++        self.assertEqual(original, REGISTRY.read_bytes(), "plant did not restore the registry")
++
++    def test_the_security_row_routes_to_the_family_that_owns_it(self):
++        # The #223 defect itself, pinned by content rather than only by the generic guard.
++        routing = (SKILLS / "badf-solution-design" / "references" / "routing.md").read_text(encoding="utf-8")
++        row = [ln for ln in routing.splitlines() if "security threat" in ln]
++        self.assertEqual(1, len(row), f"expected exactly one security-threat routing row, found {len(row)}")
++        self.assertIn("badf-security-design", row[0], "the security threat / risk decision row must route to the "
++                                                      "ACTIVE family that owns it")
++        self.assertNotIn("future", row[0].lower(), "badf-security-design is ACTIVE today; 'future' is stale")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0123/work-package.json b/work/WP-2026-0123/work-package.json
+index 95ce8de..8adf88d 100644
+--- a/work/WP-2026-0123/work-package.json
++++ b/work/WP-2026-0123/work-package.json
+@@ -46,11 +46,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "d0986b0"
++    "base_revision": "d0986b0",
++    "landed_content_tree": "c41b0b25d3402b19aec099c987ece6a43a206de5",
++    "composition_verified": true,
++    "landed_as": "c8036a6bea559f53fd342eb29c5f3b4d5a0290ef"
+   },
+   "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Shared surface (scripts/badf_gate.py) -> contract_changed by construction, so QA + REV, not ladder-internal. Ids swept with SARCHI's badf_id_sweep.py (#252, positive control PASS), ceiling WP-2026-0122/BADF-DEM-0108 printed beside the binding per BARCHI-1's rule, published on #211 before any edit, and ASKED -- BARCHI-1 and BARCHI-3 both confirmed clear, BARCHI-3 from their unpushed worktree, the surface no sweep can see. A filed acceptance criterion was found unbuildable and the deviation was posted to #211 before review rather than discovered at it. Reconciles WP-2026-0122; an earlier copy carried WP-2026-0117 which #258 landed first, so that copy collapsed byte-identically and was pruned in the same pass.",
+   "expected_surfaces": {

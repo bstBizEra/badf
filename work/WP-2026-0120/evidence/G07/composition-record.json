@@ -1,0 +1,22 @@
+{
+  "record": "git-composition",
+  "schema_version": "1.0.0",
+  "observed_at": "2026-08-31T22:20:33Z",
+  "repository": "bstBizEra/badf",
+  "work_package_id": "WP-2026-0120",
+  "target_ref": "refs/heads/main",
+  "target_base_sha": "c8036a6bea559f53fd342eb29c5f3b4d5a0290ef",
+  "source_ref": "refs/heads/wp/WP-2026-0120-declared-future-families",
+  "source_head_sha": "6055e051a6ad5e50221b35e320318627bf6842fb",
+  "merge_base_sha": "c8036a6bea559f53fd342eb29c5f3b4d5a0290ef",
+  "merge_method": "squash",
+  "expected_result_tree": "29f624ffdce1403bc447c07ae39cc4889e42e3cd",
+  "expected_content_tree": "68e03dfb3b4464cf04fa98c1204ada2ffdec9e46",
+  "policy_epoch": "BADF-2026-08-25",
+  "test_set_epoch": null,
+  "suite_pattern": "test_*.py",
+  "non_coverage": [
+    "test_set_epoch: BADF defines no test-set/toolchain epoch; not recorded rather than invented",
+    "source_head_sha and expected_result_tree are informational: committing this record moves both; the binding is expected_content_tree (work/<WP>/ and the lockfile excluded)"
+  ]
+}

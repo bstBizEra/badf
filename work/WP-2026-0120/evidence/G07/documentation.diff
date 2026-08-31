@@ -1,0 +1,81 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index fe2927c..0d1d341 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -2005,6 +2005,76 @@ that verdict. Mirroring C6 would require inventing a schema field — which the
+ **#250 exists precisely because `check_g07_binding` accumulated correct controls nothing was watching** —
+ adding an unwatched control while claiming to fix that class would have grown the pile.
+ 
++## A declared future family, not an apologetic typo (`BADF-WP-0120`, Issue #223)
++
++`badf-solution-design`'s routing table sent the security threat / risk decision row to
++**`badf-security`** — a family that has never been in the registry — while **`badf-security-design` is
++`ACTIVE`** and owns exactly that concern. A reader following the table deferred a decision that was
++routable today. The row now names the family that owns it, and the stale *future* is gone.
++
++The interesting part is the guard. `BADF-WP-0109` added a family-name guard over `skills/badf-build/**`;
++generalizing it across every family surface surfaced two unresolved tokens, only one of which is a
++defect. The other — `badf-security-assurance` — is a deliberate forward reference, named before it is
++built so that `badf-security-design` can route assurance concerns *away* from itself rather than absorb
++them (SEC-I14).
++
++**#223 originally proposed permitting an unresolved token when the same surface labels it "named, not
++built" at that use. That criterion is backwards on this repository's data, measured before it was
++built:**
++
++| token | uses | labelled at the use | bare |
++| :--- | ---: | ---: | ---: |
++| `badf-security-assurance` — legitimate | 17 | 14 | **3** |
++| `badf-security` — **the defect** | 1 | **1** | 0 |
++
++The defect reads `future **badf-security**`, so it *satisfies* the label check; three legitimate uses are
++bare on their line. A guard built to that criterion would admit the one thing the issue exists to catch
++and refuse three things it must not. **"Carries a declared-future label" is a proxy for "is a
++deliberately declared future family", and a typo satisfies the proxy simply by being written
++apologetically** — the same proxy-for-property shape as the vacuity findings, one layer up.
++
++So the exception surface is **governed rather than inferred**: a top-level `declared_future_families`
++list in `badf/skill-registry.json`, already the authoritative surface for family names, digest-pinned and
++lockfile-covered. The guard reads a governed artifact and asserts nothing of its own. **Controls narrow
++the list-becomes-a-hole risk without closing it**: an entry must carry `declared_by` (resolvable in the
++tree, not merely present), `gate` and a non-empty `reason`, and a declared name that **no surface
++references** is refused as dead permission. What they cannot catch — measured, not conceded — is a typo
++introduced *together with* its listing in the same edit: that shape satisfies every property, and no
++mechanism closes it without a worse proxy (a similarity threshold would be calibrated on a list with one
++legitimate member, and no threshold separates the legitimate forward reference at 0.744 from the original
++defect at 0.788). **The same-edit case is caught by review of the digest-pinned registry edit — review
++does that work, not the guard** — which is still the real improvement: the bar moved from a word in prose
++to a governed edit under review. Adding the key is
++schema-additive — there is no registry schema, and `verify_registry_digests` iterates only
++`registry["skills"]`, so no per-family digest moves.
++
++**What this rung does not do:** it establishes one declaration surface with one member. The general
++question — what a gate should do when an *optional* enforcement input is absent, of which an undeclared
++future family is the fourth instance beside C3's `expected_surfaces`, C7's delegation ceiling and GIT-F's
++composition record — is deferred to that class's single answer, because answering them one at a time
++would produce inconsistent answers.
++
++**The guard proved itself mid-build.** `badf-uat` landed while this WP was open, and the generalized scan
++immediately found a third unresolved token on the new surface — `badf-production-readiness`, three uses in
++`skills/badf-uat/SKILL.md`, routing `release-packet` and `operational-readiness` away from `badf-uat`
++rather than claiming them. A legitimate forward reference, and now the list's second member (UAT-I14 /
++#237). That also produced the list's first **discharge**: PR #245 registers that family, and a name may
++not be both registered and declared-future — so whichever lands second deletes the entry, enforced by a
++test rather than remembered, with the instruction written into the entry's own `reason` field because a
++condition living in chat does not outlive the session holding it.
++
++**And the first discharge happened before this rung even landed.** `badf-production-readiness` was added as a
++second member when `badf-uat` landed mid-build; then PR #245 registered that family, and a name may not be
++both registered and declared-future — so the entry was removed here. The list is back to one member, and it
++shrank because a family got *built*, which is exactly the property that keeps it from decaying into a
++permanent allowlist. The instruction that made that happen lived in the entry's own `reason` field rather
++than in a message, and was read in place.
++
++**Known and uncovered:** `GOV-0102`'s own doctrine says *"unexercised authority is pruned"*, which is the right
++remedy when a declaration is over-broad and the **wrong** one when the declaration is correct and the content
++went missing — both emit a byte-identical condition. That gap is filed as **#257 / GOV-0113** and is not fixed
++here: this rung's subject is family names, and editing the same file is not sharing the subject.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
