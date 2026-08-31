@@ -1,6 +1,14 @@
 {
   "schema_version": "1.0.0",
   "default_policy": "approved-only",
+  "declared_future_families": [
+    {
+      "name": "badf-security-assurance",
+      "declared_by": "SEC-I14",
+      "gate": "G08/G09",
+      "reason": "Assurance -- code review, SAST, SCA, secret scanning, IaC scanning, remediation -- is deliberately separated from G05 security DESIGN and named before it is built, so badf-security-design can route assurance concerns away from itself rather than absorb them. Named, not built."
+    }
+  ],
   "skills": [
     {
       "name": "badf-delivery",
