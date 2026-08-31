@@ -564,7 +564,7 @@
     "tests/test_badf_solution_design_contract.py": "sha256:615827deddeb3d3bb2f6873bae5ab08d36b1fa6ebb4ab8bc67641428938376f6",
     "tests/test_badf_traceability.py": "sha256:3a11bd9206f3122c6c50fe17334b2a3bff1abf658bbaedf3e0e90baf60686cb0",
     "tests/test_badf_two_plane.py": "sha256:0751878b052263b49a9505f4296d77b1317370f60dd72f57bf38bdf54e2833c2",
-    "tests/test_badf_uat_contract.py": "sha256:c985b4293bc97cc038734abdce6986361610854b5e8a405ac3e5ea6206b3dc8c",
+    "tests/test_badf_uat_contract.py": "sha256:aa9d0187ed6a8b6053f86320a94ae58a01bc6a3b76eadcc41b2f34c7d65688a9",
     "tests/test_badf_uat_evidence.py": "sha256:79a07294af494c2fa6753e3e36b0ceb98ce30a6c960c6eb2d76e5675312e10f3",
     "tests/test_badf_verification_controls.py": "sha256:ab420713d9c00d80ea0a2904461825a916f97ae67eec0373b4e9a656d483b5c0",
     "tests/test_badf_verification_evidence.py": "sha256:20533e55a10d255e4a4d6cc07150affc71225e1e0c48f4c6a196c10d7c5bd693",
