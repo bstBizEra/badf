@@ -32,6 +32,34 @@ REFS = {
     "self-review.md", "evidence-packaging.md", "handoff-to-g08.md", "acceptance.md",
     "external-methodology.md",
 }
+# #230: six of the fourteen references carried NO content assertion -- `acceptance`,
+# `evidence-packaging`, `handoff-to-g08`, `preflight`, `retry-and-budget` and
+# `stop-conditions` could each be emptied to zero bytes with this module green. REFS above
+# pins FILENAMES; being named is a proxy for being content-asserted, and the proxy was
+# satisfied while nothing checked the text.
+#
+# Anchors pin STRUCTURE, not values, and the precondition matters: a structure-only anchor
+# detects deletion, never weakening ("a threshold is stated" is satisfied by 999999). It is
+# correct HERE only because none of these files owns a threshold -- `stop-conditions` lists
+# conditions, `preflight` asks "budget remaining?" with no figure, and `retry-and-budget`'s
+# 1/2/3 is a worked illustration whose own text defers to the Work Package's
+# `execution_budget`, guarded in code at badf_gate.py IMP-C3/IMP-I11. Pin the value where the
+# file is the source of truth; pin the structure where the value is owned and guarded
+# elsewhere. (BADF-QA's test, adopted with its precondition.)
+REFERENCE_ANCHORS = {
+    "acceptance.md": ("DESIGNED", "IMPLEMENTED", "VALIDATED", "SHADOWED",
+                      "badf/skill-registry.json", "pointer, not a second"),
+    "evidence-packaging.md": ("source-change", "unit-test", "documentation",
+                              "BLD-I16", "BLD-I18", "never a second producer"),
+    "handoff-to-g08.md": ("BLD-I17", "badf-git", "G08 independent verification"),
+    "preflight.md": ("BLD-I01", "expected surfaces", "stop conditions",
+                     "No valid Work Package"),
+    "retry-and-budget.md": ("BLD-I11", "BLD-I12", "execution_budget", "ROOT_CAUSE_MODE",
+                            "retries must add information"),
+    "stop-conditions.md": ("BLD-I13", "stop_conditions", "authority conflict",
+                           "credential exposure", "budget exhaustion"),
+}
+
 WORKFLOW = ("CLAIM → PREFLIGHT → ISOLATE → BASELINE → SLICE → TEST-FIRST/VERIFY-FIRST → IMPLEMENT → "
             "LOCAL VERIFY → SELF-REVIEW → RECONCILE → PACKAGE → HANDOFF")
 
@@ -95,6 +123,27 @@ class BadfBuildContractTests(unittest.TestCase):
         for token in ("source-change", "unit-test", "documentation", "does not mean", "independently verified", "approved to merge"):
             self.assertIn(token, text, token)
         self.assertIn("not automatically", read("self-review.md").lower())
+
+    def test_the_six_unpinned_references_assert_their_own_content(self):
+        """#230: each of the six carries load-bearing tokens, so gutting it reddens this module.
+
+        Positive control observed red on all six before this test was written -- and on a tree
+        verified clean with `git status`, because an earlier probe had been killed mid-iteration
+        and left one reference already gutted, which silently contaminated its own baseline.
+
+        NOT claimed: that this closes the class for badf-build. The eight already-asserted
+        references were spot-checked, not exhaustively re-probed, and an anchor pins the tokens
+        it names and nothing else.
+        """
+        self.assertEqual(6, len(REFERENCE_ANCHORS), "the six #230 named; a seventh needs its own probe")
+        self.assertTrue(set(REFERENCE_ANCHORS) < REFS,
+                        "every anchored name must be a real reference in REFS")
+        for name, anchors in REFERENCE_ANCHORS.items():
+            text = read(name)
+            self.assertGreater(len(text), 400, f"{name} is too short to carry its contract")
+            self.assertGreaterEqual(len(anchors), 3, f"{name} needs >= 3 anchors")
+            for tok in anchors:
+                self.assertIn(tok, text, f"{name}: {tok}")
 
     def test_registry_pin_is_active_and_tool_empty(self):
         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
