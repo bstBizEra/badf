@@ -1,3 +1,92 @@
+diff --git a/badf/demands/BADF-DEM-0111.json b/badf/demands/BADF-DEM-0111.json
+new file mode 100644
+index 0000000..d5d1508
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0111.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0111",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 273,
++    "url": "https://github.com/bstBizEra/badf/issues/273",
++    "exported_at": "2026-09-01T03:30:00Z",
++    "body_digest": "sha256:6dea8485c4e681fc46c17e21e2639828a0c339a1c54c31aae880ff8ed8a5e7ea"
++  },
++  "title": "GOV-0120: WP-UAT-C — deterministic G10 controls, lean disabled (closes #266; enforce the precondition B's judgement rested on, and make UAT-I17 mechanical)",
++  "problem": "🧠 **ARCHI (BARCHI-3)** — plan for **WP-UAT-C**: `badf-uat` `IMPLEMENTED` → deterministic G10 controls. `WP-2026-0125` / `BADF-DEM-0111`. **Lean mode DISABLED — these are HARD INVARIANTS.**\n\n## Stage-Gate\n\n- **Stage:** 10 (UAT), rung C of the A→E ladder frozen at WP-UAT-A (#241) and advanced by WP-UAT-B (#264, landed `d0986b0`).\n- **Decision:** Continue. B typed the artifact and added five single-object controls; C adds the deterministic controls the ladder committed it to, and closes the gap B's own review exposed.\n- **Over-engineering risk refused:** cross-evidence/cross-dossier checks, adapter registration, scenario-derivation logic. **Single-object controls only**, per #266's own out-of-scope line.\n\n## Provenance of each control, stated because the scope is wider than #266 alone\n\n| control | source |\n| :--- | :--- |\n| **C7** unnamed critical failure under `WITH_CONDITIONS` refused | **#266 criterion 2** (BADF-QA) |\n| **C8** `ACCEPTED_WITH_CONDITIONS` with no conditions refused | **#266 criterion 1** |\n| **C9** unconditional `ACCEPTED` over an unacknowledged critical failure refused | **#266 criterion 3** |\n| **C10** `scenario_set_digest` recomputed over the carried scenarios | **ladder C-rung text** — *\"staleness detection on candidate/basis/scenario-set change\"* |\n| **C11** unexplained `not_covered` refused | **ladder C-rung text** (*\"non-derivable-criterion declared, never dropped\"*) + QA's routed coverage-exactness note |\n\nSo **#266 is fully closed by C7–C9**, and C is deliberately wider than #266 because the ladder committed it to more. Stating this so a reviewer does not read C10/C11 as scope creep.\n\n## The shape of the repair, which is the governance point\n\nAt rung B I defended U4's boundary — it refuses a critical failure only under `RECOMMEND_ACCEPT` — on the grounds that *conditions are exactly where a known critical failure gets named.* BADF-QA agreed the **rationale** and demonstrated it was **enforced by nothing**: `conditions`, `known_defects_acknowledged` and `declared_non_coverage_acknowledged` are all optional, so a disposition whose **name asserts conditions exist** required none, and UAT-I13's aggregate-burying was reachable one enum value over.\n\n**C enforces the precondition rather than withdrawing the judgement.** That is the right repair when a rationale is sound and unguarded, and it is the pattern worth reusing: a defence that names a field is a defence that the field must be non-empty.\n\n**C10 is the one that changes a promise into a mechanism.** UAT-I17 says a material change invalidates an acceptance. Until now that was prose. Recomputing the scenario-set digest means a scenario added or removed after an acceptance was issued **cannot carry that acceptance forward silently**.\n\n## Acceptance criteria\n\n1. Each of C7–C11 refuses its violation, naming its invariant, and admits the corrected form.\n2. **Every control mutation-checked individually, with survivors reported as a deliverable** (#266 criterion 4), under the full protocol: `-B`, `__pycache__` cleared, **named negative control first**, `git checkout --` restore, **in-process liveness witness** per mutation, and **parser anti-vacuity** — the parsed test count must equal the module-declared count or the run exits before measuring.\n3. Untyped bindings remain admissible — additive, as B established.\n4. **Open-ended (#270):** enumerate the adjacent encodings of the same defect — every other `disposition` value, every other acknowledgement field, an empty-string condition, a condition naming a *different* scenario — and confirm none admits an unnamed critical failure. The defect this rung closes was reachable *one enum value over* from a control that looked complete; the same neighbourhood must be walked rather than assumed.\n5. No lifecycle change, no second gate (UAT-I20), no adapter registered.\n\n## Out of scope\n\nCross-evidence and cross-dossier checks · binding an acknowledgement to a defect *resolution* state (#266's own exclusion) · `badf-production-readiness`'s two G10 types · WP-UAT-D (shadow) and WP-UAT-E (admission).\n\n## Surfaces\n\n**Declared up front**, per the #264 lesson where a missing `expected_surfaces` cost a REV condition: `scripts/badf_gate.py`, `tests/test_badf_uat_evidence.py`, `docs/governance/GITHUB_CONTROL_PLANE.md`, `badf/demands/BADF-DEM-0111.json`, `badf/skill-registry.json` if the rung status advances, plus the WP record and the gate-forced reconcile.\n\n**Version tier:** minor. **Shared-surface** (`badf_gate.py`) → **QA + REV**. Ids swept clean on all four surfaces at filing.\n\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-09-01T03:30:00Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-UAT-C: deterministic G10 controls, lean DISABLED (HARD INVARIANTS). Closes BADF-QA's #266 with C7/C8/C9; C10 and C11 come from the ladder's own C-rung text plus QA's routed coverage-exactness note, so C is deliberately wider than #266 and the provenance is stated per-control rather than implied. The governance point: at rung B I defended U4's boundary on the grounds that conditions are where a known critical failure gets named; QA agreed the rationale and showed it was enforced by nothing, since every acknowledgement field is optional. C enforces the precondition rather than withdrawing the judgement -- a defence that names a field is a defence that the field must be non-empty. C10 converts UAT-I17 from a promise into a mechanism: recomputing the scenario-set digest means a scenario added or removed after an acceptance was issued cannot carry that acceptance forward silently. All five mutation-checked individually: 0 survivors, 0 without a liveness witness, under the full protocol including parser anti-vacuity (the battery's first run parsed 3 of 24 tests and reported a clean-looking 'survivors: 5' -- caught by the negative control's own count, which is now an assertion)."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 4cbcd45..daea069 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1972,6 +1972,56 @@ Shared-surface (`schemas/` + `badf_gate.py`) → QA + REV, unlike rung A. Next:
+ deterministic G10/UAT controls with lean **disabled** — acceptance-basis binding across a dossier,
+ freshness, and staleness on candidate change are HARD INVARIANTS.
+ 
++## badf-uat → deterministic G10 controls — a defence that names a field must require the field (`BADF-WP-0125` / WP-UAT-C, Issue #273 / GOV-0120)
++
++**Lean mode DISABLED.** These are HARD INVARIANTS, the same tier as the G08 controls at VER-C.
++
++At rung B, `U4` refuses a critical scenario failure only under `RECOMMEND_ACCEPT`. That boundary
++was defended — by its own author, in the PR — on the grounds that *conditions are exactly where a
++known critical failure gets named.* BADF-QA agreed the **rationale** and demonstrated it was
++**enforced by nothing**: `conditions`, `known_defects_acknowledged` and
++`declared_non_coverage_acknowledged` are all optional, so a disposition whose **name asserts
++conditions exist** required none — and UAT-I13's aggregate-burying was reachable **one enum value
++over** from a control that read as complete.
++
++**The repair enforces the precondition rather than withdrawing the judgement**, and that is the
++transferable part: *a defence that names a field is a defence that the field must be non-empty.*
++An argument for why a gap is acceptable is only as good as the thing it points at.
++
++```
++C7   RECOMMEND_ACCEPT_WITH_CONDITIONS + a not-passing critical named in no condition
++     and no acknowledged defect                                    -> refused   (UAT-I13)
++C8   disposition ACCEPTED_WITH_CONDITIONS with no conditions       -> refused   (UAT-I16)
++C9   unconditional ACCEPTED over an unacknowledged not-passing
++     critical                                                      -> refused   (UAT-I16)
++C10  acceptance.scenario_set_digest != a digest recomputed over the
++     scenarios actually carried                                    -> refused   (UAT-I17)
++C11  a criterion not_covered with neither a reason nor a declared
++     non_coverage entry                                            -> refused   (UAT-I12)
++```
++
++**C9 draws the line where it belongs:** a human **may** accept a known critical failure — that is
++their authority, and BADF does not second-guess it. Acknowledging it is what makes it *known*.
++
++**C10 converts an invariant into a mechanism.** UAT-I17 says a material change invalidates an
++acceptance; until this rung that was prose in a reference. Recomputing the scenario-set digest
++means a scenario added or removed after an acceptance was issued **cannot carry that acceptance
++forward silently**. The prose stayed the same; what changed is that something now checks it.
++
++Additive as B established — an untyped binding is still admissible, asserted. **Provenance stated
++per control**, because the rung is deliberately wider than the issue that prompted it: C7–C9 are
++#266's three criteria and close it fully; C10 and C11 come from the A-rung ladder's own C-rung text
++and BADF-QA's routed coverage-exactness note.
++
++**Every control mutation-checked individually — 0 survivors, 0 without an in-process liveness
++witness.** Worth recording that the battery's *first* run parsed **3 of 24 tests** and reported a
++clean-looking `survivors: 5`: `unittest -v` splits a docstringed test's verdict onto a second line,
++and the parser required both on one. Read as evidence it would have filed a false
++unwatched-controls finding against correct code. **The negative control's own printed count caught
++it**, which is why the battery now asserts that its parsed count equals the module-declared count
++and exits before measuring on a mismatch — *every stage of a measurement chain needs its own
++liveness witness, including the stage that reads the others.*
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
 diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
 index 96f5cc4..0850b33 100644
 --- a/scripts/badf_gate.py
@@ -224,3 +313,24 @@ index f3f9815..c036e02 100644
 +
  if __name__ == "__main__":
      unittest.main()
+diff --git a/work/WP-2026-0124/work-package.json b/work/WP-2026-0124/work-package.json
+index 2e1f503..9b17faa 100644
+--- a/work/WP-2026-0124/work-package.json
++++ b/work/WP-2026-0124/work-package.json
+@@ -61,12 +61,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR; the rung is additive, so reverting restores the pre-typed admissibility exactly"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "wp/WP-2026-0124-uat-typed-evidence",
+     "base_revision": "292d1be",
+-    "composition_verified": false
++    "composition_verified": true,
++    "landed_content_tree": "2609d03d2425e5064f99e466d4b5fac6b50013b9",
++    "landed_as": "d0986b0bee50d887d49eac2053da3777ddf41176"
+   },
+   "note": "Rung B of the badf-uat A\u2192E ladder; A landed as #241 (c525129). SHARED-SURFACE (schemas/ + badf_gate.py) so this needs QA + REV, unlike rung A which was ladder-internal under the #248 classification. A SIXTH control (U1, acceptance-basis resolvability) was written and REMOVED: schemas/uat.schema.json already makes prd_digest required inside acceptance_basis, so check_schema refuses first and U1 could never fire. Its test passed on the wrong raise because BOTH messages contain 'prd_digest'. Found by this rung's own mutation battery -- #250's class in this rung's own code -- and recorded in a code comment so nobody re-adds it. Separately: the gate patch removing U1 silently FAILED on a first attempt while the test patch succeeded, and the suite went green anyway; caught by grepping for the code rather than trusting the exit status. Ids WP-2026-0124 / BADF-DEM-0110 / GOV-0116 swept clean on all four surfaces including my own unpushed worktrees.",
+   "expected_surfaces": {

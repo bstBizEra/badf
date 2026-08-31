@@ -25,10 +25,8 @@
       "badf/demands/BADF-DEM-0111.json",
       "docs/governance/GITHUB_CONTROL_PLANE.md",
       "scripts/badf_gate.py",
-      "tests/test_badf_uat_evidence.py"
-    ],
-    "discovery_allowance": [
-      "work/WP-2026-*/work-package.json"
+      "tests/test_badf_uat_evidence.py",
+      "work/WP-2026-0124/work-package.json"
     ]
   },
   "target_gate": "G07",
@@ -78,5 +76,5 @@
     "base_revision": "c8036a6",
     "composition_verified": false
   },
-  "note": "Rung C of the badf-uat A-E ladder; B landed as #264 (d0986b0). PROVENANCE PER CONTROL, stated because C is deliberately wider than #266: C7/C8/C9 are #266 criteria 2/1/3 and fully close it; C10 and C11 come from the ladder's own C-rung text (staleness detection; non-derivable-criterion declared, never dropped) plus BADF-QA's routed coverage-exactness note. A reviewer should not read C10/C11 as scope creep. expected_surfaces DECLARED UP FRONT -- the #264 lesson, where its absence cost a REV condition; the gate-forced reconcile sits in discovery_allowance because a reconcile collapses to a no-op for whoever lands second, though note GOV-0119/#272: the assembly-side containment does not consult discovery_allowance, so if that raises C-2 the reconcile moves to files with a prune-on-collapse obligation. FIXTURE NOTE: five B-rung fixtures needed a scenario_set_digest C10 can recompute. Those tests do not assert C10's ABSENCE -- their DATA simply has to satisfy a new control, which is a normal consequence of adding one and is distinct from #268's snapshot-pins."
+  "note": "Rung C of the badf-uat A-E ladder; B landed as #264 (d0986b0). PROVENANCE PER CONTROL, stated because C is deliberately wider than #266: C7/C8/C9 are #266 criteria 2/1/3 and fully close it; C10 and C11 come from the ladder's own C-rung text (staleness detection; non-derivable-criterion declared, never dropped) plus BADF-QA's routed coverage-exactness note. A reviewer should not read C10/C11 as scope creep. expected_surfaces DECLARED UP FRONT -- the #264 lesson, where its absence cost a REV condition; the gate-forced reconcile sits in discovery_allowance because a reconcile collapses to a no-op for whoever lands second, though note GOV-0119/#272: the assembly-side containment does not consult discovery_allowance, so if that raises C-2 the reconcile moves to files with a prune-on-collapse obligation. FIXTURE NOTE: five B-rung fixtures needed a scenario_set_digest C10 can recompute. Those tests do not assert C10's ABSENCE -- their DATA simply has to satisfy a new control, which is a normal consequence of adding one and is distinct from #268's snapshot-pins. CONFIRMED LIVE: discovery_allowance did NOT exempt the reconcile at assembly-side containment -- C-2 raised naming work/WP-2026-0124/work-package.json, exactly as GOV-0119/#272 documents and as this record pre-committed to handling. Reconcile moved to files with the standing prune-on-collapse obligation; discovery_allowance removed rather than left as a declaration that enforces nothing. This is a second, independent reproduction of #272 and is noted on that issue."
 }
