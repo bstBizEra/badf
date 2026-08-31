@@ -16,27 +16,28 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-08-31T10:12:49Z",
-  "completed_at": "2026-08-31T10:12:49Z",
+  "started_at": "2026-08-31T14:41:44Z",
+  "completed_at": "2026-08-31T14:41:44Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0117/evidence/G07/source-change.diff",
-  "digest": "sha256:61d4de1aeea48cca3e5f8588188dc0ff4a7f31c08ba5c693fe63b62e6e2b02e6",
+  "digest": "sha256:91c409de6a99d24c203bf52c5e60bfe992a2952ae70a747f8456225489bb71f5",
   "binding": {
-    "base_sha": "95613a5baa6b7741b5ddcd3dad3f8a148b02f2d1",
-    "head_sha": "22e88268a657442001512bb3ab515285db4c46bb",
-    "content_tree": "8417db924ffa81488ddecfa26a58979428f4e55a",
+    "base_sha": "d910e1280dfd2391f9f6dbf21bddd281a911ee7a",
+    "head_sha": "74a37047af8f99dedd7fffc02b4bcdf27623b3dd",
+    "content_tree": "3443be8601ba079cb02ae70d6e7c024af7fb9dca",
     "changed_paths": [
       "badf/demands/BADF-DEM-0104.json",
       "tests/test_badf_build_contract.py",
       "tests/test_badf_engineering_verification_contract.py",
       "tests/test_badf_verification_evidence.py",
-      "work/WP-2026-0114/work-package.json"
+      "tests/test_no_dead_assertions.py",
+      "work/WP-2026-0118/work-package.json"
     ],
     "expected_surfaces": {
       "declared": false,
       "files": []
     },
     "unexpected_paths": [],
-    "change_digest": "sha256:61d4de1aeea48cca3e5f8588188dc0ff4a7f31c08ba5c693fe63b62e6e2b02e6"
+    "change_digest": "sha256:91c409de6a99d24c203bf52c5e60bfe992a2952ae70a747f8456225489bb71f5"
   }
 }
