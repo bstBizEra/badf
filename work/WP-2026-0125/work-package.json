@@ -11,7 +11,8 @@
   "in_scope": [
     "scripts/badf_gate.py: C7 (unnamed critical under RECOMMEND_ACCEPT_WITH_CONDITIONS refused, UAT-I13), C8 (ACCEPTED_WITH_CONDITIONS with no conditions refused), C9 (unconditional ACCEPTED over an unacknowledged not-passing critical refused), C10 (acceptance.scenario_set_digest recomputed over the carried scenarios, UAT-I17), C11 (not_covered with neither a reason nor a declared non_coverage entry refused, UAT-I12)",
     "tests/test_badf_uat_evidence.py: UatDeterministicControlTests -- one test per control plus an additivity assertion; five B-rung fixtures given a scenario_set_digest C10 can recompute",
-    "badf/demands/BADF-DEM-0111.json; docs/governance/GITHUB_CONTROL_PLANE.md doctrine section; work/WP-2026-0125/ record and G07 self-dossier; lockfile re-sign"
+    "badf/demands/BADF-DEM-0111.json; docs/governance/GITHUB_CONTROL_PLANE.md doctrine section; work/WP-2026-0125/ record and G07 self-dossier; lockfile re-sign",
+    "tests/test_badf_uat_contract.py: restore the ONE exact registry status pin for badf-uat (#218). ADMITTED BY AMENDMENT, not present at planning: the C-2 containment condition correctly refused it as an undeclared surface, and BLD-I04's closure predicate is that planning amends expected_surfaces to admit the path or the change is reverted. The path is admitted because the finding is in this rung's own test surface and was caused by this ladder's own #268 fix."
   ],
   "out_of_scope": [
     "cross-evidence and cross-dossier checks -- single-object controls only, per #266's own exclusion",
@@ -25,6 +26,7 @@
       "badf/demands/BADF-DEM-0111.json",
       "docs/governance/GITHUB_CONTROL_PLANE.md",
       "scripts/badf_gate.py",
+      "tests/test_badf_uat_contract.py",
       "tests/test_badf_uat_evidence.py",
       "work/WP-2026-0124/work-package.json"
     ]
@@ -37,7 +39,8 @@
     "Every control mutation-checked INDIVIDUALLY with survivors reported as a deliverable (#266 criterion 4): 0 survivors, 0 sites without an in-process liveness witness, under the full protocol -- -B, __pycache__ cleared between mutations, NAMED negative control first, git checkout -- restore, and parser anti-vacuity asserting the parsed test count equals the module-declared count",
     "Untyped uat bindings remain admissible -- additive, as WP-UAT-B established",
     "Open-ended per #270: the adjacent encodings are enumerated and walked -- every other disposition value, every other acknowledgement field, an empty-string condition, and a condition naming a different scenario -- and none admits an unnamed critical failure",
-    "No lifecycle change, no second gate, no adapter registered"
+    "No lifecycle change, no second gate, no adapter registered",
+    "badf-uat carries exactly ONE exact registry status pin alongside the floor (#218), and it is verified to catch a silent status advance INSIDE the floor's tuple -- measured, not asserted"
   ],
   "permissions": [
     "write: bstBizEra/badf via PR"
