@@ -65,18 +65,38 @@ REFS_TEXT = "\n".join(
 
 
 class UatContractTests(unittest.TestCase):
-    def test_contract_surface_is_declarative_only(self):
-        """No runtime, no typed schema, no gate code ships at this rung (UAT-I20)."""
+    def test_no_second_gate_and_no_adapter_registered(self):
+        """UAT-I20 and the adapter deferral -- the parts of the A-rung floor that OUTLIVE rung A.
+
+        This test previously also asserted `schemas/uat.schema.json` does NOT exist, which was
+        correct at rung A and is wrong from WP-UAT-B on: B ships exactly that schema, by A's own
+        frozen ladder. A rung-floor assertion that pins the ABSENCE of the next rung's deliverable
+        fails the moment the ladder advances -- it reads as a contract but behaves as a freeze.
+
+        What survives every rung is narrower and is what remains here: no COMPETING gate
+        (UAT-I20), and no execution adapter registered as a subskill. Those are invariants; "no
+        schema yet" was a snapshot. (Caught by the full suite on WP-UAT-B -- the restricted
+        compose that ran only the B module was green and could not see it.)
+        """
         self.assertTrue(SKILL.is_file(), "SKILL.md must exist")
         for token in ("name: badf-uat", "gate: G10", "owner_role: release_authority",
-                      "status: DESIGNED", "allowed_tools: []"):
+                      "allowed_tools: []"):
             self.assertIn(token, SKILL_TEXT, token)
         self.assertFalse((ROOT / "scripts" / "badf_uat.py").exists(),
-                          "UAT-I20: no competing UAT gate script at the DESIGNED rung")
-        self.assertFalse((ROOT / "schemas" / "uat.schema.json").exists(),
-                          "no typed uat evidence schema at this rung")
-        self.assertFalse((ROOT / "schemas" / "uat-scenario.schema.json").exists(),
-                          "no typed scenario schema at this rung")
+                          "UAT-I20: no competing UAT gate; deterministic semantics stay in badf_gate.py")
+        registry = json.loads((ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))
+        names = {e["name"] for e in registry["skills"]}
+        # RESIDUAL of the #268 class, kept deliberately and disclosed rather than deleted:
+        # adapters ARE scheduled for a later rung (references/execution-adapters.md: "concrete
+        # adapters are a later rung"), so this pin WILL fail when that rung lands. It stays
+        # because it is the correct contract for every rung up to that one -- but the message
+        # tells the next author what to do, which is the difference between a contract and the
+        # freezes in #268 instances 1-3.
+        for sub in ("browser-uat", "api-uat", "manual-uat", "hybrid-uat"):
+            self.assertNotIn(sub, names,
+                             f"{sub} is registered. If the adapter rung has landed, that is "
+                             f"correct: update THIS assertion and references/acceptance.md's "
+                             f"ladder in the same PR. If not, an adapter was registered early.")
 
     def test_root_states_all_invariants_and_the_workflow(self):
         for i in range(1, 21):
@@ -106,7 +126,9 @@ class UatContractTests(unittest.TestCase):
         registry = json.loads((ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))
         names = {e["name"] for e in registry["skills"]}
         for sub in ("browser-uat", "api-uat", "manual-uat", "hybrid-uat"):
-            self.assertNotIn(sub, names, f"{sub} must not be registered at WP-UAT-A")
+            self.assertNotIn(sub, names,
+                             f"{sub} is registered -- see the note on the sibling assertion; "
+                             f"deferred to the adapter rung, not forbidden forever")
         adapters = (REFS_DIR / "execution-adapters.md").read_text(encoding="utf-8")
         self.assertIn("No adapter is registered as a subskill at this rung", adapters)
 
@@ -126,11 +148,15 @@ class UatContractTests(unittest.TestCase):
         self.assertIn("uat", g10.get("required_evidence", []))
         self.assertEqual(len(gates), 15, "no gate added or removed")
 
-    def test_registry_pin_is_designed_and_tool_empty(self):
+    def test_registry_pin_is_at_least_implemented_and_tool_empty(self):
         registry = json.loads((ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))
         entry = next((e for e in registry["skills"] if e["name"] == "badf-uat"), None)
         self.assertIsNotNone(entry, "badf-uat must be registered")
-        self.assertEqual(entry["status"], "DESIGNED")
+        # WP-UAT-B floor: the ladder advances past DESIGNED, so this pins the FLOOR rather than
+        # a single rung. Pinning one status makes the contract test fail every time the ladder
+        # moves -- the same snapshot-versus-invariant error as the "no schema yet" assertion
+        # above. (The registry, not this file, is the live status -- acceptance.md is a pointer.)
+        self.assertIn(entry["status"], ("IMPLEMENTED", "VALIDATED", "SHADOWED", "ACTIVE"))
         self.assertEqual(entry["allowed_tools"], [])
         self.assertEqual(entry["risk_class"], "C1")
         expected = "sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest()

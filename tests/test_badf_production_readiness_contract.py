@@ -183,9 +183,18 @@ class ProductionReadinessContractTests(unittest.TestCase):
                          by_id["G10"]["required_evidence"], "G10 evidence list unchanged")
         for gid in ("G09", "G11", "G12"):
             self.assertIn(gid, by_id, f"{gid} must exist")
-        for g10_type in ("release-packet", "operational-readiness", "uat", "go-no-go"):
-            self.assertNotIn(g10_type, gate.EVIDENCE_RULES,
-                             f"EVIDENCE_RULES must carry no G10 type at this rung ({g10_type})")
+        # THIS SKILL's two types stay unregistered until badf-production-readiness reaches its
+        # own B rung. `uat` and `go-no-go` are deliberately NOT asserted here: they are not this
+        # capability's to own, so their registration says nothing about this rung.
+        #
+        # This assertion previously covered all four G10 types and broke the moment WP-UAT-B
+        # registered EVIDENCE_RULES["uat"] -- a SNAPSHOT ("no G10 type is registered anywhere")
+        # standing in for the INVARIANT ("this skill owns only its two"). Third instance of that
+        # error in one session, and the only one that reached across families: a PRDY rung-floor
+        # test blocking a UAT rung. A floor that pins another capability's absence is not a floor.
+        for own_type in ("release-packet", "operational-readiness"):
+            self.assertNotIn(own_type, gate.EVIDENCE_RULES,
+                             f"badf-production-readiness's own type {own_type} is registered before its B rung")
 
     def test_registry_pin_is_designed_and_tool_empty(self):
         registry = json.loads((ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))

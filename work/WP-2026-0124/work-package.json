@@ -1,0 +1,90 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0124",
+  "title": "WP-UAT-B: type the uat evidence binding and validate it in the canonical gate (badf-uat DESIGNED \u2192 IMPLEMENTED)",
+  "owner": "engineering_owner",
+  "demand": "BADF-DEM-0110",
+  "repository": "bstBizEra/badf",
+  "objective": "Carry badf-uat from DESIGNED to IMPLEMENTED, implementing exactly what rung A committed B to and nothing beyond it: a typed uat evidence schema specializing evidence.schema.json (the UAT Scenario object, the execution-observation record and the two-layer disposition record as typed artifacts), plus a badf_gate.py path validating a G10 uat dossier's typed objects -- mirroring verify for G08 and the four typed types for G09. Strictly additive: an untyped uat binding stays admissible, so nothing already landed breaks. Rung A froze the contract and shipped NO runtime, which left uat as a required G10 evidence type that no gate path could mechanically check; this rung closes that and only that.",
+  "business_value": "Until this lands, a G10 dossier's uat evidence can be authored against a contract but never checked against it -- the invariants exist as prose in fourteen references and as a contract test over those references, with nothing standing between a malformed uat object and the gate. The single most valuable thing the typed form buys is that UAT-I14 stops being an argument: the recommendation enum is closed and contains no acceptance verdict, so the capability that produced the evidence cannot issue the decision by any encoding the schema admits, whether or not a producer reads the doctrine.",
+  "in_scope": [
+    "schemas/uat.schema.json: typed binding -- candidate (UAT-I04), acceptance_basis (UAT-I05), scenarios (UAT-I01/I02/I06/I07), observations (UAT-I09), defects with the frozen ten-class enum (UAT-I11), coverage with REQUIRED non_coverage (UAT-I12/I13), closed recommendation enum (UAT-I14), optional Layer 2 acceptance pinning principal_type to const human (UAT-I15/I16)",
+    "scripts/badf_gate.py: check_g10_uat_binding registered EVIDENCE_RULES['uat'] -- five code controls for the cross-field constraints the schema walker cannot express",
+    "tests/test_badf_uat_evidence.py: 13 tests including additivity, the closed-enum property, and one test per code control",
+    "badf/demands/BADF-DEM-0110.json; work/WP-2026-0124/ record and G07 self-dossier; lockfile re-sign"
+  ],
+  "out_of_scope": [
+    "any execution adapter or subskill registration (browser-uat, api-uat, manual-uat) -- the adapter CONTRACT is frozen at rung A, concrete adapters are a later rung",
+    "scenario derivation logic -- this rung types the artifact, it does not generate it",
+    "deterministic G10/UAT controls beyond single-object validity: acceptance-basis digest binding across a dossier, freshness, staleness on candidate change -- that is WP-UAT-C, lean DISABLED (HARD INVARIANTS)",
+    "any lifecycle.json change; any second gate (UAT-I20); badf-production-readiness's release-packet and operational-readiness types",
+    "The gate-forced reconcile (work/WP-2026-0122/work-package.json) IS declared in expected_surfaces.files, with a standing obligation to PRUNE it in the same pass as any rebase where it collapses -- the team practice BARCHI-1 set. discovery_allowance would be the natural instrument (may-touch, exempt from the C7 ceiling) and does exempt it at the BINDING-side C3 control (badf_gate.py:1666), but the ASSEMBLY-side containment at :3702 computes `unexpected` from `files` alone and never consults discovery_allowance -- so it raises C-2 regardless. That asymmetry is filed separately rather than worked around here."
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "schemas/uat.schema.json specializes evidence.schema.json with evidence_type const uat and gate const G10; an untyped uat binding is still admissible (additivity, the property VER-B and VAL-B established)",
+    "The recommendation enum is exactly four RECOMMEND_* values and contains no acceptance verdict; ACCEPTED / ACCEPTED_WITH_CONDITIONS / REJECTED exist only inside the Layer 2 acceptance object, which pins principal_type to const human",
+    "check_g10_uat_binding refuses: an observation naming a scenario absent from the binding (U2), a FAIL/BLOCKED observation with no classified defect (U3), RECOMMEND_ACCEPT with a critical scenario not passing (U4), a Layer 2 acceptance whose candidate_digest differs from the binding's (U5), and a Layer 2 acceptance with a non-human principal (U5)",
+    "Every code control observed RED against a neutered gate -- mutation battery reports 0 survivors",
+    "No lifecycle change, no second gate script, no adapter registered"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_uat_evidence.py"
+  ],
+  "test_obligations": [
+    {
+      "id": "TO-0124-1",
+      "claim": "the recommendation vocabulary cannot express an acceptance and Layer 2 requires a human principal",
+      "level": "contract"
+    },
+    {
+      "id": "TO-0124-2",
+      "claim": "each of the five code controls refuses its violation and is observed red when neutered",
+      "level": "contract"
+    },
+    {
+      "id": "TO-0124-3",
+      "claim": "an untyped uat binding remains admissible after the typed form lands",
+      "level": "contract"
+    }
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR; the rung is additive, so reverting restores the pre-typed admissibility exactly"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "wp/WP-2026-0124-uat-typed-evidence",
+    "base_revision": "292d1be",
+    "composition_verified": false
+  },
+  "note": "Rung B of the badf-uat A\u2192E ladder; A landed as #241 (c525129). SHARED-SURFACE (schemas/ + badf_gate.py) so this needs QA + REV, unlike rung A which was ladder-internal under the #248 classification. A SIXTH control (U1, acceptance-basis resolvability) was written and REMOVED: schemas/uat.schema.json already makes prd_digest required inside acceptance_basis, so check_schema refuses first and U1 could never fire. Its test passed on the wrong raise because BOTH messages contain 'prd_digest'. Found by this rung's own mutation battery -- #250's class in this rung's own code -- and recorded in a code comment so nobody re-adds it. Separately: the gate patch removing U1 silently FAILED on a first attempt while the test patch succeeded, and the suite went green anyway; caught by grepping for the code rather than trusting the exit status. Ids WP-2026-0124 / BADF-DEM-0110 / GOV-0116 swept clean on all four surfaces including my own unpushed worktrees.",
+  "expected_surfaces": {
+    "declared": true,
+    "files": [
+      "badf/demands/BADF-DEM-0110.json",
+      "badf/skill-registry.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "schemas/uat.schema.json",
+      "scripts/badf_gate.py",
+      "skills/badf-uat/SKILL.md",
+      "tests/test_badf_production_readiness_contract.py",
+      "tests/test_badf_uat_contract.py",
+      "tests/test_badf_uat_evidence.py",
+      "work/WP-2026-0122/work-package.json"
+    ],
+    "discovery_allowance": [
+      "work/WP-2026-*/work-package.json"
+    ]
+  }
+}

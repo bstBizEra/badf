@@ -1,0 +1,532 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "id",
+    "work_package_id",
+    "gate",
+    "claim",
+    "evidence_type",
+    "producer",
+    "source_revision",
+    "target",
+    "toolchain",
+    "operation",
+    "started_at",
+    "completed_at",
+    "outcome",
+    "artifact",
+    "digest",
+    "binding"
+  ],
+  "$id": "https://badf.bizera.local/schemas/uat.schema.json",
+  "title": "BADF G10 evidence: uat (typed binding, WP-UAT-B / BADF-WP-0124)",
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^EVD-[A-Za-z0-9._-]+$"
+    },
+    "work_package_id": {
+      "type": "string",
+      "pattern": "^WP-[A-Za-z0-9._-]+$"
+    },
+    "gate": {
+      "const": "G10"
+    },
+    "claim": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evidence_type": {
+      "const": "uat"
+    },
+    "producer": {
+      "type": "object",
+      "required": [
+        "id",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "enum": [
+            "human",
+            "agent",
+            "service",
+            "controller"
+          ]
+        }
+      }
+    },
+    "source_revision": {
+      "type": "string",
+      "minLength": 1
+    },
+    "target": {
+      "type": "string",
+      "minLength": 1
+    },
+    "toolchain": {
+      "type": "object",
+      "required": [
+        "name",
+        "version"
+      ]
+    },
+    "operation": {
+      "type": "string",
+      "minLength": 1
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "completed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "outcome": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "BLOCKED",
+        "NOT_RUN",
+        "NOT_APPLICABLE"
+      ]
+    },
+    "artifact": {
+      "type": "string",
+      "minLength": 1
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "sanitization": {
+      "type": "string"
+    },
+    "binding": {
+      "type": "object",
+      "required": [
+        "candidate",
+        "acceptance_basis",
+        "scenarios",
+        "observations",
+        "defects",
+        "coverage",
+        "recommendation"
+      ],
+      "properties": {
+        "candidate": {
+          "type": "object",
+          "required": [
+            "source_digest"
+          ],
+          "properties": {
+            "source_digest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "artifact_digest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "composed_tree_digest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "config_digest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            }
+          },
+          "additionalProperties": false,
+          "description": "UAT-I04: the exact immutable candidate being accepted."
+        },
+        "acceptance_basis": {
+          "type": "object",
+          "required": [
+            "prd_id",
+            "prd_digest",
+            "acceptance_criteria_digest"
+          ],
+          "properties": {
+            "prd_id": {
+              "type": "string"
+            },
+            "prd_digest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "acceptance_criteria_digest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "traceability_digest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            }
+          },
+          "additionalProperties": false,
+          "description": "UAT-I05: no approved basis resolvable -> NO UAT. Resolves the EXISTING PRD/AC/RTM chain rather than re-deriving it."
+        },
+        "scenarios": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "scenario_id",
+              "objective_ref",
+              "acceptance_criterion_ref",
+              "actor_role",
+              "expected_business_outcome",
+              "criticality"
+            ],
+            "properties": {
+              "scenario_id": {
+                "type": "string",
+                "pattern": "^UAT-SCN-[A-Za-z0-9._-]+$"
+              },
+              "prd_id": {
+                "type": "string"
+              },
+              "objective_ref": {
+                "type": "string",
+                "pattern": "^OBJ-[A-Za-z0-9._-]+$"
+              },
+              "acceptance_criterion_ref": {
+                "type": "string",
+                "pattern": "^AC-[A-Za-z0-9._-]+$"
+              },
+              "requirement_refs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^REQ-[A-Za-z0-9._-]+$"
+                }
+              },
+              "actor_role": {
+                "type": "string"
+              },
+              "preconditions": {
+                "type": "string"
+              },
+              "steps": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "expected_business_outcome": {
+                "type": "string"
+              },
+              "criticality": {
+                "enum": [
+                  "critical",
+                  "major",
+                  "minor"
+                ]
+              }
+            },
+            "additionalProperties": false,
+            "description": "UAT-I01/I02/I06/I07: business provenance, adapter-independent identity, business-readable oracle, named actor. A scenario the RTM cannot anchor is not derived."
+          }
+        },
+        "observations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "scenario_id",
+              "adapter",
+              "observed_outcome",
+              "result",
+              "executed_by",
+              "executed_at"
+            ],
+            "properties": {
+              "scenario_id": {
+                "type": "string",
+                "pattern": "^UAT-SCN-[A-Za-z0-9._-]+$"
+              },
+              "adapter": {
+                "enum": [
+                  "browser",
+                  "api",
+                  "manual",
+                  "hybrid"
+                ]
+              },
+              "observed_outcome": {
+                "type": "string"
+              },
+              "result": {
+                "enum": [
+                  "PASS",
+                  "FAIL",
+                  "BLOCKED",
+                  "NOT_EXECUTED"
+                ]
+              },
+              "diagnostics_ref": {
+                "type": "string"
+              },
+              "executed_by": {
+                "type": "string"
+              },
+              "executed_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "additionalProperties": false,
+            "description": "UAT-I09/I10: an adapter establishes OBSERVED behavior. It never declares acceptance, and diagnostics supplement the business oracle rather than replacing it."
+          }
+        },
+        "defects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "scenario_id",
+              "defect_class",
+              "statement"
+            ],
+            "properties": {
+              "scenario_id": {
+                "type": "string",
+                "pattern": "^UAT-SCN-[A-Za-z0-9._-]+$"
+              },
+              "defect_class": {
+                "enum": [
+                  "IMPLEMENTATION_DEFECT",
+                  "REQUIREMENT_DEFECT",
+                  "ACCEPTANCE_CRITERION_DEFECT",
+                  "DESIGN_DEFECT",
+                  "ENVIRONMENT_DEFECT",
+                  "TEST_DATA_DEFECT",
+                  "ADAPTER_DEFECT",
+                  "SCENARIO_DEFECT",
+                  "NON_REPRODUCIBLE",
+                  "BLOCKED_BY_DEPENDENCY"
+                ]
+              },
+              "statement": {
+                "type": "string"
+              },
+              "routed_to": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false,
+            "description": "UAT-I11: a FAIL or BLOCKED without a class is noise the disposition cannot act on. ACCEPTANCE_CRITERION_DEFECT routes UPSTREAM and is never silently absorbed as an implementation bug -- the single most likely place for a bad requirement to be patched around."
+          }
+        },
+        "coverage": {
+          "type": "object",
+          "required": [
+            "criteria",
+            "roles",
+            "journeys",
+            "non_coverage"
+          ],
+          "properties": {
+            "criteria": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "acceptance_criterion_ref",
+                  "state"
+                ],
+                "properties": {
+                  "acceptance_criterion_ref": {
+                    "type": "string",
+                    "pattern": "^AC-[A-Za-z0-9._-]+$"
+                  },
+                  "state": {
+                    "enum": [
+                      "covered_pass",
+                      "covered_fail",
+                      "covered_blocked",
+                      "not_covered"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "roles": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "actor_role",
+                  "exercised"
+                ],
+                "properties": {
+                  "actor_role": {
+                    "type": "string"
+                  },
+                  "exercised": {
+                    "type": "boolean"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "journeys": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "journey",
+                  "state"
+                ],
+                "properties": {
+                  "journey": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "enum": [
+                      "complete",
+                      "partial",
+                      "not_covered"
+                    ]
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "non_coverage": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "item",
+                  "reason"
+                ],
+                "properties": {
+                  "item": {
+                    "type": "string"
+                  },
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false,
+          "description": "UAT-I12/I13: coverage is measured against acceptance criteria, roles and journeys -- NEVER screens. non_coverage is REQUIRED, not optional: absence from the matrix is a defect, and a criterion marked not_covered without a reason is the same defect wearing a label."
+        },
+        "recommendation": {
+          "enum": [
+            "RECOMMEND_ACCEPT",
+            "RECOMMEND_ACCEPT_WITH_CONDITIONS",
+            "RECOMMEND_REJECT",
+            "RECOMMEND_INSUFFICIENT_EVIDENCE"
+          ]
+        },
+        "recommendation_rationale": {
+          "type": "string"
+        },
+        "acceptance": {
+          "type": "object",
+          "required": [
+            "acceptance_id",
+            "candidate_digest",
+            "acceptance_basis_digest",
+            "scenario_set_digest",
+            "disposition",
+            "accepted_by",
+            "accepted_at"
+          ],
+          "properties": {
+            "acceptance_id": {
+              "type": "string"
+            },
+            "candidate_digest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "acceptance_basis_digest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "scenario_set_digest": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "disposition": {
+              "enum": [
+                "ACCEPTED",
+                "ACCEPTED_WITH_CONDITIONS",
+                "REJECTED"
+              ]
+            },
+            "conditions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "known_defects_acknowledged": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "declared_non_coverage_acknowledged": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "accepted_by": {
+              "type": "object",
+              "required": [
+                "principal",
+                "principal_type"
+              ],
+              "properties": {
+                "principal": {
+                  "type": "string"
+                },
+                "principal_type": {
+                  "const": "human"
+                }
+              },
+              "additionalProperties": false
+            },
+            "accepted_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "supersedes": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "description": "UAT-I14/I15/I16 -- LAYER 2, and the load-bearing boundary of the whole capability. The acceptance vocabulary (ACCEPTED / ACCEPTED_WITH_CONDITIONS / REJECTED) exists ONLY here, and only alongside a human principal. principal_type is const 'human': an agent cannot issue product acceptance by any encoding this schema admits."
+        }
+      },
+      "additionalProperties": false,
+      "description": "The two-layer artifact. LAYER 1 (recommendation) is this capability's output; LAYER 2 (acceptance) is a separate human act. The recommendation enum is CLOSED and contains no acceptance verdict -- UAT-I14 is enforced by the vocabulary, not by an argument a producer could decline to read."
+    }
+  }
+}

@@ -1908,6 +1908,112 @@ def check_g09_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[st
 EVIDENCE_RULES.update({t: check_g09_binding for t in G09_TYPES})
 
 
+def check_g10_uat_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    """EVIDENCE_RULES entry for the G10 `uat` type (badf-uat WP-UAT-B): a typed `binding`, when
+    present, must conform to schemas/uat.schema.json AND honor the UAT invariants that are
+    checkable on a single evidence object. Untyped objects stay admissible -- additive, exactly
+    as VER-B and VAL-B before it.
+
+    The schema walker enforces required/enum/pattern/additionalProperties/type only, so every
+    cross-field and non-emptiness constraint below is a named code control:
+
+      U2  scenario provenance    -- every observation names a scenario that exists in this
+                                    binding (UAT-I01: an unanchored observation is not evidence)
+      U3  classified failures    -- every FAIL/BLOCKED observation has a defect of its own
+                                    (UAT-I11: a failure without a class is noise)
+      U4  criticality not hidden -- a critical scenario that is FAIL or NOT_EXECUTED forbids
+                                    RECOMMEND_ACCEPT (UAT-I13: an aggregate cannot bury it)
+      U5  layer separation       -- an acceptance, when present, binds THIS binding's candidate
+                                    digest and carries a human principal (UAT-I15/I16)
+      U6  one obs per scenario   -- duplicate observations are ambiguous input, refused rather
+                                    than resolved by an invented rule (UAT-I09/I17; BADF-QA #264)
+
+    The recommendation vocabulary IS closed by the schema: check_schema implements `enum`, so
+    an acceptance verdict cannot be written into `recommendation` at all.
+
+    `const` IS NOT. check_schema's walker implements required / additionalProperties / type /
+    enum / pattern / items and has NO const branch, so every `"const"` in schemas/uat.schema.json
+    is decorative -- `principal_type: {"const": "human"}` admits "agent" at the schema layer.
+    U5 below is therefore the SOLE enforcer of the human-principal rule. Do not delete it on the
+    reasoning that the schema already covers it; that reasoning is correct for the enum four
+    lines up and wrong here, and the two sit close enough to be confused. (BADF-QA, #264 review;
+    repo-wide as #265.)
+    """
+    b = evidence.get("binding")
+    if not isinstance(b, dict):
+        return                                    # untyped stays admissible (additive rung)
+    check_schema("uat", evidence)
+    label = f"{evidence.get('id', '?')} (uat)"
+
+    # UAT-I05 (exact acceptance basis) needs NO code control: schemas/uat.schema.json makes
+    # prd_id, prd_digest and acceptance_criteria_digest REQUIRED inside acceptance_basis, so
+    # check_schema above refuses a missing basis before any code here could reach it. A U1 WAS
+    # written here, and the mutation battery found it SURVIVES -- unreachable, because the
+    # schema raises first and BOTH messages contain "prd_digest", so the test asserting that
+    # fragment passed on the wrong raise. A control the schema makes unreachable is not a
+    # control; it is the shape of one. Removed rather than kept for symmetry -- #250's class,
+    # found by this rung's own battery in this rung's own code.
+
+    known = {s["scenario_id"] for s in b.get("scenarios") or []}
+    # U2 -- an observation of a scenario this binding does not carry is unanchored
+    orphan = sorted({o["scenario_id"] for o in b.get("observations") or []} - known)
+    if orphan:
+        raise ValidationError(f"{label}: observation(s) name scenario(s) absent from this binding: {', '.join(orphan)}; an unanchored observation is a test result, not UAT evidence (UAT-I01)")
+
+    # U3 -- every failed or blocked observation carries a classified defect
+    classified = {d["scenario_id"] for d in b.get("defects") or []}
+    unclassified = sorted({o["scenario_id"] for o in b.get("observations") or []
+                           if o["result"] in ("FAIL", "BLOCKED")} - classified)
+    if unclassified:
+        raise ValidationError(f"{label}: scenario(s) {', '.join(unclassified)} failed or were blocked with no defect class; a failure without a class is noise the disposition cannot act on (UAT-I11)")
+
+    # U6 -- one scenario, one observation. A `uat` evidence object is ONE execution pass over a
+    # scenario set; a re-run after a fix is a NEW uat object with its own candidate digest, which
+    # is what UAT-I17 already implies. Two observations of one scenario inside one binding is
+    # AMBIGUOUS INPUT with no stated resolution -- retry? flake? two adapters? -- and any rule the
+    # gate picked (last-wins, worst-wins, newest-wins) would be the gate deciding something the
+    # producer never said. Refusing ambiguity beats interpreting it.
+    #
+    # This also makes `observations` a set BY CONSTRUCTION, so U3 and U4 agree structurally rather
+    # than by both happening to be written set-wise. They did not: U4 was a dict comprehension
+    # (LAST occurrence wins) while U3 ten lines up was set-based, so the same multiset in a
+    # different order produced opposite verdicts -- [FAIL, PASS] admitted under RECOMMEND_ACCEPT,
+    # [PASS, FAIL] refused. Found by BADF-QA on #264.
+    #
+    # And it settles `executed_at`, which QA noted is required and never read: with duplicates
+    # refused it is PROVENANCE (when this was observed), never an ordering key. Nothing resolves
+    # a conflict, because a conflict cannot be expressed.
+    seen: dict[str, int] = {}
+    for o in b.get("observations") or []:
+        seen[o["scenario_id"]] = seen.get(o["scenario_id"], 0) + 1
+    dupes = sorted(s for s, n in seen.items() if n > 1)
+    if dupes:
+        raise ValidationError(f"{label}: scenario(s) {', '.join(dupes)} carry more than one observation; a uat evidence object is one execution pass and a re-run is a new object, so duplicate observations are ambiguous input rather than a result to be resolved (UAT-I09 / UAT-I17)")
+
+    # U4 -- a critical scenario cannot be buried under an aggregate recommendation.
+    # Order-independent by construction now that U6 refuses duplicates.
+    if b.get("recommendation") == "RECOMMEND_ACCEPT":
+        critical = {s["scenario_id"] for s in b.get("scenarios") or [] if s["criticality"] == "critical"}
+        by_scn = {o["scenario_id"]: o["result"] for o in b.get("observations") or []}
+        bad = sorted(s for s in critical if by_scn.get(s, "NOT_EXECUTED") in ("FAIL", "BLOCKED", "NOT_EXECUTED"))
+        if bad:
+            raise ValidationError(f"{label}: RECOMMEND_ACCEPT with critical scenario(s) {', '.join(bad)} not passing; mandatory critical criteria cannot be hidden by an aggregate (UAT-I13)")
+
+    # U5 -- Layer 2 binds Layer 1, and only a human issues it
+    acc = b.get("acceptance")
+    if isinstance(acc, dict):
+        if acc["candidate_digest"] != (b.get("candidate") or {}).get("source_digest"):
+            raise ValidationError(f"{label}: acceptance.candidate_digest does not equal the binding's candidate.source_digest; an acceptance bound to a different candidate is void (UAT-I16)")
+        # SOLE ENFORCER: the schema's {"const": "human"} is decorative -- check_schema has no
+        # const branch (measured: principal_type='agent' is ADMITTED by check_schema alone).
+        # Deleting this leaves the appearance of the rule and none of it.
+        if (acc.get("accepted_by") or {}).get("principal_type") != "human":
+            raise ValidationError(f"{label}: acceptance carries a non-human principal; final product acceptance is a separate authorized human decision, never the producing capability's (UAT-I14 / UAT-I15)")
+
+
+EVIDENCE_RULES["uat"] = check_g10_uat_binding
+
+
 
 G08_OBSERVATIONS = ("integration-test", "contract-test", "composed-tree-test")
 G08_QUORUM = {"C2": 2, "C3": 3}

@@ -1,0 +1,1229 @@
+diff --git a/badf/demands/BADF-DEM-0110.json b/badf/demands/BADF-DEM-0110.json
+new file mode 100644
+index 0000000..c8cbdb5
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0110.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0110",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 263,
++    "url": "https://github.com/bstBizEra/badf/issues/263",
++    "exported_at": "2026-09-01T00:40:00Z",
++    "body_digest": "sha256:d958f0707ea5fbcb4c2a2701fdfdc650b8e86df2da50c988b6435f4afd187449"
++  },
++  "title": "GOV-0116: WP-UAT-B — type the uat evidence binding and validate it in the canonical gate (badf-uat DESIGNED → IMPLEMENTED)",
++  "problem": "🧠 **ARCHI (BARCHI-3)** — plan for **WP-UAT-B**: `badf-uat` `DESIGNED` → `IMPLEMENTED`. `WP-2026-0124` / `BADF-DEM-0110`.\n\n## Stage-Gate\n\n- **Stage:** 10 (UAT), rung B of the A→E ladder frozen in `skills/badf-uat/references/acceptance.md` at WP-UAT-A (#241, landed `c525129`).\n- **Decision:** Continue. Rung A froze the contract and shipped **no runtime**; `uat` is a required G10 evidence type that no gate path can mechanically check.\n- **Over-engineering risk refused:** registering execution adapters (`browser-uat`, `api-uat`), building a scenario-derivation engine, or adding a second gate. B types the artifacts and extends the canonical gate. Nothing executes a scenario at this rung.\n- **Lean mode:** advisory.\n\n## What rung A committed B to, verbatim\n\n> `IMPLEMENTED` — **WP-UAT-B**: typed `uat` evidence schema specializing `evidence.schema.json`; the UAT Scenario object, the execution-observation record and the two-layer disposition record as typed artifacts; a `badf_gate.py` path validating a G10 `uat` dossier's typed objects — mirroring `verify` for G08. Extends the canonical gate; adds no second one.\n\nThis plan implements exactly that and nothing beyond it.\n\n## Precedent being mirrored\n\n`WP-VAL-B` (#247, `badf-release-validation` → IMPLEMENTED) and `WP-VER-B` (G08) established the shape: a typed schema per evidence type specializing `evidence.schema.json` with a `binding` object, plus a `check_gNN_binding` registered in `EVIDENCE_RULES` — **strictly additive**, so untyped objects stay admissible and nothing already landed breaks. `uat` is **one** type rather than four, so this is a smaller surface than VAL-B's.\n\n## Scope\n\n- **`schemas/uat.schema.json`** — typed `binding` carrying, per the frozen invariants:\n\n  | field | invariant |\n  | --- | --- |\n  | `candidate` | UAT-I04 — the exact immutable candidate accepted |\n  | `acceptance_basis` | UAT-I05 — exact PRD / acceptance-criteria / RTM digests |\n  | `scenarios[]` | UAT-I01/I02/I06/I07 — source refs, actor, business-readable oracle, criticality |\n  | `observations[]` | UAT-I09 — adapter, observed outcome, result, executed_by |\n  | `defects[]` | UAT-I11 — the ten-way class enum, `ACCEPTANCE_CRITERION_DEFECT` among them |\n  | `coverage` | UAT-I12/I13 — per-criterion state, roles, journeys, declared non-coverage |\n  | `recommendation` | UAT-I14 — `RECOMMEND_*` only |\n  | `acceptance` (optional) | UAT-I15/I16 — Layer 2, binding Layer 1's digests |\n\n- **`check_g10_uat_binding`** in `badf_gate.py`, registered `EVIDENCE_RULES[\"uat\"]`.\n- **`tests/test_badf_uat_evidence.py`** — schema-shape and binding tests.\n\n## The one thing this rung must not get wrong\n\n**The recommendation vocabulary must not be able to express an acceptance.** `RECOMMEND_ACCEPT` / `RECOMMEND_ACCEPT_WITH_CONDITIONS` / `RECOMMEND_REJECT` / `RECOMMEND_INSUFFICIENT_EVIDENCE` are the closed enum; `ACCEPTED`, `ACCEPTED_WITH_CONDITIONS` and `REJECTED` are valid **only** inside the optional Layer 2 `acceptance` object, which additionally requires a human `accepted_by`. A schema that let `recommendation: \"ACCEPTED\"` validate would let the evidence producer issue the decision it is forbidden from making — UAT-I14 defeated by a permissive enum rather than by an argument.\n\n## Tests (failing-first, each observed red)\n\n- `test_uat_schema_specializes_evidence_and_is_additive` — untyped `uat` evidence still validates.\n- `test_recommendation_enum_cannot_express_an_acceptance` — `recommendation: \"ACCEPTED\"` is **refused**.\n- `test_layer2_acceptance_requires_a_human_principal` — `accepted_by` absent or non-human → refused.\n- `test_layer2_must_bind_layer1_digests` — `acceptance.candidate_digest` ≠ `binding.candidate` → refused.\n- `test_defect_class_is_the_frozen_ten` — an invented class is refused; `ACCEPTANCE_CRITERION_DEFECT` accepted.\n- `test_declared_non_coverage_is_required_not_optional` — UAT-I12.\n- `test_untyped_binding_is_still_admissible` — additivity, the property VAL-B's rung established.\n\n## Out of scope\n\nAny execution adapter or subskill registration · scenario derivation logic · deterministic G10 controls (that is **WP-UAT-C**, lean **disabled** — HARD INVARIANTS) · any `lifecycle.json` change · any second gate (UAT-I20) · `badf-production-readiness`'s two types.\n\n## Ladder position and gating\n\nB is **shared-surface** (`schemas/`, `badf_gate.py`) → **QA + REV**, unlike rung A which was ladder-internal. Queues behind the current landing order; expect rebases.\n\n**Version tier:** minor (new schema + new gate path, backward-compatible). **Ids:** `WP-2026-0124` / `BADF-DEM-0110` / `GOV-0116`, swept clean on all four surfaces — main + remote heads, open-PR file lists, issue/PR titles and bodies, and my own unpushed worktree.\n\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-09-01T00:40:00Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "WP-UAT-B: badf-uat DESIGNED -> IMPLEMENTED. Types the uat G10 evidence binding (schemas/uat.schema.json) and extends the canonical gate with check_g10_uat_binding, registered EVIDENCE_RULES['uat'] -- strictly additive, untyped uat evidence stays admissible, mirroring VER-B and VAL-B. The load-bearing property is that the recommendation enum is CLOSED and cannot express an acceptance: UAT-I14 is enforced by the vocabulary rather than by an argument a producer could decline to read, and the Layer 2 acceptance object pins principal_type to const 'human'. Five code controls (U2 unanchored observation, U3 unclassified failure, U4 critical scenario hidden under RECOMMEND_ACCEPT, U5 layer-2 candidate binding and human principal), all observed RED against a neutered gate -- 0 survivors. A sixth control (U1, acceptance-basis resolvability) was written and REMOVED: the schema already makes prd_digest required so check_schema fires first, the control was unreachable, and its test passed on the wrong raise because both messages contain 'prd_digest'. Found by this rung's own mutation battery -- #250's class, in this rung's own code."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 74dfd24..4f3ab5c 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -328,8 +328,8 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "DESIGNED",
+-      "digest": "sha256:07a9828032f4869893cd6a8ce1dd131c520623601538244f25f37bb3a812497a"
++      "status": "IMPLEMENTED",
++      "digest": "sha256:832325d9fb624961b632ec4517240633e457210e693edbcb5efbe8f93d7fb67c"
+     },
+     {
+       "name": "badf-production-readiness",
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 677edf3..4cbcd45 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1936,6 +1936,42 @@ the same hours, the id claim for this WP survived a crossed-ids misread (caught
+ print-the-ceiling rule) — the allocation protocol landing in `BADF-WP-0118` doing its job on the very
+ next WP to allocate.
+ 
++## badf-uat → IMPLEMENTED — the typed `uat` binding, and an enum that cannot say yes (`BADF-WP-0124` / WP-UAT-B, Issue #263 / GOV-0116)
++
++Rung A froze `badf-uat`'s contract and shipped **no runtime**, which left `uat` — a required G10
++evidence type — checkable by nothing. This rung types the artifact and extends the canonical gate:
++`schemas/uat.schema.json` specializing `evidence.schema.json`, and `check_g10_uat_binding` registered
++`EVIDENCE_RULES["uat"]`. **Strictly additive**, exactly as VER-B and VAL-B before it — an untyped
++`uat` binding stays admissible, so nothing already landed breaks.
++
++**The load-bearing decision is a closed enum.** UAT-I14 says the capability that produced the evidence
++does not issue the decision. Rung A stated that in prose across fourteen references; a schema admitting
++`recommendation: "ACCEPTED"` would have defeated it with a permissive vocabulary rather than an
++argument — a producer would not need to disobey the rule, only decline to read it. So
++`recommendation` is exactly four `RECOMMEND_*` values, the acceptance verdicts exist **only** inside
++the optional Layer 2 `acceptance` object, and that object pins `accepted_by.principal_type` to
++`const: "human"`. **An agent cannot issue product acceptance by any encoding this schema admits.**
++The rule stopped being a norm and became a shape.
++
++Five code controls carry the cross-field constraints the schema walker cannot express: an observation
++naming a scenario absent from the binding is unanchored (U2, UAT-I01); a `FAIL`/`BLOCKED` observation
++with no classified defect is noise the disposition cannot act on (U3, UAT-I11); `RECOMMEND_ACCEPT`
++with a critical scenario not passing is refused, so an aggregate cannot bury a mandatory criterion
++(U4, UAT-I13); and a Layer 2 acceptance must bind this binding's own candidate digest and carry a
++human principal (U5, UAT-I15/I16). All five **observed red** against a neutered gate.
++
++**A sixth control was written and removed, and the removal is the instructive part.** `U1` checked
++that `acceptance_basis` carries a `prd_digest` — but the schema already makes that field `required`,
++so `check_schema` refuses first and `U1` could never fire. Its test passed **on the wrong raise**,
++because both messages contain the string `prd_digest`. The mutation battery caught it: neutering `U1`
++left the suite green. **A control the schema makes unreachable is not a control; it is the shape of
++one** — #250's class, found by this rung's own battery in this rung's own code, and recorded in a
++comment where it stood so nobody re-adds it.
++
++Shared-surface (`schemas/` + `badf_gate.py`) → QA + REV, unlike rung A. Next: **WP-UAT-C**,
++deterministic G10/UAT controls with lean **disabled** — acceptance-basis binding across a dossier,
++freshness, and staleness on candidate change are HARD INVARIANTS.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/schemas/uat.schema.json b/schemas/uat.schema.json
+new file mode 100644
+index 0000000..3e64803
+--- /dev/null
++++ b/schemas/uat.schema.json
+@@ -0,0 +1,532 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "type": "object",
++  "required": [
++    "schema_version",
++    "id",
++    "work_package_id",
++    "gate",
++    "claim",
++    "evidence_type",
++    "producer",
++    "source_revision",
++    "target",
++    "toolchain",
++    "operation",
++    "started_at",
++    "completed_at",
++    "outcome",
++    "artifact",
++    "digest",
++    "binding"
++  ],
++  "$id": "https://badf.bizera.local/schemas/uat.schema.json",
++  "title": "BADF G10 evidence: uat (typed binding, WP-UAT-B / BADF-WP-0124)",
++  "properties": {
++    "schema_version": {
++      "const": "1.0.0"
++    },
++    "id": {
++      "type": "string",
++      "pattern": "^EVD-[A-Za-z0-9._-]+$"
++    },
++    "work_package_id": {
++      "type": "string",
++      "pattern": "^WP-[A-Za-z0-9._-]+$"
++    },
++    "gate": {
++      "const": "G10"
++    },
++    "claim": {
++      "type": "string",
++      "minLength": 1
++    },
++    "evidence_type": {
++      "const": "uat"
++    },
++    "producer": {
++      "type": "object",
++      "required": [
++        "id",
++        "type"
++      ],
++      "properties": {
++        "id": {
++          "type": "string",
++          "minLength": 1
++        },
++        "type": {
++          "enum": [
++            "human",
++            "agent",
++            "service",
++            "controller"
++          ]
++        }
++      }
++    },
++    "source_revision": {
++      "type": "string",
++      "minLength": 1
++    },
++    "target": {
++      "type": "string",
++      "minLength": 1
++    },
++    "toolchain": {
++      "type": "object",
++      "required": [
++        "name",
++        "version"
++      ]
++    },
++    "operation": {
++      "type": "string",
++      "minLength": 1
++    },
++    "started_at": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "completed_at": {
++      "type": "string",
++      "format": "date-time"
++    },
++    "outcome": {
++      "enum": [
++        "PASS",
++        "FAIL",
++        "BLOCKED",
++        "NOT_RUN",
++        "NOT_APPLICABLE"
++      ]
++    },
++    "artifact": {
++      "type": "string",
++      "minLength": 1
++    },
++    "digest": {
++      "type": "string",
++      "pattern": "^sha256:[a-f0-9]{64}$"
++    },
++    "sanitization": {
++      "type": "string"
++    },
++    "binding": {
++      "type": "object",
++      "required": [
++        "candidate",
++        "acceptance_basis",
++        "scenarios",
++        "observations",
++        "defects",
++        "coverage",
++        "recommendation"
++      ],
++      "properties": {
++        "candidate": {
++          "type": "object",
++          "required": [
++            "source_digest"
++          ],
++          "properties": {
++            "source_digest": {
++              "type": "string",
++              "pattern": "^sha256:[0-9a-f]{64}$"
++            },
++            "artifact_digest": {
++              "type": "string",
++              "pattern": "^sha256:[0-9a-f]{64}$"
++            },
++            "composed_tree_digest": {
++              "type": "string",
++              "pattern": "^sha256:[0-9a-f]{64}$"
++            },
++            "config_digest": {
++              "type": "string",
++              "pattern": "^sha256:[0-9a-f]{64}$"
++            }
++          },
++          "additionalProperties": false,
++          "description": "UAT-I04: the exact immutable candidate being accepted."
++        },
++        "acceptance_basis": {
++          "type": "object",
++          "required": [
++            "prd_id",
++            "prd_digest",
++            "acceptance_criteria_digest"
++          ],
++          "properties": {
++            "prd_id": {
++              "type": "string"
++            },
++            "prd_digest": {
++              "type": "string",
++              "pattern": "^sha256:[0-9a-f]{64}$"
++            },
++            "acceptance_criteria_digest": {
++              "type": "string",
++              "pattern": "^sha256:[0-9a-f]{64}$"
++            },
++            "traceability_digest": {
++              "type": "string",
++              "pattern": "^sha256:[0-9a-f]{64}$"
++            }
++          },
++          "additionalProperties": false,
++          "description": "UAT-I05: no approved basis resolvable -> NO UAT. Resolves the EXISTING PRD/AC/RTM chain rather than re-deriving it."
++        },
++        "scenarios": {
++          "type": "array",
++          "items": {
++            "type": "object",
++            "required": [
++              "scenario_id",
++              "objective_ref",
++              "acceptance_criterion_ref",
++              "actor_role",
++              "expected_business_outcome",
++              "criticality"
++            ],
++            "properties": {
++              "scenario_id": {
++                "type": "string",
++                "pattern": "^UAT-SCN-[A-Za-z0-9._-]+$"
++              },
++              "prd_id": {
++                "type": "string"
++              },
++              "objective_ref": {
++                "type": "string",
++                "pattern": "^OBJ-[A-Za-z0-9._-]+$"
++              },
++              "acceptance_criterion_ref": {
++                "type": "string",
++                "pattern": "^AC-[A-Za-z0-9._-]+$"
++              },
++              "requirement_refs": {
++                "type": "array",
++                "items": {
++                  "type": "string",
++                  "pattern": "^REQ-[A-Za-z0-9._-]+$"
++                }
++              },
++              "actor_role": {
++                "type": "string"
++              },
++              "preconditions": {
++                "type": "string"
++              },
++              "steps": {
++                "type": "array",
++                "items": {
++                  "type": "string"
++                }
++              },
++              "expected_business_outcome": {
++                "type": "string"
++              },
++              "criticality": {
++                "enum": [
++                  "critical",
++                  "major",
++                  "minor"
++                ]
++              }
++            },
++            "additionalProperties": false,
++            "description": "UAT-I01/I02/I06/I07: business provenance, adapter-independent identity, business-readable oracle, named actor. A scenario the RTM cannot anchor is not derived."
++          }
++        },
++        "observations": {
++          "type": "array",
++          "items": {
++            "type": "object",
++            "required": [
++              "scenario_id",
++              "adapter",
++              "observed_outcome",
++              "result",
++              "executed_by",
++              "executed_at"
++            ],
++            "properties": {
++              "scenario_id": {
++                "type": "string",
++                "pattern": "^UAT-SCN-[A-Za-z0-9._-]+$"
++              },
++              "adapter": {
++                "enum": [
++                  "browser",
++                  "api",
++                  "manual",
++                  "hybrid"
++                ]
++              },
++              "observed_outcome": {
++                "type": "string"
++              },
++              "result": {
++                "enum": [
++                  "PASS",
++                  "FAIL",
++                  "BLOCKED",
++                  "NOT_EXECUTED"
++                ]
++              },
++              "diagnostics_ref": {
++                "type": "string"
++              },
++              "executed_by": {
++                "type": "string"
++              },
++              "executed_at": {
++                "type": "string",
++                "format": "date-time"
++              }
++            },
++            "additionalProperties": false,
++            "description": "UAT-I09/I10: an adapter establishes OBSERVED behavior. It never declares acceptance, and diagnostics supplement the business oracle rather than replacing it."
++          }
++        },
++        "defects": {
++          "type": "array",
++          "items": {
++            "type": "object",
++            "required": [
++              "scenario_id",
++              "defect_class",
++              "statement"
++            ],
++            "properties": {
++              "scenario_id": {
++                "type": "string",
++                "pattern": "^UAT-SCN-[A-Za-z0-9._-]+$"
++              },
++              "defect_class": {
++                "enum": [
++                  "IMPLEMENTATION_DEFECT",
++                  "REQUIREMENT_DEFECT",
++                  "ACCEPTANCE_CRITERION_DEFECT",
++                  "DESIGN_DEFECT",
++                  "ENVIRONMENT_DEFECT",
++                  "TEST_DATA_DEFECT",
++                  "ADAPTER_DEFECT",
++                  "SCENARIO_DEFECT",
++                  "NON_REPRODUCIBLE",
++                  "BLOCKED_BY_DEPENDENCY"
++                ]
++              },
++              "statement": {
++                "type": "string"
++              },
++              "routed_to": {
++                "type": "string"
++              }
++            },
++            "additionalProperties": false,
++            "description": "UAT-I11: a FAIL or BLOCKED without a class is noise the disposition cannot act on. ACCEPTANCE_CRITERION_DEFECT routes UPSTREAM and is never silently absorbed as an implementation bug -- the single most likely place for a bad requirement to be patched around."
++          }
++        },
++        "coverage": {
++          "type": "object",
++          "required": [
++            "criteria",
++            "roles",
++            "journeys",
++            "non_coverage"
++          ],
++          "properties": {
++            "criteria": {
++              "type": "array",
++              "items": {
++                "type": "object",
++                "required": [
++                  "acceptance_criterion_ref",
++                  "state"
++                ],
++                "properties": {
++                  "acceptance_criterion_ref": {
++                    "type": "string",
++                    "pattern": "^AC-[A-Za-z0-9._-]+$"
++                  },
++                  "state": {
++                    "enum": [
++                      "covered_pass",
++                      "covered_fail",
++                      "covered_blocked",
++                      "not_covered"
++                    ]
++                  },
++                  "reason": {
++                    "type": "string"
++                  }
++                },
++                "additionalProperties": false
++              }
++            },
++            "roles": {
++              "type": "array",
++              "items": {
++                "type": "object",
++                "required": [
++                  "actor_role",
++                  "exercised"
++                ],
++                "properties": {
++                  "actor_role": {
++                    "type": "string"
++                  },
++                  "exercised": {
++                    "type": "boolean"
++                  }
++                },
++                "additionalProperties": false
++              }
++            },
++            "journeys": {
++              "type": "array",
++              "items": {
++                "type": "object",
++                "required": [
++                  "journey",
++                  "state"
++                ],
++                "properties": {
++                  "journey": {
++                    "type": "string"
++                  },
++                  "state": {
++                    "enum": [
++                      "complete",
++                      "partial",
++                      "not_covered"
++                    ]
++                  },
++                  "reason": {
++                    "type": "string"
++                  }
++                },
++                "additionalProperties": false
++              }
++            },
++            "non_coverage": {
++              "type": "array",
++              "items": {
++                "type": "object",
++                "required": [
++                  "item",
++                  "reason"
++                ],
++                "properties": {
++                  "item": {
++                    "type": "string"
++                  },
++                  "reason": {
++                    "type": "string"
++                  }
++                },
++                "additionalProperties": false
++              }
++            }
++          },
++          "additionalProperties": false,
++          "description": "UAT-I12/I13: coverage is measured against acceptance criteria, roles and journeys -- NEVER screens. non_coverage is REQUIRED, not optional: absence from the matrix is a defect, and a criterion marked not_covered without a reason is the same defect wearing a label."
++        },
++        "recommendation": {
++          "enum": [
++            "RECOMMEND_ACCEPT",
++            "RECOMMEND_ACCEPT_WITH_CONDITIONS",
++            "RECOMMEND_REJECT",
++            "RECOMMEND_INSUFFICIENT_EVIDENCE"
++          ]
++        },
++        "recommendation_rationale": {
++          "type": "string"
++        },
++        "acceptance": {
++          "type": "object",
++          "required": [
++            "acceptance_id",
++            "candidate_digest",
++            "acceptance_basis_digest",
++            "scenario_set_digest",
++            "disposition",
++            "accepted_by",
++            "accepted_at"
++          ],
++          "properties": {
++            "acceptance_id": {
++              "type": "string"
++            },
++            "candidate_digest": {
++              "type": "string",
++              "pattern": "^sha256:[0-9a-f]{64}$"
++            },
++            "acceptance_basis_digest": {
++              "type": "string",
++              "pattern": "^sha256:[0-9a-f]{64}$"
++            },
++            "scenario_set_digest": {
++              "type": "string",
++              "pattern": "^sha256:[0-9a-f]{64}$"
++            },
++            "disposition": {
++              "enum": [
++                "ACCEPTED",
++                "ACCEPTED_WITH_CONDITIONS",
++                "REJECTED"
++              ]
++            },
++            "conditions": {
++              "type": "array",
++              "items": {
++                "type": "string"
++              }
++            },
++            "known_defects_acknowledged": {
++              "type": "array",
++              "items": {
++                "type": "string"
++              }
++            },
++            "declared_non_coverage_acknowledged": {
++              "type": "array",
++              "items": {
++                "type": "string"
++              }
++            },
++            "accepted_by": {
++              "type": "object",
++              "required": [
++                "principal",
++                "principal_type"
++              ],
++              "properties": {
++                "principal": {
++                  "type": "string"
++                },
++                "principal_type": {
++                  "const": "human"
++                }
++              },
++              "additionalProperties": false
++            },
++            "accepted_at": {
++              "type": "string",
++              "format": "date-time"
++            },
++            "supersedes": {
++              "type": "string"
++            }
++          },
++          "additionalProperties": false,
++          "description": "UAT-I14/I15/I16 -- LAYER 2, and the load-bearing boundary of the whole capability. The acceptance vocabulary (ACCEPTED / ACCEPTED_WITH_CONDITIONS / REJECTED) exists ONLY here, and only alongside a human principal. principal_type is const 'human': an agent cannot issue product acceptance by any encoding this schema admits."
++        }
++      },
++      "additionalProperties": false,
++      "description": "The two-layer artifact. LAYER 1 (recommendation) is this capability's output; LAYER 2 (acceptance) is a separate human act. The recommendation enum is CLOSED and contains no acceptance verdict -- UAT-I14 is enforced by the vocabulary, not by an argument a producer could decline to read."
++    }
++  }
++}
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 7c07efd..96f5cc4 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -1908,6 +1908,112 @@ def check_g09_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[st
+ EVIDENCE_RULES.update({t: check_g09_binding for t in G09_TYPES})
+ 
+ 
++def check_g10_uat_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
++    """EVIDENCE_RULES entry for the G10 `uat` type (badf-uat WP-UAT-B): a typed `binding`, when
++    present, must conform to schemas/uat.schema.json AND honor the UAT invariants that are
++    checkable on a single evidence object. Untyped objects stay admissible -- additive, exactly
++    as VER-B and VAL-B before it.
++
++    The schema walker enforces required/enum/pattern/additionalProperties/type only, so every
++    cross-field and non-emptiness constraint below is a named code control:
++
++      U2  scenario provenance    -- every observation names a scenario that exists in this
++                                    binding (UAT-I01: an unanchored observation is not evidence)
++      U3  classified failures    -- every FAIL/BLOCKED observation has a defect of its own
++                                    (UAT-I11: a failure without a class is noise)
++      U4  criticality not hidden -- a critical scenario that is FAIL or NOT_EXECUTED forbids
++                                    RECOMMEND_ACCEPT (UAT-I13: an aggregate cannot bury it)
++      U5  layer separation       -- an acceptance, when present, binds THIS binding's candidate
++                                    digest and carries a human principal (UAT-I15/I16)
++      U6  one obs per scenario   -- duplicate observations are ambiguous input, refused rather
++                                    than resolved by an invented rule (UAT-I09/I17; BADF-QA #264)
++
++    The recommendation vocabulary IS closed by the schema: check_schema implements `enum`, so
++    an acceptance verdict cannot be written into `recommendation` at all.
++
++    `const` IS NOT. check_schema's walker implements required / additionalProperties / type /
++    enum / pattern / items and has NO const branch, so every `"const"` in schemas/uat.schema.json
++    is decorative -- `principal_type: {"const": "human"}` admits "agent" at the schema layer.
++    U5 below is therefore the SOLE enforcer of the human-principal rule. Do not delete it on the
++    reasoning that the schema already covers it; that reasoning is correct for the enum four
++    lines up and wrong here, and the two sit close enough to be confused. (BADF-QA, #264 review;
++    repo-wide as #265.)
++    """
++    b = evidence.get("binding")
++    if not isinstance(b, dict):
++        return                                    # untyped stays admissible (additive rung)
++    check_schema("uat", evidence)
++    label = f"{evidence.get('id', '?')} (uat)"
++
++    # UAT-I05 (exact acceptance basis) needs NO code control: schemas/uat.schema.json makes
++    # prd_id, prd_digest and acceptance_criteria_digest REQUIRED inside acceptance_basis, so
++    # check_schema above refuses a missing basis before any code here could reach it. A U1 WAS
++    # written here, and the mutation battery found it SURVIVES -- unreachable, because the
++    # schema raises first and BOTH messages contain "prd_digest", so the test asserting that
++    # fragment passed on the wrong raise. A control the schema makes unreachable is not a
++    # control; it is the shape of one. Removed rather than kept for symmetry -- #250's class,
++    # found by this rung's own battery in this rung's own code.
++
++    known = {s["scenario_id"] for s in b.get("scenarios") or []}
++    # U2 -- an observation of a scenario this binding does not carry is unanchored
++    orphan = sorted({o["scenario_id"] for o in b.get("observations") or []} - known)
++    if orphan:
++        raise ValidationError(f"{label}: observation(s) name scenario(s) absent from this binding: {', '.join(orphan)}; an unanchored observation is a test result, not UAT evidence (UAT-I01)")
++
++    # U3 -- every failed or blocked observation carries a classified defect
++    classified = {d["scenario_id"] for d in b.get("defects") or []}
++    unclassified = sorted({o["scenario_id"] for o in b.get("observations") or []
++                           if o["result"] in ("FAIL", "BLOCKED")} - classified)
++    if unclassified:
++        raise ValidationError(f"{label}: scenario(s) {', '.join(unclassified)} failed or were blocked with no defect class; a failure without a class is noise the disposition cannot act on (UAT-I11)")
++
++    # U6 -- one scenario, one observation. A `uat` evidence object is ONE execution pass over a
++    # scenario set; a re-run after a fix is a NEW uat object with its own candidate digest, which
++    # is what UAT-I17 already implies. Two observations of one scenario inside one binding is
++    # AMBIGUOUS INPUT with no stated resolution -- retry? flake? two adapters? -- and any rule the
++    # gate picked (last-wins, worst-wins, newest-wins) would be the gate deciding something the
++    # producer never said. Refusing ambiguity beats interpreting it.
++    #
++    # This also makes `observations` a set BY CONSTRUCTION, so U3 and U4 agree structurally rather
++    # than by both happening to be written set-wise. They did not: U4 was a dict comprehension
++    # (LAST occurrence wins) while U3 ten lines up was set-based, so the same multiset in a
++    # different order produced opposite verdicts -- [FAIL, PASS] admitted under RECOMMEND_ACCEPT,
++    # [PASS, FAIL] refused. Found by BADF-QA on #264.
++    #
++    # And it settles `executed_at`, which QA noted is required and never read: with duplicates
++    # refused it is PROVENANCE (when this was observed), never an ordering key. Nothing resolves
++    # a conflict, because a conflict cannot be expressed.
++    seen: dict[str, int] = {}
++    for o in b.get("observations") or []:
++        seen[o["scenario_id"]] = seen.get(o["scenario_id"], 0) + 1
++    dupes = sorted(s for s, n in seen.items() if n > 1)
++    if dupes:
++        raise ValidationError(f"{label}: scenario(s) {', '.join(dupes)} carry more than one observation; a uat evidence object is one execution pass and a re-run is a new object, so duplicate observations are ambiguous input rather than a result to be resolved (UAT-I09 / UAT-I17)")
++
++    # U4 -- a critical scenario cannot be buried under an aggregate recommendation.
++    # Order-independent by construction now that U6 refuses duplicates.
++    if b.get("recommendation") == "RECOMMEND_ACCEPT":
++        critical = {s["scenario_id"] for s in b.get("scenarios") or [] if s["criticality"] == "critical"}
++        by_scn = {o["scenario_id"]: o["result"] for o in b.get("observations") or []}
++        bad = sorted(s for s in critical if by_scn.get(s, "NOT_EXECUTED") in ("FAIL", "BLOCKED", "NOT_EXECUTED"))
++        if bad:
++            raise ValidationError(f"{label}: RECOMMEND_ACCEPT with critical scenario(s) {', '.join(bad)} not passing; mandatory critical criteria cannot be hidden by an aggregate (UAT-I13)")
++
++    # U5 -- Layer 2 binds Layer 1, and only a human issues it
++    acc = b.get("acceptance")
++    if isinstance(acc, dict):
++        if acc["candidate_digest"] != (b.get("candidate") or {}).get("source_digest"):
++            raise ValidationError(f"{label}: acceptance.candidate_digest does not equal the binding's candidate.source_digest; an acceptance bound to a different candidate is void (UAT-I16)")
++        # SOLE ENFORCER: the schema's {"const": "human"} is decorative -- check_schema has no
++        # const branch (measured: principal_type='agent' is ADMITTED by check_schema alone).
++        # Deleting this leaves the appearance of the rule and none of it.
++        if (acc.get("accepted_by") or {}).get("principal_type") != "human":
++            raise ValidationError(f"{label}: acceptance carries a non-human principal; final product acceptance is a separate authorized human decision, never the producing capability's (UAT-I14 / UAT-I15)")
++
++
++EVIDENCE_RULES["uat"] = check_g10_uat_binding
++
++
+ 
+ G08_OBSERVATIONS = ("integration-test", "contract-test", "composed-tree-test")
+ G08_QUORUM = {"C2": 2, "C3": 3}
+diff --git a/skills/badf-uat/SKILL.md b/skills/badf-uat/SKILL.md
+index 1babdb6..f015d75 100644
+--- a/skills/badf-uat/SKILL.md
++++ b/skills/badf-uat/SKILL.md
+@@ -12,7 +12,7 @@ description: >-
+   release-validated candidate needs its business behavior recorded against
+   approved acceptance criteria. Grants no acceptance, approval, or gate
+   authority.
+-status: DESIGNED
++status: IMPLEMENTED
+ gate: G10
+ owner_role: release_authority
+ allowed_tools: []
+diff --git a/tests/test_badf_production_readiness_contract.py b/tests/test_badf_production_readiness_contract.py
+index d993887..9cff35d 100644
+--- a/tests/test_badf_production_readiness_contract.py
++++ b/tests/test_badf_production_readiness_contract.py
+@@ -183,9 +183,18 @@ class ProductionReadinessContractTests(unittest.TestCase):
+                          by_id["G10"]["required_evidence"], "G10 evidence list unchanged")
+         for gid in ("G09", "G11", "G12"):
+             self.assertIn(gid, by_id, f"{gid} must exist")
+-        for g10_type in ("release-packet", "operational-readiness", "uat", "go-no-go"):
+-            self.assertNotIn(g10_type, gate.EVIDENCE_RULES,
+-                             f"EVIDENCE_RULES must carry no G10 type at this rung ({g10_type})")
++        # THIS SKILL's two types stay unregistered until badf-production-readiness reaches its
++        # own B rung. `uat` and `go-no-go` are deliberately NOT asserted here: they are not this
++        # capability's to own, so their registration says nothing about this rung.
++        #
++        # This assertion previously covered all four G10 types and broke the moment WP-UAT-B
++        # registered EVIDENCE_RULES["uat"] -- a SNAPSHOT ("no G10 type is registered anywhere")
++        # standing in for the INVARIANT ("this skill owns only its two"). Third instance of that
++        # error in one session, and the only one that reached across families: a PRDY rung-floor
++        # test blocking a UAT rung. A floor that pins another capability's absence is not a floor.
++        for own_type in ("release-packet", "operational-readiness"):
++            self.assertNotIn(own_type, gate.EVIDENCE_RULES,
++                             f"badf-production-readiness's own type {own_type} is registered before its B rung")
+ 
+     def test_registry_pin_is_designed_and_tool_empty(self):
+         registry = json.loads((ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))
+diff --git a/tests/test_badf_uat_contract.py b/tests/test_badf_uat_contract.py
+index 7e719cc..f17556e 100644
+--- a/tests/test_badf_uat_contract.py
++++ b/tests/test_badf_uat_contract.py
+@@ -65,18 +65,38 @@ REFS_TEXT = "\n".join(
+ 
+ 
+ class UatContractTests(unittest.TestCase):
+-    def test_contract_surface_is_declarative_only(self):
+-        """No runtime, no typed schema, no gate code ships at this rung (UAT-I20)."""
++    def test_no_second_gate_and_no_adapter_registered(self):
++        """UAT-I20 and the adapter deferral -- the parts of the A-rung floor that OUTLIVE rung A.
++
++        This test previously also asserted `schemas/uat.schema.json` does NOT exist, which was
++        correct at rung A and is wrong from WP-UAT-B on: B ships exactly that schema, by A's own
++        frozen ladder. A rung-floor assertion that pins the ABSENCE of the next rung's deliverable
++        fails the moment the ladder advances -- it reads as a contract but behaves as a freeze.
++
++        What survives every rung is narrower and is what remains here: no COMPETING gate
++        (UAT-I20), and no execution adapter registered as a subskill. Those are invariants; "no
++        schema yet" was a snapshot. (Caught by the full suite on WP-UAT-B -- the restricted
++        compose that ran only the B module was green and could not see it.)
++        """
+         self.assertTrue(SKILL.is_file(), "SKILL.md must exist")
+         for token in ("name: badf-uat", "gate: G10", "owner_role: release_authority",
+-                      "status: DESIGNED", "allowed_tools: []"):
++                      "allowed_tools: []"):
+             self.assertIn(token, SKILL_TEXT, token)
+         self.assertFalse((ROOT / "scripts" / "badf_uat.py").exists(),
+-                          "UAT-I20: no competing UAT gate script at the DESIGNED rung")
+-        self.assertFalse((ROOT / "schemas" / "uat.schema.json").exists(),
+-                          "no typed uat evidence schema at this rung")
+-        self.assertFalse((ROOT / "schemas" / "uat-scenario.schema.json").exists(),
+-                          "no typed scenario schema at this rung")
++                          "UAT-I20: no competing UAT gate; deterministic semantics stay in badf_gate.py")
++        registry = json.loads((ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))
++        names = {e["name"] for e in registry["skills"]}
++        # RESIDUAL of the #268 class, kept deliberately and disclosed rather than deleted:
++        # adapters ARE scheduled for a later rung (references/execution-adapters.md: "concrete
++        # adapters are a later rung"), so this pin WILL fail when that rung lands. It stays
++        # because it is the correct contract for every rung up to that one -- but the message
++        # tells the next author what to do, which is the difference between a contract and the
++        # freezes in #268 instances 1-3.
++        for sub in ("browser-uat", "api-uat", "manual-uat", "hybrid-uat"):
++            self.assertNotIn(sub, names,
++                             f"{sub} is registered. If the adapter rung has landed, that is "
++                             f"correct: update THIS assertion and references/acceptance.md's "
++                             f"ladder in the same PR. If not, an adapter was registered early.")
+ 
+     def test_root_states_all_invariants_and_the_workflow(self):
+         for i in range(1, 21):
+@@ -106,7 +126,9 @@ class UatContractTests(unittest.TestCase):
+         registry = json.loads((ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))
+         names = {e["name"] for e in registry["skills"]}
+         for sub in ("browser-uat", "api-uat", "manual-uat", "hybrid-uat"):
+-            self.assertNotIn(sub, names, f"{sub} must not be registered at WP-UAT-A")
++            self.assertNotIn(sub, names,
++                             f"{sub} is registered -- see the note on the sibling assertion; "
++                             f"deferred to the adapter rung, not forbidden forever")
+         adapters = (REFS_DIR / "execution-adapters.md").read_text(encoding="utf-8")
+         self.assertIn("No adapter is registered as a subskill at this rung", adapters)
+ 
+@@ -126,11 +148,15 @@ class UatContractTests(unittest.TestCase):
+         self.assertIn("uat", g10.get("required_evidence", []))
+         self.assertEqual(len(gates), 15, "no gate added or removed")
+ 
+-    def test_registry_pin_is_designed_and_tool_empty(self):
++    def test_registry_pin_is_at_least_implemented_and_tool_empty(self):
+         registry = json.loads((ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))
+         entry = next((e for e in registry["skills"] if e["name"] == "badf-uat"), None)
+         self.assertIsNotNone(entry, "badf-uat must be registered")
+-        self.assertEqual(entry["status"], "DESIGNED")
++        # WP-UAT-B floor: the ladder advances past DESIGNED, so this pins the FLOOR rather than
++        # a single rung. Pinning one status makes the contract test fail every time the ladder
++        # moves -- the same snapshot-versus-invariant error as the "no schema yet" assertion
++        # above. (The registry, not this file, is the live status -- acceptance.md is a pointer.)
++        self.assertIn(entry["status"], ("IMPLEMENTED", "VALIDATED", "SHADOWED", "ACTIVE"))
+         self.assertEqual(entry["allowed_tools"], [])
+         self.assertEqual(entry["risk_class"], "C1")
+         expected = "sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest()
+diff --git a/tests/test_badf_uat_evidence.py b/tests/test_badf_uat_evidence.py
+new file mode 100644
+index 0000000..f3f9815
+--- /dev/null
++++ b/tests/test_badf_uat_evidence.py
+@@ -0,0 +1,338 @@
++"""WP-UAT-B (BADF-WP-0124 / GOV-0116): the typed `uat` G10 evidence binding.
++
++Rung A froze the contract and shipped no runtime. This rung types the artifacts and extends the
++canonical gate -- additive, so untyped `uat` evidence stays admissible exactly as VER-B and VAL-B
++established.
++
++The load-bearing property is not any single control: it is that **the recommendation vocabulary
++cannot express an acceptance**. UAT-I14 says the capability that produced the evidence does not
++issue the decision. A schema admitting `recommendation: "ACCEPTED"` would defeat that with a
++permissive enum rather than an argument -- the producer would not have to disobey a rule, only
++decline to read one. So the enum is closed, and the acceptance vocabulary exists only inside the
++optional Layer 2 object.
++
++But the two halves are NOT enforced the same way, and the difference is load-bearing:
++
++  recommendation   `enum`  -- check_schema implements enum, so the SCHEMA closes it
++  principal_type   `const` -- check_schema has NO const branch, so the schema closes NOTHING
++                              and the U5 code control is the sole enforcer
++
++Measured, not assumed (BADF-QA on #264, reproduced here): with U5 bypassed, check_schema ADMITS
++`principal_type: "agent"`. The exactly-true claim is therefore narrower than "no encoding admits
++an agent acceptance": **the schema plus U5 remove every HONEST encoding of one.** `principal` is
++a free string, so `{"principal": "BARCHI-3 (agent)", "principal_type": "human"}` is admitted --
++the pair pins a DECLARATION, never an identity, exactly as AGENTS.md says of role banners. What
++the rung buys is that an agent acceptance must be written as a lie, and a lie is auditable.
++"""
++import json
++import sys
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++SCHEMA = gate.ROOT / "schemas" / "uat.schema.json"
++DIG = "sha256:" + "a" * 64
++DIG2 = "sha256:" + "b" * 64
++
++
++def scenario(sid="UAT-SCN-001", crit="major"):
++    return {"scenario_id": sid, "objective_ref": "OBJ-1", "acceptance_criterion_ref": "AC-1",
++            "actor_role": "buyer", "expected_business_outcome": "the order is confirmed",
++            "criticality": crit}
++
++
++def observation(sid="UAT-SCN-001", result="PASS"):
++    return {"scenario_id": sid, "adapter": "browser", "observed_outcome": "confirmation shown",
++            "result": result, "executed_by": "adapter/browser", "executed_at": "2026-01-01T00:00:00Z"}
++
++
++def binding(**over):
++    b = {"candidate": {"source_digest": DIG},
++         "acceptance_basis": {"prd_id": "PRD-1", "prd_digest": DIG,
++                              "acceptance_criteria_digest": DIG},
++         "scenarios": [scenario()],
++         "observations": [observation()],
++         "defects": [],
++         "coverage": {"criteria": [{"acceptance_criterion_ref": "AC-1", "state": "covered_pass"}],
++                      "roles": [{"actor_role": "buyer", "exercised": True}],
++                      "journeys": [{"journey": "checkout", "state": "complete"}],
++                      "non_coverage": []},
++         "recommendation": "RECOMMEND_ACCEPT"}
++    b.update(over)
++    return b
++
++
++def evidence(**over):
++    e = {"schema_version": "1.0.0", "id": "EVD-UAT-1", "work_package_id": "WP-2026-9999",
++         "gate": "G10", "claim": "business acceptance", "evidence_type": "uat",
++         "producer": {"id": "t", "type": "controller"}, "source_revision": "HEAD",
++         "target": "bstBizEra/badf:main", "toolchain": {"name": "t", "version": "1"},
++         "operation": "uat", "started_at": "2026-01-01T00:00:00Z",
++         "completed_at": "2026-01-01T00:00:00Z", "outcome": "PASS",
++         "artifact": "work/WP-2026-9999/evidence/G10/uat.json", "digest": DIG,
++         "binding": binding()}
++    e.update(over)
++    return e
++
++
++def check(e):
++    gate.EVIDENCE_RULES["uat"](Path("unused"), {"disposition": "PASS"}, e)
++
++
++class UatTypedEvidenceTests(unittest.TestCase):
++    def test_schema_exists_and_specializes_evidence(self):
++        self.assertTrue(SCHEMA.is_file())
++        d = json.loads(SCHEMA.read_text(encoding="utf-8"))
++        self.assertEqual({"const": "uat"}, d["properties"]["evidence_type"])
++        self.assertEqual({"const": "G10"}, d["properties"]["gate"])
++        for f in ("schema_version", "id", "work_package_id", "gate", "evidence_type",
++                  "producer", "outcome", "artifact", "digest"):
++            self.assertIn(f, d["required"], f)
++
++    def test_a_clean_typed_binding_is_accepted(self):
++        check(evidence())
++
++    def test_untyped_binding_is_still_admissible(self):
++        """Additivity -- the property VER-B and VAL-B established. Nothing already landed breaks."""
++        e = evidence()
++        del e["binding"]
++        check(e)
++
++    def test_recommendation_enum_cannot_express_an_acceptance(self):
++        """UAT-I14 enforced by the VOCABULARY, not by an argument a producer could decline to read."""
++        d = json.loads(SCHEMA.read_text(encoding="utf-8"))
++        enum = d["properties"]["binding"]["properties"]["recommendation"]["enum"]
++        for verdict in ("ACCEPTED", "ACCEPTED_WITH_CONDITIONS", "REJECTED"):
++            self.assertNotIn(verdict, enum, f"{verdict} must not be a recommendation")
++        # The INVARIANT is the prefix, not the count. `assertEqual(4, len(enum))` would fail the
++        # day someone legitimately adds RECOMMEND_DEFER -- a snapshot (#268). The prefix rule is
++        # STRONGER anyway: assertNotIn only catches the three verdicts I happened to name, while
++        # this catches any acceptance-shaped value nobody has thought of yet.
++        self.assertTrue(all(v.startswith("RECOMMEND_") for v in enum),
++                        f"every recommendation must be a RECOMMEND_*; got {enum}")
++        self.assertGreaterEqual(len(enum), 4, "the four frozen recommendations are a floor")
++        with self.assertRaises(gate.ValidationError):
++            check(evidence(binding=binding(recommendation="ACCEPTED")))
++
++    def test_layer2_acceptance_requires_a_human_principal(self):
++        """UAT-I14/I15: an agent cannot issue product acceptance by any encoding this schema admits."""
++        d = json.loads(SCHEMA.read_text(encoding="utf-8"))
++        acc = d["properties"]["binding"]["properties"]["acceptance"]
++        self.assertEqual({"const": "human"},
++                         acc["properties"]["accepted_by"]["properties"]["principal_type"])
++        a = {"acceptance_id": "ACC-1", "candidate_digest": DIG, "acceptance_basis_digest": DIG,
++             "scenario_set_digest": DIG, "disposition": "ACCEPTED",
++             "accepted_by": {"principal": "bot", "principal_type": "agent"},
++             "accepted_at": "2026-01-01T00:00:00Z"}
++        with self.assertRaises(gate.ValidationError):
++            check(evidence(binding=binding(acceptance=a)))
++
++    def test_const_is_decorative_and_U5_is_the_sole_enforcer(self):
++        """The correction to this rung's headline claim, pinned so it cannot drift back.
++
++        `const` reads like enforcement and is not: check_schema implements required /
++        additionalProperties / type / enum / pattern / items, with no const branch. So the
++        human-principal rule lives entirely in the U5 code control. This test exists because the
++        neighbouring docstring correctly says the schema closes the `recommendation` enum -- and
++        an author generalising that true sentence four lines to the `const` would delete U5 and
++        keep the appearance of the rule. (BADF-QA, #264 review; repo-wide as #265.)
++        """
++        a = {"acceptance_id": "ACC-1", "candidate_digest": DIG, "acceptance_basis_digest": DIG,
++             "scenario_set_digest": DIG, "disposition": "ACCEPTED",
++             "accepted_by": {"principal": "bot", "principal_type": "agent"},
++             "accepted_at": "2026-01-01T00:00:00Z"}
++        # The measurement, asserted as BEHAVIOUR rather than as source text. An earlier version
++        # of this test grepped check_schema for '"const"' -- which would have failed the day #265
++        # IMPLEMENTS const support, i.e. failed for being right about an improvement. That is the
++        # snapshot-worn-as-invariant class (#268), instance four, in my own test, found by the
++        # sweep BARCHI-2 suggested. If const is ever implemented THIS assertion fails too, but it
++        # fails with an instruction rather than a puzzle:
++        try:
++            gate.check_schema("uat", evidence(binding=binding(acceptance=a)))
++        except gate.ValidationError:
++            self.fail("check_schema now REFUSES principal_type='agent', so const is implemented. "
++                      "That is an improvement, not a regression: delete this test and remove the "
++                      "SOLE ENFORCER comment on U5, which is now false.")
++        # and the full rule refuses it, so U5 is doing all of the work
++        with self.assertRaisesRegex(gate.ValidationError, "non-human principal"):
++            check(evidence(binding=binding(acceptance=a)))
++
++    def test_the_honest_limit_a_lying_declaration_is_admitted(self):
++        """Stated as a boundary rather than defended as a stronger claim.
++
++        `principal_type` is pinned; `principal` is a free string. An agent declaring itself human
++        is ADMITTED. The rung does not make agent acceptance impossible -- it makes every honest
++        encoding of one impossible, which converts a permitted act into a lie. That is the right
++        property for a B rung and the wrong thing to overstate.
++        """
++        a = {"acceptance_id": "ACC-1", "candidate_digest": DIG, "acceptance_basis_digest": DIG,
++             "scenario_set_digest": DIG, "disposition": "ACCEPTED",
++             "accepted_by": {"principal": "BARCHI-3 (agent)", "principal_type": "human"},
++             "accepted_at": "2026-01-01T00:00:00Z"}
++        check(evidence(binding=binding(acceptance=a)))   # admitted, and that is the limit
++
++    def test_layer2_must_bind_layer1s_candidate(self):
++        """UAT-I16: an acceptance bound to a different candidate is void."""
++        a = {"acceptance_id": "ACC-1", "candidate_digest": DIG2, "acceptance_basis_digest": DIG,
++             "scenario_set_digest": DIG, "disposition": "ACCEPTED",
++             "accepted_by": {"principal": "operator", "principal_type": "human"},
++             "accepted_at": "2026-01-01T00:00:00Z"}
++        with self.assertRaisesRegex(gate.ValidationError, "candidate_digest"):
++            check(evidence(binding=binding(acceptance=a)))
++        a["candidate_digest"] = DIG
++        check(evidence(binding=binding(acceptance=a)))
++
++    def test_an_unanchored_observation_is_refused(self):
++        """U2 / UAT-I01: an observation of a scenario this binding does not carry is a test
++        result, not UAT evidence."""
++        with self.assertRaisesRegex(gate.ValidationError, "absent from this binding"):
++            check(evidence(binding=binding(observations=[observation(sid="UAT-SCN-999")])))
++
++    def test_a_failure_without_a_defect_class_is_refused(self):
++        """U3 / UAT-I11: a FAIL or BLOCKED without a class is noise the disposition cannot act on."""
++        b = binding(observations=[observation(result="FAIL")],
++                    recommendation="RECOMMEND_REJECT")
++        with self.assertRaisesRegex(gate.ValidationError, "no defect class"):
++            check(evidence(binding=b))
++        b["defects"] = [{"scenario_id": "UAT-SCN-001", "defect_class": "IMPLEMENTATION_DEFECT",
++                         "statement": "total was wrong"}]
++        check(evidence(binding=b))
++
++    def test_defect_class_is_the_frozen_ten(self):
++        d = json.loads(SCHEMA.read_text(encoding="utf-8"))
++        classes = d["properties"]["binding"]["properties"]["defects"]["items"]["properties"]["defect_class"]["enum"]
++        self.assertEqual(10, len(classes))
++        self.assertIn("ACCEPTANCE_CRITERION_DEFECT", classes,
++                      "the class that routes a bad requirement UPSTREAM must exist, or it gets "
++                      "silently absorbed as an implementation bug")
++        b = binding(observations=[observation(result="FAIL")], recommendation="RECOMMEND_REJECT",
++                    defects=[{"scenario_id": "UAT-SCN-001", "defect_class": "INVENTED_CLASS",
++                              "statement": "x"}])
++        with self.assertRaises(gate.ValidationError):
++            check(evidence(binding=b))
++
++    def test_a_critical_failure_cannot_hide_under_recommend_accept(self):
++        """U4 / UAT-I13: mandatory critical criteria cannot be buried by an aggregate."""
++        b = binding(scenarios=[scenario(crit="critical"), scenario(sid="UAT-SCN-002")],
++                    observations=[observation(result="NOT_EXECUTED"), observation(sid="UAT-SCN-002")],
++                    recommendation="RECOMMEND_ACCEPT")
++        with self.assertRaisesRegex(gate.ValidationError, "UAT-I13"):
++            check(evidence(binding=b))
++        # the same evidence is admissible when it stops claiming acceptance
++        b["recommendation"] = "RECOMMEND_INSUFFICIENT_EVIDENCE"
++        check(evidence(binding=b))
++
++    def test_duplicate_observations_are_refused_not_resolved(self):
++        """U6 -- BADF-QA's #264 blocking finding: U4's verdict depended on ARRAY ORDER.
++
++        `by_scn = {o["scenario_id"]: o["result"] for o in observations}` is last-occurrence-wins,
++        so the same multiset in two orders gave opposite verdicts -- [FAIL, PASS] ADMITTED under
++        RECOMMEND_ACCEPT, [PASS, FAIL] refused. Meanwhile U3 ten lines up read the same array
++        set-wise: two controls in one function disagreeing about what the array means.
++
++        Fixed by removing the ambiguity rather than by picking an interpretation. A `uat` object
++        is ONE execution pass; a re-run is a new object with its own candidate digest (UAT-I17).
++        Any resolution rule -- last, worst, newest -- would be the gate deciding something the
++        producer never stated.
++        """
++        crit = scenario(crit="critical")
++        for order in ([observation(result="FAIL"), observation(result="PASS")],
++                      [observation(result="PASS"), observation(result="FAIL")]):
++            b = binding(scenarios=[crit], observations=order,
++                        defects=[{"scenario_id": "UAT-SCN-001",
++                                  "defect_class": "IMPLEMENTATION_DEFECT", "statement": "x"}],
++                        recommendation="RECOMMEND_ACCEPT")
++            with self.assertRaisesRegex(gate.ValidationError, "more than one observation"):
++                check(evidence(binding=b))
++
++    def test_the_same_multiset_in_either_order_yields_the_same_verdict(self):
++        """Order must not decide. Pinned on the arrangement where order CAN decide.
++
++        The first version of this test used two DISTINCT scenario_ids -- no dict-key collision,
++        so order could not have mattered whether or not U6 existed. Measured: with U6 neutered,
++        the duplicate-refusal test correctly went red and THIS one stayed green. It exercised the
++        one arrangement where the property holds trivially, while its docstring claimed it
++        "survives any future change to how duplicates are handled".
++
++        That is the defect this whole rework exists to close -- a property checked on the side
++        where it cannot fail -- and it is the third instance in two days of that shape, this one
++        inside the test written to prove the second. Found by BADF-REV on #264.
++
++        Now built on the DUPLICATE-key pair, which is the only arrangement where array order can
++        reach the verdict, and asserted for EQUALITY rather than refusal: equal-and-refused while
++        U6 stands, unequal the moment it is relaxed. The assertion is about order-invariance, so
++        it does not care WHICH verdict -- only that both orders agree.
++        """
++        crit = scenario(crit="critical")
++        defect = [{"scenario_id": "UAT-SCN-001", "defect_class": "IMPLEMENTATION_DEFECT",
++                   "statement": "x"}]
++        verdicts = []
++        for order in ([observation(result="FAIL"), observation(result="PASS")],
++                      [observation(result="PASS"), observation(result="FAIL")]):
++            bnd = binding(scenarios=[crit], observations=order, defects=defect,
++                          recommendation="RECOMMEND_ACCEPT")
++            try:
++                check(evidence(binding=bnd)); verdicts.append("ADMITTED")
++            except gate.ValidationError as e:
++                verdicts.append("REFUSED")
++        self.assertEqual(verdicts[0], verdicts[1],
++                         f"array order changed the verdict on a duplicate-key pair: {verdicts}; "
++                         f"order must never decide, whatever the semantics")
++
++    def test_executed_at_is_provenance_not_an_ordering_key(self):
++        """QA observed `executed_at` is required and never read -- newest-as-FAIL was admitted.
++
++        With U6 refusing duplicates that is now correct BY DESIGN rather than by omission: no
++        conflict can be expressed, so nothing resolves one. Pinned so a later change that starts
++        reading it has to confront that it is re-introducing an ordering semantics.
++        """
++        newest_fail = [observation(result="PASS"),
++                       dict(observation(result="FAIL"), executed_at="2099-01-01T00:00:00Z")]
++        b = binding(scenarios=[scenario(crit="critical")], observations=newest_fail,
++                    defects=[{"scenario_id": "UAT-SCN-001",
++                              "defect_class": "IMPLEMENTATION_DEFECT", "statement": "x"}],
++                    recommendation="RECOMMEND_ACCEPT")
++        with self.assertRaisesRegex(gate.ValidationError, "more than one observation"):
++            check(evidence(binding=b))
++
++    def test_an_unresolvable_acceptance_basis_is_refused_by_the_SCHEMA(self):
++        """UAT-I05: no approved basis -> NO UAT -- and the refusal is the SCHEMA's, not a control.
++
++        This test first asserted only the fragment "prd_digest", which BOTH the schema error and
++        a hand-written code control contained. The mutation battery showed the control SURVIVED
++        neutering: the schema was doing the work and the test passed on the wrong raise. The
++        control was unreachable and has been removed; this asserts the mechanism that actually
++        fires, and names it, so the next reader does not re-add a code control the schema
++        already makes dead.
++        """
++        with self.assertRaisesRegex(gate.ValidationError, r"missing.*prd_digest|prd_digest.*missing"):
++            check(evidence(binding=binding(
++                acceptance_basis={"prd_id": "PRD-1", "acceptance_criteria_digest": DIG})))
++        d = json.loads(SCHEMA.read_text(encoding="utf-8"))
++        self.assertIn("prd_digest",
++                      d["properties"]["binding"]["properties"]["acceptance_basis"]["required"])
++
++    def test_non_coverage_is_required_not_optional(self):
++        """UAT-I12: absence from the matrix is a defect, so the field cannot simply be omitted."""
++        d = json.loads(SCHEMA.read_text(encoding="utf-8"))
++        cov = d["properties"]["binding"]["properties"]["coverage"]
++        self.assertIn("non_coverage", cov["required"])
++        b = binding()
++        del b["coverage"]["non_coverage"]
++        with self.assertRaises(gate.ValidationError):
++            check(evidence(binding=b))
++
++    def test_no_second_gate_and_no_lifecycle_change(self):
++        """UAT-I20: deterministic G10 semantics live in the canonical gate."""
++        self.assertFalse((gate.ROOT / "scripts" / "badf_uat.py").exists())
++        lifecycle = json.loads((gate.ROOT / "badf" / "lifecycle.json").read_text(encoding="utf-8"))
++        g10 = next(g for g in lifecycle["gates"] if g["id"] == "G10")
++        self.assertEqual(["uat", "release-packet", "operational-readiness", "go-no-go"],
++                         g10["required_evidence"])
++        self.assertIs(gate.EVIDENCE_RULES["uat"], gate.check_g10_uat_binding)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0122/work-package.json b/work/WP-2026-0122/work-package.json
+index 4e62202..334a97d 100644
+--- a/work/WP-2026-0122/work-package.json
++++ b/work/WP-2026-0122/work-package.json
+@@ -64,11 +64,14 @@
+     "EVIDENCE_CORRUPTION",
+     "BUDGET_EXHAUSTED"
+   ],
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "a69b92201cb4b354a86d136845705af751f6c655"
++    "base_revision": "a69b92201cb4b354a86d136845705af751f6c655",
++    "landed_content_tree": "e5e700a02c00db59069fe6c622035303dac3c42d",
++    "composition_verified": true,
++    "landed_as": "292d1beba0e97e680323788228d27bfb8b425fe9"
+   },
+   "expected_surfaces": {
+     "files": [
