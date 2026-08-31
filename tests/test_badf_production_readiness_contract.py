@@ -59,49 +59,29 @@ REFERENCE_ANCHORS = {
 REFS = tuple(REFERENCE_ANCHORS)
 
 
-def _statements(text):
-    """The unit a negation actually governs, which is neither the line nor the paragraph.
-
-    Two failure modes, both hit while writing this test:
-
-    - Physical lines are TOO NARROW for prose. Markdown wraps, so `(no` can sit on the
-      line above the term it negates -- reported as a bare assertion (acceptance.md did).
-    - Paragraph blocks are TOO WIDE for fenced code. A MUST NOT list is many independent
-      statements; joining them lets a SIBLING line's `MUST NOT` vouch for a line that
-      asserts the opposite. Verified: with block-joining, rewriting one list entry to
-      "This skill emits PRODUCTION_AUTHORIZED ..." did NOT redden the suite -- the same
-      a-sibling-satisfies-the-assertion defect as the concatenated reference blob.
-
-    So: inside a fenced code block, one statement per line. Outside, one per paragraph.
-    """
-    out, para, in_fence = [], [], False
-    for line in text.splitlines():
-        if line.lstrip().startswith("```"):
-            if para:
-                out.append(" ".join(para))
-                para = []
-            in_fence = not in_fence
-            continue
-        if in_fence:
-            # Inside a fence a statement is a FLUSH line plus its indented continuations.
-            # A `MUST NOT` list is flush-per-entry (independent statements); a titled rule
-            # block indents its body under the title (one statement). Treating every fenced
-            # line as its own statement split the second kind; joining the whole fence
-            # merged the first.
-            if not line.strip():
-                continue
-            if line[:1].isspace() and out:
-                out[-1] = out[-1] + " " + line.strip()
-            else:
-                out.append(line)
-        elif line.strip():
-            para.append(line)
-        elif para:
-            out.append(" ".join(para))
-            para = []
-    if para:
-        out.append(" ".join(para))
-    return out
+# Every mention of PRODUCTION_AUTHORIZED outside authority-boundary.md, frozen by inventory.
+#
+# Four attempts at a "is there a negation near this term" check failed, each at a finer
+# granularity than the last: paragraph-joining let a sibling MUST NOT vouch for a line
+# asserting the opposite; per-physical-line reported wrapped prose as a bare assertion;
+# flush-line-plus-indented-continuation restored the sibling vouch for anyone who INDENTS
+# the assertion (found by BADF-QA, reproduced here). The seam is real -- indentation means
+# continuation in one construct and subordination in another, and nothing distinguishes them
+# from indentation alone.
+#
+# So the check's SHAPE changed rather than its granularity. An exact inventory has no
+# proximity heuristic to slip past: any new occurrence anywhere, at any indent, fails until
+# it is admitted here deliberately. Adding a legitimate mention costs one line in this set,
+# which is the correct price for an invariant of this weight.
+PERMITTED_AUTHORIZATION_MENTIONS = {
+    ("SKILL.md", "go-no-go or PRODUCTION_AUTHORIZED (release_authority's own act, human-reserved)."),
+    ("SKILL.md", "PRODUCTION_AUTHORIZED IS DERIVED, NEVER WRITTEN"),
+    ("SKILL.md", "PRODUCTION_AUTHORIZED is a derived predicate over valid evidence PLUS valid"),
+    ("SKILL.md", "release_authority (G10, human)     go-no-go; derives PRODUCTION_AUTHORIZED — reserved, not delegable"),
+    ("SKILL.md", "PRODUCTION_AUTHORIZED is derived from valid evidence plus valid authority"),
+    ("acceptance.md", "`PRODUCTION_AUTHORIZED` in any artifact this skill emits) — each failing-first and mutation-killed."),
+    ("evidence-aggregation.md", "MUST NOT  issue go-no-go, PRODUCTION_AUTHORIZED, or any authorization predicate (PRDY-I19)"),
+}
 
 WORKFLOW_STAGES = (
     "BIND CANDIDATE", "RESOLVE UPSTREAM EVIDENCE", "COMPUTE RELEASE DELTA", "CHECK FRESHNESS",
@@ -166,7 +146,6 @@ class ProductionReadinessContractTests(unittest.TestCase):
             self.assertIn(term, dims, f"readiness vocabulary term {term}")
         self.assertIn("READY_FOR_AUTHORITY", SKILL_TEXT, "the ceiling must be named in the root")
 
-        negations = ("must not", "never", "cannot", "can never", "no ", "not ")
         compound = ("PRODUCTION_AUTHORIZED_WITH_CONDITIONS", "PRODUCTION_NOT_AUTHORIZED")
         surfaces = {f"{n}.md": (REFS_DIR / f"{n}.md").read_text(encoding="utf-8") for n in REFS}
         surfaces["SKILL.md"] = SKILL_TEXT
@@ -177,17 +156,13 @@ class ProductionReadinessContractTests(unittest.TestCase):
             for term in compound:
                 self.assertNotIn(term, text,
                                  f"{term} belongs only in authority-boundary.md, found in {fname}")
-            # Physical lines are a proxy for statements: markdown wraps prose, so a negation
-            # can sit on the previous line from the term it negates (it did, in acceptance.md).
-            # Collapse each block of consecutive non-blank lines into one logical statement.
-            for i, block in enumerate(_statements(text), 1):
-                if "PRODUCTION_AUTHORIZED" not in block:
-                    continue
-                low = block.lower()
-                self.assertTrue(
-                    any(n in low for n in negations),
-                    f"{fname} block {i} names PRODUCTION_AUTHORIZED outside a prohibition: "
-                    f"{block.strip()[:160]!r}")
+
+        actual = {(fname, line.strip())
+                  for fname, text in surfaces.items() if fname != "authority-boundary.md"
+                  for line in text.splitlines() if "PRODUCTION_AUTHORIZED" in line}
+        self.assertEqual(PERMITTED_AUTHORIZATION_MENTIONS, actual,
+                         "every mention of PRODUCTION_AUTHORIZED outside authority-boundary.md is "
+                         "frozen by inventory; a new one is admitted here deliberately or not at all")
 
     def test_recovery_and_migration_are_reconciled_not_duplicated(self):
         combined = (REFS_DIR / "rollback-migration-readiness.md").read_text(encoding="utf-8")
