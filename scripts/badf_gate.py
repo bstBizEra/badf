@@ -1908,6 +1908,76 @@ def check_g09_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[st
 EVIDENCE_RULES.update({t: check_g09_binding for t in G09_TYPES})
 
 
+def check_g10_uat_binding(artifact: Path, dossier: dict[str, Any], evidence: dict[str, Any]) -> None:
+    """EVIDENCE_RULES entry for the G10 `uat` type (badf-uat WP-UAT-B): a typed `binding`, when
+    present, must conform to schemas/uat.schema.json AND honor the UAT invariants that are
+    checkable on a single evidence object. Untyped objects stay admissible -- additive, exactly
+    as VER-B and VAL-B before it.
+
+    The schema walker enforces required/enum/pattern/additionalProperties/type only, so every
+    cross-field and non-emptiness constraint below is a named code control:
+
+      U2  scenario provenance    -- every observation names a scenario that exists in this
+                                    binding (UAT-I01: an unanchored observation is not evidence)
+      U3  classified failures    -- every FAIL/BLOCKED observation has a defect of its own
+                                    (UAT-I11: a failure without a class is noise)
+      U4  criticality not hidden -- a critical scenario that is FAIL or NOT_EXECUTED forbids
+                                    RECOMMEND_ACCEPT (UAT-I13: an aggregate cannot bury it)
+      U5  layer separation       -- an acceptance, when present, binds THIS binding's candidate
+                                    digest and carries a human principal (UAT-I15/I16)
+
+    The recommendation vocabulary itself is closed by the schema, not here: UAT-I14 is enforced
+    by an enum that cannot express an acceptance, so no producer can reach the decision by
+    declining to read a rule.
+    """
+    b = evidence.get("binding")
+    if not isinstance(b, dict):
+        return                                    # untyped stays admissible (additive rung)
+    check_schema("uat", evidence)
+    label = f"{evidence.get('id', '?')} (uat)"
+
+    # UAT-I05 (exact acceptance basis) needs NO code control: schemas/uat.schema.json makes
+    # prd_id, prd_digest and acceptance_criteria_digest REQUIRED inside acceptance_basis, so
+    # check_schema above refuses a missing basis before any code here could reach it. A U1 WAS
+    # written here, and the mutation battery found it SURVIVES -- unreachable, because the
+    # schema raises first and BOTH messages contain "prd_digest", so the test asserting that
+    # fragment passed on the wrong raise. A control the schema makes unreachable is not a
+    # control; it is the shape of one. Removed rather than kept for symmetry -- #250's class,
+    # found by this rung's own battery in this rung's own code.
+
+    known = {s["scenario_id"] for s in b.get("scenarios") or []}
+    # U2 -- an observation of a scenario this binding does not carry is unanchored
+    orphan = sorted({o["scenario_id"] for o in b.get("observations") or []} - known)
+    if orphan:
+        raise ValidationError(f"{label}: observation(s) name scenario(s) absent from this binding: {', '.join(orphan)}; an unanchored observation is a test result, not UAT evidence (UAT-I01)")
+
+    # U3 -- every failed or blocked observation carries a classified defect
+    classified = {d["scenario_id"] for d in b.get("defects") or []}
+    unclassified = sorted({o["scenario_id"] for o in b.get("observations") or []
+                           if o["result"] in ("FAIL", "BLOCKED")} - classified)
+    if unclassified:
+        raise ValidationError(f"{label}: scenario(s) {', '.join(unclassified)} failed or were blocked with no defect class; a failure without a class is noise the disposition cannot act on (UAT-I11)")
+
+    # U4 -- a critical scenario cannot be buried under an aggregate recommendation
+    if b.get("recommendation") == "RECOMMEND_ACCEPT":
+        critical = {s["scenario_id"] for s in b.get("scenarios") or [] if s["criticality"] == "critical"}
+        by_scn = {o["scenario_id"]: o["result"] for o in b.get("observations") or []}
+        bad = sorted(s for s in critical if by_scn.get(s, "NOT_EXECUTED") in ("FAIL", "BLOCKED", "NOT_EXECUTED"))
+        if bad:
+            raise ValidationError(f"{label}: RECOMMEND_ACCEPT with critical scenario(s) {', '.join(bad)} not passing; mandatory critical criteria cannot be hidden by an aggregate (UAT-I13)")
+
+    # U5 -- Layer 2 binds Layer 1, and only a human issues it
+    acc = b.get("acceptance")
+    if isinstance(acc, dict):
+        if acc["candidate_digest"] != (b.get("candidate") or {}).get("source_digest"):
+            raise ValidationError(f"{label}: acceptance.candidate_digest does not equal the binding's candidate.source_digest; an acceptance bound to a different candidate is void (UAT-I16)")
+        if (acc.get("accepted_by") or {}).get("principal_type") != "human":
+            raise ValidationError(f"{label}: acceptance carries a non-human principal; final product acceptance is a separate authorized human decision, never the producing capability's (UAT-I14 / UAT-I15)")
+
+
+EVIDENCE_RULES["uat"] = check_g10_uat_binding
+
+
 
 G08_OBSERVATIONS = ("integration-test", "contract-test", "composed-tree-test")
 G08_QUORUM = {"C2": 2, "C3": 3}
