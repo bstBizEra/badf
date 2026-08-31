@@ -12,7 +12,7 @@ description: >-
   release-validated candidate needs its business behavior recorded against
   approved acceptance criteria. Grants no acceptance, approval, or gate
   authority.
-status: DESIGNED
+status: IMPLEMENTED
 gate: G10
 owner_role: release_authority
 allowed_tools: []
