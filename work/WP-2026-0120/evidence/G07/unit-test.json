@@ -16,8 +16,8 @@
     "version": "1"
   },
   "operation": "deferred-to-compose",
-  "started_at": "2026-08-31T20:59:01Z",
-  "completed_at": "2026-08-31T20:59:01Z",
+  "started_at": "2026-08-31T21:21:23Z",
+  "completed_at": "2026-08-31T21:21:23Z",
   "outcome": "NOT_RUN",
   "artifact": "work/WP-2026-0120/evidence/G07/unit-test.txt",
   "digest": "sha256:3ebfe5e512dfeda144788ffffd16868b94226c8875f266fe231350792fa89fbc",
