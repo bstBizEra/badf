@@ -4122,6 +4122,20 @@ def validate_verification_record(path: Path) -> str:
     for d in rec["synthesis"]["downgraded"]:
         if d["finding_id"] not in findings:
             raise ValidationError(f"synthesis downgrades {d['finding_id']}, which the record does not carry (VER-I12)")
+    for b in ballots:
+        # #211: the ballot layer's own coherence. The matrix layer already refuses a VERIFIED row
+        # over an OPEN blocking finding, and check_g08_binding refuses this shape on a review
+        # binding -- but the record's ballots were unchecked, so APPROVE could cite an OPEN MAJOR
+        # it raised itself. Strict APPROVE only: APPROVE_WITH_CONDITIONS over an open finding is
+        # the conditional arc and REJECT over open findings is the rejecting arc; both are honest.
+        if b["verdict"] != "APPROVE":
+            continue
+        cited_open = [fid for fid in b["finding_ids"]
+                      if fid in findings and findings[fid]["status"] == "OPEN"
+                      and findings[fid]["severity"] in BLOCKING_SEVERITIES]
+        if cited_open:
+            raise ValidationError(f"ballot {b['ballot_id']}: verdict APPROVE contradicts OPEN blocking finding(s) "
+                                  f"{', '.join(sorted(cited_open))} it cites itself; a verdict cannot contradict its own findings")
     for f in rec["findings"]:
         if not f["reported_by"]:
             raise ValidationError(f"finding {f['finding_id']} has no reporting ballot; a finding nobody balloted is invented (VER-I06)")

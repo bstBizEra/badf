@@ -1,0 +1,12 @@
+RED — the test against the UNPATCHED validate_verification_record (HEAD a69b922)
+$ python3 -m unittest tests.test_badf_verification_evidence.VerifyRecordTests\
+      .test_verify_refuses_an_APPROVE_ballot_citing_its_own_open_blocking_finding
+
+AssertionError: ValidationError not raised
+
+----------------------------------------------------------------------
+Ran 1 test in 0.011s
+
+FAILED (failures=1)
+
+exit=1

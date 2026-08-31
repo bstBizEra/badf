@@ -229,6 +229,36 @@ class VerifyRecordTests(unittest.TestCase):
         r = record(findings=[finding(status="RESOLVED")]); r["matrix"][0].update(result="VERIFIED", composed_refs=[])
         with self.assertRaisesRegex(gate.ValidationError, "composed|VER-I15"): gate.validate_verification_record(self._path(r))
 
+    def test_verify_refuses_an_APPROVE_ballot_citing_its_own_open_blocking_finding(self):
+        """#211: a ballot may not carry a verdict its own cited findings contradict.
+
+        The matrix layer already refuses a VERIFIED row over an OPEN blocking finding, and
+        `check_g08_binding` refuses the same shape on an independent-review evidence binding
+        (badf_gate.py:1742). The record's own ballot layer did not, so `verify` PASSed a record
+        whose ballot said APPROVE while citing an OPEN MAJOR it had raised itself.
+
+        Scope is strict APPROVE only, deliberately. APPROVE_WITH_CONDITIONS over an OPEN finding
+        is the honest conditional arc -- it is this module's own baseline fixture -- and REJECT
+        over open findings is the honest rejecting arc. Both are pinned below so a later change
+        cannot quietly widen this refusal into them.
+        """
+        r = record()
+        r["ballots"][0]["verdict"] = "APPROVE"
+        with self.assertRaisesRegex(gate.ValidationError, "APPROVE.*(contradicts|OPEN)|VF-001"):
+            gate.validate_verification_record(self._path(r))
+
+        # the two honest arcs stay valid -- negative controls, not decoration
+        r = record()
+        r["ballots"][0]["verdict"] = "REJECT"
+        gate.validate_verification_record(self._path(r))
+
+        gate.validate_verification_record(self._path(record()))  # APPROVE_WITH_CONDITIONS baseline
+
+        # APPROVE is fine once nothing open is cited
+        r = record(findings=[finding(status="RESOLVED")])
+        r["ballots"][0]["verdict"] = "APPROVE"
+        gate.validate_verification_record(self._path(r))
+
     def test_verify_requires_non_coverage_and_refuses_authority(self):
         r = record(non_coverage=[])
         with self.assertRaisesRegex(gate.ValidationError, "non-coverage|VER-I11"): gate.validate_verification_record(self._path(r))
