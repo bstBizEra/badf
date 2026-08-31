@@ -16,9 +16,9 @@
     "version": "1"
   },
   "operation": "badf_compose.py --record",
-  "started_at": "2026-08-31T21:21:23Z",
-  "completed_at": "2026-08-31T21:21:23Z",
+  "started_at": "2026-08-31T22:10:39Z",
+  "completed_at": "2026-08-31T22:10:39Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0120/evidence/G07/composition-record.json",
-  "digest": "sha256:c202aa51d6df52b40f38002f86782d075444472569cb8707cd2e9bebd2e5ccf9"
+  "digest": "sha256:71c69d4d67342c527ee4f2cc112629398893819ffb0599715308681310def7be"
 }
