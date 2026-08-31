@@ -1,0 +1,27 @@
+python3 -m unittest tests.test_badf_build_evidence.SourceChangeBindingTests.test_declared_pattern_matching_no_changed_path_conditions_the_dossier tests.test_badf_build_evidence.SourceChangeBindingTests.test_fully_matched_declaration_leaves_no_mirror_condition tests.test_badf_build_evidence.SourceChangeBindingTests.test_discovery_allowance_matching_nothing_is_exempt_from_the_mirror tests.test_badf_build_controls.C2C3C4C5RuleTests.test_c3_mirror_pass_with_declared_pattern_matching_nothing_refused tests.test_badf_build_controls.C2C3C4C5RuleTests.test_c3_mirror_allowance_matching_nothing_and_full_match_are_not_refused  # against the one-sided gate, pre-implementation
+F..F.
+======================================================================
+FAIL: test_declared_pattern_matching_no_changed_path_conditions_the_dossier (tests.test_badf_build_evidence.SourceChangeBindingTests.test_declared_pattern_matching_no_changed_path_conditions_the_dossier)
+GOV-0102 (#232) mirror direction: a declared surface the work never touches is named,
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_build_evidence.py", line 135, in test_declared_pattern_matching_no_changed_path_conditions_the_dossier
+    self.assertEqual(1, len(cond), d["conditions"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 0 : [{'condition_id': 'C-1', 'statement': 'An independent reviewer distinct from the author has not recorded an approval; BADF runs under a single collaborator (recorded, not hidden -- see GITHUB_CONTROL_PLANE.md).', 'status': 'OPEN', 'severity': 'Major', 'blocking_scope': 'G09', 'owner': 'engineering_owner', 'closure_predicate': 'a distinct human independent_reviewer records an approval, or the deviation is accepted in a decision record', 'closure_authority': 'quality_authority'}]
+
+======================================================================
+FAIL: test_c3_mirror_pass_with_declared_pattern_matching_nothing_refused (tests.test_badf_build_controls.C2C3C4C5RuleTests.test_c3_mirror_pass_with_declared_pattern_matching_nothing_refused)
+GOV-0102 (#232): the mirror of the loop above -- a declared files pattern the change never
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_build_controls.py", line 137, in test_c3_mirror_pass_with_declared_pattern_matching_nothing_refused
+    self.assertNotEqual(r.returncode, 0, r.stdout)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : ACCEPTED
+
+
+----------------------------------------------------------------------
+Ran 5 tests in 40.262s
+
+FAILED (failures=2)

@@ -1,0 +1,6 @@
+python3 -m unittest tests.test_badf_build_evidence tests.test_badf_build_controls  # at base 7f81a49, WP-2026-0116
+........................
+----------------------------------------------------------------------
+Ran 24 tests in 178.545s
+
+OK
