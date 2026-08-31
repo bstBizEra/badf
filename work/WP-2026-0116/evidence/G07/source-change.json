@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0116-G07-source-change",
+  "work_package_id": "WP-2026-0116",
+  "gate": "G07",
+  "claim": "the change WP-2026-0116 makes to this repository, outside its own directory and the lockfile",
+  "evidence_type": "source-change",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-08-31T04:04:35Z",
+  "completed_at": "2026-08-31T04:04:35Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0116/evidence/G07/source-change.diff",
+  "digest": "sha256:076f4c8bd2f484d8f5379d7f1bb5abe53ad3937745f9ecd3dc6ec771b3690457",
+  "binding": {
+    "base_sha": "7f81a49718b244c3386cedd7455e603e7f6f3eb2",
+    "head_sha": "301094ab76c539dddb837e2c02bf83d9a7bd9154",
+    "content_tree": "53ea7398b15a4b24e6d39405128918ae9ab110f1",
+    "changed_paths": [
+      "badf/demands/BADF-DEM-0103.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "scripts/badf_gate.py",
+      "tests/test_badf_build_controls.py",
+      "tests/test_badf_build_evidence.py",
+      "work/WP-2026-0113/work-package.json"
+    ],
+    "expected_surfaces": {
+      "declared": true,
+      "files": [
+        "scripts/badf_gate.py",
+        "tests/test_badf_build_evidence.py",
+        "tests/test_badf_build_controls.py",
+        "badf/demands/BADF-DEM-0103.json",
+        "docs/governance/GITHUB_CONTROL_PLANE.md",
+        "work/WP-2026-0113/work-package.json"
+      ]
+    },
+    "unexpected_paths": [],
+    "change_digest": "sha256:076f4c8bd2f484d8f5379d7f1bb5abe53ad3937745f9ecd3dc6ec771b3690457"
+  }
+}
