@@ -194,8 +194,9 @@ class FamilyNameResolutionTests(unittest.TestCase):
         self.assertTrue(entries, "declared_future_families is empty; the guard's exception surface must be explicit")
         # declared_by must RESOLVE in the tree, not merely be present -- a field checked for
         # presence only is attribution-shaped without attributing (the decorative-const shape,
-        # BADF-REV #259). This kills fabricated or mistyped provenance; it deliberately does
-        # NOT catch provenance copied from a real entry -- see DECLARED SCOPE OF THE LIST
+        # BADF-REV #259). This kills UNRESOLVABLE provenance -- an id that names nothing; it
+        # deliberately does NOT catch resolvable-but-wrong provenance (copied from a real
+        # entry, or a common real token like a gate id) -- see DECLARED SCOPE OF THE LIST
         # CONTROLS above for why that shape is review's to catch.
         doctrine = list(SKILLS.rglob("*.md")) + list((ROOT / "docs").rglob("*.md"))
         for e in entries:
