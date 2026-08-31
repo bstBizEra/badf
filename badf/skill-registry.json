@@ -330,6 +330,16 @@
       "allowed_tools": [],
       "status": "DESIGNED",
       "digest": "sha256:07a9828032f4869893cd6a8ce1dd131c520623601538244f25f37bb3a812497a"
+    },
+    {
+      "name": "badf-production-readiness",
+      "source": "skills/badf-production-readiness/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "0.1.0",
+      "risk_class": "C1",
+      "allowed_tools": [],
+      "status": "DESIGNED",
+      "digest": "sha256:a7cc5a1dc85e1a4bd644d56081d2971dca336ea14fbd5f1cf39260f7129835d0"
     }
   ]
 }
