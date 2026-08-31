@@ -1634,7 +1634,7 @@
     "work/WP-2026-0125/evidence/G07/unit-test.json": "sha256:8fd0860e23968f2aefe35b22a80621bec51d4462aef012d9c620e24517584856",
     "work/WP-2026-0125/evidence/G07/unit-test.txt": "sha256:3ebfe5e512dfeda144788ffffd16868b94226c8875f266fe231350792fa89fbc",
     "work/WP-2026-0125/gate-dossier.G07.json": "sha256:23f00d672fd9be06a4dc33df7d4ee850ce619d69cb24eb70b7fab0b9cfb10116",
-    "work/WP-2026-0125/work-package.json": "sha256:47fc48b0d7e4398c3f142944c40e4abb6a6f448fb096b7721c658765e51d5e0a"
+    "work/WP-2026-0125/work-package.json": "sha256:0c1693ecf689312f037d82c50e7300dd9aec7dd22d245398eb0e54da9ebb0cb7"
   },
   "schema_version": "1.0.0"
 }

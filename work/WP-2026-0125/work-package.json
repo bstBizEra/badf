@@ -28,7 +28,7 @@
       "scripts/badf_gate.py",
       "tests/test_badf_uat_contract.py",
       "tests/test_badf_uat_evidence.py",
-      "work/WP-2026-0124/work-package.json"
+      "work/WP-2026-0123/work-package.json"
     ]
   },
   "target_gate": "G07",
