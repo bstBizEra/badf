@@ -27,13 +27,13 @@ index 0000000..2322e43
 +  "note": "WP-PRDY-A: freeze the badf-production-readiness G10 readiness aggregator contract. Owns release-packet + operational-readiness (never uat -- badf-uat's, never go-no-go -- release_authority's, human-reserved). The governance correction that shaped it: this skill produces the evidence basis for production authorization and never issues PRODUCTION_AUTHORIZED, which is a derived predicate over valid evidence PLUS valid authority bound to exact candidate/environment/scope/conditions/window, never a hand-written field. Three fundamental rules (aggregation not re-execution; readiness != authorization; PRODUCTION_AUTHORIZED is derived, never written), twenty-four invariants PRDY-I01..I24 frozen verbatim, nine-stage workflow, sixteen references. Authority boundary cites SEC-I13 / VER-I18 / UAT-I14 as precedent. No gate/schema/lifecycle change (PRDY-I24). External sources characterized from the operator's directive, not independently fetched -- declared in the reference."
 +}
 diff --git a/badf/skill-registry.json b/badf/skill-registry.json
-index 0f505c6..9c7635d 100644
+index fc2465f..74dfd24 100644
 --- a/badf/skill-registry.json
 +++ b/badf/skill-registry.json
-@@ -320,6 +320,16 @@
+@@ -330,6 +330,16 @@
        "allowed_tools": [],
-       "status": "IMPLEMENTED",
-       "digest": "sha256:ee756f404903f223019bb0193b77067cec51def0a1b577c94acc534dbee4e6ff"
+       "status": "DESIGNED",
+       "digest": "sha256:07a9828032f4869893cd6a8ce1dd131c520623601538244f25f37bb3a812497a"
 +    },
 +    {
 +      "name": "badf-production-readiness",
@@ -48,12 +48,12 @@ index 0f505c6..9c7635d 100644
    ]
  }
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 4eec23d..1811aeb 100644
+index 49a4c95..5f1a008 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -1755,6 +1755,56 @@ no delegations, and rewriting a landed record to satisfy today's control is the
- forward. Red-first: the two positive controls failed against the one-sided gate before the fix (5 ran,
- 2 failures); mutation: each new branch neutered turns its test red (2/2 killed).
+@@ -1794,6 +1794,56 @@ skill's definition of "accepted". Ladder-internal at this rung (SKILL + 14 refer
+ BADF-QA + BADF-REV. Authored by BARCHI-3 as Senior ARCH & ENGIN, on the operator's explicit directive to
+ proceed `badf-uat` then `badf-production-readiness`.
  
 +## badf-production-readiness — G10 readiness aggregator freeze (`BADF-WP-0114` / WP-PRDY-A, Issue #237 / GOV-0105)
 +
@@ -1303,24 +1303,24 @@ index 0000000..d993887
 +
 +if __name__ == "__main__":
 +    unittest.main()
-diff --git a/work/WP-2026-0116/work-package.json b/work/WP-2026-0116/work-package.json
-index c38ed3a..67b11ae 100644
---- a/work/WP-2026-0116/work-package.json
-+++ b/work/WP-2026-0116/work-package.json
-@@ -68,11 +68,14 @@
-     "EVIDENCE_CORRUPTION",
-     "BUDGET_EXHAUSTED"
-   ],
+diff --git a/work/WP-2026-0115/work-package.json b/work/WP-2026-0115/work-package.json
+index d5dd58a..8a72c1a 100644
+--- a/work/WP-2026-0115/work-package.json
++++ b/work/WP-2026-0115/work-package.json
+@@ -43,12 +43,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR (registry entry + skill removed)"
+   },
 -  "status": "IN_PROGRESS",
 +  "status": "CLOSED",
    "external_target": {
      "repository": "bstBizEra/badf",
-     "branch": "main",
--    "base_revision": "7f81a49718b244c3386cedd7455e603e7f6f3eb2"
-+    "base_revision": "7f81a49718b244c3386cedd7455e603e7f6f3eb2",
-+    "landed_content_tree": "53ea7398b15a4b24e6d39405128918ae9ab110f1",
+     "branch": "wp/WP-2026-0115-uat-contract-freeze",
+     "base_revision": "da3c28d",
+-    "composition_verified": false
 +    "composition_verified": true,
-+    "landed_as": "da3c28d359859cb163ad7b9509e702fe48d08fa4"
++    "landed_content_tree": "ac8b0b890ffc936ae6e7d168df53a6d41604e28e",
++    "landed_as": "c5251297f126b32e9a399d09dc4e58d333bd02dc"
    },
-   "expected_surfaces": {
-     "files": [
+   "note": "Ladder-internal DESIGNED contract freeze (SKILL + references, no gate/schema/lifecycle) -> no BADF-QA/BADF-REV review required at A; WP-UAT-B (typed uat evidence schema) and WP-UAT-C (deterministic gate controls, lean disabled -- HARD INVARIANTS) are shared-surface -> QA+REV by BADF-QA/BADF-REV. Discovered gap filed separately as Issue #238 / GOV-0106 (uat evidence type had no producing capability), not absorbed into this freeze. Authored by BARCHI-3 as Senior ARCH & ENGIN, on the operator's explicit directive to proceed badf-uat then badf-production-readiness. Ids WP-2026-0115/DEM-0102/GOV-0107. Delivery ladder WP-UAT-A(DESIGNED)->B(IMPLEMENTED)->C(VALIDATED)->D(SHADOWED)->E(release_authority/operator admission ACTIVE); next: WP-PRDY-A (badf-production-readiness, Issue #237 / GOV-0105, ids WP-2026-0114/DEM-0101 already claimed)."
+ }

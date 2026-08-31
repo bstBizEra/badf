@@ -16,15 +16,15 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-08-31T09:18:21Z",
-  "completed_at": "2026-08-31T09:18:21Z",
+  "started_at": "2026-08-31T09:46:29Z",
+  "completed_at": "2026-08-31T09:46:29Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0114/evidence/G07/source-change.diff",
-  "digest": "sha256:3dd5b57949231098ee304da97ae1a9a28670a72c7b851729a263c2f021b45669",
+  "digest": "sha256:c0c8a9b937cd6be41d933a18fe69d3965f508587d3c2f513514a0c744455a2b9",
   "binding": {
-    "base_sha": "da3c28d359859cb163ad7b9509e702fe48d08fa4",
-    "head_sha": "80c11d4fe7afcfdb25f6124055d2f88882b28cfc",
-    "content_tree": "e3498a9a8861c7e76c9d842815d4d8bb7c1427b8",
+    "base_sha": "c5251297f126b32e9a399d09dc4e58d333bd02dc",
+    "head_sha": "8a352c6040bb2cce8219e0cddc0792bc661676a4",
+    "content_tree": "ccc28174dede57209d9458bd505dc254ec2386e5",
     "changed_paths": [
       "badf/demands/BADF-DEM-0101.json",
       "badf/skill-registry.json",
@@ -47,13 +47,13 @@
       "skills/badf-production-readiness/references/rollback-migration-readiness.md",
       "skills/badf-production-readiness/references/security-readiness.md",
       "tests/test_badf_production_readiness_contract.py",
-      "work/WP-2026-0116/work-package.json"
+      "work/WP-2026-0115/work-package.json"
     ],
     "expected_surfaces": {
       "declared": false,
       "files": []
     },
     "unexpected_paths": [],
-    "change_digest": "sha256:3dd5b57949231098ee304da97ae1a9a28670a72c7b851729a263c2f021b45669"
+    "change_digest": "sha256:c0c8a9b937cd6be41d933a18fe69d3965f508587d3c2f513514a0c744455a2b9"
   }
 }

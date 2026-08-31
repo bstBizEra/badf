@@ -1,10 +1,10 @@
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 4eec23d..1811aeb 100644
+index 49a4c95..5f1a008 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -1755,6 +1755,56 @@ no delegations, and rewriting a landed record to satisfy today's control is the
- forward. Red-first: the two positive controls failed against the one-sided gate before the fix (5 ran,
- 2 failures); mutation: each new branch neutered turns its test red (2/2 killed).
+@@ -1794,6 +1794,56 @@ skill's definition of "accepted". Ladder-internal at this rung (SKILL + 14 refer
+ BADF-QA + BADF-REV. Authored by BARCHI-3 as Senior ARCH & ENGIN, on the operator's explicit directive to
+ proceed `badf-uat` then `badf-production-readiness`.
  
 +## badf-production-readiness — G10 readiness aggregator freeze (`BADF-WP-0114` / WP-PRDY-A, Issue #237 / GOV-0105)
 +
