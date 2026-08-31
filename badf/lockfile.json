@@ -1572,7 +1572,18 @@
     "work/WP-2026-0122/evidence/G07/unit-test.json": "sha256:627050fcd3c9213c94670e630d83bbc5f911d25d8ef541a44e870e32cc630507",
     "work/WP-2026-0122/gate-dossier.G07.json": "sha256:096e157608f4d9eed5bd140cdfaae9287b9a52c591fcbe08350f4647d6cd72f9",
     "work/WP-2026-0122/work-package.json": "sha256:3c5c14a90a1e138d736bb7b7f5c178cf41936ffd57de04f2aabaf86973bd44ea",
+    "work/WP-2026-0123/build/progress.jsonl": "sha256:9ec69288a0ff68ae7085a438ae036fa7d9fd1f0ca877a68805d8d0ce8b9d26ae",
+    "work/WP-2026-0123/build/session.json": "sha256:0dd560cc96e36f02d035ddb657b343378af681184aedebc5e9197f44d867314a",
+    "work/WP-2026-0123/evidence/G07/build.json": "sha256:d10a3c5c22d02856081249f2cb6701ae1b6a83f8d2d22088beb96fa6028585bc",
+    "work/WP-2026-0123/evidence/G07/build.txt": "sha256:72b8c609edaf2f1bb7f9d4fdefee6a3aa089239b7dc6dac61b5a144e8cf39a57",
+    "work/WP-2026-0123/evidence/G07/documentation.diff": "sha256:83c314b7ab7fbbce3a28d5aa37e08302570d36eaf63272f46602ec6e9716738e",
+    "work/WP-2026-0123/evidence/G07/documentation.json": "sha256:8b9363e80fc4e3721ddb82e9fb70bee7a77b8ec2e91e46ca895280177d16efe0",
     "work/WP-2026-0123/evidence/G07/failing-first.txt": "sha256:9ecf741b4669c8b2598bc8ff4759f394d260dca23cbe4580b47ce55cd0282532",
+    "work/WP-2026-0123/evidence/G07/source-change.diff": "sha256:00686049351115b47f28e8d5607078da23ff230ffdfb953838abd0d95864ed29",
+    "work/WP-2026-0123/evidence/G07/source-change.json": "sha256:5ef4c2ca97e541cab7f1bf33724d5f6dd96de1ba68f805930c50608976288259",
+    "work/WP-2026-0123/evidence/G07/unit-test.json": "sha256:dfb3ab6c93eac1a7a6912307c562a5169952bbdf7dea5f06e08d9297b697dbc0",
+    "work/WP-2026-0123/evidence/G07/unit-test.txt": "sha256:3ebfe5e512dfeda144788ffffd16868b94226c8875f266fe231350792fa89fbc",
+    "work/WP-2026-0123/gate-dossier.G07.json": "sha256:d4ee071a6d14093756a2ea598a9cd2fb5e1bb4d981c19739e7c8f79b2a1a86ca",
     "work/WP-2026-0123/work-package.json": "sha256:32456f28fca2b5ad948109f9674052fcf01820e57cde3279c8f076d84a07afc2"
   },
   "schema_version": "1.0.0"

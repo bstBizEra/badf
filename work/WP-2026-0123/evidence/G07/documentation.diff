@@ -1,0 +1,44 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 677edf3..22875c9 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1936,6 +1936,39 @@ the same hours, the id claim for this WP survived a crossed-ids misread (caught
+ print-the-ceiling rule) — the allocation protocol landing in `BADF-WP-0118` doing its job on the very
+ next WP to allocate.
+ 
++## A verdict that contradicted the findings it cited (`BADF-WP-0123`, Issue #211 / GOV)
++
++`validate_verification_record` checked coherence at the **matrix** layer — a `VERIFIED` row over an OPEN
++blocking finding is refused — and `check_g08_binding` checked it on an independent-review **evidence
++binding** (`badf_gate.py:1742`). The record's own **ballot** layer was unchecked, so flipping the PR-196
++record's verdict `REJECT → APPROVE` while it cited an OPEN `MAJOR` it had raised itself rendered
++`BADF VERIFY PASS`. Two layers guarded the property and the one in between did not.
++
++**The blast radius was already bounded and that is why this was deferred, not urgent:** the record grants
++no verification authority, a `VERIFIED` matrix row over an OPEN MAJOR is refused, and C6 refuses an OPEN
++MAJOR passed over at dossier level. The defect was never that an incoherent ballot could become authority.
++It was that **the artifact future tooling reads could carry a self-contradiction**, and a downstream reader
++has no way to know the verdict and the findings disagree.
++
++**Strict `APPROVE` only — and the codebase settled that, not judgement.** The instinct was to refuse
++`APPROVE_WITH_CONDITIONS` over an open finding too, treating every one as unmapped-by-construction since
++the schema has no condition structure. `tests/test_badf_verification_evidence.py`'s baseline fixture is
++*exactly that shape* — `APPROVE_WITH_CONDITIONS` citing an OPEN `MAJOR` — and an existing test asserts it
++**passes**. A conditional approval over an open finding is the designed arc; refusing it would have broken
++a test that encodes the intent and called the breakage a fix. It also matches the sibling control, which
++tests `verdict == "APPROVE"` and nothing else. **Both layers now refuse the same shape and no more.**
++
++**A filed acceptance criterion was found unbuildable and the deviation was published before review.** The
++issue asked for `APPROVE_WITH_CONDITIONS` to be permitted "only with the finding condition-mapped,
++mirroring C6". Measured: the record schema carries **no** condition key, and **0 of 5** encoded records use
++that verdict. Mirroring C6 would require inventing a schema field — which the issue's own scope forbids
++("additive refusal only") and which would be a schema change on zero instances. Stating that on the issue
++*before* the review round is the difference between a plan defect and a review finding.
++
++**The control is watched.** Neutering the new `raise` turns the owning module red. That is asserted because
++**#250 exists precisely because `check_g07_binding` accumulated correct controls nothing was watching** —
++adding an unwatched control while claiming to fix that class would have grown the pile.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
