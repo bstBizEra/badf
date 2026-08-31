@@ -1,0 +1,85 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0118",
+  "title": "Mechanize the id-allocation sweep: claim-shaped surfaces, mentions separated, sentinels declared, positive-control-gated, non-coverage stated",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0105",
+  "objective": "Close GOV-0098 (#227): replace the thread-scattered id-sweep convention with a deterministic tool + one doctrine section, encoding the six-surface protocol's mechanizable half and stating its blind half out loud on every run.",
+  "business_value": "Five id incidents in 48h (three collisions, two sweep defects) each cost a renumber or a near-miss; this is also the last open trigger leg of the AET program intake (#236).",
+  "in_scope": [
+    "scripts/badf_id_sweep.py: stdlib-only deterministic sweep over surface dump files (--from-dir); per family WP-2026/BADF-DEM/GOV reports CLAIMED ids each naming its source surface, MENTIONS separately (never folded into next-free -- prose may carry binding claims, so the section is for human reading before binding), declared sentinel exclusions printed (9999, 0997-0999), next-free from claim-shaped surfaces only, refusal when the known-present positive anchors are not visible, and a non-coverage trailer every run naming the unpushed-worktree/independent-clone blind half",
+    "tests/test_badf_id_sweep.py: red-first fixture tests -- the three real collision shapes (open-PR file claim, body-only mention, >=0100 regex), sentinel exclusion, positive-control refusal, trailer always present",
+    "docs/governance/GITHUB_CONTROL_PLANE.md: doctrine section codifying measure-then-ask + claim-by-publishing + bind-late with the tool's role and limits",
+    "badf/demands/BADF-DEM-0105.json; reconcile WP-2026-0114; own composition record + typed G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "any network access inside the tool or tests (CI is offline; the doctrine section documents the gh/git one-liners that produce the surface dumps)",
+    "gate integration (the canonical gate stays offline by design); any enforcement -- the unpushed-work gap is not closable by tooling and the ask-the-seats half stays load-bearing",
+    "worktree scanning; GOV-id structural claims (GOV has no file-backed claim surface -- reported as prose-derived observations, labelled as such)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "an id present only in an open-PR file list is reported CLAIMED with its source surface named (the 0110/0097 shape)",
+    "an id present only in a body dump appears under MENTIONS with a read-before-binding banner and does not advance next-free (the mentions!=claims separation; the report states prose may carry binding claims)",
+    "ids >= 0100 are matched (the DEM-00xx regex defect, pinned as a fixture)",
+    "sentinel ids are excluded from next-free and the exclusion list is printed; 0900 is NOT in the list (unverified per BADF-QA's retraction)",
+    "with the known-present anchors absent from the surfaces the tool refuses to report (nonzero exit); with them present it reports (positive control before any negative)",
+    "every run's output ends with the non-coverage trailer naming the blind half; all pre-existing tests stay green; repo PASS on branch and composed tree",
+    "each control branch is load-bearing: neutering mention-separation, sentinel exclusion, positive-control refusal, or the trailer turns at least one test red (mutation evidence in the PR)"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_id_sweep.py (7)"
+  ],
+  "test_obligations": [
+    {
+      "id": "TEST-001",
+      "claim": "the sweep distinguishes claims from mentions, excludes declared sentinels, refuses without its positive anchors, and always states non-coverage",
+      "level": "unit"
+    }
+  ],
+  "evidence": [
+    "failing-first: all new tests red before the tool exists",
+    "green: module green after implementation",
+    "mutation: four control branches neutered -> red",
+    "compose output incl. composition record",
+    "typed G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "95613a5baa6b7741b5ddcd3dad3f8a148b02f2d1"
+  },
+  "expected_surfaces": {
+    "files": [
+      "scripts/badf_id_sweep.py",
+      "tests/test_badf_id_sweep.py",
+      "badf/demands/BADF-DEM-0105.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "work/WP-2026-0114/work-package.json"
+    ]
+  },
+  "note": "Ids claimed on #227 (comment 5476087587) after ceding 0117/0104 to BARCHI-3's published ask; 0118/0105 verified free by literal grep after four GitHub-search tokenizer false positives. Reconcile target moved with the race: the WP-2026-0116 reconcile collapsed byte-identically when #241 landed c525129 (the file left expected_surfaces in the same pass -- fourth firing of the drill this WP-family enforces); the 0115 reconcile then collapsed byte-identically when #245 landed 95613a5 (fifth firing); now reconciles WP-2026-0114 -- the merge queue is drained, so this is the last racing reconcile. Branch deliberately opened only after #249 landed, per BADF-REV's collision measurement (all six recent rungs contended >=2 of registry/doctrine/lockfile)."
+}
