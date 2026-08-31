@@ -16,15 +16,15 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-08-31T00:27:15Z",
-  "completed_at": "2026-08-31T00:27:15Z",
+  "started_at": "2026-08-31T02:23:58Z",
+  "completed_at": "2026-08-31T02:23:58Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0115/evidence/G07/source-change.diff",
-  "digest": "sha256:aeb4ae278320e97f09f606df03a1b5904b4e40be0b48533e9af10e1e802a50a7",
+  "digest": "sha256:32bdef03ff7367d6991932952bfa3b9845942026aa8af56fa3dda8693bebcceb",
   "binding": {
-    "base_sha": "87dd19213fb0dc12625fd79dfb2ef9ccdf9afd49",
-    "head_sha": "2beb854f2d0303180608d7930bcddfa3708467bf",
-    "content_tree": "de73c617d9515426efa42faca93681cbc4444e1e",
+    "base_sha": "1c1827c0e99ea86d9ca1119b1a92d90d83ba1628",
+    "head_sha": "bb24d2f04ed10dfa33bfc6faf582f02943a17a74",
+    "content_tree": "5eeb7c6dd9262720be17fca99b86b50c648e6850",
     "changed_paths": [
       "badf/demands/BADF-DEM-0102.json",
       "badf/skill-registry.json",
@@ -45,13 +45,13 @@
       "skills/badf-uat/references/scenario-contract.md",
       "skills/badf-uat/references/scenario-derivation.md",
       "tests/test_badf_uat_contract.py",
-      "work/WP-2026-0110/work-package.json"
+      "work/WP-2026-0112/work-package.json"
     ],
     "expected_surfaces": {
       "declared": false,
       "files": []
     },
     "unexpected_paths": [],
-    "change_digest": "sha256:aeb4ae278320e97f09f606df03a1b5904b4e40be0b48533e9af10e1e802a50a7"
+    "change_digest": "sha256:32bdef03ff7367d6991932952bfa3b9845942026aa8af56fa3dda8693bebcceb"
   }
 }
