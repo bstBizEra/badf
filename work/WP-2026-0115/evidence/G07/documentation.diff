@@ -1,10 +1,10 @@
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 1ab6030..36a2450 100644
+index 4eec23d..49a4c95 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -1721,6 +1721,45 @@ fixtures built from landed evidence and near-miss mutations an author would not
- that no refusal is unreachable by construction. Dossier-level controls — cross-class candidate identity
- and class substitution beyond the structural floor — are **WP-VAL-C**.
+@@ -1755,6 +1755,45 @@ no delegations, and rewriting a landed record to satisfy today's control is the
+ forward. Red-first: the two positive controls failed against the one-sided gate before the fix (5 ran,
+ 2 failures); mutation: each new branch neutered turns its test red (2/2 killed).
  
 +## badf-uat — G10 business-acceptance router freeze (`BADF-WP-0115` / WP-UAT-A, Issue #239 / GOV-0107)
 +
