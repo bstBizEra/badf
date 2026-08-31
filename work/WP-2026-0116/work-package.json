@@ -68,11 +68,14 @@
     "EVIDENCE_CORRUPTION",
     "BUDGET_EXHAUSTED"
   ],
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "7f81a49718b244c3386cedd7455e603e7f6f3eb2"
+    "base_revision": "7f81a49718b244c3386cedd7455e603e7f6f3eb2",
+    "landed_content_tree": "53ea7398b15a4b24e6d39405128918ae9ab110f1",
+    "composition_verified": true,
+    "landed_as": "da3c28d359859cb163ad7b9509e702fe48d08fa4"
   },
   "expected_surfaces": {
     "files": [
