@@ -62,7 +62,7 @@ class BuildShadowTests(unittest.TestCase):
         AUTHORIZED, so a legitimately discharged demand could never satisfy the tuple. One case reddened
         the moment BADF-DEM-0087 was discharged (#224), and all 67 would have under #220's derived
         terminality. Every sibling case class here already recomputes at a pinned revision; this one had
-        skipped that convention. Fixed under WP-2026-0110 / #225 -- exact comparison kept, recomputed at
+        skipped that convention. Fixed under WP-2026-0111 / #225 -- exact comparison kept, recomputed at
         the revision the record was measured on, so no future lifecycle transition can falsify it."""
         measured_on = load_shadow()["measured_on"]
         seen = cases("authority-replayed"); self.assertGreaterEqual(len(seen), 66)

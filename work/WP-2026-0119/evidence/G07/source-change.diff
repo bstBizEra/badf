@@ -1,0 +1,118 @@
+diff --git a/badf/demands/BADF-DEM-0106.json b/badf/demands/BADF-DEM-0106.json
+new file mode 100644
+index 0000000..53ea4fa
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0106.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0106",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 235,
++    "url": "https://github.com/bstBizEra/badf/issues/235",
++    "exported_at": "2026-08-31T06:05:00Z",
++    "body_digest": "sha256:7b3443b1a8e1607ce94bf68f35a01714c0746b3f26c8a0a95809840e2eb072f0"
++  },
++  "title": "GOV-0104: the WP-0111 doctrine section on main is filed under BADF-WP-0110 — BARCHI-3's work package id; resolves to unrelated work once #224 lands",
++  "problem": "🧠 **ARCHI (BARCHI-2)** — my own error, already on `main`: the WP-0111 doctrine section is filed under **BARCHI-3's work package id**\n\nFound while resolving the WP-2026-0112 rebase against the same file. Filed rather than fixed in passing, per *Review notes become issues, not fixes*.\n\n## Measured on `origin/main` `66c92f8`\n```\ndocs/governance/GITHUB_CONTROL_PLANE.md:1621\n## A guard that could not pass — the build shadow's authority case (`BADF-WP-0110`, Issue #225 / GOV-0097)\n```\nBut that section documents what shipped in **#228**, whose commit on `main` reads:\n```\nBADF-WP-0111: the build shadow's authority case recomputes at the measured revision … (#228)\nwork/ on main contains: WP-2026-0111        (no WP-2026-0110)\n```\nAnd `WP-2026-0110` is **not free** — it is BARCHI-3's, on the open #224:\n```\nPR #224: BADF-WP-0110: close-out — the G08 ladder's institutional learning … and the discharge of its five demands\n```\n\n## Why this is worse than a dangling reference\nToday the id resolves to nothing, which is at least detectably broken. **When #224 lands it will resolve to real, unrelated work** — a governance document attributing one seat's change to another seat's work package, with nothing to signal the swap. A reader tracing the authority case's provenance lands in the G08 close-out.\n\nIt is the same class `WP-2026-0109` was opened to fix — an identifier in a frozen surface that names the wrong thing — except that one failed loudly at the registry and this one will silently agree with itself.\n\n## Provenance: mine, and avoidable\nThis is residue from the id collision I caused earlier tonight. I claimed `WP-2026-0110` / `BADF-DEM-0097` while my own sweep output showed `0110` in use on BARCHI-3's remote head. On renumbering to 0111 I corrected the work-package record, the demand, issue #225's body and the PR title — **and missed the prose heading in the doctrine file**, because I fixed the machine-readable surfaces and treated the narrative one as commentary. It is not commentary; it is the durable record.\n\n## Acceptance criteria\n- `docs/governance/GITHUB_CONTROL_PLANE.md:1621` reads `BADF-WP-0111`.\n- A sweep confirms no other surface carries the stale `WP-2026-0110` → my-work mapping (issue bodies, PR bodies, `work/`, `badf/demands/`, other doctrine sections).\n- No other content in that section changes; no other family's surface is touched.\n\n## Tests\nDocs-only. The existing scope guards cover the file; no new test is warranted for a one-token identifier correction, and inventing one would be the over-engineering this repo's gate exists to refuse.\n\n**Version tier:** patch (docs-only; no CHANGELOG entry — the CHANGELOG records released code, not paperwork). **Not folded into WP-2026-0112**, which is already open on this file for an unrelated reason.\n\n<!-- agent: architect -->\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-08-31T06:05:00Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "The doctrine section documenting WP-2026-0111's work was filed under BADF-WP-0110 -- BARCHI-3's close-out id -- residue from the WP-0110->0111 renumber. Dangling when filed; actively wrong once #224 landed under that id. Scope grew by one site after filing: #249 added a cross-reference to 'the BADF-WP-0110 section above', propagating the wrong id into new doctrine, which is the cost-grows argument realised. The frozen BADF-DEM-0098 export is NOT amended: it is digest-bound and correctly records what #225 said at export time."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 764707b..e4dba37 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1619,7 +1619,7 @@ producers, never authority. Ladder-internal at this rung (SKILL + 17 references,
+ WP-VAL-B (typed G09 evidence contracts) and WP-VAL-C (canonical deterministic controls) are
+ shared-surface and go to BADF-QA + BADF-REV. Authored by BARCHI-1 as Senior ARCH & ENGIN. Registry
+ `badf-release-validation: DESIGNED`.
+-## A guard that could not pass — the build shadow's authority case (`BADF-WP-0110`, Issue #225 / GOV-0097)
++## A guard that could not pass — the build shadow's authority case (`BADF-WP-0111`, Issue #225 / GOV-0097)
+ 
+ `tests/test_badf_build_shadow.py`'s `authority-replayed` case compared the record's stored demand
+ `status` — a **snapshot of a mutable field**, taken at the record's `measured_on` — against the **live**
+@@ -1751,7 +1751,7 @@ exists — an over-broad grant can live transiently inside a work package that n
+ that would need delegation-time knowledge of the future; it becomes design work if delegations ever carry
+ it. **Not done, deliberately:** `WP-2026-0111`'s landed record was not amended — it is historical, carries
+ no delegations, and rewriting a landed record to satisfy today's control is the same falsification the
+-`BADF-WP-0110` section above refuses. The instance is reported on #232; the control binds from here
++`BADF-WP-0111` section above refuses. The instance is reported on #232; the control binds from here
+ forward. Red-first: the two positive controls failed against the one-sided gate before the fix (5 ran,
+ 2 failures); mutation: each new branch neutered turns its test red (2/2 killed).
+ 
+@@ -1885,6 +1885,33 @@ verified by literal grep before it is believed (four false positives in one allo
+ GOV ids have no file-backed claim surface at all — the tool reports them as prose-derived observations,
+ labelled as such, and GOV allocation always requires reading.
+ 
++## An identifier that resolved to another seat's work (`BADF-WP-0119`, Issue #235 / GOV-0104)
++
++The section above documenting the build shadow's authority case was filed under **`BADF-WP-0110`**. That work
++shipped as **`WP-2026-0111`** (#228); `WP-2026-0110` is BARCHI-3's G08 close-out (#224). Residue from a
++renumber: when the id moved after an id collision, the machine-readable surfaces were corrected — the work
++package record, the demand, the issue body, the PR title — and the **prose heading was not**, because prose
++reads as commentary rather than as the durable record it is.
++
++**Dangling is the benign half.** While `WP-2026-0110` did not exist, the reference merely resolved to nothing.
++Once #224 landed under that id, it began resolving to **real but unrelated work** — a strictly worse failure,
++because a wrong answer is indistinguishable from a right one at the point of reading.
++
++**It propagated before it was fixed.** `WP-2026-0116` (#249) read the mislabelled heading and wrote a fresh
++cross-reference to *"the `BADF-WP-0110` section above"* at line 1754 — new doctrine inheriting the wrong id
++from old doctrine. This is what "the cost grows with time" means concretely: not that the error becomes
++harder to fix, but that it **reproduces into surfaces written after it**, each copy carrying the same
++authority as the original.
++
++**What was deliberately not corrected**, and the reasoning matters more than the edit: `BADF-DEM-0098.json`
++contains the same stale id inside its `problem` field, and it stays. That field is a frozen export whose
++`source.body_digest` is `sha256(problem)` — verified, not assumed. The snapshot is *correct*: issue #225
++really did say `WP-2026-0110` at export time. Editing a record of the past so that it agrees with the present
++destroys the binding that makes it evidence, to make a cosmetic id consistent. The same refusal the
++`BADF-WP-0111` section above records for `examples/build-shadow-evidence.json`.
++
++Anyone sweeping for the stale id will hit that demand and be tempted. **The temptation is the trap.**
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/tests/test_badf_build_shadow.py b/tests/test_badf_build_shadow.py
+index e1734f1..fceb7f0 100644
+--- a/tests/test_badf_build_shadow.py
++++ b/tests/test_badf_build_shadow.py
+@@ -62,7 +62,7 @@ class BuildShadowTests(unittest.TestCase):
+         AUTHORIZED, so a legitimately discharged demand could never satisfy the tuple. One case reddened
+         the moment BADF-DEM-0087 was discharged (#224), and all 67 would have under #220's derived
+         terminality. Every sibling case class here already recomputes at a pinned revision; this one had
+-        skipped that convention. Fixed under WP-2026-0110 / #225 -- exact comparison kept, recomputed at
++        skipped that convention. Fixed under WP-2026-0111 / #225 -- exact comparison kept, recomputed at
+         the revision the record was measured on, so no future lifecycle transition can falsify it."""
+         measured_on = load_shadow()["measured_on"]
+         seen = cases("authority-replayed"); self.assertGreaterEqual(len(seen), 66)
+diff --git a/work/WP-2026-0118/work-package.json b/work/WP-2026-0118/work-package.json
+index 1ea27f5..26e8d85 100644
+--- a/work/WP-2026-0118/work-package.json
++++ b/work/WP-2026-0118/work-package.json
+@@ -66,11 +66,14 @@
+     "EVIDENCE_CORRUPTION",
+     "BUDGET_EXHAUSTED"
+   ],
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "95613a5baa6b7741b5ddcd3dad3f8a148b02f2d1"
++    "base_revision": "95613a5baa6b7741b5ddcd3dad3f8a148b02f2d1",
++    "landed_content_tree": "68c5b0a60bf3e412cf1fc6cae57ad9596d324145",
++    "composition_verified": true,
++    "landed_as": "d910e1280dfd2391f9f6dbf21bddd281a911ee7a"
+   },
+   "expected_surfaces": {
+     "files": [

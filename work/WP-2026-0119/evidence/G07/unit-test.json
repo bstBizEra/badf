@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0119-G07-unit-test",
+  "work_package_id": "WP-2026-0119",
+  "gate": "G07",
+  "claim": "unit tests run in the composed-tree gate, not here",
+  "evidence_type": "unit-test",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "deferred-to-compose",
+    "version": "1"
+  },
+  "operation": "deferred-to-compose",
+  "started_at": "2026-08-31T14:36:40Z",
+  "completed_at": "2026-08-31T14:36:40Z",
+  "outcome": "NOT_RUN",
+  "artifact": "work/WP-2026-0119/evidence/G07/unit-test.txt",
+  "digest": "sha256:3ebfe5e512dfeda144788ffffd16868b94226c8875f266fe231350792fa89fbc",
+  "binding": {
+    "obligations": [
+      {
+        "id": "TEST-001",
+        "seam": {
+          "type": "module",
+          "ref": "tests/test_badf_build_shadow.py"
+        },
+        "red": {
+          "observed": false
+        },
+        "green": {
+          "observed": false
+        }
+      }
+    ],
+    "command": "deferred-to-compose",
+    "result": "NOT_RUN",
+    "tests_run": 0,
+    "failures": 0,
+    "coverage_scope": [
+      "tests/test_badf_build_shadow.py"
+    ],
+    "fresh_run": "scripts/badf_compose.py (the composed-tree gate) re-runs the suite on the tree that would land; CI is the fresh, authoritative run (BLD-I09)",
+    "tdd": {
+      "applies": false,
+      "reason": "Docs-lane C1: the change is three identifier tokens -- two in a Markdown heading and cross-reference, one inside a Python docstring. None is executable, so there is no state in which a test could be red before the edit and green after; a manufactured red phase would be theatre. The obligations here are REGRESSION claims (the frozen digest-bound export stays byte-identical; the build-shadow suite is behaviourally unchanged), and both are verified by running the existing suites unchanged rather than by a new failing-first observation. The substantive assertion for this WP is NEGATIVE -- zero residual stale identifiers outside the frozen set -- and it is measured in the PR body and at review."
+    }
+  }
+}
