@@ -229,6 +229,89 @@ class VerifyRecordTests(unittest.TestCase):
         r = record(findings=[finding(status="RESOLVED")]); r["matrix"][0].update(result="VERIFIED", composed_refs=[])
         with self.assertRaisesRegex(gate.ValidationError, "composed|VER-I15"): gate.validate_verification_record(self._path(r))
 
+    def test_verify_refuses_an_APPROVE_ballot_citing_its_own_open_blocking_finding(self):
+        """#211: a ballot may not carry a verdict its own cited findings contradict.
+
+        The matrix layer already refuses a VERIFIED row over an OPEN blocking finding, and
+        `check_g08_binding` refuses the same shape on an independent-review evidence binding
+        (badf_gate.py:1742). The record's own ballot layer did not, so `verify` PASSed a record
+        whose ballot said APPROVE while citing an OPEN MAJOR it had raised itself.
+
+        Scope is strict APPROVE only, deliberately. APPROVE_WITH_CONDITIONS over an OPEN finding
+        is the honest conditional arc -- it is this module's own baseline fixture -- and REJECT
+        over open findings is the honest rejecting arc. Both are pinned below so a later change
+        cannot quietly widen this refusal into them.
+        """
+        r = record()
+        r["ballots"][0]["verdict"] = "APPROVE"
+        with self.assertRaisesRegex(gate.ValidationError, "APPROVE.*(contradicts|OPEN)|VF-001"):
+            gate.validate_verification_record(self._path(r))
+
+        # the two honest arcs stay valid -- negative controls, not decoration
+        r = record()
+        r["ballots"][0]["verdict"] = "REJECT"
+        gate.validate_verification_record(self._path(r))
+
+        gate.validate_verification_record(self._path(record()))  # APPROVE_WITH_CONDITIONS baseline
+
+        # APPROVE is fine once nothing open is cited
+        r = record(findings=[finding(status="RESOLVED")])
+        r["ballots"][0]["verdict"] = "APPROVE"
+        gate.validate_verification_record(self._path(r))
+
+    def test_verify_refuses_an_APPROVE_ballot_associated_by_either_join(self):
+        """#211: the association is two-sided, so the refusal must be too.
+
+        A ballot cites findings via `finding_ids`; a finding names its reporters via
+        `reported_by` / `also_reported_by`. The record checks each for CONTAINMENT and
+        neither for RECIPROCITY -- nothing requires the two to agree. So an APPROVE
+        ballot could carry `finding_ids: []` while the findings side still asserted it
+        reported an OPEN MAJOR, and a refusal walking only `finding_ids` admitted it.
+        That is the same proposition, reachable from the other side of the join.
+
+        Found by asking what my own criteria did not name (BADF-QA read it; measured here).
+        """
+        r = record()
+        r["ballots"][0]["verdict"] = "APPROVE"
+        r["ballots"][0]["finding_ids"] = []          # association lives only on the finding
+        for row in r["matrix"]:                      # deny the matrix layer an incidental catch
+            if row["result"] == "VERIFIED":
+                row["result"] = "NOT_VERIFIED"
+        with self.assertRaisesRegex(gate.ValidationError, "APPROVE.*(contradicts|OPEN)|VF-001"):
+            gate.validate_verification_record(self._path(r))
+
+        # and the mirror: cited by the ballot, silent on the finding
+        r = record(findings=[finding(reported_by=["BALLOT-OTHER"])])
+        r["ballots"][0]["verdict"] = "APPROVE"
+        r["findings"][0]["reported_by"] = ["BALLOT-001"]
+        with self.assertRaisesRegex(gate.ValidationError, "APPROVE.*(contradicts|OPEN)|VF-001"):
+            gate.validate_verification_record(self._path(r))
+
+    def test_verify_refuses_an_APPROVE_ballot_associated_only_via_also_reported_by(self):
+        """#211 vector C: the third attribution surface, pinned separately from B.
+
+        A finding's `reported_by` is mandatory and can be satisfied by a DIFFERENT ballot while
+        the approving ballot's involvement rides `also_reported_by`. The union already covers
+        this -- it walks `reported_by + also_reported_by` -- but nothing pinned it, so a later
+        simplification dropping `also_reported_by` would pass every existing test.
+
+        Raised by BADF-REV against 03dae4d (pre-union head, where it was genuinely open) and
+        measured closed here; the code was right and the coverage was not. One case per vector,
+        because a B-only test goes green while C is silent.
+        """
+        r = record()
+        r["ballots"].append({**r["ballots"][0], "ballot_id": "BALLOT-002", "reviewer": "reviewer-b",
+                             "reviewer_run_id": "run-b", "verdict": "REJECT", "finding_ids": ["VF-001"]})
+        r["ballots"][0].update(verdict="APPROVE", finding_ids=[])
+        r["findings"][0].update(reported_by=["BALLOT-002"], also_reported_by=["BALLOT-001"])
+        for row in r["matrix"]:
+            if row["result"] == "VERIFIED":
+                row["result"] = "NOT_VERIFIED"
+        # discriminates on THIS control's unique wording, not the substring it shares with the
+        # older binding-layer control at badf_gate.py:1743 (BADF-REV's mechanical note)
+        with self.assertRaisesRegex(gate.ValidationError, r"ballot BALLOT-001:.*associated with it"):
+            gate.validate_verification_record(self._path(r))
+
     def test_verify_requires_non_coverage_and_refuses_authority(self):
         r = record(non_coverage=[])
         with self.assertRaisesRegex(gate.ValidationError, "non-coverage|VER-I11"): gate.validate_verification_record(self._path(r))

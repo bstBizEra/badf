@@ -1,0 +1,83 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0123",
+  "title": "Ballot-layer verdict/finding coherence: an APPROVE ballot may not cite an OPEN blocking finding it raised itself",
+  "owner": "human_sponsor",
+  "demand": "BADF-DEM-0109",
+  "repository": "bstBizEra/badf",
+  "objective": "Close #211. `validate_verification_record` accepted a ballot whose verdict contradicted its own cited findings -- flipping the PR-196 record's ballot REJECT->APPROVE while it cites an OPEN MAJOR rendered BADF VERIFY PASS. The matrix layer already refuses a VERIFIED row over an OPEN blocking finding, and check_g08_binding (badf_gate.py:1742) refuses the shape on a review binding; the record's own ballot layer was unchecked. Additive refusal, no signature change.",
+  "business_value": "The record is the artifact future tooling reads. QA's mitigations bound the blast radius -- an incoherent ballot cannot become authority or a green dossier -- but the record could carry a self-contradiction, and a reader downstream has no way to know the verdict and the findings disagree.",
+  "in_scope": [
+    "scripts/badf_gate.py: validate_verification_record refuses a strict APPROVE ballot citing a finding in its own finding_ids that is OPEN and MAJOR+",
+    "tests/test_badf_verification_evidence.py: red-first refusal test, with APPROVE_WITH_CONDITIONS / REJECT / resolved-finding pinned as negative controls",
+    "docs/governance/GITHUB_CONTROL_PLANE.md: doctrine section",
+    "reconcile WP-2026-0124 (gate-forced; landed d0986b0)"
+  ],
+  "out_of_scope": [
+    "APPROVE_WITH_CONDITIONS condition-mapping (the filed criterion): the record schema carries NO condition structure and 0 of 5 encoded records use that verdict -- building it means inventing a schema field, which this issue's own scope forbids",
+    "the matrix layer and C6 at dossier level: both already refuse this shape",
+    "#218 (exactly-one-EXACT-registry-pin): tests-only and ladder-internal, dispatched as a separate WP -- folding it here would drag it into a contract_changed review round",
+    "synthesis-status governance (#271): a finding can be weakened outside the governed paths by editing status/severity directly -- withdrawn[] and downgraded[] are defined and never required. Pre-existing; declined on BARCHI-1's scope ruling and filed with QA's four probes. This control makes those paths CHEAPER (the honest encoding is now refused) without making them worse, which is the argument for closing #271 rather than for folding it here."
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "The #211 probe (PR-196 record, verdict flipped to APPROVE, finding left OPEN/MAJOR) exits 1 with a message naming the ballot and the finding; it exited 0 PASS before",
+    "All five encoded verification records still VERIFY PASS -- the regression floor",
+    "APPROVE_WITH_CONDITIONS over an OPEN finding still passes: it is this module's baseline fixture and the designed conditional arc",
+    "Neutering the new raise turns tests/test_badf_verification_evidence red -- the control is watched, not a 13th unwatched control (#250)",
+    "The control's claim is scoped in-source: it enforces verdict/finding coherence GIVEN governed statuses; it reads status/severity from the record rather than corroborating them against synthesis.withdrawn[]/downgraded[], so it does not survive an ungoverned status edit (#271)."
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_verification_evidence.py::VerifyRecordTests::test_verify_refuses_an_APPROVE_ballot_citing_its_own_open_blocking_finding"
+  ],
+  "evidence": [
+    "before: surface absent -> Ran 1 test OK in 0.005s (vacuous)",
+    "after: surface absent -> AssertionError at import / FAILED (errors=1) under discover",
+    "references emptied -> FAILED (failures=2, errors=6)",
+    "intact -> 10 OK; every probe restored byte-identical"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "d0986b0"
+  },
+  "note": "Lands IN_PROGRESS by design; the next WP reconciles it. Shared surface (scripts/badf_gate.py) -> contract_changed by construction, so QA + REV, not ladder-internal. Ids swept with SARCHI's badf_id_sweep.py (#252, positive control PASS), ceiling WP-2026-0122/BADF-DEM-0108 printed beside the binding per BARCHI-1's rule, published on #211 before any edit, and ASKED -- BARCHI-1 and BARCHI-3 both confirmed clear, BARCHI-3 from their unpushed worktree, the surface no sweep can see. A filed acceptance criterion was found unbuildable and the deviation was posted to #211 before review rather than discovered at it. Reconciles WP-2026-0122; an earlier copy carried WP-2026-0117 which #258 landed first, so that copy collapsed byte-identically and was pruned in the same pass.",
+  "expected_surfaces": {
+    "files": [
+      "scripts/badf_gate.py",
+      "tests/test_badf_verification_evidence.py",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "badf/demands/BADF-DEM-0109.json",
+      "work/WP-2026-0124/work-package.json"
+    ]
+  },
+  "test_obligations": [
+    {
+      "id": "TEST-001",
+      "claim": "a strict APPROVE ballot citing its own OPEN blocking finding is refused, while the conditional and rejecting arcs stay valid",
+      "level": "unit"
+    }
+  ],
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0109",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 211,
+    "url": "https://github.com/bstBizEra/badf/issues/211",
+    "exported_at": "2026-09-01T00:10:00Z",
+    "body_digest": "sha256:1e806ad953086d4cb618bf690f9e69e2c71dd1f38ca9d7bbe1ebb3f2f1fe0336"
+  },
+  "title": "GOV: ballot-verdict/finding coherence in validate_verification_record — an APPROVE ballot citing its own OPEN MAJOR finding renders VERIFY PASS",
+  "problem": "🔎 **QA (BADF-QA)** — deferred finding from the #208 review (F-2), filed per the review-notes-become-issues rule. Out of #208's scope by construction: VER-D is ladder-internal (no gate change), and this is a `badf_gate.py` change.\n\n## Defect\n`validate_verification_record` accepts a ballot whose verdict contradicts its own cited findings. Measured probe (on `31fbc41`, #208's head, but the behavior is `main`'s — the validator is untouched by #208):\n\n- Take `examples/verification-record-pr196-request-changes.json` (ballot cites `VF-001`, an OPEN `MAJOR` DEFECT), flip `ballots[0].verdict` `REJECT → APPROVE`, run `badf_gate.py verify` → **`BADF VERIFY PASS`**.\n\nThe #201 review's design line — \"a verdict can't contradict its own findings\" — is enforced at the **matrix** layer (`VERIFIED` with an OPEN blocking finding → refused, verified) but not at the **ballot** layer.\n\n## Mitigations (why this is deferred, not urgent)\n- The record \"grants no verification authority\" (printed on every PASS).\n- A `VERIFIED` matrix row over an OPEN MAJOR is refused (VER-I15/VER-I12 family — probe confirmed).\n- At dossier level, C6 refuses an OPEN MAJOR passed over / unmapped (shadow cases `open-major-passed-over`, `open-major-unmapped-pwc`).\n\nSo the incoherent ballot cannot become authority or a green dossier — but the record itself, the artifact future tooling will read, can carry a self-contradiction.\n\n## Acceptance criteria (for the Architect to refine)\n- A deterministic check in `validate_verification_record`: a PASS-class ballot verdict (`APPROVE`; `APPROVE_WITH_CONDITIONS` only with the finding condition-mapped, mirroring C6's mapped-vs-unmapped discrimination) may not cite a finding that is OPEN and blocking (`MAJOR`+). `REJECT` with OPEN findings stays valid (that is the honest arc).\n- Failing-first: the probe above as the red test; existing five encoded records (incl. the RC record with `REJECT` + OPEN MAJOR) must still `VERIFY PASS`.\n- No signature change to `validate_verification_record`; additive refusal only.\n\n## Test list\n- `test_pass_class_ballot_citing_open_blocking_finding_is_refused` (the probe, red-first)\n- `test_reject_ballot_with_open_findings_still_passes` (the #196 RC record as fixture)\n- `test_conditions_mapped_approve_with_conditions_passes` (the C6-mirroring discrimination)\n\n**Version tier:** patch (additive refusal in an existing validator; ARCHI validates). **Status:** DISCOVERED (found by BADF-QA adversarial probe during the #208 review; details in #208 comment 5470744640).\n\n<!-- agent: reviewer -->\n",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-09-01T00:10:00Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "validate_verification_record accepted a ballot whose verdict contradicted its own cited findings: APPROVE citing an OPEN MAJOR rendered VERIFY PASS. The matrix layer and check_g08_binding already refused the shape; the record's ballot layer did not. Strict APPROVE only -- APPROVE_WITH_CONDITIONS over an open finding is the module's own baseline fixture and the designed conditional arc, and the filed criterion to condition-map it cannot be built: the record schema carries no condition structure and no encoded record uses that verdict."
+}
