@@ -1,10 +1,10 @@
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index fe2927c..3556e53 100644
+index 0d1d341..4155250 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
-@@ -2005,6 +2005,56 @@ that verdict. Mirroring C6 would require inventing a schema field — which the
- **#250 exists precisely because `check_g07_binding` accumulated correct controls nothing was watching** —
- adding an unwatched control while claiming to fix that class would have grown the pile.
+@@ -2075,6 +2075,56 @@ remedy when a declaration is over-broad and the **wrong** one when the declarati
+ went missing — both emit a byte-identical condition. That gap is filed as **#257 / GOV-0113** and is not fixed
+ here: this rung's subject is family names, and editing the same file is not sharing the subject.
  
 +## badf-uat → deterministic G10 controls — a defence that names a field must require the field (`BADF-WP-0125` / WP-UAT-C, Issue #273 / GOV-0120)
 +

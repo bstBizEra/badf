@@ -16,22 +16,22 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-08-31T20:42:16Z",
-  "completed_at": "2026-08-31T20:42:16Z",
+  "started_at": "2026-08-31T23:16:52Z",
+  "completed_at": "2026-08-31T23:16:52Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0125/evidence/G07/source-change.diff",
-  "digest": "sha256:9103be1492d2b07016a7fadeca384ca27b00d0df7449b2d0e3a3447afc2ae485",
+  "digest": "sha256:44035cd9b65be59eb51804dd7867e6c7fd7078e7e49460bb7c53e82f1c8167fc",
   "binding": {
-    "base_sha": "c8036a6bea559f53fd342eb29c5f3b4d5a0290ef",
-    "head_sha": "41bdbc28316664bae3a3083192acb869912005de",
-    "content_tree": "0e2c8222a6ada5a9c0cdc810bf3777c40c9bcc16",
+    "base_sha": "5138b24eaae82d2a870adea171211718a5d85821",
+    "head_sha": "fb6e6c5b634b91b5a4f1f9e27ea5d33646fbe5fe",
+    "content_tree": "9b49399d922e13a75c4e8d1919c4ea2a9533ab60",
     "changed_paths": [
       "badf/demands/BADF-DEM-0111.json",
       "docs/governance/GITHUB_CONTROL_PLANE.md",
       "scripts/badf_gate.py",
       "tests/test_badf_uat_contract.py",
       "tests/test_badf_uat_evidence.py",
-      "work/WP-2026-0123/work-package.json"
+      "work/WP-2026-0120/work-package.json"
     ],
     "expected_surfaces": {
       "declared": true,
@@ -41,10 +41,10 @@
         "scripts/badf_gate.py",
         "tests/test_badf_uat_contract.py",
         "tests/test_badf_uat_evidence.py",
-        "work/WP-2026-0123/work-package.json"
+        "work/WP-2026-0120/work-package.json"
       ]
     },
     "unexpected_paths": [],
-    "change_digest": "sha256:9103be1492d2b07016a7fadeca384ca27b00d0df7449b2d0e3a3447afc2ae485"
+    "change_digest": "sha256:44035cd9b65be59eb51804dd7867e6c7fd7078e7e49460bb7c53e82f1c8167fc"
   }
 }
