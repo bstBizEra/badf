@@ -19,6 +19,13 @@ REFERENCES = ROOT / "skills" / "badf-build" / "references"
 REGISTRY = ROOT / "badf" / "skill-registry.json"
 LIFECYCLE = ROOT / "badf" / "lifecycle.json"
 
+SURFACE = sorted((ROOT / "skills" / "badf-build").rglob("*.md"))
+# The idiom is tests/test_badf_schema_drift.py:31 -- a module-level non-emptiness assertion whose
+# comment names this failure mode. An empty SURFACE would make the family-name guard below pass in
+# 0.000s, so absence of the surface would be indistinguishable from a clean surface (GOV-0099 / #229).
+# Asserted at import: it fires once per module and cannot be forgotten by whoever adds the next test.
+assert SURFACE, "an empty badf-build surface would make the family-name guard vacuous"
+
 REFS = {
     "g07-contract.md", "preflight.md", "execution-contract.md", "tdd-contract.md", "test-seams.md",
     "delegation.md", "scope-containment.md", "retry-and-budget.md", "stop-conditions.md",
@@ -115,7 +122,12 @@ class BadfBuildContractTests(unittest.TestCase):
         NON_FAMILY = {"badf-sa"}
         known = {e.get("name") for e in json.loads(REGISTRY.read_text(encoding="utf-8"))["skills"]}
         found = {}
-        for path in sorted((ROOT / "skills" / "badf-build").rglob("*.md")):
+        # SURFACE is non-empty by the module-level assertion; these catch the PARTIAL cases it cannot:
+        # the router gone, a reference deleted, or a scan that read files but learned nothing.
+        self.assertTrue(SKILL.is_file(), "the surface's router is absent; the scan below would conclude nothing, quietly")
+        self.assertEqual(REFS, {p.name for p in REFERENCES.glob("*.md")}, "the frozen reference set is not what the scan read")
+        self.assertGreaterEqual(len(SURFACE), 1 + len(REFS), f"scanned only {len(SURFACE)} files under skills/badf-build/")
+        for path in SURFACE:
             for raw in re.findall(r"badf-[a-z0-9-]+", path.read_text(encoding="utf-8")):
                 # "badf-git," / "badf-build." never enter the match (the class excludes punctuation);
                 # a trailing hyphen can, and a path "badf-build/references/x.md" already stops at "/".
@@ -123,6 +135,7 @@ class BadfBuildContractTests(unittest.TestCase):
                 if token in NON_FAMILY:
                     continue
                 found.setdefault(token, set()).add(str(path.relative_to(ROOT)))
+        self.assertIn("badf-build", found, "the scan did not even find the family naming itself; it read nothing meaningful")
         unresolved = {t: sorted(f) for t, f in found.items() if t not in known}
         self.assertEqual({}, unresolved, "badf-* families named in the badf-build surface but absent from "
                          + f"{REGISTRY.relative_to(ROOT)}: "

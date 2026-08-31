@@ -1,0 +1,34 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 985574e..47c9131 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -1643,6 +1643,29 @@ must still record a human principal.
+ frozen measurement so that today's tests pass would falsify the measurement — the standing rule when a
+ shadow and the present disagree is that the *test* is wrong, or the present is, and never that the past
+ should be rewritten. #220's derived-terminality work must not reach for that green either.
++## A guard that went quiet when its subject disappeared (`BADF-WP-0112`, Issue #229 / GOV-0099)
++
++The family-name guard shipped two work packages earlier (`WP-2026-0109`) scanned `skills/badf-build/**`
++by glob and asserted no `badf-*` token was unresolved. Move that directory aside and it reported
++`Ran 1 test … OK` **in 0.000s** — absence of the surface was indistinguishable from a clean surface, and
++the very defect it existed to catch would have vanished under a rename. It went quiet exactly when the
++thing it protects stopped existing.
++
++This is the tenth instance of the evening's class and the **second introduced while remediating** — it
++was written to close a naming defect. The remedy is the idiom this repository **already carried**: `tests/test_badf_schema_drift.py:31` asserts non-emptiness of its glob-derived sets at module scope, with a comment naming this exact failure mode — found by BADF-REV while sweeping, and it reframes the fix from a design question into a consistency one. Copied rather than reinvented, and fired at import so it cannot be forgotten by whoever adds the next test. The scan must now prove it read
++the router, the fourteen frozen references, and the family naming itself before anything is concluded
++from an empty result. Verified by moving the surface aside — the probe that used to pass now fails with
++`the surface's router is absent; the scan below would conclude nothing, quietly` — and by two further
++vectors measured rather than assumed.
++
++Two notes for whoever generalizes this. First, the class is **"an assertion over a collection derived
++from a glob"**, not "an assertion inside a glob loop": BADF-REV's sweep for the in-loop shape missed
++this instance precisely because it asserts on a derived dict, so a repo-wide detector must catch both or
++it inherits the blind spot it is hunting. Second, the checklist that found it — *ask what a guard reports
++when its input is missing; if the answer is "passes", it is not a guard* — now has a **clear as well as a
++hit**: applied to the `badf-engineering-verification` modules it correctly found nothing, because those
++already assert counts before iterating. A detection rule that has only ever fired is as suspect as a
++guard that never does.
+ 
+ ## Discovery ≠ scope expansion
+ 
