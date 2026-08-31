@@ -1,0 +1,73 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0117",
+  "title": "Content-assert the references pinned only by filename, and restore the assertion spliced into a comment (#216 + #230 + #210)",
+  "owner": "engineering_owner",
+  "demand": "BADF-DEM-0104",
+  "repository": "bstBizEra/badf",
+  "objective": "Close one defect at three addresses: a reference or an assertion pinned by a PROXY rather than by its property. #216 -- four badf-engineering-verification references (acceptance, integration-test-contract, non-coverage, verification-matrix) pinned by filename only. #230 -- six of badf-build's fourteen (acceptance, evidence-packaging, handoff-to-g08, preflight, retry-and-budget, stop-conditions) carrying no content assertion. #210 -- self.assertEqual([], entry['allowed_tools']) spliced into a trailing comment by a semicolon edit, so allowed_tools appeared exactly once in its module, inside a comment, and the guard ran for nobody. Being listed in a REFS set is a proxy for being content-asserted; the proxy was satisfied while nothing checked the text, so each file could be emptied to zero bytes and stay green.",
+  "business_value": "A guard that cannot fail is not a guard. These are the enforcement surfaces that would catch a governance document being gutted or a registry entry silently acquiring tools -- exactly the drift the contract tests exist to refuse. Until this lands, eighteen references across two families and one allowed_tools guard are decorative. Closing the class at three addresses in one pass also avoids three PRs that would conflict with each other by construction on badf/lockfile.json.",
+  "in_scope": [
+    "tests/test_badf_engineering_verification_contract.py: content assertions for the four references pinned by filename only (#216)",
+    "tests/test_badf_build_contract.py: REFERENCE_ANCHORS for the six unpinned badf-build references, structure-anchored with the source-of-truth precondition recorded (#230)",
+    "tests/test_badf_verification_evidence.py: restore the dead allowed_tools assertion as a live statement (#210)",
+    "badf/demands/BADF-DEM-0104.json; work/WP-2026-0117/ record and G07 self-dossier; lockfile re-sign"
+  ],
+  "out_of_scope": [
+    "ANY edit to reference or doctrine content -- this WP changes tests, not the documents they assert. retry-and-budget.md's illustrative 1/2/3 reading as normative is deferred to #254 rather than absorbed",
+    "any gate, schema or lifecycle change; no scripts/ change",
+    "other skill families' references -- unprobed, and no claim is made that this closes the class",
+    "the eight already-asserted badf-build references, which are probed only as a negative control and not modified"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "All fourteen badf-build references redden tests.test_badf_build_contract when emptied -- the six newly anchored AND the eight already asserted, the latter as a negative control",
+    "All four #216 references redden tests.test_badf_engineering_verification_contract when emptied, with three already-pinned references spot-checked as controls",
+    "allowed_tools is a live assertion again for badf-engineering-verification, red-verified by setting it to ['Bash'] and observing 'Lists differ: [] != [Bash]'",
+    "Anchors pin structure, not values; the precondition (a structure-only anchor detects deletion, never weakening) is recorded beside them",
+    "No reference or doctrine document content is modified; no gate, schema or lifecycle change"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_build_contract.py",
+    "tests/test_badf_engineering_verification_contract.py",
+    "tests/test_badf_verification_evidence.py"
+  ],
+  "test_obligations": [
+    {
+      "id": "TO-0117-1",
+      "claim": "each of badf-build's fourteen references reddens the contract module when emptied",
+      "level": "contract"
+    },
+    {
+      "id": "TO-0117-2",
+      "claim": "each of the four #216 badf-engineering-verification references reddens its module when emptied",
+      "level": "contract"
+    },
+    {
+      "id": "TO-0117-3",
+      "claim": "the restored allowed_tools assertion refuses a non-empty tool list",
+      "level": "contract"
+    }
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR (test assertions removed; no product surface touched)"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "wp/WP-2026-0117-reference-content-assertions",
+    "base_revision": "da3c28d",
+    "composition_verified": false
+  },
+  "note": "Cluster of #216 + #230 + #210 as ONE WP: one defect class at three addresses. Deviation from one-issue-one-task is deliberate, follows BADF-QA's batching rule, and was endorsed by SARCHI as coordinator before work began -- three PRs would each re-sign badf/lockfile.json and conflict by construction. Ownership recorded for author!=reviewer: #216 is mine (fix existed unpushed since before this session; I flagged it twice then silently deprioritised it -- disclosed, not quietly cleared); #230 is BADF-QA's finding, ceded explicitly so they can review; #210 unclaimed, with BARCHI-2's courtesy yes on touching badf-build. The six were measured TWO independent ways -- empirical gutting and static read()-call analysis -- agreeing exactly, which carries information only because the instruments differ. test_obligations are declared at CONTRACT level, not unit: these assert frozen document content, so the accurate level is contract and BLD-I07/I08 C4's unit red-phase rule does not apply. Field names read from schemas/work-package.schema.json rather than copied from a sibling, after BARCHI-2 lost two composed-tree runs to invented test_obligations keys. Probes restore in a finally (BADF-QA), after an earlier killed probe left a reference gutted and contaminated its own baseline; that run was discarded and re-measured on a tree verified clean."
+}
