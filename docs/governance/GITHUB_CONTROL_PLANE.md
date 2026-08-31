@@ -1828,7 +1828,10 @@ full `signal → query → threshold → alert → owner → action` chain (I15)
 (I16/I17), the same-artifact rule against per-environment rebuild (I18), and the three gate separations
 G10 ≠ G11 ≠ G12 (I21/I22). The authority boundary cites **SEC-I13**, **VER-I18** and **UAT-I14/I15** as
 precedent rather than novelty, and states the generalization across all four: *the capability that
-produces the evidence for a decision is never the capability that makes it.*
+produces the evidence is never the capability that decides progression.* The narrow wording is
+load-bearing — an earlier draft said "never the capability that makes it", which is false of every
+capability in the list, since each makes real routing, classification or evaluation judgments. The
+boundary is who owns the act that **advances the lifecycle**, not who makes any decision at all.
 
 Sixteen references; no `scripts/badf_production_readiness.py`, no schema, no `lifecycle.json` change, no
 `badf_gate.py` change (PRDY-I24). External sources are **ADAPT / EXTEND / REJECT** with the honest

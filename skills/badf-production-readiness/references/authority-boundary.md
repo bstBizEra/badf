@@ -53,4 +53,15 @@ This boundary is the same shape BADF already holds in three places, and it is ci
 re-invented: **SEC-I13** (`badf-security-design` cannot issue its own security approval), **VER-I18**
 (`badf-engineering-verification` cannot admit itself), **UAT-I14/I15** (`badf-uat` recommends;
 a human accepts), and `badf-release-validation`'s own G09/G10 line. The generalization across all four:
-**the capability that produces the evidence for a decision is never the capability that makes it.**
+
+> **The capability that produces the evidence is never the capability that decides progression.**
+
+The wording matters, and an earlier draft of this line got it wrong. It said *"never the capability
+that makes it"* — of the decision, unqualified — which is false of every capability in the list.
+`badf-release-validation` derives its own validation-obligation set, marking classes `REQUIRED` /
+`NOT_APPLICABLE` / `DEFERRED_WITH_REASON` (VAL-I02); `badf-uat` classifies defects and computes
+coverage; this skill evaluates twelve dimensions and reaches a recommendation. All of those are real
+judgments with real consequences. The boundary is not *decides* versus *does not decide* — it is **who
+owns the act that advances the lifecycle.** Routing, classification and evaluation belong to the
+capability; progression belongs to the authority. Narrowed after BARCHI-1 pointed out that the broad
+form was already violated by the very rung it cited.

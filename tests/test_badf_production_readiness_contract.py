@@ -245,7 +245,7 @@ class ProductionReadinessContractTests(unittest.TestCase):
         for token in ("PRDY-I19", "PRDY-I20", "PRDY-I21", "PRDY-I22",
                       "SEC-I13", "VER-I18", "UAT-I14", "derived predicate"):
             self.assertIn(token, boundary, token)
-        self.assertIn("never the capability that makes it", boundary,
+        self.assertIn("never the capability that decides progression", boundary,
                       "the generalization across all four precedents must be stated")
 
     def test_every_reference_carries_its_own_load_bearing_content(self):
