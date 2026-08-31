@@ -9,7 +9,20 @@ cannot express an acceptance**. UAT-I14 says the capability that produced the ev
 issue the decision. A schema admitting `recommendation: "ACCEPTED"` would defeat that with a
 permissive enum rather than an argument -- the producer would not have to disobey a rule, only
 decline to read one. So the enum is closed, and the acceptance vocabulary exists only inside the
-optional Layer 2 object, which additionally requires `principal_type: "human"` as a `const`.
+optional Layer 2 object.
+
+But the two halves are NOT enforced the same way, and the difference is load-bearing:
+
+  recommendation   `enum`  -- check_schema implements enum, so the SCHEMA closes it
+  principal_type   `const` -- check_schema has NO const branch, so the schema closes NOTHING
+                              and the U5 code control is the sole enforcer
+
+Measured, not assumed (BADF-QA on #264, reproduced here): with U5 bypassed, check_schema ADMITS
+`principal_type: "agent"`. The exactly-true claim is therefore narrower than "no encoding admits
+an agent acceptance": **the schema plus U5 remove every HONEST encoding of one.** `principal` is
+a free string, so `{"principal": "BARCHI-3 (agent)", "principal_type": "human"}` is admitted --
+the pair pins a DECLARATION, never an identity, exactly as AGENTS.md says of role banners. What
+the rung buys is that an agent acceptance must be written as a lie, and a lie is auditable.
 """
 import json
 import sys
@@ -109,6 +122,43 @@ class UatTypedEvidenceTests(unittest.TestCase):
              "accepted_at": "2026-01-01T00:00:00Z"}
         with self.assertRaises(gate.ValidationError):
             check(evidence(binding=binding(acceptance=a)))
+
+    def test_const_is_decorative_and_U5_is_the_sole_enforcer(self):
+        """The correction to this rung's headline claim, pinned so it cannot drift back.
+
+        `const` reads like enforcement and is not: check_schema implements required /
+        additionalProperties / type / enum / pattern / items, with no const branch. So the
+        human-principal rule lives entirely in the U5 code control. This test exists because the
+        neighbouring docstring correctly says the schema closes the `recommendation` enum -- and
+        an author generalising that true sentence four lines to the `const` would delete U5 and
+        keep the appearance of the rule. (BADF-QA, #264 review; repo-wide as #265.)
+        """
+        self.assertNotIn('"const"', (gate.ROOT / "scripts" / "badf_gate.py")
+                         .read_text(encoding="utf-8").split("def check_schema")[1][:4000],
+                         "check_schema gained a const branch -- if so, re-measure before relying on it")
+        a = {"acceptance_id": "ACC-1", "candidate_digest": DIG, "acceptance_basis_digest": DIG,
+             "scenario_set_digest": DIG, "disposition": "ACCEPTED",
+             "accepted_by": {"principal": "bot", "principal_type": "agent"},
+             "accepted_at": "2026-01-01T00:00:00Z"}
+        # the SCHEMA layer alone admits it -- this is the measurement, asserted
+        gate.check_schema("uat", evidence(binding=binding(acceptance=a)))
+        # and the full rule refuses it, so U5 is doing all of the work
+        with self.assertRaisesRegex(gate.ValidationError, "non-human principal"):
+            check(evidence(binding=binding(acceptance=a)))
+
+    def test_the_honest_limit_a_lying_declaration_is_admitted(self):
+        """Stated as a boundary rather than defended as a stronger claim.
+
+        `principal_type` is pinned; `principal` is a free string. An agent declaring itself human
+        is ADMITTED. The rung does not make agent acceptance impossible -- it makes every honest
+        encoding of one impossible, which converts a permitted act into a lie. That is the right
+        property for a B rung and the wrong thing to overstate.
+        """
+        a = {"acceptance_id": "ACC-1", "candidate_digest": DIG, "acceptance_basis_digest": DIG,
+             "scenario_set_digest": DIG, "disposition": "ACCEPTED",
+             "accepted_by": {"principal": "BARCHI-3 (agent)", "principal_type": "human"},
+             "accepted_at": "2026-01-01T00:00:00Z"}
+        check(evidence(binding=binding(acceptance=a)))   # admitted, and that is the limit
 
     def test_layer2_must_bind_layer1s_candidate(self):
         """UAT-I16: an acceptance bound to a different candidate is void."""

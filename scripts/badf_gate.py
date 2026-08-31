@@ -1926,9 +1926,16 @@ def check_g10_uat_binding(artifact: Path, dossier: dict[str, Any], evidence: dic
       U5  layer separation       -- an acceptance, when present, binds THIS binding's candidate
                                     digest and carries a human principal (UAT-I15/I16)
 
-    The recommendation vocabulary itself is closed by the schema, not here: UAT-I14 is enforced
-    by an enum that cannot express an acceptance, so no producer can reach the decision by
-    declining to read a rule.
+    The recommendation vocabulary IS closed by the schema: check_schema implements `enum`, so
+    an acceptance verdict cannot be written into `recommendation` at all.
+
+    `const` IS NOT. check_schema's walker implements required / additionalProperties / type /
+    enum / pattern / items and has NO const branch, so every `"const"` in schemas/uat.schema.json
+    is decorative -- `principal_type: {"const": "human"}` admits "agent" at the schema layer.
+    U5 below is therefore the SOLE enforcer of the human-principal rule. Do not delete it on the
+    reasoning that the schema already covers it; that reasoning is correct for the enum four
+    lines up and wrong here, and the two sit close enough to be confused. (BADF-QA, #264 review;
+    repo-wide as #265.)
     """
     b = evidence.get("binding")
     if not isinstance(b, dict):
@@ -1971,6 +1978,9 @@ def check_g10_uat_binding(artifact: Path, dossier: dict[str, Any], evidence: dic
     if isinstance(acc, dict):
         if acc["candidate_digest"] != (b.get("candidate") or {}).get("source_digest"):
             raise ValidationError(f"{label}: acceptance.candidate_digest does not equal the binding's candidate.source_digest; an acceptance bound to a different candidate is void (UAT-I16)")
+        # SOLE ENFORCER: the schema's {"const": "human"} is decorative -- check_schema has no
+        # const branch (measured: principal_type='agent' is ADMITTED by check_schema alone).
+        # Deleting this leaves the appearance of the rule and none of it.
         if (acc.get("accepted_by") or {}).get("principal_type") != "human":
             raise ValidationError(f"{label}: acceptance carries a non-human principal; final product acceptance is a separate authorized human decision, never the producing capability's (UAT-I14 / UAT-I15)")
 
