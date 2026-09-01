@@ -16,15 +16,15 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-09-01T06:51:04Z",
-  "completed_at": "2026-09-01T06:51:04Z",
+  "started_at": "2026-09-01T07:15:53Z",
+  "completed_at": "2026-09-01T07:15:53Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0129/evidence/G07/source-change.diff",
-  "digest": "sha256:cb5925b1bfdf1a6ad41bc89f9db426ebb3ae4371de6067972e3b9bc911bf0fc9",
+  "digest": "sha256:42896bb50e2ca83594d2b608fd6b66e2b1635bf2390b3bc20d0e95c1367f89bd",
   "binding": {
     "base_sha": "0afcb1410907c8c4bbc2d8fae7bcb207ee0e04bf",
-    "head_sha": "346aca3d4011f555f794cb3d84565c00ea484ce1",
-    "content_tree": "5dacf4a715ba8c1e6697082d2f11645bbd250262",
+    "head_sha": "621e952b529042399542a348d5e3087067b1fe21",
+    "content_tree": "c4e4fcb0e0a4b6d217b60e4aa76ad875b01800e8",
     "changed_paths": [
       "badf/demands/BADF-DEM-0116.json",
       "tests/test_badf_registry_status_pins.py",
@@ -39,6 +39,6 @@
       ]
     },
     "unexpected_paths": [],
-    "change_digest": "sha256:cb5925b1bfdf1a6ad41bc89f9db426ebb3ae4371de6067972e3b9bc911bf0fc9"
+    "change_digest": "sha256:42896bb50e2ca83594d2b608fd6b66e2b1635bf2390b3bc20d0e95c1367f89bd"
   }
 }
