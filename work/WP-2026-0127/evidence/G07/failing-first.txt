@@ -1,0 +1,50 @@
+FAILING-FIRST (red phase), WP-2026-0127 / GOV-0118.
+The three new tests run against the PRE-CHANGE gate -- scripts/badf_gate.py as it stands at
+origin/main 595b032 -- with tests/test_badf_verification_evidence.py at this branch's content.
+This is the real red phase reproduced against the real prior gate, not a narrated one.
+Every fixture is non-APPROVE, so these fail for the absence of the synthesis control and not
+because #267's ballot control masks them.
+command: python3 -B -m unittest -v test_verify_refuses_a_finding_weakened_outside_the_governed_path test_verify_refuses_a_withdrawal_entry_whose_finding_is_still_open test_verify_refuses_a_downgrade_entry_that_does_not_describe_its_finding
+exit code: 1
+==============================================================================
+test_verify_refuses_a_finding_weakened_outside_the_governed_path (tests.test_badf_verification_evidence.VerifyRecordTests.test_verify_refuses_a_finding_weakened_outside_the_governed_path)
+#271: the record defines justified routes for weakening and required neither. ... FAIL
+test_verify_refuses_a_withdrawal_entry_whose_finding_is_still_open (tests.test_badf_verification_evidence.VerifyRecordTests.test_verify_refuses_a_withdrawal_entry_whose_finding_is_still_open)
+#271, the symmetric half of the withdrawal case. ... FAIL
+test_verify_refuses_a_downgrade_entry_that_does_not_describe_its_finding (tests.test_badf_verification_evidence.VerifyRecordTests.test_verify_refuses_a_downgrade_entry_that_does_not_describe_its_finding)
+#271, second site: `downgraded[].to` must match the severity the finding carries. ... FAIL
+
+======================================================================
+FAIL: test_verify_refuses_a_finding_weakened_outside_the_governed_path (tests.test_badf_verification_evidence.VerifyRecordTests.test_verify_refuses_a_finding_weakened_outside_the_governed_path)
+#271: the record defines justified routes for weakening and required neither.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-271/tests/test_badf_verification_evidence.py", line 333, in test_verify_refuses_a_finding_weakened_outside_the_governed_path
+    with self.assertRaisesRegex(gate.ValidationError, r"WITHDRAWN with no synthesis\.withdrawn"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValidationError not raised
+
+======================================================================
+FAIL: test_verify_refuses_a_withdrawal_entry_whose_finding_is_still_open (tests.test_badf_verification_evidence.VerifyRecordTests.test_verify_refuses_a_withdrawal_entry_whose_finding_is_still_open)
+#271, the symmetric half of the withdrawal case.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-271/tests/test_badf_verification_evidence.py", line 358, in test_verify_refuses_a_withdrawal_entry_whose_finding_is_still_open
+    with self.assertRaisesRegex(gate.ValidationError, r"withdraws VF-001 but the record still carries it"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValidationError not raised
+
+======================================================================
+FAIL: test_verify_refuses_a_downgrade_entry_that_does_not_describe_its_finding (tests.test_badf_verification_evidence.VerifyRecordTests.test_verify_refuses_a_downgrade_entry_that_does_not_describe_its_finding)
+#271, second site: `downgraded[].to` must match the severity the finding carries.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-271/tests/test_badf_verification_evidence.py", line 374, in test_verify_refuses_a_downgrade_entry_that_does_not_describe_its_finding
+    with self.assertRaisesRegex(gate.ValidationError, r"downgrades VF-001 to MINOR but the finding carries"):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValidationError not raised
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.020s
+
+FAILED (failures=3)

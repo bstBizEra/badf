@@ -1652,7 +1652,18 @@
     "work/WP-2026-0126/evidence/G07/unit-test.json": "sha256:befa6fcdfc5943039eff9c1cfddaf8d96e8e5d129422126981a25d125f4efdb4",
     "work/WP-2026-0126/gate-dossier.G07.json": "sha256:697119b3f377fc302bbd678dacee329fd64b65bbfe92d1e392c819fa5fd8881b",
     "work/WP-2026-0126/work-package.json": "sha256:acbab8845d7a064a6194a5e62d84ab236f5b393d41d4421368aca3c3deffa94d",
-    "work/WP-2026-0127/work-package.json": "sha256:acb4c31bf9bd039e372c553456a6edbf36bbd0e30127917a1f1dbbcd255f9d9d"
+    "work/WP-2026-0127/build/progress.jsonl": "sha256:e9338ca7393e5aa7c2c5ca11a941054c7d17556f31a467b98fc178fc7f465ede",
+    "work/WP-2026-0127/build/session.json": "sha256:e767d934693c13e8c1116f54d3f6aee64a1204f25b64c98e266a6ad74af17170",
+    "work/WP-2026-0127/evidence/G07/build.json": "sha256:fbd0fad1c73062eb64daae6326a316690aec1d2b80aeb579b21b61b67c813e1b",
+    "work/WP-2026-0127/evidence/G07/build.txt": "sha256:72b8c609edaf2f1bb7f9d4fdefee6a3aa089239b7dc6dac61b5a144e8cf39a57",
+    "work/WP-2026-0127/evidence/G07/documentation.diff": "sha256:0fa6c1d71237633c92fce4877c27e9cc46b0477db4cf87de8db9c3bfd9105d6b",
+    "work/WP-2026-0127/evidence/G07/documentation.json": "sha256:0e07ede186b85681a39c94c0eacee91d1c137d09256a79f5b14a4143b0de0875",
+    "work/WP-2026-0127/evidence/G07/failing-first.txt": "sha256:1e677dcea0b67b25f18f7c700f2229b87a3ab4240ce44636a4bd6e4a783039ed",
+    "work/WP-2026-0127/evidence/G07/source-change.diff": "sha256:a047a27d6b4a37c37d278fa0203916cf615d732f805bab8ceda6cd6af2f6caa6",
+    "work/WP-2026-0127/evidence/G07/source-change.json": "sha256:743f2ad19bdade27cd65dd332c500c312c8a9f2ba4996e8f26238581036cc9fb",
+    "work/WP-2026-0127/evidence/G07/unit-test.json": "sha256:3554df8a0b35d5e66903b71d4b1b211b367b5692e06d0c64d6e5d50213fb5d8f",
+    "work/WP-2026-0127/gate-dossier.G07.json": "sha256:5e7a7642b605ee4239b37078bfa568f5392d5271518dca8f8e5f9ba2880a58f4",
+    "work/WP-2026-0127/work-package.json": "sha256:97ec8bdb7a679df971dfff1af02027c66d6d77e485d22ef3e15d9ed11b61a5bb"
   },
   "schema_version": "1.0.0"
 }

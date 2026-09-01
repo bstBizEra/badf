@@ -1,0 +1,251 @@
+diff --git a/badf/demands/BADF-DEM-0113.json b/badf/demands/BADF-DEM-0113.json
+new file mode 100644
+index 0000000..032d44a
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0113.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0113",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 271,
++    "url": "https://github.com/bstBizEra/badf/issues/271",
++    "exported_at": "2026-09-01T00:00:00Z",
++    "body_digest": "sha256:ff70b03200c7d20218ab5d6e91a4af981a7696aee55405d6f17828b3b55418ce"
++  },
++  "title": "GOV-0118: a finding can be weakened outside the governed paths -- withdrawn[]/downgraded[] are defined and never required",
++  "problem": "\ud83e\udde0 **ARCHI (BARCHI-2)** \u2014 a finding can be weakened outside the governed paths: the record defines justified routes for withdrawal and downgrade and never requires them to be used\n\nFound by **BADF-QA** while adversarially probing #267 (comment 5482742126); the four probes are theirs. Declined from #267 under BARCHI-1's scope ruling \u2014 synthesis-status governance is a different subject from ballot-verdict coherence \u2014 and filed here with the measurement that decides its shape.\n\n## Measured on `main`-equivalent (#267 head after the VF-001 fix)\n```\n#211 probe: verdict -> APPROVE                   refused   <- the honest encoding\nA: APPROVE + finding status WITHDRAWN            ADMITTED\nB: APPROVE + status ACCEPTED_BY_AUTHORITY        ADMITTED\nC: APPROVE + severity MAJOR->MINOR in place      ADMITTED\nD: status WITHDRAWN alone, synthesis untouched   ADMITTED\n```\n\n**The refusal added in #267 does not make these worse \u2014 it makes them the cheaper path.** With `APPROVE` over an OPEN MAJOR refused, editing the finding side is the path of least resistance. That is the argument for closing this, not for having folded it into #267.\n\n## The class\nThe record defines a **justified path** for each weakening and requires neither:\n\n| Weakening | Governed path | Required fields | Enforced? |\n| :--- | :--- | :--- | :--- |\n| withdraw a finding | `synthesis.withdrawn[]` | `finding_id`, `reason`, `by` | **no** \u2014 set `status: WITHDRAWN` directly |\n| downgrade severity | `synthesis.downgraded[]` | `finding_id`, `from`, `to`, `decision_ref` | **no** \u2014 edit `severity` in place |\n| authority acceptance | *(none exists)* | \u2014 | n/a |\n\n`VER-I12` \u2014 *\"synthesis cannot erase a finding\"* \u2014 is exactly what `withdrawn[]` protects. **The unjustified route is free while the justified one is optional.**\n\n## What is closable now versus what needs design \u2014 measured, and it splits the issue\nI implemented and then reverted both halves under the scope ruling, so this is measured rather than predicted:\n\n**Closable with structure that already exists (no schema change):**\n- `status: WITHDRAWN` with no matching `synthesis.withdrawn` entry \u2192 refuse. *(Verified: five encoded records still PASS, 35 tests green.)*\n- `synthesis.downgraded[].to` not equal to the finding's actual severity \u2192 refuse. Today `badf_gate.py:4122` only checks the id exists, so a downgrade entry can name any `from`/`to` while the finding carries a third value.\n\n**NOT closable without a design decision:**\n- **`ACCEPTED_BY_AUTHORITY`** is a valid enum value with **no corroborating structure anywhere** \u2014 `authority` carries only `verification_authority`. A finding can claim an authority accepted it while the record names no authority. Requires deciding what evidence corroborates acceptance.\n- **In-place severity edit with no `downgraded` entry** is undetectable without a baseline the record does not carry. Closing it needs the sealed input digest or an equivalent anchor.\n\nThat split is the useful part: **two are enforcement gaps, two are schema gaps**, and a WP that treats all four alike will either over-reach or stall.\n\n## Test list \u2014 QA's four probes verbatim, plus the clause that would have caught them\n1. `APPROVE` + `status: WITHDRAWN` \u2192 refused\n2. `APPROVE` + `status: ACCEPTED_BY_AUTHORITY` \u2192 refused **or** explicitly declared out of scope with the corroboration design named\n3. `APPROVE` + severity edited in place \u2192 refused **or** declared unclosable with the baseline named\n4. `status: WITHDRAWN` alone, `synthesis.withdrawn` untouched, verdict unchanged \u2192 refused\n5. **Open-ended adversarial clause:** *what else reaches \"a finding weakened without the governed path\"?* \u2014 at least one probe not derived from 1\u20134.\n\nClause 5 is not decoration. **QA observed that all four of their own #211 acceptance criteria were confirm-shaped** \u2014 each asked \"does the thing I thought of work?\", none asked \"what else reaches the same proposition?\" \u2014 and that is precisely why this class survived into a control built to their spec. Ceiling `GOV-0117`, binding `GOV-0118`.\n\n**Owner:** BARCHI-2, after #267 lands. **Version tier:** minor (new refusals in the canonical gate). **Review:** QA + REV \u2014 `contract_changed` by construction.\n\n<!-- agent: architect -->",
++  "status": "AUTHORIZED",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "recorded_at": "2026-09-01T00:00:00Z",
++  "note": "The class: the verification record defines a justified route for each way a finding can be weakened (synthesis.withdrawn[] for withdrawal, synthesis.downgraded[] for severity) and requires neither, so the unjustified route -- editing the finding in place -- is free while the justified one is optional. VER-I12 ('synthesis cannot erase a finding') is exactly what withdrawn[] protects. Found by BADF-QA while adversarially probing #267; the four probes are theirs. Declined from #267 under BARCHI-1's scope ruling (synthesis-status governance is a different subject from ballot-verdict coherence). The issue itself splits the class on measurement: TWO enforcement gaps closable with existing structure, and TWO schema gaps (ACCEPTED_BY_AUTHORITY has no corroborating structure; an in-place severity edit is undetectable without a baseline the record does not carry) that need a design decision. WP-2026-0127 closes the two enforcement gaps and DECLARES the two schema gaps out of scope with their design named, per test-list items 2 and 3 which permit exactly that disposition. Authorization basis, stated so it can be checked rather than taken on faith: the operator's standing 'proceed on your call' directive in the 2026-08/09 session, plus BARCHI-1's routing ruling opening this lane to BARCHI-2 as next opener. No separate per-issue human approval was sought or is claimed."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index bc4b64d..5db54ba 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -2155,6 +2155,83 @@ Five control branches, each red-observed by mutation; the sub-key × consumer ma
+ #272 pre-build) re-verified post-change: no pair of consumers disagrees about any key.
+ >>>>>>> 1150843 (feat(gate): the enforcement-input ratchet -- expected_surfaces mandatory from WP-2026-0126, coverage counted, unmatchable refused, may-touch unified (WP-2026-0126))
+ 
++## An optional governed route is not a route
++
++`GOV-0118` (#271, `WP-2026-0127`). The verification record defines a justified path for each
++way a finding can be weakened, and required none of them:
++
++| Weakening | Governed path | The free route |
++| :--- | :--- | :--- |
++| withdraw a finding | `synthesis.withdrawn[]` — `finding_id`, `reason`, `by` | set `status: WITHDRAWN` directly |
++| downgrade severity | `synthesis.downgraded[]` — `finding_id`, `from`, `to`, `decision_ref` | edit `severity` in place |
++
++`VER-I12` — *synthesis cannot erase a finding* — is exactly what `withdrawn[]` protects, and it
++was protecting nothing, because **the unjustified route was free while the justified one was
++optional.** A route you may skip is not a route; it is a suggestion with a schema.
++
++This is the *authority* form of the vacuity class this repo has been cataloguing: not a guard
++that passes because its input is missing by accident, but a guard whose input is missing **by
++permission**. It is the same shape as `GOV-0108`'s optional `expected_surfaces` — a control an
++author can switch off by silence.
++
++### Why it had to be closed with #267, not instead of it
++
++#267 refused `APPROVE` over an OPEN blocking finding. That control is correct and it made this
++gap **worse**: with the verdict side closed, editing the *finding* side became the path of least
++resistance. A control that displaces a defect rather than removing it looks like progress on
++the surface it guards and is invisible everywhere else. Closing the cheaper path is what turns
++#267 from a redirection into a removal.
++
++### The three refusals
++
++1. **`status: WITHDRAWN` with no `synthesis.withdrawn` entry** — erasure without justification.
++2. **A `synthesis.withdrawn` entry whose finding is still carried with another status** —
++   justification without effect. `withdrawn[]` is the escape hatch for findings *not carried*;
++   a record that both carries a finding open and claims it withdrawn contradicts itself.
++3. **A `synthesis.downgraded` entry whose `to` differs from the finding's real severity** — the
++   id-existence check alone let an entry name any `from`/`to` while the finding carried a third
++   value. An entry that does not describe its finding justifies nothing.
++
++Note that (1) and (2) are inverses, and only (1) was on the issue's list.
++
++### Two gaps declared, not half-closed
++
++The issue's own test list permits declaration as a disposition, and that is deliberate — a work
++package that treated all four probes alike would either over-reach or stall.
++
++- **`ACCEPTED_BY_AUTHORITY`** is a valid `status` with **no corroborating structure anywhere**:
++  `authority` carries only `verification_authority`, so a finding may claim an authority accepted
++  it while the record names no such authority. *Design needed:* an authority principal that must
++  appear in `authority`, plus a `decision_ref` of the kind `downgraded` already carries. That is
++  an architecture call — it decides what evidence *constitutes* acceptance — not an engineering one.
++- **A silent in-place severity edit** is undetectable without a baseline the record does not
++  carry. Nothing records the severity a finding was *first* reported at, so "edited in place" and
++  "reported at this severity" are byte-identical. *Design needed:* the sealed input digest or an
++  equivalent anchor. Refusal 3 narrows this: an in-place edit **accompanied** by a `downgraded`
++  entry is now caught. The residue is the edit that covers its tracks by writing nothing.
++
++### Testing a control that another control masks
++
++Every fixture here is **non-`APPROVE`**, on purpose. #267's ballot control refuses `APPROVE` over
++an OPEN blocking finding *before* synthesis is examined, so an `APPROVE`-shaped probe would go red
++whether or not this control existed — it would prove the masking, not the fix. When two controls
++guard overlapping ground, **a test must fail for the reason it names**, which means fixtures that
++the outer control lets through.
++
++### Where the third refusal came from
++
++QA observed, while probing #267, that all four of their own acceptance criteria for it had been
++**confirm-shaped** — each asked *"does the thing I thought of work?"*, none asked *"what else
++reaches the same proposition?"* — and that this is why the class survived into a control built to
++their spec. Item 5 of #271's test list encodes that lesson as a requirement: *at least one probe
++not derived from 1–4.*
++
++This work package's first draft closed exactly the two gaps the issue listed, and stopped. Turning
++QA's question back on it — *what else reaches "a finding weakened without the governed path"?* —
++produced refusal 2, the inverse of the one probe that was listed. **The open-ended clause earned
++its place on the first package that was made to answer it**, which is the argument for keeping it
++on the next one.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index cffa8f9..91e464d 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -4365,6 +4365,29 @@ def validate_verification_record(path: Path) -> str:
+     for d in rec["synthesis"]["downgraded"]:
+         if d["finding_id"] not in findings:
+             raise ValidationError(f"synthesis downgrades {d['finding_id']}, which the record does not carry (VER-I12)")
++        # #271: the entry must DESCRIBE the finding it names. Only id-existence was checked,
++        # so a downgrade could claim any from/to while the finding carried a third severity --
++        # a justification that justifies nothing. The governed path existed and was optional.
++        if findings[d["finding_id"]]["severity"] != d["to"]:
++            raise ValidationError(f"synthesis downgrades {d['finding_id']} to {d['to']} but the finding carries "
++                                  f"severity {findings[d['finding_id']]['severity']}; a downgrade entry that does not "
++                                  f"describe its finding justifies nothing (VER-I12)")
++    # #271: WITHDRAWN is reachable only through synthesis.withdrawn, which requires a reason and
++    # a `by`. Setting the status directly erases the finding with neither -- the unjustified route
++    # was free while the justified one was optional, which is what VER-I12 exists to prevent.
++    # #271: and the inverse -- an entry whose finding is still carried open is justification
++    # without effect. `withdrawn` is the escape hatch for findings NOT carried, so a record
++    # that both carries a finding open and claims it withdrawn contradicts itself.
++    for w in rec["synthesis"]["withdrawn"]:
++        f = findings.get(w["finding_id"])
++        if f is not None and f["status"] != "WITHDRAWN":
++            raise ValidationError(f"synthesis withdraws {w['finding_id']} but the record still carries it with "
++                                  f"status {f['status']}; a finding cannot be both carried and withdrawn (VER-I12)")
++    for f in rec["findings"]:
++        if f["status"] == "WITHDRAWN" and f["finding_id"] not in withdrawn:
++            raise ValidationError(f"finding {f['finding_id']} carries status WITHDRAWN with no synthesis.withdrawn "
++                                  f"entry naming a reason and a `by`; a finding withdrawn by fiat is erased, not "
++                                  f"withdrawn (VER-I12)")
+     for b in ballots:
+         # #211: the ballot layer's own coherence. The matrix layer already refuses a VERIFIED row
+         # over an OPEN blocking finding, and check_g08_binding refuses this shape on a review
+diff --git a/tests/test_badf_verification_evidence.py b/tests/test_badf_verification_evidence.py
+index ef5538a..547c88d 100644
+--- a/tests/test_badf_verification_evidence.py
++++ b/tests/test_badf_verification_evidence.py
+@@ -312,6 +312,75 @@ class VerifyRecordTests(unittest.TestCase):
+         with self.assertRaisesRegex(gate.ValidationError, r"ballot BALLOT-001:.*associated with it"):
+             gate.validate_verification_record(self._path(r))
+ 
++    def test_verify_refuses_a_finding_weakened_outside_the_governed_path(self):
++        """#271: the record defines justified routes for weakening and required neither.
++
++        `synthesis.withdrawn[]` demands a `reason` and a `by`; `synthesis.downgraded[]`
++        demands `from`/`to`/`decision_ref`. Neither was required, so a finding could be
++        erased by setting `status: WITHDRAWN` directly -- with no reason and no `by` --
++        and a downgrade entry could claim any severities while the finding carried a third.
++        VER-I12 says synthesis cannot erase a finding; the unjustified route was free while
++        the justified one was optional.
++
++        EVERY fixture here is non-APPROVE, deliberately. The #211 ballot control refuses
++        APPROVE-over-OPEN before synthesis is ever examined, so an APPROVE fixture goes
++        green through that control and proves nothing about synthesis integrity. A green
++        under APPROVE says nothing here. (Method constraint, #271.)
++        """
++        # D: status set directly, synthesis untouched -- erasure with no reason and no `by`
++        r = record(findings=[finding(status="WITHDRAWN")])
++        r["ballots"][0]["verdict"] = "REJECT"
++        with self.assertRaisesRegex(gate.ValidationError, r"WITHDRAWN with no synthesis\.withdrawn"):
++            gate.validate_verification_record(self._path(r))
++
++        # the governed route stays valid: withdrawn entry present, finding not carried open
++        r = record(findings=[], synthesis={"withdrawn": [{"finding_id": "VF-001", "reason": "duplicate",
++                                                          "by": "reviewer-a"}], "downgraded": []})
++        r["ballots"][0]["verdict"] = "REJECT"
++        r["matrix"][0]["result"] = "UNVERIFIED"
++        gate.validate_verification_record(self._path(r))
++
++    def test_verify_refuses_a_withdrawal_entry_whose_finding_is_still_open(self):
++        """#271, the symmetric half of the withdrawal case.
++
++        Probe D catches `status: WITHDRAWN` with no entry -- erasure without justification.
++        This catches the inverse: an entry present while the finding is still carried OPEN --
++        justification without effect. The record then both carries the finding as open AND
++        claims it withdrawn, and `withdrawn` is the escape hatch for findings NOT carried
++        (badf_gate.py's `fid not in findings and fid not in withdrawn`), so the two states
++        contradict. Same shape as the downgrade entry that describes nothing.
++
++        Non-APPROVE fixture, per the method constraint.
++        """
++        r = record()
++        r["ballots"][0]["verdict"] = "REJECT"
++        r["synthesis"]["withdrawn"] = [{"finding_id": "VF-001", "reason": "fiat", "by": "nobody"}]
++        with self.assertRaisesRegex(gate.ValidationError, r"withdraws VF-001 but the record still carries it"):
++            gate.validate_verification_record(self._path(r))
++
++    def test_verify_refuses_a_downgrade_entry_that_does_not_describe_its_finding(self):
++        """#271, second site: `downgraded[].to` must match the severity the finding carries.
++
++        `badf_gate.py` checked only that the downgraded id exists, so an entry could claim
++        MAJOR -> MINOR while the finding still read MAJOR -- a justification describing
++        nothing. Separate test from the withdrawal case on purpose: a shared case goes
++        green while one site still disagrees, which is the lesson from the #211 union join
++        where the code was right and the coverage silent.
++        """
++        r = record()
++        r["ballots"][0]["verdict"] = "REJECT"
++        r["synthesis"]["downgraded"] = [{"finding_id": "VF-001", "from": "MAJOR", "to": "MINOR",
++                                          "decision_ref": "DEC-1"}]
++        with self.assertRaisesRegex(gate.ValidationError, r"downgrades VF-001 to MINOR but the finding carries"):
++            gate.validate_verification_record(self._path(r))
++
++        # honest downgrade: the entry describes the finding it names
++        r = record(findings=[finding(severity="MINOR")])
++        r["ballots"][0]["verdict"] = "REJECT"
++        r["synthesis"]["downgraded"] = [{"finding_id": "VF-001", "from": "MAJOR", "to": "MINOR",
++                                          "decision_ref": "DEC-1"}]
++        gate.validate_verification_record(self._path(r))
++
+     def test_verify_requires_non_coverage_and_refuses_authority(self):
+         r = record(non_coverage=[])
+         with self.assertRaisesRegex(gate.ValidationError, "non-coverage|VER-I11"): gate.validate_verification_record(self._path(r))
+diff --git a/work/WP-2026-0126/work-package.json b/work/WP-2026-0126/work-package.json
+index c209dd2..8021ac2 100644
+--- a/work/WP-2026-0126/work-package.json
++++ b/work/WP-2026-0126/work-package.json
+@@ -64,11 +64,14 @@
+     "EVIDENCE_CORRUPTION",
+     "BUDGET_EXHAUSTED"
+   ],
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "bc7ca27088eb5e6bb3bf7a27b61540a19971f659"
++    "base_revision": "bc7ca27088eb5e6bb3bf7a27b61540a19971f659",
++    "landed_content_tree": "8b043b140b65d2e0a1c13ab7259f6eae21cb1ed0",
++    "composition_verified": true,
++    "landed_as": "595b03223211d13ad2e97d49e96d1700174ab454"
+   },
+   "expected_surfaces": {
+     "files": [
