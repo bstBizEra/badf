@@ -22,7 +22,14 @@
   ],
   "expected_surfaces": {
     "declared": true,
-    "files": []
+    "files": [
+      "badf/demands/BADF-DEM-0118.json",
+      "examples/uat-shadow-checkout-rejected.json",
+      "examples/uat-shadow-checkout.json",
+      "examples/uat-shadow-checkout.log",
+      "skills/badf-uat/references/shadow-evidence.md",
+      "tests/test_badf_uat_shadow.py"
+    ]
   },
   "target_gate": "G07",
   "change_class": "C2",
@@ -66,7 +73,7 @@
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "wp/WP-2026-0131-uat-representative-shadow",
-    "base_revision": "4a1c028",
+    "base_revision": "c8d1b6a",
     "composition_verified": false
   },
   "note": "Lean mode ADVISORY. The empty-corpus alternative was mine and was the weaker instrument wearing the honest label; the vacuity/realism distinction is recorded in the shadow doc because it is the reusable part, not the corpus."
