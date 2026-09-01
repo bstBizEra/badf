@@ -1,0 +1,103 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0127",
+  "title": "Synthesis governance: a finding cannot be weakened outside the governed path -- withdrawal and downgrade become required routes, and the two schema gaps are declared rather than half-closed",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0113",
+  "objective": "Close the two enforcement gaps of GOV-0118 with structure that already exists: a finding may not carry status WITHDRAWN without a synthesis.withdrawn entry, a synthesis.withdrawn entry may not name a finding the record still carries open, and a synthesis.downgraded entry must describe the severity its finding actually carries. Declare the two schema gaps out of scope with their design named, which is the disposition the issue's own test list permits for items 2 and 3.",
+  "business_value": "VER-I12 -- 'synthesis cannot erase a finding' -- is the invariant withdrawn[] exists to protect, and it was unenforced. #267's ballot-coherence refusal made editing the finding side the path of LEAST resistance, so closing this is what keeps that control from displacing the defect instead of removing it.",
+  "in_scope": [
+    "scripts/badf_gate.py, validate_verification_record: (a) status WITHDRAWN with no matching synthesis.withdrawn entry -> refuse (erasure without justification); (b) a synthesis.withdrawn entry whose finding is still carried with a status other than WITHDRAWN -> refuse (justification without effect: withdrawn[] is the escape hatch for findings NOT carried, so carrying and withdrawing the same finding is self-contradictory); (c) a synthesis.downgraded entry whose `to` differs from the finding's actual severity -> refuse (today only the id's existence is checked, so an entry may name any from/to while the finding carries a third value)",
+    "tests/test_badf_verification_evidence.py: one red-first test PER SITE, every fixture non-APPROVE",
+    "docs/governance/GITHUB_CONTROL_PLANE.md: the doctrine section, including the two declared-out-of-scope gaps with the design each needs",
+    "badf/demands/BADF-DEM-0113.json: the demand export",
+    "work/WP-2026-0126/work-package.json: the inherited reconcile. WP-2026-0126 landed as 595b032 and the gate refuses to open a new work package while a landed one is unreconciled, so the next opener takes it. Derived output of `badf_gate.py reconcile`, not hand-written -- ownership here is mechanical, not assignable."
+  ],
+  "out_of_scope": [
+    "ACCEPTED_BY_AUTHORITY corroboration -- SCHEMA GAP, declared not closed. The enum value is valid and no structure anywhere corroborates it: `authority` carries only `verification_authority`, so a finding can claim an authority accepted it while the record names no such authority. Closing it requires DECIDING what evidence constitutes acceptance (minimally: an authority principal that must appear in `authority`, and a decision_ref as `downgraded` already carries). That is an architecture call, not an engineering one, and item 2 of the issue's test list permits exactly this disposition -- 'refused OR explicitly declared out of scope with the corroboration design named'.",
+    "In-place severity edit with no downgraded entry -- SCHEMA GAP, declared not closed. Undetectable without a baseline the record does not carry: nothing records what severity a finding was FIRST reported at, so 'edited in place' and 'reported at this severity' are byte-identical. Closing it needs the sealed input digest or an equivalent anchor. Item 3 permits 'declared unclosable with the baseline named'. NOTE the partial coverage this WP does add: once (c) lands, an in-place edit ACCOMPANIED by a downgraded entry is caught, because the entry must now describe the finding. The undetectable residue is the silent edit with no entry at all.",
+    "Schema changes of any kind -- both closures use existing structure.",
+    "Re-opening #267's ballot-coherence control."
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "change_class_rationale": "New refusals in the canonical gate, no schema change, no new file. Reversible by reverting one squash commit.",
+  "data_classification": "internal",
+  "data_classification_rationale": "Governance logic and public-repo issue text; no credentials or personal data.",
+  "acceptance_criteria": [
+    "Probe 4 of the issue's test list (status WITHDRAWN alone, synthesis untouched) -> refused.",
+    "Probe 1 (APPROVE + status WITHDRAWN) -> refused, and refused INDEPENDENTLY of the verdict: the tests use non-APPROVE fixtures on purpose, so a green test proves the refusal comes from the synthesis control and not from #267's ballot control masking it.",
+    "The downgraded entry that does not describe its finding -> refused.",
+    "Clause 5 satisfied: at least one probe NOT derived from items 1-4. That probe is the withdrawal entry whose finding is still carried open -- the inverse of probe 4, found by turning QA's own question ('what else reaches the same proposition?') back on this work package's first draft, which had closed only the two gaps the issue listed.",
+    "Items 2 and 3 disposed of by explicit declaration with the design named, per the disposition their own test-list entries permit.",
+    "Regression floor: all five encoded verification records still PASS.",
+    "Every new refusal carries a message unique in the file (no two controls share a string a test could match by accident)."
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_verification_evidence.py (21)"
+  ],
+  "test_obligations": [
+    {
+      "id": "TEST-001",
+      "claim": "each of the three refusals is proven red-first at its own site, on a non-APPROVE fixture, and the five encoded records stay green",
+      "level": "unit"
+    }
+  ],
+  "evidence": [
+    "failing-first: one red per site before its refusal exists",
+    "green after: 21 tests",
+    "probe table: the three probes ADMITTED before / refused after, on non-APPROVE fixtures",
+    "regression floor: five encoded verification records PASS",
+    "mutation: each refusal neutered -> its test red, with an in-process positive control staying green",
+    "compose output incl. composition record",
+    "typed G07 self-dossier"
+  ],
+  "evidence_obligations": [
+    "the probe table is measured against the pre-change gate, not asserted from the issue's table",
+    "the mutation battery carries an in-process positive control that stays GREEN while each mutant is live -- an all-red battery cannot prove the mutant loaded"
+  ],
+  "expected_surfaces": {
+    "files": [
+      "scripts/badf_gate.py",
+      "tests/test_badf_verification_evidence.py",
+      "badf/demands/BADF-DEM-0113.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "work/WP-2026-0126/work-package.json"
+    ]
+  },
+  "authority_requirement": {
+    "qa": true,
+    "rev": true
+  },
+  "risk_factors": [
+    "A new refusal in the canonical gate can retroactively invalidate encoded records -- mitigated by the five-record regression floor run on every change.",
+    "#267's ballot control masks APPROVE-based probes, so an APPROVE fixture would prove nothing about THIS control; every fixture is non-APPROVE by construction."
+  ],
+  "dependencies": {
+    "work_packages": [
+      "WP-2026-0123"
+    ],
+    "note": "Builds on #267's ballot-coherence refusal, which is what makes the finding-side edit the cheaper path."
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS"
+}
