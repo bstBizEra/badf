@@ -2,9 +2,13 @@
 every terminal capability's status is pinned EXACTLY.
 
 The issue predicted that relaxing the last exact pin to a floor would leave a status
-unpinned. Measured on `aa49a36`, that has not happened anywhere: **no family is
-floor-only.** What is unguarded is three families that never received an assertion at
-all -- a different mechanism, and the one this module guards.
+unpinned. Measured on `aa49a36`, **that had not happened anywhere: zero families were
+floor-only at audit time.** What was unguarded is three families that never received an
+assertion at all -- a different mechanism, and the one this module guards.
+
+Past tense throughout, deliberately: **this module's own three floor assertions make that
+count three, not zero**, so a present-tense reading of the audit is false of the tree
+shipping it. See the note below.
 
 The issue's original rule was "exactly ONE exact pin per capability". That is not a
 property this tree has: it holds for 17 of 30 families, and enforcing it would require
@@ -326,11 +330,17 @@ class T:
 # actually_synthetic` checks that -- so "synthetic" is a verified property rather than a
 # comment that could quietly stop being true if a family of that name were ever added.
 #
-# It exists because NO REAL FAMILY IS FLOOR-ONLY: on real data clause 1 and clause 2
-# pass and fail together, so an edit collapsing them into one clause would break nothing
-# and pass everything. This is the only input that can tell them apart. If a real
-# floor-only family ever appears, this fixture becomes redundant rather than wrong --
-# delete it then, not before.
+# It was written when NO REAL FAMILY WAS FLOOR-ONLY, and this work package changed that:
+# the three capabilities pinned below are pinned with FLOORS, so real data now
+# distinguishes clause 1 from clause 2. KEEP THIS FIXTURE ANYWAY. It discriminates at
+# unit level regardless of which families happen to be mid-ladder on a given day, and it
+# stays valid when badf-delivery reaches ACTIVE and grows an exact pin -- at which point
+# the real discriminators disappear and this is again the only one.
+#
+# (An earlier version of this comment said "delete it then, not before", with a trigger
+# this PR itself meets -- so a reader following it would delete what the module docstring
+# preserves for a better reason. Corrected here; the same stale claim had survived on two
+# other surfaces after the docstring was fixed. BADF-REV caught both.)
 SYNTHETIC_FLOOR_ONLY = '''
 class T:
     def test_x(self):
@@ -376,14 +386,29 @@ class InstrumentTests(unittest.TestCase):
         self.assertEqual(2, len(rejects))
 
     def test_c5_does_not_reject_a_real_pin(self):
-        """C4's twin. `must reject X` is satisfied by rejecting X *and more*, so the
-        must-not-reject case is asserted with a REAL pin from the tree -- a synthetic
-        one would be a fixture testing itself (BARCHI-3)."""
-        real = (TESTS / "test_badf_git_contract.py").read_text(encoding="utf-8")
-        pins, rejects = scan_source(real, "test_badf_git_contract.py")
-        self.assertTrue(any(p["family"] == "badf-git" and p["pin"] == "EXACT" for p in pins))
-        self.assertEqual([], [r for r in rejects if r["how"].startswith("unbound:entry")],
-                         "a real registry pin was rejected")
+        """C4's twin, run EXHAUSTIVELY over the closed set of test modules.
+
+        `must reject X` is satisfied by rejecting X *and more*, so over-rejection reads
+        as success -- this is the control that catches it. The must-not-reject case uses
+        REAL pins from the tree, never synthetic ones: a synthetic pin would be a fixture
+        testing itself (BARCHI-3).
+
+        Sampled at n=1 it passed while saying nothing about the other 78 modules
+        (BADF-REV on this PR). `tests/` is a closed enumerable set, so the honest form is
+        the loop -- the same standard clause 1 holds itself to over the registry.
+        """
+        modules = sorted(TESTS.glob("test_*.py"))
+        self.assertGreater(len(modules), 1, "the closed set must actually be enumerated")
+        false_rejects, resolved = [], 0
+        for m in modules:
+            pins, rejects = scan_source(m.read_text(encoding="utf-8"), m.name)
+            resolved += len(pins)
+            false_rejects += [(m.name, r["line"], r["how"]) for r in rejects
+                              if r["how"].startswith("unbound:entry")]
+        self.assertEqual([], false_rejects,
+                         "real registry pins rejected: "
+                         + ", ".join(f"{f}:{ln}" for f, ln, _ in false_rejects))
+        self.assertGreater(resolved, 0, "no pins resolved at all -- the scan is inert")
 
     def test_resolves_a_tuple_packed_pin(self):
         """`assertEqual((entry["status"], ...), ("IMPLEMENTED", ...))` -- an exact pin
@@ -416,8 +441,16 @@ class InstrumentTests(unittest.TestCase):
                          [(p["family"], p["pin"], p["value"]) for p in b])
 
     def test_the_instrument_can_see_floors_at_all(self):
-        """Without this, `no family is floor-only` would be indistinguishable from
-        `the instrument cannot see floors`. These three floors are named in #218's body."""
+        """Positive control on the floor path: ANY floor-derived count is meaningless
+        until the instrument is shown able to see floors at all, because `found no floors`
+        and `cannot see floors` are otherwise the same observation. Stated as a property of
+        floor-derived claims in general rather than of one count, since the specific claim
+        it originally guarded ("no family is floor-only") was true at audit time and is
+        false of the tree this module ships.
+
+        The three modules below are the floors named in #218's own body -- so passing this
+        reproduces the issue's own observation.
+        """
         floors = [p for p in scan_tree()[0] if p["pin"] == "FLOOR"]
         seen = {p["file"] for p in floors}
         for module in ("test_badf_verification_evidence.py", "test_badf_verification_controls.py",
@@ -445,9 +478,14 @@ class RegistryStatusCoverageTests(unittest.TestCase):
                          "ACTIVE capabilities with no EXACT status pin: " + ", ".join(missing))
 
     def test_the_two_clauses_are_distinguishable(self):
-        """Nothing in the real tree is floor-only, so clause 1 and clause 2 pass and fail
-        together on real data -- an edit collapsing them would break nothing. This
-        synthetic floor-only family is the only thing that can tell them apart."""
+        """A floor must satisfy clause 1 and NOT satisfy clause 2.
+
+        When this module was written nothing in the tree was floor-only, so the clauses
+        passed and failed together on real data and only this synthetic family could tell
+        them apart. This work package's own three floor assertions changed that. The
+        fixture is kept because it holds the distinction independently of which families
+        are mid-ladder today -- see SYNTHETIC_FLOOR_ONLY.
+        """
         pins, _ = scan_source(SYNTHETIC_FLOOR_ONLY)
         covered, exact = by_family(pins), by_family(pins, exact_only=True)
         self.assertIn("badf-midladder", covered, "clause 1 must accept a floor")
