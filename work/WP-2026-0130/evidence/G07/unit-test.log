@@ -1,6 +1,6 @@
-python3 -m unittest tests.test_badf_seat_roster  # asymmetric-watch fold, post-REV
-...........
+python3 -m unittest tests.test_badf_seat_roster  # QA Findings 1+2 fold (degenerate identity)
+.................
 ----------------------------------------------------------------------
-Ran 11 tests in 112.224s
+Ran 17 tests in 168.348s
 
 OK

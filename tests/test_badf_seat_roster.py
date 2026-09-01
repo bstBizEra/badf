@@ -107,6 +107,36 @@ class RosterArtifactTests(_Scratch):
         self.assertNotEqual(out.returncode, 0, out.stdout)
         self.assertIn("no seats", out.stdout + out.stderr)
 
+    def test_blank_or_padded_seat_id_is_refused(self):
+        """QA Finding 1 (#290, blocking; measured on four heads): [{"id": ""}] carries the
+        same information as [] and passed the very check added to refuse [] -- the
+        degenerate-content shape (#293) on the identity surface. Empty, whitespace-only,
+        and padded ids all name nothing a delegation could safely bind to."""
+        for probe in ("", "   ", " GHOST"):
+            r = self.roster(); r["seats"][0]["id"] = probe
+            self.write_roster(r); self.lock()
+            out = self.gate_cmd("repo")
+            self.assertNotEqual(out.returncode, 0, f"id {probe!r} admitted: {out.stdout}")
+            self.assertIn("names nothing", out.stdout + out.stderr, probe)
+
+    def test_duplicate_seat_id_is_refused(self):
+        """QA Finding 2 (#290): _rostered_seats() is a set, so a duplicate id collapses
+        silently -- on a roster whose subject is identity."""
+        r = self.roster(); r["seats"].append(dict(r["seats"][0]))
+        self.write_roster(r); self.lock()
+        out = self.gate_cmd("repo")
+        self.assertNotEqual(out.returncode, 0, out.stdout)
+        self.assertIn("more than once", out.stdout + out.stderr)
+
+    def test_empty_charter_refs_is_refused(self):
+        """QA Finding 2 (#290): charter_refs = [] was admitted -- provenance-free
+        identity, the same degenerate-content family as the blank id."""
+        r = self.roster(); r["seats"][0]["charter_refs"] = []
+        self.write_roster(r); self.lock()
+        out = self.gate_cmd("repo")
+        self.assertNotEqual(out.returncode, 0, out.stdout)
+        self.assertIn("charter_refs", out.stdout + out.stderr)
+
     def test_permission_shaped_key_in_a_seat_is_refused(self):
         r = self.roster(); r["seats"][0]["allowed_tools"] = ["git-push"]
         self.write_roster(r); self.lock()
@@ -177,6 +207,36 @@ class SeatRatchetTests(_Scratch):
         self.assertNotEqual(out.returncode, 0, out.stdout)
         text = out.stdout + out.stderr
         self.assertIn("GHOST-SEAT", text); self.assertIn("declaration-consistency", text)
+
+    def test_blank_delegation_seat_is_absent_at_assembly(self):
+        """QA Finding 1's second leg: seat: "" counted as NAMING a seat (only None read
+        as absent), so it passed the mandatory-seat ratchet and resolved against the
+        empty-id seat. A blank seat names nothing -> normalized to absent, once, in a
+        helper both sites call, so the twins cannot fork on the semantic."""
+        self.write_wp(RATCHETED); self.write_delegation(RATCHETED, seat="  "); self.lock()
+        r = self.gate_cmd("self-dossier", RATCHETED)
+        self.assertNotEqual(r.returncode, 0, r.stdout)
+        out = r.stdout + r.stderr
+        self.assertIn(RATCHETED, out); self.assertIn("names no seat", out)
+
+    def test_blank_delegation_seat_is_absent_at_the_repo_sweep(self):
+        """Sweep twin of the blank-seat normalization (dossier-less WP reaches only the
+        sweep copy -- same site discrimination as the asymmetric-watch fold)."""
+        self.write_wp(RATCHETED); self.write_delegation(RATCHETED, seat=""); self.lock()
+        out = self.gate_cmd("repo")
+        self.assertNotEqual(out.returncode, 0, out.stdout)
+        text = out.stdout + out.stderr
+        self.assertIn(RATCHETED, text); self.assertIn("names no seat", text)
+
+    def test_blank_seat_grandfathered_counted_as_absent(self):
+        """Positive control for the fold's semantic: blank means ABSENT, not forbidden --
+        below the ratchet threshold a blank seat is excused exactly as a missing one is,
+        never refused as an unrostered declaration."""
+        self.write_wp(EXEMPT); self.write_delegation(EXEMPT, seat=""); self.lock()
+        r = self.gate_cmd("self-dossier", EXEMPT)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        out = self.gate_cmd("repo")
+        self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
 
     def test_grandfathered_delegation_counted_not_refused(self):
         self.write_wp(EXEMPT); self.write_delegation(EXEMPT, seat=None); self.lock()

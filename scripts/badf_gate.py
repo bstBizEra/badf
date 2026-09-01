@@ -846,6 +846,18 @@ def _rostered_seats() -> set[str]:
     return {str(s.get("id")) for s in (data.get("seats") or []) if isinstance(s, dict)}
 
 
+def _declared_seat(d: dict[str, Any]) -> str | None:
+    """QA Finding 1 (#290): a blank or whitespace-only `seat` names nothing -- it passed
+    the mandatory-seat ratchet (only None read as absent) and resolved against an
+    empty-id seat. Normalized to absent HERE, once, called from BOTH sites
+    (_check_delegations and verify_seat_roster), so the twins cannot fork on it."""
+    seat = d.get("seat")
+    if seat is None:
+        return None
+    s = str(seat).strip()
+    return s or None
+
+
 def verify_seat_roster() -> None:
     """AET-B-1: the roster holds identity and NOTHING else. Both doctrine-declared
     shapes that must never land in it are refused by name -- permissions fork
@@ -859,10 +871,23 @@ def verify_seat_roster() -> None:
         # is the sole enforcer until that rung lands (the #264 pattern, stated).
         raise ValidationError("badf/seats.json declares no seats: an empty roster reports clean over its own absence -- refused (AET-B-1 / #287, enumeration-vacuity)")
     held = vacant = 0
+    seen_ids: set[str] = set()
     # The named guard runs BEFORE the schema: additionalProperties would refuse the
     # same keys, but a doctrine-declared shape deserves the doctrine-declared message
     # (AUTHORITY_CONFLICT, and where the undecided half lives). Schema stays backstop.
     for s in data.get("seats") or []:
+        sid = str(s.get("id") or "")
+        # QA Findings 1+2 (#290): [{"id": ""}] carries the same information as [] and
+        # passed the very check that refuses [] -- the degenerate-content shape (#293)
+        # on the identity surface. The schema's minLength/minItems declarations are
+        # decorative until #265 Rung A lands; these checks are the sole enforcers.
+        if not sid.strip() or sid != sid.strip():
+            raise ValidationError(f"seat id {sid!r} is empty, whitespace-only, or padded: it names nothing a delegation could safely bind to (QA Finding 1, #290 / #293 degenerate-content)")
+        if sid in seen_ids:
+            raise ValidationError(f"seat id {sid!r} appears more than once: _rostered_seats() is a set, so the duplicate would collapse silently on a roster whose subject is identity (QA Finding 2, #290)")
+        seen_ids.add(sid)
+        if not (s.get("charter_refs") or []):
+            raise ValidationError(f"seat {sid!r} has empty charter_refs: provenance-free identity is the degenerate-content shape (QA Finding 2, #290)")
         for k in _SEAT_FORBIDDEN_PERMISSION_KEYS:
             if k in s:
                 raise ValidationError(f"seat {s.get('id')!r} carries permission-shaped key {k!r}: the roster holding permissions forks badf/authority-matrix.json -- AUTHORITY_CONFLICT (AET-B-1 / #287)")
@@ -884,14 +909,14 @@ def verify_seat_roster() -> None:
                 # every landing path (session.json can change post-assembly), so the
                 # sweep must refuse what assembly would refuse (#290 review, REV).
                 raise ValidationError(f"{wp}: a delegation is not a mapping (C7)")
-            seat = d.get("seat")
+            seat = _declared_seat(d)
             if seat is None:
                 without += 1
                 if _seat_ratchet_applies(wp):
                     raise ValidationError(f"{wp}: delegation {d.get('task')!r} names no seat -- mandatory at and above the threshold {WP_NAMESPACE}0130 (AET-B-1 / #287)")
             else:
                 with_seat += 1
-                if str(seat) not in seats:
+                if seat not in seats:
                     raise ValidationError(f"{wp}: delegation {d.get('task')!r} declares seat {seat!r}, which is not in badf/seats.json (declaration-consistency; identity verification lands with #261)")
     print(f"BADF SEAT ROSTER: {held} held, {vacant} VACANT; delegations naming a seat {with_seat}, grandfathered without {without} (threshold {WP_NAMESPACE}0130; sentinels exempt) -- declaration-consistency only until #261 gives seats a structural referent (AET-B-1)")
 
@@ -1744,10 +1769,10 @@ def _check_delegations(wp_dir: Path, wp: dict[str, Any], wp_id: str) -> None:
         if not isinstance(d, dict):
             raise ValidationError(f"{wp_id}: a delegation is not a mapping (C7)")
         name = str(d.get("task") or "?")
-        _seat = d.get("seat")
+        _seat = _declared_seat(d)
         if _seat is None and _seat_ratchet_applies(wp_id):
             raise ValidationError(f"{wp_id}: delegation {name} names no seat -- mandatory at and above the threshold {WP_NAMESPACE}0130 (AET-B-1 / #287)")
-        if _seat is not None and str(_seat) not in _rostered_seats():
+        if _seat is not None and _seat not in _rostered_seats():
             raise ValidationError(f"{wp_id}: delegation {name} declares seat {_seat!r}, which is not in badf/seats.json (declaration-consistency; identity verification lands with #261)")
         if not surface:
             raise ValidationError(f"{wp_id}: delegation {name} declared but the work package declares no expected_surfaces; a subset of nothing cannot be granted (BLD-I10 / C7)")
