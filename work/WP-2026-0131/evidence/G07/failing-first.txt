@@ -16,7 +16,7 @@ Traceback (most recent call last):
 AssertionError: ValidationError not raised
 
 ----------------------------------------------------------------------
-Ran 1 test in 0.045s
+Ran 1 test in 0.029s
 
 FAILED (failures=1)
 
@@ -47,7 +47,7 @@ First extra element 0:
 + ['/mnt/c/laragon/www/badf-wt-uatd/work/WP-2026-0997/gate-dossier.G10.json'] : a real G10 dossier now exists (['/mnt/c/laragon/www/badf-wt-uatd/work/WP-2026-0997/gate-dossier.G10.json']); the representative caveat in skills/badf-uat/references/shadow-evidence.md is no longer true and the real re-shadow is owed
 
 ----------------------------------------------------------------------
-Ran 1 test in 0.079s
+Ran 1 test in 0.060s
 
 FAILED (failures=1)
 
@@ -71,7 +71,7 @@ Traceback (most recent call last):
 AssertionError: #289 appears fixed -- C7 now refuses the longer-id case (EVD-SHADOW-G10-uat (uat): RECOMMEND_ACCEPT_WITH_CONDITIONS with critical scenario(s) UAT-SCN-CHK-001 not passing and named in no condition or acknowledged defect; conditions are where a known critical failure is named, so an unnamed one is the aggregate UAT-I13 refuses, one enum value over (UAT-I13 / GOV #266)). Remove this test and the #289 non_coverage entry from the shadow doc.
 
 ----------------------------------------------------------------------
-Ran 1 test in 0.027s
+Ran 1 test in 0.017s
 
 FAILED (failures=1)
 
@@ -117,7 +117,7 @@ Traceback (most recent call last):
 AssertionError: 'traceability_digest' not found in {'prd_id': 'PRD-SHADOW-CHECKOUT', 'prd_digest': 'sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', 'acceptance_criteria_digest': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'} : uat-shadow-checkout.json is missing traceability_digest
 
 ----------------------------------------------------------------------
-Ran 1 test in 0.013s
+Ran 1 test in 0.009s
 
 FAILED (failures=1)
 
