@@ -96,6 +96,17 @@ class RosterArtifactTests(_Scratch):
         self.assertIn("BADF SEAT ROSTER", out.stdout)
         self.assertIn("VACANT", out.stdout)
 
+    def test_empty_roster_is_refused_not_reported_clean(self):
+        """REV's enumeration-vacuity finding (#290 review): a loop finding nothing passes
+        like one finding everything -- an empty roster would print 0 held / 0 VACANT and
+        every guard would sleep. The CODE check is the enforcement; the schema's
+        minItems is declarative only until #265 Rung A lands (the sole-enforcer pattern)."""
+        r = self.roster(); r["seats"] = []
+        self.write_roster(r); self.lock()
+        out = self.gate_cmd("repo")
+        self.assertNotEqual(out.returncode, 0, out.stdout)
+        self.assertIn("no seats", out.stdout + out.stderr)
+
     def test_permission_shaped_key_in_a_seat_is_refused(self):
         r = self.roster(); r["seats"][0]["allowed_tools"] = ["git-push"]
         self.write_roster(r); self.lock()

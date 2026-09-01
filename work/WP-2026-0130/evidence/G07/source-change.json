@@ -16,15 +16,15 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-09-01T11:41:12Z",
-  "completed_at": "2026-09-01T11:41:12Z",
+  "started_at": "2026-09-01T14:21:45Z",
+  "completed_at": "2026-09-01T14:21:45Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0130/evidence/G07/source-change.diff",
-  "digest": "sha256:50bc8d810f393944c78a0390618f0d942199a57fa31970fb178ac90243185e8f",
+  "digest": "sha256:b70665047301837604e50bf521875fcb3b58854011c121e088131e10dcd6dd28",
   "binding": {
     "base_sha": "c8d1b6a5c8f4ab8c80a4240ecf24faa60c7589bb",
-    "head_sha": "80542e783757bc6a00461429aca247b68cd2c16e",
-    "content_tree": "ddc95fa6a1ab6fc552291cdd52b2315258ca53e3",
+    "head_sha": "8b16e8195b5af44397b769a9cf23363be6f42690",
+    "content_tree": "a1de3a075996ae743c35fc2426b99ede49dee4e8",
     "changed_paths": [
       "badf/demands/BADF-DEM-0117.json",
       "badf/seats.json",
@@ -47,6 +47,6 @@
       ]
     },
     "unexpected_paths": [],
-    "change_digest": "sha256:50bc8d810f393944c78a0390618f0d942199a57fa31970fb178ac90243185e8f"
+    "change_digest": "sha256:b70665047301837604e50bf521875fcb3b58854011c121e088131e10dcd6dd28"
   }
 }

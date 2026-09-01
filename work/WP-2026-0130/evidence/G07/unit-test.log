@@ -1,6 +1,6 @@
-python3 -m unittest tests.test_badf_seat_roster  # fork closed, post-REV finding
-........
+python3 -m unittest tests.test_badf_seat_roster  # empty-roster fold, post-REV enumeration-vacuity
+.........
 ----------------------------------------------------------------------
-Ran 8 tests in 74.507s
+Ran 9 tests in 99.850s
 
 OK

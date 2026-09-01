@@ -852,6 +852,12 @@ def verify_seat_roster() -> None:
     badf/authority-matrix.json, and time windows pre-empt the #261-round decision
     docs/03 requires. Delegation seat coverage is counted at the point of judgment."""
     data = load_json(ROOT / "badf/seats.json")
+    if not (data.get("seats") or []):
+        # REV's enumeration-vacuity finding: a loop finding nothing passes like one
+        # finding everything. The schema also declares minItems, which the walker does
+        # not implement (#265 Rung A unlanded) -- THIS check is the enforcement, and it
+        # is the sole enforcer until that rung lands (the #264 pattern, stated).
+        raise ValidationError("badf/seats.json declares no seats: an empty roster reports clean over its own absence -- refused (AET-B-1 / #287, enumeration-vacuity)")
     held = vacant = 0
     # The named guard runs BEFORE the schema: additionalProperties would refuse the
     # same keys, but a doctrine-declared shape deserves the doctrine-declared message
