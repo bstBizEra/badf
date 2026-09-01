@@ -1,0 +1,83 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0125",
+  "title": "WP-UAT-C: deterministic G10 controls, lean disabled — enforce the precondition B's judgement rested on, and make UAT-I17 mechanical",
+  "owner": "engineering_owner",
+  "demand": "BADF-DEM-0111",
+  "repository": "bstBizEra/badf",
+  "objective": "Add the deterministic G10/UAT controls the A-rung ladder committed WP-UAT-C to, and close BADF-QA's #266. At rung B, U4 refuses a critical failure only under RECOMMEND_ACCEPT; I defended that boundary on the grounds that conditions are exactly where a known critical failure gets named. QA agreed the RATIONALE and demonstrated it was ENFORCED BY NOTHING -- conditions, known_defects_acknowledged and declared_non_coverage_acknowledged are all optional in schemas/uat.schema.json, so a disposition whose NAME asserts conditions exist required none, and UAT-I13's aggregate-burying was reachable one enum value over. This rung enforces the precondition rather than withdrawing the judgement, which is the right repair when a rationale is sound and unguarded. It also converts UAT-I17 from a promise into a mechanism.",
+  "business_value": "Two of these controls close a hole that a reviewer reached one enum value away from a control that looked complete -- the kind of gap that survives review precisely because the adjacent case reads as covered. C10 is the larger structural gain: UAT-I17 says a material candidate change invalidates an acceptance, and until this rung that was prose in a reference. Recomputing the scenario-set digest means an acceptance cannot be carried forward silently across a changed scenario set, which is the difference between a documented invariant and an enforced one.",
+  "in_scope": [
+    "scripts/badf_gate.py: C7 (unnamed critical under RECOMMEND_ACCEPT_WITH_CONDITIONS refused, UAT-I13), C8 (ACCEPTED_WITH_CONDITIONS with no conditions refused), C9 (unconditional ACCEPTED over an unacknowledged not-passing critical refused), C10 (acceptance.scenario_set_digest recomputed over the carried scenarios, UAT-I17), C11 (not_covered with neither a reason nor a declared non_coverage entry refused, UAT-I12)",
+    "tests/test_badf_uat_evidence.py: UatDeterministicControlTests -- one test per control plus an additivity assertion; five B-rung fixtures given a scenario_set_digest C10 can recompute",
+    "badf/demands/BADF-DEM-0111.json; docs/governance/GITHUB_CONTROL_PLANE.md doctrine section; work/WP-2026-0125/ record and G07 self-dossier; lockfile re-sign",
+    "tests/test_badf_uat_contract.py: restore the ONE exact registry status pin for badf-uat (#218). ADMITTED BY AMENDMENT, not present at planning: the C-2 containment condition correctly refused it as an undeclared surface, and BLD-I04's closure predicate is that planning amends expected_surfaces to admit the path or the change is reverted. The path is admitted because the finding is in this rung's own test surface and was caused by this ladder's own #268 fix."
+  ],
+  "out_of_scope": [
+    "cross-evidence and cross-dossier checks -- single-object controls only, per #266's own exclusion",
+    "binding an acknowledgement to a defect RESOLUTION state (#266 excludes this explicitly)",
+    "any adapter or subskill registration; scenario-derivation logic; any lifecycle.json change; any second gate (UAT-I20)",
+    "badf-production-readiness's release-packet and operational-readiness types; WP-UAT-D (shadow) and WP-UAT-E (admission)"
+  ],
+  "expected_surfaces": {
+    "declared": true,
+    "files": [
+      "badf/demands/BADF-DEM-0111.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "scripts/badf_gate.py",
+      "tests/test_badf_uat_contract.py",
+      "tests/test_badf_uat_evidence.py",
+      "work/WP-2026-0120/work-package.json"
+    ]
+  },
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "C7-C11 each refuse their violation naming the governing invariant, and admit the corrected form",
+    "Every control mutation-checked INDIVIDUALLY with survivors reported as a deliverable (#266 criterion 4): 0 survivors, 0 sites without an in-process liveness witness, under the full protocol -- -B, __pycache__ cleared between mutations, NAMED negative control first, git checkout -- restore, and parser anti-vacuity asserting the parsed test count equals the module-declared count",
+    "Untyped uat bindings remain admissible -- additive, as WP-UAT-B established",
+    "Open-ended per #270: the adjacent encodings are enumerated and walked -- every other disposition value, every other acknowledgement field, an empty-string condition, and a condition naming a different scenario -- and none admits an unnamed critical failure",
+    "No lifecycle change, no second gate, no adapter registered",
+    "badf-uat carries exactly ONE exact registry status pin alongside the floor (#218), and it is verified to catch a silent status advance INSIDE the floor's tuple -- measured, not asserted"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_uat_evidence.py"
+  ],
+  "test_obligations": [
+    {
+      "id": "TO-0125-1",
+      "claim": "a critical failure carried under WITH_CONDITIONS or an unconditional ACCEPTED must be named in conditions or acknowledged defects",
+      "level": "contract"
+    },
+    {
+      "id": "TO-0125-2",
+      "claim": "an acceptance cannot be carried forward across a changed scenario set",
+      "level": "contract"
+    },
+    {
+      "id": "TO-0125-3",
+      "claim": "each of the five controls is individually mutation-killed with a liveness witness",
+      "level": "contract"
+    }
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR; the rung is additive for untyped bindings, so reverting restores the pre-C admissibility exactly"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "wp/WP-2026-0125-uat-deterministic-controls",
+    "base_revision": "5138b24",
+    "composition_verified": false
+  },
+  "note": "Rung C of the badf-uat A-E ladder; B landed as #264 (d0986b0). PROVENANCE PER CONTROL, stated because C is deliberately wider than #266: C7/C8/C9 are #266 criteria 2/1/3 and fully close it; C10 and C11 come from the ladder's own C-rung text (staleness detection; non-derivable-criterion declared, never dropped) plus BADF-QA's routed coverage-exactness note. A reviewer should not read C10/C11 as scope creep. expected_surfaces DECLARED UP FRONT -- the #264 lesson, where its absence cost a REV condition; the gate-forced reconcile sits in discovery_allowance because a reconcile collapses to a no-op for whoever lands second, though note GOV-0119/#272: the assembly-side containment does not consult discovery_allowance, so if that raises C-2 the reconcile moves to files with a prune-on-collapse obligation. FIXTURE NOTE: five B-rung fixtures needed a scenario_set_digest C10 can recompute. Those tests do not assert C10's ABSENCE -- their DATA simply has to satisfy a new control, which is a normal consequence of adding one and is distinct from #268's snapshot-pins. CONFIRMED LIVE: discovery_allowance did NOT exempt the reconcile at assembly-side containment -- C-2 raised naming work/WP-2026-0124/work-package.json, exactly as GOV-0119/#272 documents and as this record pre-committed to handling. Reconcile moved to files with the standing prune-on-collapse obligation; discovery_allowance removed rather than left as a declaration that enforces nothing. This is a second, independent reproduction of #272 and is noted on that issue."
+}

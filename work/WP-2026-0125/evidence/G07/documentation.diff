@@ -1,0 +1,61 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 0d1d341..4155250 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -2075,6 +2075,56 @@ remedy when a declaration is over-broad and the **wrong** one when the declarati
+ went missing — both emit a byte-identical condition. That gap is filed as **#257 / GOV-0113** and is not fixed
+ here: this rung's subject is family names, and editing the same file is not sharing the subject.
+ 
++## badf-uat → deterministic G10 controls — a defence that names a field must require the field (`BADF-WP-0125` / WP-UAT-C, Issue #273 / GOV-0120)
++
++**Lean mode DISABLED.** These are HARD INVARIANTS, the same tier as the G08 controls at VER-C.
++
++At rung B, `U4` refuses a critical scenario failure only under `RECOMMEND_ACCEPT`. That boundary
++was defended — by its own author, in the PR — on the grounds that *conditions are exactly where a
++known critical failure gets named.* BADF-QA agreed the **rationale** and demonstrated it was
++**enforced by nothing**: `conditions`, `known_defects_acknowledged` and
++`declared_non_coverage_acknowledged` are all optional, so a disposition whose **name asserts
++conditions exist** required none — and UAT-I13's aggregate-burying was reachable **one enum value
++over** from a control that read as complete.
++
++**The repair enforces the precondition rather than withdrawing the judgement**, and that is the
++transferable part: *a defence that names a field is a defence that the field must be non-empty.*
++An argument for why a gap is acceptable is only as good as the thing it points at.
++
++```
++C7   RECOMMEND_ACCEPT_WITH_CONDITIONS + a not-passing critical named in no condition
++     and no acknowledged defect                                    -> refused   (UAT-I13)
++C8   disposition ACCEPTED_WITH_CONDITIONS with no conditions       -> refused   (UAT-I16)
++C9   unconditional ACCEPTED over an unacknowledged not-passing
++     critical                                                      -> refused   (UAT-I16)
++C10  acceptance.scenario_set_digest != a digest recomputed over the
++     scenarios actually carried                                    -> refused   (UAT-I17)
++C11  a criterion not_covered with neither a reason nor a declared
++     non_coverage entry                                            -> refused   (UAT-I12)
++```
++
++**C9 draws the line where it belongs:** a human **may** accept a known critical failure — that is
++their authority, and BADF does not second-guess it. Acknowledging it is what makes it *known*.
++
++**C10 converts an invariant into a mechanism.** UAT-I17 says a material change invalidates an
++acceptance; until this rung that was prose in a reference. Recomputing the scenario-set digest
++means a scenario added or removed after an acceptance was issued **cannot carry that acceptance
++forward silently**. The prose stayed the same; what changed is that something now checks it.
++
++Additive as B established — an untyped binding is still admissible, asserted. **Provenance stated
++per control**, because the rung is deliberately wider than the issue that prompted it: C7–C9 are
++#266's three criteria and close it fully; C10 and C11 come from the A-rung ladder's own C-rung text
++and BADF-QA's routed coverage-exactness note.
++
++**Every control mutation-checked individually — 0 survivors, 0 without an in-process liveness
++witness.** Worth recording that the battery's *first* run parsed **3 of 24 tests** and reported a
++clean-looking `survivors: 5`: `unittest -v` splits a docstringed test's verdict onto a second line,
++and the parser required both on one. Read as evidence it would have filed a false
++unwatched-controls finding against correct code. **The negative control's own printed count caught
++it**, which is why the battery now asserts that its parsed count equals the module-declared count
++and exits before measuring on a mismatch — *every stage of a measurement chain needs its own
++liveness witness, including the stage that reads the others.*
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
