@@ -16,8 +16,8 @@
     "version": "1"
   },
   "operation": "python3 -m unittest tests.test_badf_durable_effect  # AET-B-2, green after QA F1 fold",
-  "started_at": "2026-09-01T21:06:51Z",
-  "completed_at": "2026-09-01T21:06:51Z",
+  "started_at": "2026-09-01T21:32:29Z",
+  "completed_at": "2026-09-01T21:32:29Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0132/evidence/G07/unit-test.log",
   "digest": "sha256:d44f1c4fb40ebe7cab29bffc5e0c1f58ef4dea76e5cd5b18477ba7c03861a514",

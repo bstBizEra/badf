@@ -1,0 +1,22 @@
+{
+  "record": "git-composition",
+  "schema_version": "1.0.0",
+  "observed_at": "2026-09-01T21:32:29Z",
+  "repository": "bstBizEra/badf",
+  "work_package_id": "WP-2026-0132",
+  "target_ref": "refs/heads/main",
+  "target_base_sha": "75a6abd46c28033332aa19553a083b50d9ce06ec",
+  "source_ref": "refs/heads/wp/WP-2026-0132-durable-effect-record",
+  "source_head_sha": "6a89a0aa0aa49c6ebde2bbc567f73094b38d2b7b",
+  "merge_base_sha": "75a6abd46c28033332aa19553a083b50d9ce06ec",
+  "merge_method": "squash",
+  "expected_result_tree": "4aecb7ae7f7d9470bb3075bb612f5d321e63b201",
+  "expected_content_tree": "ca008c8da175b80a87e95e0406e52074d7157e39",
+  "policy_epoch": "BADF-2026-08-25",
+  "test_set_epoch": null,
+  "suite_pattern": "test_badf_durable_effect.py",
+  "non_coverage": [
+    "test_set_epoch: BADF defines no test-set/toolchain epoch; not recorded rather than invented",
+    "source_head_sha and expected_result_tree are informational: committing this record moves both; the binding is expected_content_tree (work/<WP>/ and the lockfile excluded)"
+  ]
+}
