@@ -86,7 +86,7 @@ representative rather than partial.
 
 | Test | Fires when | Then |
 | :--- | :--- | :--- |
-| `test_no_real_g10_dossier_exists_yet` | any `work/*/gate-dossier.G10.json` appears | the caveat above is false; re-shadow for real |
+| `test_no_real_g10_dossier_exists_yet` | any `work/*/gate-dossier.G10.json` appears | the caveat above is false; re-shadow for real per **#291** |
 | `test_the_known_substring_hole_in_c7_c9_is_still_open` | #289 lands | remove that test **and** non-coverage row 2 together |
 
 Neither may be deleted to make a red suite green. Both are in
@@ -95,5 +95,10 @@ Neither may be deleted to make a red suite green. Both are in
 ## Provenance
 
 Ruling and its amendment: **#277**. Precedent: **#166** (`badf-security-design`), **#145**
-(`badf-solution-design`). Defect found while building this: **#289**. Work package:
+(`badf-solution-design`). Defect found while building this: **#289** (GOV-0125). Deferred real
+re-shadow, trigger explicit and ownership named: **#291** (GOV-0126). Work package:
 **`WP-2026-0131`** / **`BADF-DEM-0118`** / **`GOV-0124`**.
+
+The debt is tracked in three places that must move together: the non-coverage table above, the
+tripwire tests in `tests/test_badf_uat_shadow.py`, and #291. A caveat recorded in only one of
+them is the silence C11 refuses.

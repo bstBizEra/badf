@@ -209,7 +209,7 @@ class TripwireTests(unittest.TestCase):
         head = text.split("\n## ")[1] if "\n## " in text else ""
         self.assertIn("REPRESENTATIVE", head.upper(),
                       "the first section must be the representativeness caveat (#166 form)")
-        for token in ("#277", "#289", "PRD-SHADOW-CHECKOUT"):
+        for token in ("#277", "#289", "#291", "PRD-SHADOW-CHECKOUT"):
             self.assertIn(token, text, f"shadow evidence must name {token}")
 
 
