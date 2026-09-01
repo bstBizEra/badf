@@ -295,15 +295,44 @@ class DeclaredNonCoverageTests(unittest.TestCase):
                 _uncovered_case(name, ev["binding"])
                 check(ev)   # admitted: no control claims this one
 
-    def test_every_uncovered_case_is_DECLARED_in_the_shadow_evidence(self):
+    @staticmethod
+    def _non_coverage_section() -> str:
+        """The `## Declared non-coverage` section ONLY.
+
+        Scoped deliberately. Asserting the case name appears anywhere in the document would be a
+        substring check standing in for a declaration: move the names into a changelog line or a
+        future-work paragraph and a whole-document check still passes while nothing is declared.
+        That is the proxy-for-property class, and this test exists to certify a declaration --
+        so it must read the declaration.
+        """
+        text = DOC.read_text(encoding="utf-8")
+        marker = "## Declared non-coverage"
+        assert marker in text, f"{DOC.name} has no {marker!r} section"
+        after = text.split(marker, 1)[1]
+        return after.split("\n## ", 1)[0]
+
+    def test_every_uncovered_case_is_DECLARED_in_the_non_coverage_section(self):
         """The property the battery exists to certify. Without this, a shadow that declares its
         gaps and one that merely has none visible are indistinguishable."""
-        doc = DOC.read_text(encoding="utf-8")
-        for name, description in DECLARED_UNCOVERED.items():
+        section = self._non_coverage_section()
+        for name in DECLARED_UNCOVERED:
             with self.subTest(case=name):
-                self.assertIn(name, doc,
-                              f"uncovered case {name!r} is exercised but not declared in "
-                              f"{DOC.relative_to(gate.ROOT)} -- a gap found and not written down")
+                self.assertIn(name, section,
+                              f"uncovered case {name!r} is exercised but not declared in the "
+                              f"'Declared non-coverage' section of {DOC.name} -- a gap found "
+                              f"and not written down")
+
+    def test_the_section_scoping_is_not_vacuous(self):
+        """Negative control for the scoping above: if `_non_coverage_section` silently returned
+        the whole document, every assertion in the previous test would pass for the wrong reason.
+        A token that appears in the doc but OUTSIDE that section must not be found in it."""
+        section = self._non_coverage_section()
+        whole = DOC.read_text(encoding="utf-8")
+        outside = "Shadow-evidence"          # the H1 title, far above the section
+        self.assertIn(outside, whole, "fixture drift: the control token left the document")
+        self.assertNotIn(outside, section,
+                         "the section slice is returning more than the section -- every "
+                         "declaration assertion above would then pass vacuously")
 
 
 class TripwireTests(unittest.TestCase):

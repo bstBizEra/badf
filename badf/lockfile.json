@@ -584,7 +584,7 @@
     "tests/test_badf_two_plane.py": "sha256:0751878b052263b49a9505f4296d77b1317370f60dd72f57bf38bdf54e2833c2",
     "tests/test_badf_uat_contract.py": "sha256:417f77702f1d9516996081a2d1e009be697ba337921f76498329185e182dfe16",
     "tests/test_badf_uat_evidence.py": "sha256:a5dff6f3481ad92d0df86f2fa2fc01b0eaf7f14cf411877b01c3005493f2c712",
-    "tests/test_badf_uat_shadow.py": "sha256:e7c87fb1a6f702df2799bf6b844e4858e843a100e99d2f153dac88319eb18f07",
+    "tests/test_badf_uat_shadow.py": "sha256:9a8fb366b01048f5a4337a05965b0dfc457aae327dfbfd145ba5597963dee84a",
     "tests/test_badf_verification_controls.py": "sha256:ab420713d9c00d80ea0a2904461825a916f97ae67eec0373b4e9a656d483b5c0",
     "tests/test_badf_verification_evidence.py": "sha256:9a0e5d93bb5d3130e9a4e7d160d1f1fcb448e5deafcfdd47435e79c6d837af6c",
     "tests/test_badf_verification_shadow.py": "sha256:c7d275ea258b46079e0e78c250c7c67e53eba897f1544f1b9a4f05fb93b4dcdc",
