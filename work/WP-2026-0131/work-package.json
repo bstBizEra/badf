@@ -33,7 +33,7 @@
       "skills/badf-uat/references/shadow-evidence.md",
       "tests/test_badf_uat_contract.py",
       "tests/test_badf_uat_shadow.py",
-      "work/WP-2026-0130/work-package.json"
+      "work/WP-2026-0133/work-package.json"
     ]
   },
   "target_gate": "G07",
@@ -86,7 +86,7 @@
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "wp/WP-2026-0131-uat-representative-shadow",
-    "base_revision": "9fad369",
+    "base_revision": "75a6abd",
     "composition_verified": false
   },
   "note": "Lean mode ADVISORY. The empty-corpus alternative was mine and was the weaker instrument wearing the honest label; the vacuity/realism distinction is recorded in the shadow doc because it is the reusable part, not the corpus."
