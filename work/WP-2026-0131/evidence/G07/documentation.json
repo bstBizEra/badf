@@ -16,11 +16,11 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-09-01T19:37:54Z",
-  "completed_at": "2026-09-01T19:37:54Z",
+  "started_at": "2026-09-01T21:07:27Z",
+  "completed_at": "2026-09-01T21:07:27Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0131/evidence/G07/documentation.diff",
-  "digest": "sha256:1466855fc082859237a3a592db369514941897cee11d5f5ed7b2784c7f7e9051",
+  "digest": "sha256:ec919d30b6b2f5308fe9d7960f221519daec935cdf20e48b80d4e9350ecb1fac",
   "binding": {
     "changed": [
       "docs/governance/GITHUB_CONTROL_PLANE.md"
