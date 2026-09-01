@@ -229,24 +229,23 @@ index f9cc316..7fc219b 100644
          for p in DEMANDS.glob("*.json"):
              d = json.loads(p.read_text())
              if d["status"] in ("RESOLVED", "REJECTED"):
-diff --git a/work/WP-2026-0128/work-package.json b/work/WP-2026-0128/work-package.json
-index f72eab9..8e5c74c 100644
---- a/work/WP-2026-0128/work-package.json
-+++ b/work/WP-2026-0128/work-package.json
-@@ -62,11 +62,14 @@
-     "EVIDENCE_CORRUPTION",
-     "BUDGET_EXHAUSTED"
-   ],
+diff --git a/work/WP-2026-0129/work-package.json b/work/WP-2026-0129/work-package.json
+index 25bd8a6..5df7839 100644
+--- a/work/WP-2026-0129/work-package.json
++++ b/work/WP-2026-0129/work-package.json
+@@ -97,10 +97,13 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
 -  "status": "IN_PROGRESS",
 +  "status": "CLOSED",
    "external_target": {
      "repository": "bstBizEra/badf",
      "branch": "main",
--    "base_revision": "aa49a3640b03a6be3796e60c00909cb5f9d630ee"
-+    "base_revision": "aa49a3640b03a6be3796e60c00909cb5f9d630ee",
-+    "landed_content_tree": "df1bb9302c36fe84386ca594a60de647582cd75b",
+-    "base_revision": "0afcb1410907c8c4bbc2d8fae7bcb207ee0e04bf"
++    "base_revision": "0afcb1410907c8c4bbc2d8fae7bcb207ee0e04bf",
++    "landed_content_tree": "c4e4fcb0e0a4b6d217b60e4aa76ad875b01800e8",
 +    "composition_verified": true,
-+    "landed_as": "0afcb1410907c8c4bbc2d8fae7bcb207ee0e04bf"
-   },
-   "expected_surfaces": {
-     "files": [
++    "landed_as": "4a1c028dcf381798680bcd11855c51ff409cfba1"
+   }
+ }
