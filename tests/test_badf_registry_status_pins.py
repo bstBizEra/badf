@@ -15,14 +15,27 @@ rule was reframed, and the reframing accepted by the issue's author (BARCHI-3):
     clause 1  every capability carries at least one status assertion (floor OR exact)
     clause 2  every ACTIVE capability carries at least one EXACT pin
 
-**Clause 2 is forward-looking, not measured into existence.** On today's tree the two
-clauses are indistinguishable: no family is floor-only, so "at least one assertion" and
-"at least one exact pin" fail on exactly the same three families. The split exists
-because a *future* mid-ladder family carrying only a floor should pass clause 1 and be
-exempt from clause 2 -- the denominator rule (terminal => exact; mid-ladder may floor).
-Because no real data distinguishes them, `test_the_two_clauses_are_distinguishable`
-uses a SYNTHETIC floor-only family; without it, an edit collapsing the clauses back into
-one would break nothing and pass everything.
+**Clause 2 was forward-looking when proposed, and this work package makes it live.**
+Measured at `aa49a36`, before this module existed, ZERO families were floor-only: clause
+1 and clause 2 failed on exactly the same three families, nothing in the tree told them
+apart, and an edit collapsing them into one clause would have broken nothing.
+
+That is no longer true, and **this module is the reason**. The three unasserted families
+are pinned below with FLOORS, because all three are mid-ladder and clause 2 applies only
+to ACTIVE capabilities. So the tree this work package produces contains the first three
+real floor-only families, and the two clauses are now distinguishable on real data --
+by exactly the families the guard was built to catch. The remediation supplied the
+discriminator the audit could not find.
+
+`SYNTHETIC_FLOOR_ONLY` is kept regardless: it discriminates at unit level, independent
+of which families happen to be mid-ladder on any given day, and it does not become
+vacuous when `badf-delivery` eventually reaches ACTIVE and grows an exact pin.
+
+*(The first version of this docstring said "no family is floor-only" as a present-tense
+claim. It was true of the tree measured and false of the tree shipped -- caught by a test
+written in this same commit. Recorded rather than silently corrected: a document
+asserting the state it was written against, after the change moved it, is the defect
+class this repository keeps paying for.)*
 
 Attribution is by DATA FLOW, never co-occurrence: each `["status"]` assertion is bound to
 the family whose registry entry the subscripted expression was *looked up by*. Two prior
@@ -308,8 +321,16 @@ class T:
         self.assertEqual(rec["status"], "CLOSED")
 '''
 
-# A floor-only family. Nothing in the real tree is floor-only, so this is the ONLY
-# thing that can tell clause 1 from clause 2 -- see the module docstring.
+# DECLARED SYNTHETIC. `badf-midladder` is not a capability and never was; the fixture
+# is representative-by-declaration, not by sampling, and `test_the_synthetic_family_is_
+# actually_synthetic` checks that -- so "synthetic" is a verified property rather than a
+# comment that could quietly stop being true if a family of that name were ever added.
+#
+# It exists because NO REAL FAMILY IS FLOOR-ONLY: on real data clause 1 and clause 2
+# pass and fail together, so an edit collapsing them into one clause would break nothing
+# and pass everything. This is the only input that can tell them apart. If a real
+# floor-only family ever appears, this fixture becomes redundant rather than wrong --
+# delete it then, not before.
 SYNTHETIC_FLOOR_ONLY = '''
 class T:
     def test_x(self):
@@ -431,6 +452,15 @@ class RegistryStatusCoverageTests(unittest.TestCase):
         covered, exact = by_family(pins), by_family(pins, exact_only=True)
         self.assertIn("badf-midladder", covered, "clause 1 must accept a floor")
         self.assertNotIn("badf-midladder", exact, "clause 2 must not count a floor as a pin")
+
+    def test_the_synthetic_family_is_actually_synthetic(self):
+        """Keeps `declared synthetic` honest. If `badf-midladder` ever became a real
+        capability, SYNTHETIC_FLOOR_ONLY would silently start describing the tree and
+        `test_the_two_clauses_are_distinguishable` would stop being a synthetic control
+        without anyone noticing."""
+        self.assertNotIn("badf-midladder", registry_status(),
+                         "the synthetic fixture's family name is now a real capability; "
+                         "rename the fixture so it stays synthetic")
 
     def test_exact_pins_agree_with_the_registry(self):
         """A pin asserting a status the registry does not carry is a stale pin."""
