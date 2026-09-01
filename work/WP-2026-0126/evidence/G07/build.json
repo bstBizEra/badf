@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0126-G07-build",
+  "work_package_id": "WP-2026-0126",
+  "gate": "G07",
+  "claim": "the modules compile",
+  "evidence_type": "build",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "py_compile",
+    "version": "1"
+  },
+  "operation": "py_compile",
+  "started_at": "2026-09-01T00:53:03Z",
+  "completed_at": "2026-09-01T00:53:03Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0126/evidence/G07/build.txt",
+  "digest": "sha256:72b8c609edaf2f1bb7f9d4fdefee6a3aa089239b7dc6dac61b5a144e8cf39a57",
+  "binding": {
+    "command": "/opt/bst-sa/.venv/bin/python3 -m py_compile scripts/badf_gate.py scripts/badf_compose.py",
+    "cwd": ".",
+    "environment": {
+      "python": "3.13.11",
+      "platform": "Linux-6.6.114.1-microsoft-standard-WSL2+-x86_64-with-glibc2.35"
+    },
+    "exit_code": 0,
+    "artifacts": [
+      {
+        "ref": "scripts/badf_gate.py",
+        "digest": "sha256:88e84cbd01842112da5235797d8e9a07cc7fe953711f4a2b9638d785e3a0b586"
+      },
+      {
+        "ref": "scripts/badf_compose.py",
+        "digest": "sha256:0ca8e2d56872959372edd3c1e1205de69aba850cbefa5e34602733d0b15587f6"
+      }
+    ],
+    "non_coverage": []
+  }
+}

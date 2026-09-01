@@ -1,0 +1,48 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 4155250..bc4b64d 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -2075,6 +2075,7 @@ remedy when a declaration is over-broad and the **wrong** one when the declarati
+ went missing — both emit a byte-identical condition. That gap is filed as **#257 / GOV-0113** and is not fixed
+ here: this rung's subject is family names, and editing the same file is not sharing the subject.
+ 
++<<<<<<< HEAD
+ ## badf-uat → deterministic G10 controls — a defence that names a field must require the field (`BADF-WP-0125` / WP-UAT-C, Issue #273 / GOV-0120)
+ 
+ **Lean mode DISABLED.** These are HARD INVARIANTS, the same tier as the G08 controls at VER-C.
+@@ -2124,6 +2125,35 @@ unwatched-controls finding against correct code. **The negative control's own pr
+ it**, which is why the battery now asserts that its parsed count equals the module-declared count
+ and exits before measuring on a mismatch — *every stage of a measurement chain needs its own
+ liveness witness, including the stage that reads the others.*
++=======
++## The enforcement-input ratchet — an optional input becomes loud, then mandatory (`BADF-WP-0126`, Issue #246 / GOV-0108)
++
++The class, in BARCHI-3's sentence this WP exists to falsify: *a control whose input is optional is a
++control that is off by default, and nothing says so.* `expected_surfaces` fed both C3 containment and
++the C7 delegation ceiling, and 2 of 95 work packages had ever supplied it. Now: **every `repo` run
++counts the coverage out loud** (`BADF SURFACE RATCHET: declared N/M; grandfathered undeclared G…`),
++and **from `WP-2026-0126` forward the declaration is mandatory** — refused at self-dossier assembly
++and RED in `validate_repo`, both naming the record, with the threshold being the very record that
++shipped the ratchet. History below the threshold is grandfathered: counted at the point of judgment,
++never edited. Sentinel ids (#199 / GOV-0085) are exempt by declaration, not by silence. A declaration
++naming the record's own `work/` directory or the lockfile — both excluded from the governed diff by
++construction — is refused as unmatchable: C7 authority attached to nothing (the VAL-B near-miss).
++
++**The may-touch semantic, one sentence (#272 / GOV-0119, folded here by dependency):** `files` is
++must-touch — the C7 ceiling, mirror-required; `discovery_allowance` is may-touch — never `unexpected`
++at assembly, never refused at binding, never mirror-required, never widens C7. Before this WP the two
++containment sites disagreed (assembly never consulted the allowance; binding exempted by it), so no
++declaration was correct in both directions for a may-touch path. Assembly now consults the allowance
++exactly as binding does; binding keeps its own filter because pre-unification bindings still carry
++allowance-covered paths in `unexpected_paths`. Over-reach (changed-but-undeclared) and
++over-declaration (declared-but-unmatched) remain **distinct** conditions with distinct counts — no
++emitted number means two things (#257). `services`, `interfaces` and `data` remain schema-declared
++with **zero consumers**: reserved, unconsumed, stated here so nobody discovers it — their enforcement
++or removal is #240-lane work under the replay-first doctrine, not this WP's.
++
++Five control branches, each red-observed by mutation; the sub-key × consumer matrix (measured on
++#272 pre-build) re-verified post-change: no pair of consumers disagrees about any key.
++>>>>>>> 1150843 (feat(gate): the enforcement-input ratchet -- expected_surfaces mandatory from WP-2026-0126, coverage counted, unmatchable refused, may-touch unified (WP-2026-0126))
+ 
+ ## Discovery ≠ scope expansion
+ 
