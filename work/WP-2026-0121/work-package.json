@@ -25,7 +25,7 @@
       "badf/demands/BADF-DEM-0114.json",
       "tests/test_badf_build_controls.py",
       "tests/test_badf_issue_learning.py",
-      "work/WP-2026-0128/work-package.json"
+      "work/WP-2026-0129/work-package.json"
     ]
   },
   "target_gate": "G07",
@@ -73,7 +73,7 @@
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "wp/WP-2026-0121-negative-controls",
-    "base_revision": "0afcb14",
+    "base_revision": "4a1c028",
     "composition_verified": false
   },
   "note": "Granted by SARCHI before BARCHI-1 held the landing order; BARCHI-1 confirmed it stays here and queues third (#255 -> #259 -> #258 -> this). Clustered as ONE WP because the remedy is identical and two PRs would each re-sign the lockfile and conflict by construction -- deviation from one-issue-one-task flagged per BADF-QA's batching rule. #234's floor is >= 1 DELIBERATELY: the terminal population was 4 at filing, is 9 now, and would be ~88 if #220 lands, so any pin fails for being right about an improvement. Obligation shape read from schemas/unit-test.schema.json rather than copied -- a short object is refused by check_schema BEFORE C4, which would have made the probe pass for the wrong reason had it asserted only the exit code. REV's method note is honoured: the battery script ships in the PR body rather than being described, since their own first run reported 7 survivors of which 4 were an instrument artifact."

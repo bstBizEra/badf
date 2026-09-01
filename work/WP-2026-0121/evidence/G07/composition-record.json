@@ -1,0 +1,22 @@
+{
+  "record": "git-composition",
+  "schema_version": "1.0.0",
+  "observed_at": "2026-09-01T06:48:42Z",
+  "repository": "bstBizEra/badf",
+  "work_package_id": "WP-2026-0121",
+  "target_ref": "refs/heads/main",
+  "target_base_sha": "0afcb1410907c8c4bbc2d8fae7bcb207ee0e04bf",
+  "source_ref": "refs/heads/wp/WP-2026-0121-negative-controls",
+  "source_head_sha": "67f1cc835a763f2383cfac8d154d326ea9db2482",
+  "merge_base_sha": "0afcb1410907c8c4bbc2d8fae7bcb207ee0e04bf",
+  "merge_method": "squash",
+  "expected_result_tree": "fef49e9d5b806e5eec719927de35475e4db5d989",
+  "expected_content_tree": "704a045e11381659990cfa13fee5e67f012c6e00",
+  "policy_epoch": "BADF-2026-08-25",
+  "test_set_epoch": null,
+  "suite_pattern": "test_*.py",
+  "non_coverage": [
+    "test_set_epoch: BADF defines no test-set/toolchain epoch; not recorded rather than invented",
+    "source_head_sha and expected_result_tree are informational: committing this record moves both; the binding is expected_content_tree (work/<WP>/ and the lockfile excluded)"
+  ]
+}

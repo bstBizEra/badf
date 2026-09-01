@@ -97,10 +97,13 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "0afcb1410907c8c4bbc2d8fae7bcb207ee0e04bf"
+    "base_revision": "0afcb1410907c8c4bbc2d8fae7bcb207ee0e04bf",
+    "landed_content_tree": "c4e4fcb0e0a4b6d217b60e4aa76ad875b01800e8",
+    "composition_verified": true,
+    "landed_as": "4a1c028dcf381798680bcd11855c51ff409cfba1"
   }
 }
