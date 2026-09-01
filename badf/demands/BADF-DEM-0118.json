@@ -16,10 +16,7 @@
     "principal_type": "human"
   },
   "recorded_at": "2026-09-01T08:00:00Z",
-  "provenance": {
-    "agent": "BARCHI-3",
-    "seat": "architect",
-    "note": "SARCHI ruled on #277 and amended the ruling within the hour; the amended disposition (representative shadow + declared caveat + mechanical tripwire) is what this demand carries."
-  },
-  "status": "AUTHORIZED"
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "SARCHI ruled on #277 and amended the ruling within the hour; the amended disposition (representative shadow + declared caveat + mechanical tripwire) is what this demand carries."
 }
