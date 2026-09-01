@@ -25,6 +25,7 @@
     "files": [
       "badf/demands/BADF-DEM-0118.json",
       "badf/skill-registry.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
       "examples/uat-shadow-checkout-rejected.json",
       "examples/uat-shadow-checkout.json",
       "examples/uat-shadow-checkout.log",
@@ -48,7 +49,8 @@
     "acceptance_basis.traceability_digest is populated in the corpus and pinned, so the PRD/AC/RTM chain the rung-A ladder asks for is carried",
     "One adversarial case beyond the ten that NO control catches, asserted ADMITTED and asserted DECLARED in shadow-evidence.md -- the search for one found four, and all four are declared",
     "Registry advances IMPLEMENTED -> SHADOWED in one edit, with BOTH earned steps declared: VALIDATED earned at rung C and omitted (#268's class), SHADOWED earned by D",
-    "acceptance.md amended EXTEND-ONLY: the frozen D bullet is unchanged; the amendment records what D delivers, what defers to #291, and the standing rung-status co-edit rule"
+    "acceptance.md amended EXTEND-ONLY: the frozen D bullet is unchanged; the amendment records what D delivers, what defers to #291, and the standing rung-status co-edit rule",
+    "GITHUB_CONTROL_PLANE.md carries a WP-UAT-D section in the established per-rung form, as every prior badf-uat rung and both precedent D rungs do"
   ],
   "permissions": [
     "write: bstBizEra/badf via PR"
