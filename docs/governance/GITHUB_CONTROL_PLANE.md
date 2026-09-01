@@ -2210,6 +2210,24 @@ package that treated all four probes alike would either over-reach or stall.
   equivalent anchor. Refusal 3 narrows this: an in-place edit **accompanied** by a `downgraded`
   entry is now caught. The residue is the edit that covers its tracks by writing nothing.
 
+### The route this change makes cheapest, found in review
+
+**Found by BADF-REV on the PR that closed the routes above, by walking the whole `status` enum.** Recorded here because the section immediately above argues that #267 displaced weakeners onto the finding side — and this change displaces them again, one enum value over.
+
+`findings[].status` has four values. #271 enumerated two of the three non-`OPEN` ones. The third:
+
+```
+APPROVE over the finding as-is (OPEN/MAJOR)   refused   #267's ballot control
+APPROVE + flip OPEN -> WITHDRAWN              refused   refusal 1, above
+APPROVE + flip OPEN -> RESOLVED               ADMITTED
+```
+
+`RESOLVED` buys exactly what `WITHDRAWN` used to: the finding leaves `OPEN`, the ballot control stops seeing a blocking finding, and a refused `APPROVE` becomes admissible. It has **no governed path, no corroboration, and no synthesis structure at all** — and after this change it is the *cheapest* of the three, because `WITHDRAWN` now requires an entry and `ACCEPTED_BY_AUTHORITY` is at least named as open.
+
+That is the honest cost of closing a route without closing its class: **each closure promotes the next-cheapest bypass**, and only walking the enum finds it. Closing `RESOLVED` is a schema-gap decision like `ACCEPTED_BY_AUTHORITY` — resolution is the *normal, correct* outcome for a finding, so a refusal cannot simply forbid it; it needs a decision about what corroborates a resolution. Left open and declared, on #271's remainder.
+
+**A related route, stated at its true reachability:** deleting a finding from `findings[]` outright is **refused** — an existing control catches a ballot that reported an id the record no longer carries. It is admitted only when the deletion is accompanied by a matching scrub of the ballot's `finding_ids`. Worth stating precisely, because "deletion is admitted" would imply a one-line bypass where the existing control in fact forces a coordinated two-place edit. Same class as the in-place edit, and equally unclosable without a baseline.
+
 ### Testing a control that another control masks
 
 Every fixture here is **non-`APPROVE`**, on purpose. #267's ballot control refuses `APPROVE` over

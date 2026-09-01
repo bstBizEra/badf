@@ -143,7 +143,7 @@
     "docs/13-artifact-model.md": "sha256:5ded546597e70b6cd16d92b0adbe16de3faf0976ce82720374927634457169ff",
     "docs/14-agentic-engineer-team.md": "sha256:4bc8d8b5d5c988979c4dc1e52a2ba97750957a28dff3ee789e19a9a514997a7b",
     "docs/errata/2026-08-28-wp-0015-commit-message.md": "sha256:c6e5151de9ec81bc459abd52b4109fdb91dc8a5b4eabe0dc60cac373e9f522d4",
-    "docs/governance/GITHUB_CONTROL_PLANE.md": "sha256:a3fcbdda9f8f2292ded8ca15f720c2ab75a8990cc1ef3685f623b0562c8ff496",
+    "docs/governance/GITHUB_CONTROL_PLANE.md": "sha256:a9cf69528cf538248ae3b380ce0a7c1d345a9852a39f7c25d5c713ec601928e7",
     "docs/governance/PROJECT_INSTANCE.md": "sha256:6191d54c015f24d37dd3a9aa48c49a9be805fb3fb9c26dd4a7c04cf233a9535d",
     "docs/governance/SELF_DEVELOPMENT_RULE.md": "sha256:1902557f1a59aa3104cca646e14b264b38facc3c74454985295a574c4e934f4c",
     "docs/governance/TWO_PLANE_VERDICT.md": "sha256:bf45f9b398b15a3c2b295a0403e608f9752082ed023b515f98a67a96c00c2bca",
@@ -1665,7 +1665,7 @@
     "work/WP-2026-0127/evidence/G07/source-change.json": "sha256:f4c5bb41e661fe49b2a2c73ee65bcae996c57d9b3437df62f6d3e9babcf160c9",
     "work/WP-2026-0127/evidence/G07/unit-test.json": "sha256:3e30fdcb1d7425b0a12ce421a9d990ba5c0a9122c06bb45582c381d8d24d0b98",
     "work/WP-2026-0127/gate-dossier.G07.json": "sha256:a200450e35d5199da23922d0c1d0021ece5e8946163fce1df69fbccbab820358",
-    "work/WP-2026-0127/work-package.json": "sha256:97ec8bdb7a679df971dfff1af02027c66d6d77e485d22ef3e15d9ed11b61a5bb"
+    "work/WP-2026-0127/work-package.json": "sha256:07df4a946b88f8999dc183cbc9b1a7a166faede26a86aef526ef2559487d9a76"
   },
   "schema_version": "1.0.0"
 }
