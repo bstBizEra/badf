@@ -124,3 +124,42 @@ class NonCoverageTests(_SweepFixture):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CommentSurfaceTests(_SweepFixture):
+    """#282 (the remainder of #227): the session's actual claim surface is comments.
+    Four allocation incidents shared this blind spot; the terminal demonstration was
+    the fix WP's own allocation sweep reporting two comment-claimed ids as free."""
+
+    def test_comment_id_at_or_above_next_free_warns_and_does_not_advance(self):
+        self.write("comments.txt", "Claiming WP-2026-0800 for my next WP; ceiling printed.\n")
+        r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        warn = [l for l in r.stdout.splitlines() if "WARNING" in l and "WP-2026-0800" in l]
+        self.assertTrue(warn, r.stdout)
+        self.assertIn("binding", warn[0].lower(), "the warning names the claim mechanism, not just the id")
+        self.assertIn("WP-2026-0111", r.stdout, "next-free computes from claim-shaped surfaces only")
+        self.assertNotIn("WP-2026-0801", r.stdout)
+
+    def test_absent_comments_surface_is_reported_not_omitted(self):
+        r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        surf = [l for l in r.stdout.splitlines() if "SURFACES" in l or "NOT PROVIDED" in l]
+        self.assertTrue(any("comments" in l and "NOT PROVIDED" in l for l in surf),
+                        "an unread surface stated is a caution; omitted is a false clean\n" + r.stdout)
+
+    def test_surfaces_header_reports_read_counts(self):
+        self.write("comments.txt", "quiet thread\n")
+        r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("SURFACES:", r.stdout, "the readability report has a named header, not loose rows")
+        for name in ("ledger", "branches", "pr_files", "bodies", "comments"):
+            self.assertTrue(any(name in l and "READ" in l for l in r.stdout.splitlines()),
+                            f"surface {name} not reported as READ\n" + r.stdout)
+
+    def test_actively_wrong_surface_shows_both_and_warns(self):
+        """The field fixture: the ledger confidently reports one id while the binding
+        claim for the same work lives in a comment the file surface contradicts."""
+        self.append("ledger.txt", "badf/demands/BADF-DEM-0107.json\n")
+        self.write("comments.txt", "WP-2026-0121 binds BADF-DEM-0112 (the file on disk is misnamed 0107).\n")
+        r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertTrue(any("CLAIMED" in l and "BADF-DEM-0107" in l for l in r.stdout.splitlines()))
+        warn = [l for l in r.stdout.splitlines() if "WARNING" in l and "BADF-DEM-0112" in l]
+        self.assertTrue(warn, r.stdout)

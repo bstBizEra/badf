@@ -1,0 +1,108 @@
+...FFFF....
+======================================================================
+FAIL: test_absent_comments_surface_is_reported_not_omitted (tests.test_badf_id_sweep.CommentSurfaceTests.test_absent_comments_surface_is_reported_not_omitted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_id_sweep.py", line 146, in test_absent_comments_surface_is_reported_not_omitted
+    self.assertTrue(any("comments" in l and "NOT PROVIDED" in l for l in surf),
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                    "an unread surface stated is a caution; omitted is a false clean\n" + r.stdout)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : an unread surface stated is a caution; omitted is a false clean
+BADF ID SWEEP (surfaces: ledger, branches, pr_files, bodies)
+POSITIVE CONTROL: PASS (anchors visible: WP-2026-0110, BADF-DEM-0097, GOV-0097)
+== WP-2026 ==
+CLAIMED: WP-2026-0110 (ledger)
+SENTINELS EXCLUDED: 0997 0998 0999 9999
+NEXT FREE (claim-shaped surfaces only): WP-2026-0111
+MENTIONS (prose may carry a binding claim -- READ BEFORE BINDING): none
+== BADF-DEM ==
+CLAIMED: BADF-DEM-0097 (ledger)
+SENTINELS EXCLUDED: 0997 0998 0999 9999
+NEXT FREE (claim-shaped surfaces only): BADF-DEM-0098
+MENTIONS (prose may carry a binding claim -- READ BEFORE BINDING): none
+== GOV ==
+OBSERVED USES (prose-derived; GOV has no file-backed claim surface -- READ BEFORE BINDING): GOV-0097
+NON-COVERAGE: unpushed worktrees and independent clones are invisible to every surface above; ask the seats, then PUBLISH the claim on an issue before binding. The published claim is the binding mechanism -- this sweep only bounds the risk.
+
+
+======================================================================
+FAIL: test_actively_wrong_surface_shows_both_and_warns (tests.test_badf_id_sweep.CommentSurfaceTests.test_actively_wrong_surface_shows_both_and_warns)
+The field fixture: the ledger confidently reports one id while the binding
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_id_sweep.py", line 164, in test_actively_wrong_surface_shows_both_and_warns
+    self.assertTrue(warn, r.stdout)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+AssertionError: [] is not true : BADF ID SWEEP (surfaces: ledger, branches, pr_files, bodies)
+POSITIVE CONTROL: PASS (anchors visible: WP-2026-0110, BADF-DEM-0097, GOV-0097)
+== WP-2026 ==
+CLAIMED: WP-2026-0110 (ledger)
+SENTINELS EXCLUDED: 0997 0998 0999 9999
+NEXT FREE (claim-shaped surfaces only): WP-2026-0111
+MENTIONS (prose may carry a binding claim -- READ BEFORE BINDING): none
+== BADF-DEM ==
+CLAIMED: BADF-DEM-0097 (ledger), BADF-DEM-0107 (ledger)
+SENTINELS EXCLUDED: 0997 0998 0999 9999
+NEXT FREE (claim-shaped surfaces only): BADF-DEM-0108
+MENTIONS (prose may carry a binding claim -- READ BEFORE BINDING): none
+== GOV ==
+OBSERVED USES (prose-derived; GOV has no file-backed claim surface -- READ BEFORE BINDING): GOV-0097
+NON-COVERAGE: unpushed worktrees and independent clones are invisible to every surface above; ask the seats, then PUBLISH the claim on an issue before binding. The published claim is the binding mechanism -- this sweep only bounds the risk.
+
+
+======================================================================
+FAIL: test_comment_id_at_or_above_next_free_warns_and_does_not_advance (tests.test_badf_id_sweep.CommentSurfaceTests.test_comment_id_at_or_above_next_free_warns_and_does_not_advance)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_id_sweep.py", line 138, in test_comment_id_at_or_above_next_free_warns_and_does_not_advance
+    self.assertTrue(warn, r.stdout)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+AssertionError: [] is not true : BADF ID SWEEP (surfaces: ledger, branches, pr_files, bodies)
+POSITIVE CONTROL: PASS (anchors visible: WP-2026-0110, BADF-DEM-0097, GOV-0097)
+== WP-2026 ==
+CLAIMED: WP-2026-0110 (ledger)
+SENTINELS EXCLUDED: 0997 0998 0999 9999
+NEXT FREE (claim-shaped surfaces only): WP-2026-0111
+MENTIONS (prose may carry a binding claim -- READ BEFORE BINDING): none
+== BADF-DEM ==
+CLAIMED: BADF-DEM-0097 (ledger)
+SENTINELS EXCLUDED: 0997 0998 0999 9999
+NEXT FREE (claim-shaped surfaces only): BADF-DEM-0098
+MENTIONS (prose may carry a binding claim -- READ BEFORE BINDING): none
+== GOV ==
+OBSERVED USES (prose-derived; GOV has no file-backed claim surface -- READ BEFORE BINDING): GOV-0097
+NON-COVERAGE: unpushed worktrees and independent clones are invisible to every surface above; ask the seats, then PUBLISH the claim on an issue before binding. The published claim is the binding mechanism -- this sweep only bounds the risk.
+
+
+======================================================================
+FAIL: test_surfaces_header_reports_read_counts (tests.test_badf_id_sweep.CommentSurfaceTests.test_surfaces_header_reports_read_counts)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_id_sweep.py", line 153, in test_surfaces_header_reports_read_counts
+    self.assertTrue(any(name in l and "READ" in l for l in r.stdout.splitlines()),
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                    f"surface {name} not reported as READ\n" + r.stdout)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : surface ledger not reported as READ
+BADF ID SWEEP (surfaces: ledger, branches, pr_files, bodies)
+POSITIVE CONTROL: PASS (anchors visible: WP-2026-0110, BADF-DEM-0097, GOV-0097)
+== WP-2026 ==
+CLAIMED: WP-2026-0110 (ledger)
+SENTINELS EXCLUDED: 0997 0998 0999 9999
+NEXT FREE (claim-shaped surfaces only): WP-2026-0111
+MENTIONS (prose may carry a binding claim -- READ BEFORE BINDING): none
+== BADF-DEM ==
+CLAIMED: BADF-DEM-0097 (ledger)
+SENTINELS EXCLUDED: 0997 0998 0999 9999
+NEXT FREE (claim-shaped surfaces only): BADF-DEM-0098
+MENTIONS (prose may carry a binding claim -- READ BEFORE BINDING): none
+== GOV ==
+OBSERVED USES (prose-derived; GOV has no file-backed claim surface -- READ BEFORE BINDING): GOV-0097
+NON-COVERAGE: unpushed worktrees and independent clones are invisible to every surface above; ask the seats, then PUBLISH the claim on an issue before binding. The published claim is the binding mechanism -- this sweep only bounds the risk.
+
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.232s
+
+FAILED (failures=4)

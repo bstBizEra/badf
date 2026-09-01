@@ -1,0 +1,6 @@
+python3 -m unittest tests.test_badf_id_sweep  # at base aa49a36, post-#278 rebase
+...........
+----------------------------------------------------------------------
+Ran 11 tests in 0.252s
+
+OK

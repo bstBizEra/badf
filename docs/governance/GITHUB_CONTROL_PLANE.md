@@ -1877,8 +1877,16 @@ git ls-remote --heads origin > $D/branches.txt
 for pr in $(gh pr list --state open --json number --jq '.[].number'); do
   gh api repos/bstBizEra/badf/pulls/$pr/files --jq '.[].filename'; done > $D/pr_files.txt
 gh api -X GET search/issues -f q='repo:bstBizEra/badf "WP-2026"' --jq '.items[].body' > $D/bodies.txt
+for n in $(gh issue list --state open --json number --jq '.[].number'); do
+  gh api repos/bstBizEra/badf/issues/$n/comments --jq '.[].body'; done > $D/comments.txt
 python3 scripts/badf_id_sweep.py --from-dir $D
 ```
+
+**The comment surface is where the binding claims actually live** (#282, after four allocation
+incidents in one session): provide `comments.txt` and the sweep warns by name on any comment id at or
+above the computed next-free — never folding it into the count (#199 stands) and never dropping it.
+When the dump is not provided, the run says so in its SURFACES header: an unread surface stated is a
+caution; omitted, a false clean.
 
 **GitHub search is a tokenizer, not a grepper**: it returns fuzzy hits, so any body-search result is
 verified by literal grep before it is believed (four false positives in one allocation tonight).
