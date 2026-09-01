@@ -1,0 +1,128 @@
+FAILING-FIRST OBSERVATIONS -- WP-2026-0131 (WP-UAT-D)
+
+==============================================================================
+1/5  per-control calibration
+  obligation: TEST-UATD-1 every control refuses its own defect
+  breakage  : C11's raise neutered in badf_gate.py
+==============================================================================
+F
+======================================================================
+FAIL: test_every_control_refuses_its_own_defect (tests.test_badf_uat_shadow.ShadowControlCalibrationTests.test_every_control_refuses_its_own_defect) (case='C11-not-covered-unexplained')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-uatd/tests/test_badf_uat_shadow.py", line 168, in test_every_control_refuses_its_own_defect
+    with self.assertRaises(gate.ValidationError) as cm:
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValidationError not raised
+
+----------------------------------------------------------------------
+Ran 1 test in 0.034s
+
+FAILED (failures=1)
+
+-> rc=1  RED (observed failing-first)
+
+==============================================================================
+2/5  corpus tripwire
+  obligation: TEST-UATD-2 both tripwires fire
+  breakage  : a real G10 dossier planted in work/
+==============================================================================
+tiveness caveat is only honest
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-uatd/tests/test_badf_uat_shadow.py", line 350, in test_no_real_g10_dossier_exists_yet
+    self.assertEqual([], real,
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^
+                     f"a real G10 dossier now exists ({real}); the representative caveat in "
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     f"{DOC.relative_to(gate.ROOT)} is no longer true and the real re-shadow is owed")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [] != ['/mnt/c/laragon/www/badf-wt-uatd/work/WP-2026-0997/gate-dossier.G10.json']
+
+Second list contains 1 additional elements.
+First extra element 0:
+'/mnt/c/laragon/www/badf-wt-uatd/work/WP-2026-0997/gate-dossier.G10.json'
+
+- []
++ ['/mnt/c/laragon/www/badf-wt-uatd/work/WP-2026-0997/gate-dossier.G10.json'] : a real G10 dossier now exists (['/mnt/c/laragon/www/badf-wt-uatd/work/WP-2026-0997/gate-dossier.G10.json']); the representative caveat in skills/badf-uat/references/shadow-evidence.md is no longer true and the real re-shadow is owed
+
+----------------------------------------------------------------------
+Ran 1 test in 0.096s
+
+FAILED (failures=1)
+
+-> rc=1  RED (observed failing-first)
+
+==============================================================================
+3/5  known-hole tripwire
+  obligation: TEST-UATD-2 both tripwires fire
+  breakage  : #289's token-boundary fix applied to C7 -- the declared hole closes
+==============================================================================
+ critical scenario(s) UAT-SCN-CHK-001 not passing and named in no condition or acknowledged defect; conditions are where a known critical failure is named, so an unnamed one is the aggregate UAT-I13 refuses, one enum value over (UAT-I13 / GOV #266)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-uatd/tests/test_badf_uat_shadow.py", line 373, in test_the_known_substring_hole_in_c7_c9_is_still_open
+    self.fail(f"#289 appears fixed -- C7 now refuses the longer-id case ({e}). "
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              f"Remove this test and the #289 non_coverage entry from the shadow doc.")
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: #289 appears fixed -- C7 now refuses the longer-id case (EVD-SHADOW-G10-uat (uat): RECOMMEND_ACCEPT_WITH_CONDITIONS with critical scenario(s) UAT-SCN-CHK-001 not passing and named in no condition or acknowledged defect; conditions are where a known critical failure is named, so an unnamed one is the aggregate UAT-I13 refuses, one enum value over (UAT-I13 / GOV #266)). Remove this test and the #289 non_coverage entry from the shadow doc.
+
+----------------------------------------------------------------------
+Ran 1 test in 0.026s
+
+FAILED (failures=1)
+
+-> rc=1  RED (observed failing-first)
+
+==============================================================================
+4/5  ten-class floor
+  obligation: TEST-UATD-1 all ten defect classes injected
+  breakage  : schema defect_class enum reduced to one member
+==============================================================================
+F
+======================================================================
+FAIL: test_every_defect_class_in_the_schema_is_exercised_and_admitted (tests.test_badf_uat_shadow.DefectClassCoverageTests.test_every_defect_class_in_the_schema_is_exercised_and_admitted)
+A failing critical scenario classified under EACH class satisfies U3 and is admitted.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-uatd/tests/test_badf_uat_shadow.py", line 201, in test_every_defect_class_in_the_schema_is_exercised_and_admitted
+    self.assertGreaterEqual(len(classes), 10, "the ladder asks for all ten classes")
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 not greater than or equal to 10 : the ladder asks for all ten classes
+
+----------------------------------------------------------------------
+Ran 1 test in 0.014s
+
+FAILED (failures=1)
+
+-> rc=1  RED (observed failing-first)
+
+==============================================================================
+5/5  PRD/AC/RTM chain
+  obligation: TEST-UATD-1 the corpus carries the chain
+  breakage  : traceability_digest stripped from the corpus
+==============================================================================
+F
+======================================================================
+FAIL: test_the_corpus_carries_the_prd_ac_rtm_chain_the_ladder_asks_for (tests.test_badf_uat_shadow.DefectClassCoverageTests.test_the_corpus_carries_the_prd_ac_rtm_chain_the_ladder_asks_for) (corpus='uat-shadow-checkout.json')
+`traceability_digest` is optional in the schema and I had left it unset -- the RTM
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-uatd/tests/test_badf_uat_shadow.py", line 235, in test_the_corpus_carries_the_prd_ac_rtm_chain_the_ladder_asks_for
+    self.assertIn(field, basis, f"{path.name} is missing {field}")
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'traceability_digest' not found in {'prd_id': 'PRD-SHADOW-CHECKOUT', 'prd_digest': 'sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd', 'acceptance_criteria_digest': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'} : uat-shadow-checkout.json is missing traceability_digest
+
+----------------------------------------------------------------------
+Ran 1 test in 0.019s
+
+FAILED (failures=1)
+
+-> rc=1  RED (observed failing-first)
+
+==============================================================================
+all sources restored byte-identical: True
+planted dossier removed: True

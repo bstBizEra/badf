@@ -62,19 +62,21 @@
   "test_obligations": [
     {
       "id": "TEST-UATD-1",
-      "claim": "every control refuses its own defect",
+      "claim": "every G10 control refuses its own defect, all ten defect classes are injected from the schema enum, and the corpus carries the PRD/AC/RTM chain",
       "level": "unit"
     },
     {
       "id": "TEST-UATD-2",
-      "claim": "both tripwires fire when their claim stops being true",
+      "claim": "both tripwires fire when their claim stops being true -- a real G10 dossier appearing, and #289's hole closing",
       "level": "unit"
     }
   ],
   "evidence": [
-    "source-change",
-    "unit-test",
-    "documentation"
+    "failing-first red set",
+    "green after",
+    "mutation on each control and both tripwires",
+    "compose output incl. composition record",
+    "typed G07 self-dossier"
   ],
   "rollback": {
     "reversible": true,
