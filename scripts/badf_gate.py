@@ -842,8 +842,24 @@ def _seat_ratchet_applies(wp_id: str) -> bool:
 
 
 def _rostered_seats() -> set[str]:
+    """The single authoritative reader of seat identity (QA's two-site extension of
+    Finding 1, #290): id well-formedness and uniqueness are enforced HERE, at roster
+    load, so BOTH consumers -- verify_seat_roster and _check_delegations -- inherit the
+    refusal. A guard placed in only one consumer reproduces the exact asymmetry the
+    third certification fold corrected. The schema's minLength is decorative until
+    #265 Rung A lands; this is the sole enforcer (#264 pattern, stated)."""
     data = load_json(ROOT / "badf/seats.json")
-    return {str(s.get("id")) for s in (data.get("seats") or []) if isinstance(s, dict)}
+    seats: set[str] = set()
+    for s in data.get("seats") or []:
+        if not isinstance(s, dict):
+            continue
+        sid = str(s.get("id") or "")
+        if not sid.strip() or sid != sid.strip():
+            raise ValidationError(f"seat id {sid!r} is empty, whitespace-only, or padded: it names nothing a delegation could safely bind to (QA Finding 1, #290 / #293 degenerate-content)")
+        if sid in seats:
+            raise ValidationError(f"seat id {sid!r} appears more than once: a set would collapse the duplicate silently on a roster whose subject is identity (QA Finding 2, #290)")
+        seats.add(sid)
+    return seats
 
 
 def _declared_seat(d: dict[str, Any]) -> str | None:
@@ -871,21 +887,14 @@ def verify_seat_roster() -> None:
         # is the sole enforcer until that rung lands (the #264 pattern, stated).
         raise ValidationError("badf/seats.json declares no seats: an empty roster reports clean over its own absence -- refused (AET-B-1 / #287, enumeration-vacuity)")
     held = vacant = 0
-    seen_ids: set[str] = set()
     # The named guard runs BEFORE the schema: additionalProperties would refuse the
     # same keys, but a doctrine-declared shape deserves the doctrine-declared message
     # (AUTHORITY_CONFLICT, and where the undecided half lives). Schema stays backstop.
     for s in data.get("seats") or []:
         sid = str(s.get("id") or "")
-        # QA Findings 1+2 (#290): [{"id": ""}] carries the same information as [] and
-        # passed the very check that refuses [] -- the degenerate-content shape (#293)
-        # on the identity surface. The schema's minLength/minItems declarations are
-        # decorative until #265 Rung A lands; these checks are the sole enforcers.
-        if not sid.strip() or sid != sid.strip():
-            raise ValidationError(f"seat id {sid!r} is empty, whitespace-only, or padded: it names nothing a delegation could safely bind to (QA Finding 1, #290 / #293 degenerate-content)")
-        if sid in seen_ids:
-            raise ValidationError(f"seat id {sid!r} appears more than once: _rostered_seats() is a set, so the duplicate would collapse silently on a roster whose subject is identity (QA Finding 2, #290)")
-        seen_ids.add(sid)
+        # Id well-formedness and uniqueness are enforced in _rostered_seats() -- the
+        # single authoritative load site both consumers inherit (QA two-site extension,
+        # #290). Only roster-content checks with no assembly consumer live in this walk.
         if not (s.get("charter_refs") or []):
             raise ValidationError(f"seat {sid!r} has empty charter_refs: provenance-free identity is the degenerate-content shape (QA Finding 2, #290)")
         for k in _SEAT_FORBIDDEN_PERMISSION_KEYS:

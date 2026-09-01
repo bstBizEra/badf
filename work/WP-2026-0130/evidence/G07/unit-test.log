@@ -1,6 +1,6 @@
-python3 -m unittest tests.test_badf_seat_roster  # QA Findings 1+2 fold (degenerate identity)
-.................
+python3 -m unittest tests.test_badf_seat_roster  # QA Findings 1+2, two-site form (load-site validation)
+...................
 ----------------------------------------------------------------------
-Ran 17 tests in 168.348s
+Ran 19 tests in 188.232s
 
 OK

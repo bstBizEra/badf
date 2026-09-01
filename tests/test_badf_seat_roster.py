@@ -208,6 +208,29 @@ class SeatRatchetTests(_Scratch):
         text = out.stdout + out.stderr
         self.assertIn("GHOST-SEAT", text); self.assertIn("declaration-consistency", text)
 
+    def test_blank_seat_id_reds_assembly_resolution(self):
+        """QA's two-site extension of Finding 1 (15:58:56Z): _rostered_seats() is consumed
+        at BOTH sites, so id validity must live at roster LOAD -- one authoritative site
+        both consumers inherit. A degenerate id anywhere in the roster reds assembly the
+        moment resolution consults it, even when the delegation declares a REAL seat."""
+        r = self.roster(); r["seats"].append({"id": "", "role": "builder controller", "status": "HELD",
+                                              "description": "x", "charter_refs": ["docs/14-agentic-engineer-team.md"]})
+        self.write_roster(r)
+        self.write_wp(RATCHETED); self.write_delegation(RATCHETED, seat="BARCHI-2"); self.lock()
+        res = self.gate_cmd("self-dossier", RATCHETED)
+        self.assertNotEqual(res.returncode, 0, res.stdout)
+        self.assertIn("names nothing", res.stdout + res.stderr)
+
+    def test_duplicate_seat_id_reds_assembly_resolution(self):
+        """Two-site twin for the duplicate refusal: assembly's consumer must inherit it
+        from the load site, not depend on the sweep having run first."""
+        r = self.roster(); r["seats"].append(dict(r["seats"][0]))
+        self.write_roster(r)
+        self.write_wp(RATCHETED); self.write_delegation(RATCHETED, seat="BARCHI-2"); self.lock()
+        res = self.gate_cmd("self-dossier", RATCHETED)
+        self.assertNotEqual(res.returncode, 0, res.stdout)
+        self.assertIn("more than once", res.stdout + res.stderr)
+
     def test_blank_delegation_seat_is_absent_at_assembly(self):
         """QA Finding 1's second leg: seat: "" counted as NAMING a seat (only None read
         as absent), so it passed the mandatory-seat ratchet and resolved against the
