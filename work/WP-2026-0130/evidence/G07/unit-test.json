@@ -15,12 +15,12 @@
     "name": "unittest",
     "version": "1"
   },
-  "operation": "python3 -m unittest tests.test_badf_seat_roster  # fork closed, post-REV finding",
-  "started_at": "2026-09-01T14:21:45Z",
-  "completed_at": "2026-09-01T14:21:45Z",
+  "operation": "python3 -m unittest tests.test_badf_seat_roster  # empty-roster fold, post-REV enumeration-vacuity",
+  "started_at": "2026-09-01T14:38:06Z",
+  "completed_at": "2026-09-01T14:38:06Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0130/evidence/G07/unit-test.log",
-  "digest": "sha256:dfe40efa642a620bf43973ddaa6a883628462164a8faf56b3bb175e925574eeb",
+  "digest": "sha256:212f084c918366374be6f2c2deb6bd99c84bb1207e537ea1fe24616291a82fad",
   "binding": {
     "obligations": [
       {
@@ -37,13 +37,13 @@
         "green": {
           "observed": true,
           "ref": "work/WP-2026-0130/evidence/G07/unit-test.log",
-          "digest": "sha256:dfe40efa642a620bf43973ddaa6a883628462164a8faf56b3bb175e925574eeb"
+          "digest": "sha256:212f084c918366374be6f2c2deb6bd99c84bb1207e537ea1fe24616291a82fad"
         }
       }
     ],
-    "command": "python3 -m unittest tests.test_badf_seat_roster  # fork closed, post-REV finding",
+    "command": "python3 -m unittest tests.test_badf_seat_roster  # empty-roster fold, post-REV enumeration-vacuity",
     "result": "PASS",
-    "tests_run": 8,
+    "tests_run": 9,
     "failures": 0,
     "coverage_scope": [
       "tests/test_badf_seat_roster.py"

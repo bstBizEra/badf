@@ -156,6 +156,28 @@ class SeatRatchetTests(_Scratch):
         self.assertIn(EXEMPT, out.stdout + out.stderr)
         self.assertIn("not a mapping", out.stdout + out.stderr)
 
+    def test_ratcheted_no_seat_delegation_reds_the_repo_sweep(self):
+        """REV's asymmetric-watch finding (#290 review): both duplicated rules were
+        tested through assembly only, leaving the sweep copies correct-and-unwatched
+        (the #250 class) on the rung whose copies already forked once. The behavior
+        pre-exists, so the proof is mutation discrimination, not red-first: a
+        dossier-less WP during `repo` reaches ONLY the sweep copy."""
+        self.write_wp(RATCHETED); self.write_delegation(RATCHETED, seat=None); self.lock()
+        out = self.gate_cmd("repo")
+        self.assertNotEqual(out.returncode, 0, out.stdout)
+        text = out.stdout + out.stderr
+        self.assertIn(RATCHETED, text); self.assertIn("names no seat", text)
+
+    def test_ghost_seat_delegation_reds_the_repo_sweep(self):
+        """Sweep-side twin of the assembly declaration-consistency test (REV's
+        asymmetric-watch finding). Uses the EXEMPT sentinel: grandfathering excuses
+        only a MISSING seat, never a declared seat absent from the roster."""
+        self.write_wp(EXEMPT); self.write_delegation(EXEMPT, seat="GHOST-SEAT"); self.lock()
+        out = self.gate_cmd("repo")
+        self.assertNotEqual(out.returncode, 0, out.stdout)
+        text = out.stdout + out.stderr
+        self.assertIn("GHOST-SEAT", text); self.assertIn("declaration-consistency", text)
+
     def test_grandfathered_delegation_counted_not_refused(self):
         self.write_wp(EXEMPT); self.write_delegation(EXEMPT, seat=None); self.lock()
         r = self.gate_cmd("self-dossier", EXEMPT)

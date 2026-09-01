@@ -147,10 +147,10 @@ index 92080b4..e1cef2b 100644
  Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
 diff --git a/schemas/seats.schema.json b/schemas/seats.schema.json
 new file mode 100644
-index 0000000..87a634a
+index 0000000..9ee0b29
 --- /dev/null
 +++ b/schemas/seats.schema.json
-@@ -0,0 +1,67 @@
+@@ -0,0 +1,68 @@
 +{
 +  "$schema": "https://json-schema.org/draft/2020-12/schema",
 +  "$id": "seats.schema.json",
@@ -213,13 +213,14 @@ index 0000000..87a634a
 +          }
 +        },
 +        "additionalProperties": false
-+      }
++      },
++      "minItems": 1
 +    }
 +  },
 +  "additionalProperties": false
 +}
 diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
-index 91e464d..d09abab 100644
+index 91e464d..5bc93ff 100644
 --- a/scripts/badf_gate.py
 +++ b/scripts/badf_gate.py
 @@ -38,6 +38,7 @@ REQUIRED_FILES = [
@@ -230,7 +231,7 @@ index 91e464d..d09abab 100644
      "badf/tool-registry.json",
      "badf/mcp-registry.json",
      "badf/skill-registry.json",
-@@ -823,6 +824,72 @@ def verify_surface_ratchet() -> None:
+@@ -823,6 +824,78 @@ def verify_surface_ratchet() -> None:
      print(f"BADF SURFACE RATCHET: declared {declared}/{total}; grandfathered undeclared {grandfathered} (threshold WP-2026-0126; sentinels exempt; {ratcheted} record(s) under the ratchet); over-reach and over-declaration judged separately at assembly/binding (GOV-0108)")
  
  
@@ -262,6 +263,12 @@ index 91e464d..d09abab 100644
 +    badf/authority-matrix.json, and time windows pre-empt the #261-round decision
 +    docs/03 requires. Delegation seat coverage is counted at the point of judgment."""
 +    data = load_json(ROOT / "badf/seats.json")
++    if not (data.get("seats") or []):
++        # REV's enumeration-vacuity finding: a loop finding nothing passes like one
++        # finding everything. The schema also declares minItems, which the walker does
++        # not implement (#265 Rung A unlanded) -- THIS check is the enforcement, and it
++        # is the sole enforcer until that rung lands (the #264 pattern, stated).
++        raise ValidationError("badf/seats.json declares no seats: an empty roster reports clean over its own absence -- refused (AET-B-1 / #287, enumeration-vacuity)")
 +    held = vacant = 0
 +    # The named guard runs BEFORE the schema: additionalProperties would refuse the
 +    # same keys, but a doctrine-declared shape deserves the doctrine-declared message
@@ -303,7 +310,7 @@ index 91e464d..d09abab 100644
  def reconcile_work_package(wp_arg: str) -> str:
      m = WP_ID_FORMS.match(wp_arg.strip())
      if not m:
-@@ -961,6 +1028,7 @@ def validate_repo() -> None:
+@@ -961,6 +1034,7 @@ def validate_repo() -> None:
      verify_monotonic_authority()
      verify_work_ledger()
      verify_surface_ratchet()
@@ -311,7 +318,7 @@ index 91e464d..d09abab 100644
  
  def check_non_coverage(dossier: dict[str, Any], evidence_type: str, outcome: str) -> None:
      """G08 exit criterion: 'non-coverage declared'. Before WP-0014 nothing on a
-@@ -1670,6 +1738,11 @@ def _check_delegations(wp_dir: Path, wp: dict[str, Any], wp_id: str) -> None:
+@@ -1670,6 +1744,11 @@ def _check_delegations(wp_dir: Path, wp: dict[str, Any], wp_id: str) -> None:
          if not isinstance(d, dict):
              raise ValidationError(f"{wp_id}: a delegation is not a mapping (C7)")
          name = str(d.get("task") or "?")
@@ -325,10 +332,10 @@ index 91e464d..d09abab 100644
          for ap in d.get("allowed_paths") or []:
 diff --git a/tests/test_badf_seat_roster.py b/tests/test_badf_seat_roster.py
 new file mode 100644
-index 0000000..120cc85
+index 0000000..9cfc466
 --- /dev/null
 +++ b/tests/test_badf_seat_roster.py
-@@ -0,0 +1,159 @@
+@@ -0,0 +1,170 @@
 +"""AET-B-1 (#287, WP-2026-0130): the seat roster, red-first.
 +
 +The roster binds operating seats to contract roles -- identity and NOTHING else. The
@@ -426,6 +433,17 @@ index 0000000..120cc85
 +        self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
 +        self.assertIn("BADF SEAT ROSTER", out.stdout)
 +        self.assertIn("VACANT", out.stdout)
++
++    def test_empty_roster_is_refused_not_reported_clean(self):
++        """REV's enumeration-vacuity finding (#290 review): a loop finding nothing passes
++        like one finding everything -- an empty roster would print 0 held / 0 VACANT and
++        every guard would sleep. The CODE check is the enforcement; the schema's
++        minItems is declarative only until #265 Rung A lands (the sole-enforcer pattern)."""
++        r = self.roster(); r["seats"] = []
++        self.write_roster(r); self.lock()
++        out = self.gate_cmd("repo")
++        self.assertNotEqual(out.returncode, 0, out.stdout)
++        self.assertIn("no seats", out.stdout + out.stderr)
 +
 +    def test_permission_shaped_key_in_a_seat_is_refused(self):
 +        r = self.roster(); r["seats"][0]["allowed_tools"] = ["git-push"]

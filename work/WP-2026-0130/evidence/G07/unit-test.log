@@ -1,6 +1,6 @@
-python3 -m unittest tests.test_badf_seat_roster  # empty-roster fold, post-REV enumeration-vacuity
-.........
+python3 -m unittest tests.test_badf_seat_roster  # asymmetric-watch fold, post-REV
+...........
 ----------------------------------------------------------------------
-Ran 9 tests in 99.850s
+Ran 11 tests in 112.224s
 
 OK
