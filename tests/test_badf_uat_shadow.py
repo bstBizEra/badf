@@ -117,6 +117,20 @@ def gate_control_count():
                and getattr(n.exc.func, "id", "") == "ValidationError")
 
 
+def defect_classes():
+    """The defect_class enum, read from the SCHEMA rather than written here.
+
+    The ladder frozen at rung A asks D to inject defects across ALL TEN classes. Deriving the
+    set from the schema is the walk-the-whole-enum form: if a class is added later, the sweep
+    below covers it automatically and the count assertion fails if it does not. Written down
+    as a literal, this test would only ever confirm the classes I happened to think of -- which
+    is exactly how my own control count came out as "ten" when the gate had eleven.
+    """
+    schema = json.loads((gate.ROOT / "schemas/uat.schema.json").read_text(encoding="utf-8"))
+    return schema["properties"]["binding"]["properties"]["defects"]["items"] \
+                 ["properties"]["defect_class"]["enum"]
+
+
 class ShadowCorpusTests(unittest.TestCase):
     """The representative corpus is admitted, and RECOMPUTED rather than trusted."""
 
@@ -163,6 +177,62 @@ class ShadowControlCalibrationTests(unittest.TestCase):
         self.assertEqual(gate_control_count(), len(CASES),
                          "check_g10_uat_binding has a control with no shadow case (or a case with "
                          "no control); the shadow must cover every control the gate has")
+
+
+class DefectClassCoverageTests(unittest.TestCase):
+    """The ladder's ten-class injection, built rather than waived.
+
+    I earlier argued this requirement was unachievable. It is not: `defect_class` is DATA in
+    `binding.defects[]`, not something the tool-less router detects, so every class can be
+    injected without any runtime. The claim was over-reach in the direction that excused an
+    incomplete build, and it is retracted on #277.
+    """
+
+    def setUp(self):
+        self.ev = json.loads(ACCEPTED.read_text(encoding="utf-8"))
+
+    def test_every_defect_class_in_the_schema_is_exercised_and_admitted(self):
+        """A failing critical scenario classified under EACH class satisfies U3 and is admitted.
+
+        This is the positive half: a classified failure is evidence the disposition can act on.
+        The refusal half (a failure with NO class) is U3's case in the calibration table above.
+        """
+        classes = defect_classes()
+        self.assertGreaterEqual(len(classes), 10, "the ladder asks for all ten classes")
+        for dc in classes:
+            with self.subTest(defect_class=dc):
+                ev = copy.deepcopy(self.ev)
+                b = ev["binding"]
+                b["observations"][0]["result"] = "FAIL"
+                b["defects"] = [{"scenario_id": CRIT, "defect_class": dc,
+                                 "statement": f"representative failure classified {dc}"}]
+                b["coverage"]["criteria"][0]["state"] = "covered_fail"
+                b["recommendation"] = "RECOMMEND_REJECT"
+                del b["acceptance"]
+                check(ev)
+
+    def test_an_unknown_defect_class_is_refused_by_the_schema(self):
+        """Negative control for the sweep above: without it, "all ten admitted" would be
+        indistinguishable from "the field is not validated at all"."""
+        ev = copy.deepcopy(self.ev)
+        b = ev["binding"]
+        b["observations"][0]["result"] = "FAIL"
+        b["defects"] = [{"scenario_id": CRIT, "defect_class": "NOT_A_REAL_CLASS",
+                         "statement": "x"}]
+        b["coverage"]["criteria"][0]["state"] = "covered_fail"
+        b["recommendation"] = "RECOMMEND_REJECT"
+        del b["acceptance"]
+        with self.assertRaises(gate.ValidationError):
+            check(ev)
+
+    def test_the_corpus_carries_the_prd_ac_rtm_chain_the_ladder_asks_for(self):
+        """`traceability_digest` is optional in the schema and I had left it unset -- the RTM
+        third of the ladder's "PRD/AC/RTM chain". Populated, and pinned so it stays."""
+        for path in (ACCEPTED, REJECTED):
+            with self.subTest(corpus=path.name):
+                basis = json.loads(path.read_text(encoding="utf-8"))["binding"]["acceptance_basis"]
+                for field in ("prd_digest", "acceptance_criteria_digest", "traceability_digest"):
+                    self.assertIn(field, basis, f"{path.name} is missing {field}")
 
 
 class TripwireTests(unittest.TestCase):

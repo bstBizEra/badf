@@ -40,7 +40,9 @@
     "The rejecting run is ADMITTED -- the gate refuses malformed evidence, never an unfavourable result",
     "test_no_real_g10_dossier_exists_yet goes RED when a real G10 dossier is planted (verified)",
     "test_the_known_substring_hole_in_c7_c9_is_still_open goes RED when #289's fix is applied (verified)",
-    "The shadow doc names #277, #289, #291 and states the caveat in its first section"
+    "The shadow doc names #277, #289, #291 and states the caveat in its first section",
+    "Every defect_class in the schema enum is injected and admitted, the enum read from the schema rather than written in the test, with an unknown class refused as the negative control",
+    "acceptance_basis.traceability_digest is populated in the corpus and pinned, so the PRD/AC/RTM chain the rung-A ladder asks for is carried"
   ],
   "permissions": [
     "write: bstBizEra/badf via PR"

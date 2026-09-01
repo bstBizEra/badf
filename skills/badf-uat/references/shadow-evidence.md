@@ -69,6 +69,17 @@ containing only accepted runs would not have shown that.
 sites read from the live gate **by AST**, not to a number written down here. A control added later
 without a shadow case fails the suite rather than going quietly unshadowed.
 
+**All ten defect classes injected, and the PRD/AC/RTM chain carried.** The rung-A ladder asks D for
+*"known and injected defects across all ten `defect-classification.md` classes"* and a
+*"PRD/AC/RTM chain"*. Both are built: the sweep walks the `defect_class` enum **read from the
+schema** — one classified failure per class, each admitted — with an unknown class refused as its
+negative control, and `acceptance_basis.traceability_digest` is populated and pinned.
+
+*I first argued both requirements were unachievable. They are not:* `defect_class` is **data** in
+the binding, not something the router detects, and `traceability_digest` was an optional field I
+had simply left unset. That over-reach ran in the direction that excused an incomplete build and is
+retracted on #277; only the detection-quality third genuinely cannot be built.
+
 ## Declared non-coverage
 
 Stated, never implied — the `badf-build` shadow doctrine (#197) applied to a corpus that is
@@ -76,7 +87,8 @@ representative rather than partial.
 
 | # | Not covered | Why |
 | :--- | :--- | :--- |
-| 1 | **Real-project acceptance.** No scenario derivation from a real PRD, no real execution adapter, no real defect triage, no real coverage matrix. | No G10 has ever run. This is the caveat above, and the trigger below. |
+| 1 | **Detection quality.** True findings, false positives, missed criteria and criticality-flattening false negatives are NOT measured. | These are properties of a *judgment*. `badf-uat` is a thin router with `allowed_tools: []` — it detects nothing; adapters report. No corpus makes a tool-less router produce a false positive. This is the one requirement of the rung-A ladder that cannot be built today, and the only one amended. |
+| 1b | **Real-project acceptance.** No scenario derivation from a real PRD, no real execution adapter, no real triage workflow. | No G10 has ever run. This is the caveat above, and the trigger below. |
 | 2 | **C7/C9 substring matching (#289, OPEN).** A failing critical scenario named only by a *longer* id passes as acknowledged. | Found while building this shadow. These two controls are **not** reported as sound; the shadow asserts the hole is still open, so it cannot be forgotten. |
 | 3 | **Encodings nobody imagined.** The realism gap named above. | Inherent to a representative corpus; discharged only by the real re-shadow. |
 

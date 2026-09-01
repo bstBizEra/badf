@@ -28,7 +28,8 @@
     "acceptance_basis": {
       "prd_id": "PRD-SHADOW-CHECKOUT",
       "prd_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
-      "acceptance_criteria_digest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+      "acceptance_criteria_digest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "traceability_digest": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
     },
     "scenarios": [
       {
