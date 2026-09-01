@@ -291,6 +291,67 @@ class UnwatchedControlTests(_Scratch):
         self.assertIn("ACCEPTED", r.stdout, r.stderr)
 
 
+    # ---- the two the FULL-SUITE battery found still unwatched (WP-2026-0121) ------------
+    # Stage 1 screened all 12 ValidationError sites in check_g07_binding; stage 2 re-ran the
+    # survivors against every test in the repo (Ran 1074, loader-count asserted equal). These
+    # two survived: correct controls that fire at runtime, with nothing that would notice if
+    # a future edit deleted them.
+
+    def test_change_digest_must_equal_the_artifact_digest(self):
+        """A binding names the artifact it is bound to BY DIGEST. Without this, a binding could
+        carry a digest for one diff while the dossier reads another -- every downstream claim
+        that "the binding describes this artifact" rests on it, and nothing tested it."""
+        art, ev = self.evidence_with("source-change", self._sc_binding())
+        ev["binding"]["change_digest"] = ev["digest"]
+        r = self.rule("source-change", ev["binding"])
+        self.assertIn("ACCEPTED", r.stdout, r.stderr)
+        # a digest for some other artifact
+        r = self.rule("source-change", dict(ev["binding"], change_digest="sha256:" + "0" * 64))
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("change_digest does not equal the artifact digest", r.stderr)
+        # BOUNDARY, and it is not this control's: an ABSENT digest never reaches here --
+        # check_schema refuses `None` as "must be a string" first. Asserted so the division of
+        # labour is pinned rather than assumed, and so nobody adds a control for the null case
+        # believing it reachable. I wrote that assertion first and it failed on the schema's
+        # raise, not the control's -- the same wrong-raise trap this WP exists to close.
+        r = self.rule("source-change", dict(ev["binding"], change_digest=None))
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("must be a string", r.stderr)
+        self.assertNotIn("does not equal the artifact digest", r.stderr)
+
+    def test_base_sha_must_equal_the_composition_records_target_base_sha(self):
+        """The RECORD-side base check, distinct from the work-package-side one.
+
+        Two controls compare `binding.base_sha` against two different sources: the work
+        package's `external_target.base_revision`, and the composition record's
+        `target_base_sha`. The first had a test; this one did not. Both messages begin
+        `binding.base_sha`, so this test discriminates on a fragment UNIQUE to the record-side
+        control and asserts the work-package-side wording is ABSENT -- otherwise it would pass
+        on the wrong raise, which is exactly how a control gets a test that does not test it.
+        """
+        art, ev = self.evidence_with("source-change", self._sc_binding())
+        ev["binding"]["change_digest"] = ev["digest"]
+        rec = {"record": "git-composition", "work_package_id": WP, "target_ref": "refs/heads/main",
+               "target_base_sha": ev["binding"]["base_sha"], "source_head_sha": ev["binding"]["head_sha"],
+               "merge_base_sha": ev["binding"]["base_sha"], "merge_method": "squash",
+               "expected_result_tree": "0" * 40,
+               "expected_content_tree": ev["binding"]["content_tree"]}
+        record = self.wp_dir / "evidence/G07/composition-record.json"
+        record.write_text(json.dumps(rec) + "\n")
+        r = self.rule("source-change", ev["binding"])
+        self.assertIn("ACCEPTED", r.stdout, r.stderr)
+        # the record was computed against a different base than the binding claims
+        rec["target_base_sha"] = "1" * 40
+        record.write_text(json.dumps(rec) + "\n")
+        r = self.rule("source-change", ev["binding"])
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("does not equal the composition record\'s target_base_sha", r.stderr)
+        self.assertIn("BLD-I02 / C2", r.stderr)
+        self.assertNotIn("base_revision", r.stderr,
+                         "refused by the work-package-side control, not the record-side one -- "
+                         "this test would then pass while :1662 stayed unwatched")
+
+
 class SilenceTests(_Scratch):
     def test_controls_are_silent_when_fields_are_undeclared(self):
         r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)

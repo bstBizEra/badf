@@ -508,7 +508,7 @@
     "tests/test_badf_authority_instance.py": "sha256:e4f5ccff627e9ce2ac1daebe1ceadfbd8b302cfbfdbe785ad273cca7057f3490",
     "tests/test_badf_build_activation.py": "sha256:bebfbb5aa32470ebcb5465f96d0b612e47ed22cbf6aba5b66171a553044433ae",
     "tests/test_badf_build_contract.py": "sha256:604f9512975f5fa7d70d302454a592bbc323a412cf3b4632edf44b0c03842687",
-    "tests/test_badf_build_controls.py": "sha256:56ba5c718d06326e63e1212d4fdb32460768cd4c00ed0186f95cfa0b2faf3b4f",
+    "tests/test_badf_build_controls.py": "sha256:b3b4b2b8fee2b4c95952512f1eebf4d7df0e2c6f8638dd237852ad7e729bf74d",
     "tests/test_badf_build_evidence.py": "sha256:9e5969e53492b8aadafc4d3b7b420130a5e7f8c2b053b85a0f5db3a9bbbcabeb",
     "tests/test_badf_build_shadow.py": "sha256:e133d8d8d3c9b43e0482289549bacae747ea1ef2dd2f54d93f2914b2b0260aa6",
     "tests/test_badf_compose.py": "sha256:22abe37dbd2502383a7d8498fcc5267da82fb3d55d5514a725598ed323100564",
