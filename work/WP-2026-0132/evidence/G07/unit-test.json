@@ -15,12 +15,12 @@
     "name": "unittest",
     "version": "1"
   },
-  "operation": "python3 -m unittest tests.test_badf_durable_effect  # AET-B-2, green after (rebased onto 75a6abd)",
-  "started_at": "2026-09-01T20:55:34Z",
-  "completed_at": "2026-09-01T20:55:34Z",
+  "operation": "python3 -m unittest tests.test_badf_durable_effect  # AET-B-2, green after QA F1 fold",
+  "started_at": "2026-09-01T21:06:51Z",
+  "completed_at": "2026-09-01T21:06:51Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0132/evidence/G07/unit-test.log",
-  "digest": "sha256:72401c91fb3addf2f1903d66067f8581cbc633e213a35c4b34cba22d4040dd01",
+  "digest": "sha256:d44f1c4fb40ebe7cab29bffc5e0c1f58ef4dea76e5cd5b18477ba7c03861a514",
   "binding": {
     "obligations": [
       {
@@ -37,11 +37,11 @@
         "green": {
           "observed": true,
           "ref": "work/WP-2026-0132/evidence/G07/unit-test.log",
-          "digest": "sha256:72401c91fb3addf2f1903d66067f8581cbc633e213a35c4b34cba22d4040dd01"
+          "digest": "sha256:d44f1c4fb40ebe7cab29bffc5e0c1f58ef4dea76e5cd5b18477ba7c03861a514"
         }
       }
     ],
-    "command": "python3 -m unittest tests.test_badf_durable_effect  # AET-B-2, green after (rebased onto 75a6abd)",
+    "command": "python3 -m unittest tests.test_badf_durable_effect  # AET-B-2, green after QA F1 fold",
     "result": "PASS",
     "tests_run": 19,
     "failures": 0,

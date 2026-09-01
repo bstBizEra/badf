@@ -41,8 +41,8 @@
   "test_obligations": [
     {
       "id": "TEST-001",
-      "claim": "a durable effect that reached a terminal outcome cannot be recorded as re-prepared or re-committed, at either consumer; the event record admits no undeclared keys; and the authority-check phase leaves a trace",
-      "method": "red-first against the current gate, then per-consumer mutation discrimination on each shared refusal with a negative control; the closed outcome set walked from the declared constant, not sampled"
+      "claim": "a durable effect that reached an ESTABLISHED outcome cannot be recorded as re-prepared or re-committed at either consumer, and stays compensable; the event record admits no undeclared keys; the authority-check phase leaves a trace per effect from this WP's id. Proven red-first, then by per-consumer mutation discrimination against a green negative control, with the closed sets walked from the declared constants rather than sampled.",
+      "level": "unit"
     }
   ],
   "evidence": [
