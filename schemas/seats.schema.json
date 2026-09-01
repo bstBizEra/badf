@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "seats.schema.json",
+  "title": "BADF seat roster (AET-B-1): identity bindings only",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "doctrine",
+    "seats"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "doctrine": {
+      "type": "string"
+    },
+    "seats": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "role",
+          "status",
+          "description",
+          "charter_refs"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "coordinator",
+              "builder controller",
+              "verifier",
+              "independent reviewer",
+              "release/runtime observer",
+              "librarian"
+            ]
+          },
+          "status": {
+            "enum": [
+              "HELD",
+              "VACANT"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "charter_refs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,100 @@
+EEEFFF.
+======================================================================
+ERROR: test_permission_shaped_key_in_a_seat_is_refused (tests.test_badf_seat_roster.RosterArtifactTests.test_permission_shaped_key_in_a_seat_is_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_seat_roster.py", line 99, in test_permission_shaped_key_in_a_seat_is_refused
+    r = self.roster(); r["seats"][0]["allowed_tools"] = ["git-push"]
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_seat_roster.py", line 72, in roster
+    return json.loads((self.root / "badf/seats.json").read_text(encoding="utf-8"))
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmp7y4minch/badf/badf/seats.json'
+
+======================================================================
+ERROR: test_roster_exists_schema_validates_and_names_the_vacancy (tests.test_badf_seat_roster.RosterArtifactTests.test_roster_exists_schema_validates_and_names_the_vacancy)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_seat_roster.py", line 86, in test_roster_exists_schema_validates_and_names_the_vacancy
+    r = self.roster()
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_seat_roster.py", line 72, in roster
+    return json.loads((self.root / "badf/seats.json").read_text(encoding="utf-8"))
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmpe37123lc/badf/badf/seats.json'
+
+======================================================================
+ERROR: test_time_shaped_key_in_a_seat_is_refused (tests.test_badf_seat_roster.RosterArtifactTests.test_time_shaped_key_in_a_seat_is_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_seat_roster.py", line 106, in test_time_shaped_key_in_a_seat_is_refused
+    r = self.roster(); r["seats"][1]["expires"] = "2027-01-01T00:00:00Z"
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_seat_roster.py", line 72, in roster
+    return json.loads((self.root / "badf/seats.json").read_text(encoding="utf-8"))
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmp9jvb61pa/badf/badf/seats.json'
+
+======================================================================
+FAIL: test_declared_seat_absent_from_roster_is_refused (tests.test_badf_seat_roster.SeatRatchetTests.test_declared_seat_absent_from_roster_is_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_seat_roster.py", line 125, in test_declared_seat_absent_from_roster_is_refused
+    self.assertNotEqual(r.returncode, 0, r.stdout)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : re-signed badf/lockfile.json over 1696 governance paths
+BADF SELF-DOSSIER: WP-2026-9996 G07 assembled, disposition HUMAN_REQUIRED; source-change 323 bytes bound to 0afcb14..HEAD; a human merges. Validate: python3 scripts/badf_gate.py dossier work/WP-2026-9996/gate-dossier.G07.json (exit 3 = HELD).
+BADF GATE PASS: self-dossier
+
+
+======================================================================
+FAIL: test_delegation_at_threshold_without_seat_refused_at_assembly (tests.test_badf_seat_roster.SeatRatchetTests.test_delegation_at_threshold_without_seat_refused_at_assembly)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_seat_roster.py", line 118, in test_delegation_at_threshold_without_seat_refused_at_assembly
+    self.assertNotEqual(r.returncode, 0, r.stdout)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : re-signed badf/lockfile.json over 1696 governance paths
+BADF SELF-DOSSIER: WP-2026-9996 G07 assembled, disposition HUMAN_REQUIRED; source-change 323 bytes bound to 0afcb14..HEAD; a human merges. Validate: python3 scripts/badf_gate.py dossier work/WP-2026-9996/gate-dossier.G07.json (exit 3 = HELD).
+BADF GATE PASS: self-dossier
+
+
+======================================================================
+FAIL: test_grandfathered_delegation_counted_not_refused (tests.test_badf_seat_roster.SeatRatchetTests.test_grandfathered_delegation_counted_not_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_seat_roster.py", line 140, in test_grandfathered_delegation_counted_not_refused
+    self.assertTrue(line and "delegation" in line[0].lower(), out.stdout)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: [] is not true : BADF SURFACE RATCHET: declared 16/111; grandfathered undeclared 95 (threshold WP-2026-0126; sentinels exempt; 3 record(s) under the ratchet); over-reach and over-declaration judged separately at assembly/binding (GOV-0108)
+BADF GATE PASS: repo
+
+
+----------------------------------------------------------------------
+Ran 7 tests in 62.611s
+
+FAILED (failures=3, errors=3)

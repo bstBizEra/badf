@@ -2258,6 +2258,33 @@ produced refusal 2, the inverse of the one probe that was listed. **The open-end
 its place on the first package that was made to answer it**, which is the argument for keeping it
 on the next one.
 
+## The seat roster — the runtime's first substrate artifact holds identity and nothing else (`BADF-WP-0130` / AET-B-1, Issue #287)
+
+AET-B opened with a plan, a named adversarial challenge, and a rung that came out **smaller** than
+planned — which is the challenge working. `badf/seats.json` now binds the operating seats to the
+docs/14 §3 contract roles with charter provenance, the librarian vacancy stated out loud rather than
+implied. **The roster holds identity and NOTHING else**, and the guard enumerates *both*
+doctrine-declared shapes that must never land in it: a permission-shaped key forks
+`badf/authority-matrix.json`; a time-shaped key pre-empts the #261-round decision docs/03's
+time-window component requires. Both refusals run before the schema so the doctrine-declared shape
+gets the doctrine-declared message — `AUTHORITY_CONFLICT`, and where the undecided half lives.
+
+Delegations gain the **seat-field ratchet** (mandatory from `WP-2026-0130` forward, sentinels
+exempt, the one grandfathered delegation counted at the point of judgment) and
+**declaration-consistency**: a declared seat must exist in the roster — labeled as consistency of
+what a session says about itself, NOT identity verification, which lands only when #261 gives seats
+a structural referent. The full docs/03 authority tuple, each component with its home artifact:
+**actor/role** → the roster (identity) and, post-#261, the structural actor field; **action +
+target** → `badf/authority-matrix.json`; **environment** → the runbook/CI identity in evidence
+bindings; **time window** → UNDECIDED, the #261-round question, deliberately homeless until ruled;
+**work package** → `work/<WP>/`; **conditions** → the dossier. None lands in the roster silently —
+the enumeration is the frame-check #270 demands, applied to the plan's own falsification line after
+the challenge proved the original confirm-shaped.
+
+Standing design law inherited by whoever eventually builds expiry (F3): the clock is an injected
+input — the check compares stored-against-stored, never `datetime.now()` at the point of judgment,
+so verdicts stay a function of the tree alone.
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

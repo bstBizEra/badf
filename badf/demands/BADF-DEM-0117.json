@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0117",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 287,
+    "url": "https://github.com/bstBizEra/badf/issues/287",
+    "exported_at": "2026-09-01T07:17:34Z",
+    "body_digest": "sha256:74ee8f4827225a550b6e1d6fb440e3c8cc091907d7403f4ef00db012e1f42b5c"
+  },
+  "title": "GOV: AET-B-1 -- the seat roster (identity bindings only; seat-field ratchet; declaration-consistency; permissions AND time excluded by guard)",
+  "problem": "\ud83e\udde0 **SARCHI** \u2014 **AET-B-1: the seat roster** \u2014 the runtime substrate's first governed rung, as challenged and re-scoped on #236 (plan comment 5489594593; four-finding challenge 5490095978; disposition 5490111648; dispatch under the Landing Commander's convergence ruling).\n\n## Scope (post-challenge, smaller than planned)\n1. **`badf/seats.json`** \u2014 identity bindings ONLY: seat id \u2192 role \u2192 description \u2192 charter provenance refs. The six operating seats as they exist. **The stop-code guards two doctrine components now, not one:** the roster holding *permissions* forks `badf/authority-matrix.json`; the roster holding *time windows* pre-empts the #261-round decision docs/03 requires \u2014 either is `AUTHORITY_CONFLICT`, and the guard test enumerates BOTH shapes (the F4 lesson: the falsification line asks what doctrine declares, not what the author imagined).\n2. **`schemas/seats.schema.json`** + gate validation (one canonical gate).\n3. **The F1 seat-field ratchet**: delegations in `build/session.json` for WPs at/above THIS WP's id must carry `seat`; the one existing delegation grandfathered and counted; coverage stated at the point of judgment (the GOV-0108 pattern, applied by its owner).\n4. **Declaration-consistency checks, labeled as such**: the declared seat exists in the roster \u2014 consistency of what a session says about itself, NOT identity verification (that refusal lands with #261's structural referent; docs/03: a self-declared name is weaker than tool access).\n\n## Out of scope, argued on the record\nExpiry and every time-shaped key (descoped per F4 \u2014 decided in the #261 round with the docs/03 time-window question stated to the operator); the identity-verifying refusal (F2 \u2014 waits for #261); the durable-effect record (AET-B-2, adjacent by the fold test); `badf/team.yaml` (INIT-rung); any authority-matrix, lifecycle, or registry change.\n\n## Standing design law inherited\nF3: wherever expiry eventually lands, the check compares stored-against-stored \u2014 the clock is an injected input, never `datetime.now()` at the point of judgment; verdicts remain a function of the tree.\n\n## Acceptance criteria (the #270 clause applied to frame AND object)\n- an unrostered declared seat is refused at the reporting site, red-first; the grandfathered delegation is counted, never refused\n- the seat-field ratchet holds at/above threshold with coverage stated; below, counted\n- the no-permissions/no-time guard on `seats.json` is exercised red (both shapes constructed and refused), and **the criteria themselves get the frame-check**: every doctrine-declared component of authority (docs/03's full tuple) is enumerated with its home artifact named \u2014 none silently lands in the roster\n- all pre-existing tests green; repo PASS on branch and composed tree\n\nIds claimed with ceiling per protocol: **ceiling `WP-2026-0129` (#285) / `BADF-DEM-0116` (#285) \u2192 binding `WP-2026-0130` / `BADF-DEM-0117`** \u2014 allocated by the fixed sweep's first production run (comments surface READ, zero warnings). C2; QA+REV; merger per charter.\n<!-- agent: sarchi | the rung the challenge shrank -->",
+  "status": "AUTHORIZED",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "recorded_at": "2026-09-01T07:17:34Z",
+  "note": "AET-B-1 as challenged and re-scoped: BARCHI-2's four-finding pass (F1 seat-field ratchet adopted; F2 artifact-now-refusal-post-#261; F3 stored-vs-stored as standing law; F4 expiry descoped -- the falsification line was confirm-shaped and now guards permissions AND time). Dispatched by the Landing Commander on the pre-named convergence trigger. Ids 0130/0117 allocated by the fixed sweep's first production run (comments surface READ, zero warnings), claim published in the issue with ceiling 0129/0116 (#285)."
+}

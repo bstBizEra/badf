@@ -1,0 +1,6 @@
+python3 -m unittest tests.test_badf_seat_roster  # at base c8d1b6a, post-#286, queue front
+.......
+----------------------------------------------------------------------
+Ran 7 tests in 70.901s
+
+OK

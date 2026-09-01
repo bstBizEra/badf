@@ -38,6 +38,7 @@ REQUIRED_FILES = [
     "docs/13-artifact-model.md",
     "badf/lifecycle.json",
     "badf/authority-matrix.json",
+    "badf/seats.json",
     "badf/tool-registry.json",
     "badf/mcp-registry.json",
     "badf/skill-registry.json",
@@ -823,6 +824,69 @@ def verify_surface_ratchet() -> None:
     print(f"BADF SURFACE RATCHET: declared {declared}/{total}; grandfathered undeclared {grandfathered} (threshold WP-2026-0126; sentinels exempt; {ratcheted} record(s) under the ratchet); over-reach and over-declaration judged separately at assembly/binding (GOV-0108)")
 
 
+# ---- AET-B-1 (#287, WP-2026-0130): the seat roster ----
+SEAT_RATCHET_THRESHOLD = 130
+_SEAT_FORBIDDEN_PERMISSION_KEYS = ("allowed_paths", "allowed_tools", "actions", "permissions", "prohibited")
+_SEAT_FORBIDDEN_TIME_KEYS = ("expires", "expiry", "until", "valid_until", "window", "time_window")
+
+
+def _seat_ratchet_applies(wp_id: str) -> bool:
+    """The delegation seat field is mandatory from WP-2026-0130 forward (the WP that
+    shipped the roster); earlier delegations are grandfathered and counted; sentinel
+    ids stay exempt by declaration (same shape as the surface ratchet, same reasons)."""
+    m = WP_ID_FORMS.match(str(wp_id))
+    if not m:
+        return False
+    n = int(m.group(1))
+    return n >= SEAT_RATCHET_THRESHOLD and n not in SURFACE_RATCHET_SENTINELS
+
+
+def _rostered_seats() -> set[str]:
+    data = load_json(ROOT / "badf/seats.json")
+    return {str(s.get("id")) for s in (data.get("seats") or []) if isinstance(s, dict)}
+
+
+def verify_seat_roster() -> None:
+    """AET-B-1: the roster holds identity and NOTHING else. Both doctrine-declared
+    shapes that must never land in it are refused by name -- permissions fork
+    badf/authority-matrix.json, and time windows pre-empt the #261-round decision
+    docs/03 requires. Delegation seat coverage is counted at the point of judgment."""
+    data = load_json(ROOT / "badf/seats.json")
+    held = vacant = 0
+    # The named guard runs BEFORE the schema: additionalProperties would refuse the
+    # same keys, but a doctrine-declared shape deserves the doctrine-declared message
+    # (AUTHORITY_CONFLICT, and where the undecided half lives). Schema stays backstop.
+    for s in data.get("seats") or []:
+        for k in _SEAT_FORBIDDEN_PERMISSION_KEYS:
+            if k in s:
+                raise ValidationError(f"seat {s.get('id')!r} carries permission-shaped key {k!r}: the roster holding permissions forks badf/authority-matrix.json -- AUTHORITY_CONFLICT (AET-B-1 / #287)")
+        for k in _SEAT_FORBIDDEN_TIME_KEYS:
+            if k in s:
+                raise ValidationError(f"seat {s.get('id')!r} carries time-shaped key {k!r}: the time window is a doctrine-declared component of authority whose home is undecided (#261 round, docs/03) -- AUTHORITY_CONFLICT (AET-B-1 / #287)")
+        if s.get("status") == "VACANT":
+            vacant += 1
+        else:
+            held += 1
+    check_schema("seats", data)
+    seats = _rostered_seats()
+    with_seat = without = 0
+    for path in sorted((ROOT / "work").glob(f"{WP_NAMESPACE}*/build/session.json")):
+        wp = path.parent.parent.name
+        for d in (load_json(path) or {}).get("delegations") or []:
+            if not isinstance(d, dict):
+                continue
+            seat = d.get("seat")
+            if seat is None:
+                without += 1
+                if _seat_ratchet_applies(wp):
+                    raise ValidationError(f"{wp}: delegation {d.get('task')!r} names no seat -- mandatory at and above the threshold {WP_NAMESPACE}0130 (AET-B-1 / #287)")
+            else:
+                with_seat += 1
+                if str(seat) not in seats:
+                    raise ValidationError(f"{wp}: delegation {d.get('task')!r} declares seat {seat!r}, which is not in badf/seats.json (declaration-consistency; identity verification lands with #261)")
+    print(f"BADF SEAT ROSTER: {held} held, {vacant} VACANT; delegations naming a seat {with_seat}, grandfathered without {without} (threshold {WP_NAMESPACE}0130; sentinels exempt) -- declaration-consistency only until #261 gives seats a structural referent (AET-B-1)")
+
+
 def reconcile_work_package(wp_arg: str) -> str:
     m = WP_ID_FORMS.match(wp_arg.strip())
     if not m:
@@ -961,6 +1025,7 @@ def validate_repo() -> None:
     verify_monotonic_authority()
     verify_work_ledger()
     verify_surface_ratchet()
+    verify_seat_roster()
 
 def check_non_coverage(dossier: dict[str, Any], evidence_type: str, outcome: str) -> None:
     """G08 exit criterion: 'non-coverage declared'. Before WP-0014 nothing on a
@@ -1670,6 +1735,11 @@ def _check_delegations(wp_dir: Path, wp: dict[str, Any], wp_id: str) -> None:
         if not isinstance(d, dict):
             raise ValidationError(f"{wp_id}: a delegation is not a mapping (C7)")
         name = str(d.get("task") or "?")
+        _seat = d.get("seat")
+        if _seat is None and _seat_ratchet_applies(wp_id):
+            raise ValidationError(f"{wp_id}: delegation {name} names no seat -- mandatory at and above the threshold {WP_NAMESPACE}0130 (AET-B-1 / #287)")
+        if _seat is not None and str(_seat) not in _rostered_seats():
+            raise ValidationError(f"{wp_id}: delegation {name} declares seat {_seat!r}, which is not in badf/seats.json (declaration-consistency; identity verification lands with #261)")
         if not surface:
             raise ValidationError(f"{wp_id}: delegation {name} declared but the work package declares no expected_surfaces; a subset of nothing cannot be granted (BLD-I10 / C7)")
         for ap in d.get("allowed_paths") or []:

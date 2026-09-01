@@ -1,0 +1,83 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0130",
+  "title": "AET-B-1: the seat roster -- identity bindings only, the seat-field ratchet, declaration-consistency; permissions and time excluded by an enumerated guard",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0117",
+  "objective": "Give the AET runtime its first substrate artifact: a governed roster binding operating seats to contract roles, with delegations ratcheted to name their seat and checked for declaration-consistency -- while a two-shape guard keeps every other doctrine-declared component of authority OUT of the roster.",
+  "business_value": "AET-B's first governed rung; replaces tribal seat knowledge with an artifact; the referent #261's identity split will consume.",
+  "in_scope": [
+    "badf/seats.json: the six operating seats bound to docs/14 SS3 roles (coordinator, builders, verifier, independent reviewer) with charter provenance refs; the librarian seat recorded VACANT out loud (non-coverage stated, never implied)",
+    "schemas/seats.schema.json + gate validation in validate_repo (one canonical gate): schema conformance AND the two-shape guard -- any permission-shaped key (allowed_paths/allowed_tools/actions/permissions/prohibited) or time-shaped key (expires/expiry/until/valid_until/window/time_window) anywhere in a seat entry is refused as AUTHORITY_CONFLICT",
+    "scripts/badf_gate.py: _check_delegations gains the F1 ratchet -- delegations in WPs at/above WP-2026-0130 (sentinels exempt) must carry seat, and any declared seat must exist in the roster (declaration-consistency, labeled as such); grandfathered delegations counted; a BADF SEAT ROSTER line in repo output stating seats, vacancy, and delegation-coverage counts",
+    "tests/test_badf_seat_roster.py red-first; badf/demands/BADF-DEM-0117.json; GITHUB_CONTROL_PLANE.md doctrine; reconcile WP-2026-0121; composition record + typed G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "expiry and every time-shaped property (F4: decided in the #261 round with the docs/03 time-window question stated to the operator); identity VERIFICATION (F2: the refusal lands with #261's structural referent); the durable-effect record (AET-B-2); badf/team.yaml (INIT-rung); any authority-matrix, lifecycle, or registry change"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "seats.json exists, schema-validates, names six seats with the librarian VACANT stated; repo output carries the BADF SEAT ROSTER line with seat and coverage counts",
+    "a seat entry carrying a permission-shaped key is refused red-first; a time-shaped key likewise -- BOTH guard shapes constructed and observed failing (the F4 lesson made mechanical)",
+    "a delegation at/above the threshold without a seat field is refused at assembly and RED in repo, each naming the WP; the grandfathered delegation is counted, never refused; a declared seat absent from the roster is refused (declaration-consistency, labeled)",
+    "the frame-check: every component of docs/03's authority tuple (actor/role, action, target, environment, time window, work package, conditions) is enumerated in the doctrine section with its home artifact named -- none lands in the roster silently (the #270 clause applied to the frame, not only the object)",
+    "all pre-existing tests green; repo PASS on branch and composed tree; the record's own declaration exact under the mirror and the ratchet"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_seat_roster.py (8)"
+  ],
+  "test_obligations": [
+    {
+      "id": "TEST-001",
+      "claim": "the roster holds identity and nothing else; delegations name rostered seats from the threshold forward; both excluded shapes are observed refused",
+      "level": "unit"
+    }
+  ],
+  "evidence": [
+    "failing-first red set",
+    "green after",
+    "mutation on each guard branch",
+    "compose output incl. composition record",
+    "typed G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "c8d1b6a5c8f4ab8c80a4240ecf24faa60c7589bb"
+  },
+  "expected_surfaces": {
+    "files": [
+      "badf/seats.json",
+      "schemas/seats.schema.json",
+      "scripts/badf_gate.py",
+      "tests/test_badf_seat_roster.py",
+      "badf/demands/BADF-DEM-0117.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "work/WP-2026-0121/work-package.json"
+    ]
+  },
+  "note": "Dispatched on the pre-named convergence trigger after BARCHI-2's four-finding challenge; every scope cut argued on #236. Reconciles WP-2026-0128 (racing #285's copy -- later lander collapses and prunes, the standing drill). This record is under both the surface ratchet and its own new seat-field threshold: the first WP the seat ratchet binds is the one shipping it, by construction, again. Rebased onto 4a1c028 (#285): the 0128 reconcile collapsed byte-identically, pruned in the same pass (tenth drill firing); now reconciles WP-2026-0129. Rebased onto c8d1b6a (#286): the 0129 reconcile collapsed byte-identically, pruned in the same pass (eleventh drill firing); now reconciles WP-2026-0121. #290 is at the queue front."
+}
