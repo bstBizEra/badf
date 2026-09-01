@@ -1,0 +1,6 @@
+python3 -m unittest tests.test_badf_seat_roster  # sixth reseal: class closure at the loader
+........................
+----------------------------------------------------------------------
+Ran 24 tests in 248.286s
+
+OK

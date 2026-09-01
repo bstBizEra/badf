@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0130-G07-composition",
+  "work_package_id": "WP-2026-0130",
+  "gate": "G07",
+  "claim": "the composition claim of WP-2026-0130: the expected content tree bound to its target base (recomputed and compared by scripts/badf_compose.py on the composed tree)",
+  "evidence_type": "composition",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "badf_compose.py --record",
+    "version": "1"
+  },
+  "operation": "badf_compose.py --record",
+  "started_at": "2026-09-01T16:46:46Z",
+  "completed_at": "2026-09-01T16:46:46Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0130/evidence/G07/composition-record.json",
+  "digest": "sha256:0634a625f2e6028426fce541f7aae9bbd33e05159782e307e4ce3e8656747b94"
+}

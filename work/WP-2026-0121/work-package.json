@@ -69,12 +69,14 @@
     "reversible": true,
     "method": "revert the squash commit via PR (test assertions removed; no control or product surface touched)"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "wp/WP-2026-0121-negative-controls",
     "base_revision": "4a1c028",
-    "composition_verified": false
+    "composition_verified": true,
+    "landed_content_tree": "a52c272efb3b3e25985d1bf41c29fcb90b14faa7",
+    "landed_as": "c8d1b6a5c8f4ab8c80a4240ecf24faa60c7589bb"
   },
   "note": "Granted by SARCHI before BARCHI-1 held the landing order; BARCHI-1 confirmed it stays here and queues third (#255 -> #259 -> #258 -> this). Clustered as ONE WP because the remedy is identical and two PRs would each re-sign the lockfile and conflict by construction -- deviation from one-issue-one-task flagged per BADF-QA's batching rule. #234's floor is >= 1 DELIBERATELY: the terminal population was 4 at filing, is 9 now, and would be ~88 if #220 lands, so any pin fails for being right about an improvement. Obligation shape read from schemas/unit-test.schema.json rather than copied -- a short object is refused by check_schema BEFORE C4, which would have made the probe pass for the wrong reason had it asserted only the exit code. REV's method note is honoured: the battery script ships in the PR body rather than being described, since their own first run reported 7 survivors of which 4 were an instrument artifact."
 }

@@ -1,0 +1,75 @@
+{
+  "$schema": "../schemas/seats.schema.json",
+  "schema_version": "1.0.0",
+  "doctrine": "docs/14-agentic-engineer-team.md SS3; identity bindings ONLY -- permissions live in badf/authority-matrix.json, time windows are undecided doctrine (#261 round, docs/03 time-window question). Either shape appearing here is AUTHORITY_CONFLICT.",
+  "seats": [
+    {
+      "id": "SARCHI",
+      "role": "coordinator",
+      "status": "HELD",
+      "description": "Decomposition, ordering, integration, dispatch coordination, evidence completeness; cannot self-approve.",
+      "charter_refs": [
+        "docs/14-agentic-engineer-team.md#3",
+        "#236 ratification record"
+      ]
+    },
+    {
+      "id": "BARCHI-1",
+      "role": "builder controller",
+      "status": "HELD",
+      "description": "Senior architect/engineer seat; additionally holds the DevOps Landing Commander charter (operator-granted, channel-bound per AET-I13).",
+      "charter_refs": [
+        "docs/14-agentic-engineer-team.md#3",
+        "#236 D3 correction (channel-bound charters)"
+      ]
+    },
+    {
+      "id": "BARCHI-2",
+      "role": "builder controller",
+      "status": "HELD",
+      "description": "Senior architect/engineer seat; finder-review challenger of record.",
+      "charter_refs": [
+        "docs/14-agentic-engineer-team.md#3",
+        "#246 build/review swap record"
+      ]
+    },
+    {
+      "id": "BARCHI-3",
+      "role": "builder controller",
+      "status": "HELD",
+      "description": "Senior architect/engineer seat; G10 program author of record.",
+      "charter_refs": [
+        "docs/14-agentic-engineer-team.md#3",
+        "#277 amended ruling"
+      ]
+    },
+    {
+      "id": "BADF-QA",
+      "role": "verifier",
+      "status": "HELD",
+      "description": "Runs and validates deterministic observations; never implements the change under verification.",
+      "charter_refs": [
+        "docs/14-agentic-engineer-team.md#3",
+        "#270 (plan-defect authority over criteria)"
+      ]
+    },
+    {
+      "id": "BADF-REV",
+      "role": "independent reviewer",
+      "status": "HELD",
+      "description": "Challenges architecture, implementation and evidence; independent of the authoring run wherever independence is required.",
+      "charter_refs": [
+        "docs/14-agentic-engineer-team.md#3"
+      ]
+    },
+    {
+      "id": "LIBRARIAN",
+      "role": "librarian",
+      "status": "VACANT",
+      "description": "Close-out learning, durable knowledge, skill candidates. UNHELD -- stated out loud rather than implied; learnings currently land via doctrine sections and issue records.",
+      "charter_refs": [
+        "docs/14-agentic-engineer-team.md#3"
+      ]
+    }
+  ]
+}
