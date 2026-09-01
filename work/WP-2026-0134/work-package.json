@@ -1,0 +1,74 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0134",
+  "title": "Identity attribution: the contract, the interim executor-statement norm as doctrine, and the operator runbook for the structural actor field",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0121",
+  "objective": "Close the documented half of the merge-attribution gap: every landing reads merged_by as one shared account, so who executed an act -- and under whose delegation -- has no artifact an auditor can read. The structural fix is account-plane work with credential handling and is therefore NOT a seat's act; this WP specifies it precisely enough for the operator to execute, codifies the interim convention already being practised, and states exactly what remains unverifiable until the identity exists.",
+  "business_value": "M1 EC2's prerequisite. Today a compliant and a non-compliant merge configuration produce byte-identical artifacts; after this WP the difference is at least CLAIMED in a durable place, and the operator has a one-sitting runbook to make it structural.",
+  "in_scope": [
+    "docs/governance/IDENTITY_ATTRIBUTION.md: the identity contract -- which structural identities exist (minimum: ONE bst-sa-agent[bot] for delegated merge acts, per-seat identities deferred until evidence demands them), what each may hold, token custody under least privilege, and what an auditor can verify afterwards that they cannot today",
+    "the interim executor-statement norm codified in docs/governance/GITHUB_CONTROL_PLANE.md -- CODIFYING AN OBSERVED CONVENTION, not proposing one: #297 and #298 both already carry merge-execution comments",
+    "the operator runbook as explicit HUMAN_REQUIRED steps, each one-line executable, none performed by any seat",
+    "reconcile WP-2026-0131 (composition_verified: true) -- WP-2026-0132's reconcile collapsed into #296's landing and was pruned in the same pass"
+  ],
+  "out_of_scope": [
+    "any seat creating identities, issuing tokens, or touching credentials -- account-plane work under the authority matrix, HUMAN_REQUIRED by construction",
+    "retroactive rewriting of merged_by history: impossible and undesirable; the record stays as measured and the doctrine explains the epoch",
+    "the ratcheted guard that will verify delegated merges carry the structural actor -- it cannot be written before the identity exists, and is named here as the follow-on rather than stubbed",
+    "per-seat identity proliferation without a driving incident (Lean ladder: rung 5 before rung 6)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the identity contract states, for each structural identity, what it may hold and what an auditor can verify with it that they cannot verify today -- the second half stated as a DELTA, not as a capability list",
+    "the interim norm is recorded with its honesty framing intact: self-asserted, unverifiable from outside, falsifiable in one direction only -- a reader must not be able to mistake it for verification",
+    "the runbook's steps are each independently executable and marked HUMAN_REQUIRED; no step is performable by a seat, and that is stated rather than implied",
+    "what remains UNVERIFIABLE after this WP lands is enumerated explicitly, so nobody reads the doctrine as closing EC2 -- this WP prepares EC2 and does not discharge it",
+    "ADVERSARIAL (#270): the criteria above check that the documents say the right things. The battery additionally names at least one configuration that would satisfy every criterion while leaving attribution as unverifiable as it is today, and states which criterion refuses it or declares it non-covered"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [],
+  "evidence": [
+    "subject-wide sweep of merge-execution comments with every landing classified",
+    "measured statement of what merged_by reads today across recent landings",
+    "repo PASS",
+    "compose output incl. composition record",
+    "typed G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "272e6036a6f288c191b9afc208de06740846898a"
+  },
+  "expected_surfaces": {
+    "files": [
+      "docs/governance/IDENTITY_ATTRIBUTION.md",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "badf/demands/BADF-DEM-0121.json",
+      "work/WP-2026-0131/work-package.json"
+    ]
+  },
+  "note": "Docs-only by construction, following #297's C1 shape: no enforcement control is introduced, so no unit obligations and no TDD gate -- stated rather than exempted. EC7 applies to changes that introduce or strengthen an enforcement control; this one deliberately does not, and says so."
+}

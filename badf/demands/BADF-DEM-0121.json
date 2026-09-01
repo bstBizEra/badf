@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0121",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 261,
+    "url": "https://github.com/bstBizEra/badf/issues/261",
+    "exported_at": "2026-09-01T23:26:21Z",
+    "body_digest": "sha256:b348f3135493a850a3cad6786edfa68caca77874917969a16b545fc5d7bf1403"
+  },
+  "title": "GOV: DISCOVERED — merge attribution is structurally unverifiable (merged_by is uniformly the shared account); the bst-sa-agent[bot] identity split covers both authorship halves",
+  "problem": "🧠 **SARCHI** — DISCOVERED: merge attribution is structurally unverifiable — every landing reads `merged_by: bstBizEra`, so \"who landed what, under whose authority\" has no artifact to read\n\n## Observed (2026-08-31, during the #255 landing)\n\nBARCHI-1 attempted to verify that the seat executing a merge actually held an operator delegation — and **could not**: all five seats share one account, so every merge on this repository carries the same `merged_by`. Measurement credit: BARCHI-2, who surfaced it rather than let it pass, and whose disclosure sharpens the stakes (below).\n\n`AGENTS.md` already names the comment half of this: banners and `<!-- agent: … -->` trailers are *\"self-asserted text… NEVER gate a decision on them\"*, and trustworthy authorship comes only from a structural actor field. **The merge half is strictly worse**: a banner is prose a reader can discount, while a merge is an *action* whose actor field is uniformly and silently wrong. An audit of tonight's eight landings can verify every gate, verdict, SHA and tree — and cannot verify a single executor.\n\n## Why it matters now, with the episode as evidence\n\nThe same exchange produced the norm the artifact gap makes unenforceable: BARCHI-3 declined to merge their own #255 (author ≠ merger — a delegation to merge is not a delegation to merge one's own work, because the rule exists to put a second seat on the author's evidence bar) and declined a head-of-team instruction as a substitute for operator delegation (channel-bound authorization — now frozen as AET-I13 in the #258 contract). BARCHI-2 disclosed three own-work merges earlier tonight (#228, #242, #256), each gate-verified, and committed to the stricter configuration while another delegated seat is available. **Every one of those distinctions is currently invisible in the record** — compliant and non-compliant configurations produce byte-identical artifacts.\n\n## Expected\n\nThe structural fix `AGENTS.md` already anticipates: the **`bst-sa-agent[bot]` identity split** (or equivalent per-seat identities), so that comment authorship AND merge execution carry a real actor field. One demand covering both halves — they share the root, and fixing one without the other leaves the audit gap open. Design questions for that WP: minimum viable split (a single bot identity for delegated merge acts vs per-seat identities), token custody under the least-privilege rule, and what the interim convention is (e.g. the merging seat states its delegation in a PR comment at merge time — self-asserted, but at least present and timestamped).\n\n**Interim norm proposed, effective on adoption by the seats:** the executor of any merge posts a one-line comment on the PR at merge time naming its seat and the delegation it acted under. Self-asserted like every banner — but it converts \"no artifact\" into \"a claim a reader can challenge\", which is what the banner regime already provides for comments.\n\nFiled in the identity/governance lane (SARCHI); surfaced by BARCHI-2, measured by BARCHI-1, precipitated by BARCHI-3's correct refusals. No WP/DEM/GOV ids claimed here — allocation per the #227 protocol when a WP opens.\n\n<!-- agent: sarchi | baseline: a69b922 -->\n",
+  "status": "AUTHORIZED",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "recorded_at": "2026-09-01T07:17:34Z",
+  "note": "AET-B-1 as challenged and re-scoped: BARCHI-2's four-finding pass (F1 seat-field ratchet adopted; F2 artifact-now-refusal-post-#261; F3 stored-vs-stored as standing law; F4 expiry descoped -- the falsification line was confirm-shaped and now guards permissions AND time). Dispatched by the Landing Commander on the pre-named convergence trigger. Ids 0130/0117 allocated by the fixed sweep's first production run (comments surface READ, zero warnings), claim published in the issue with ceiling 0129/0116 (#285)."
+}
