@@ -874,7 +874,10 @@ def verify_seat_roster() -> None:
         wp = path.parent.parent.name
         for d in (load_json(path) or {}).get("delegations") or []:
             if not isinstance(d, dict):
-                continue
+                # Consistent with the assembly-side raise: assembly does not stand on
+                # every landing path (session.json can change post-assembly), so the
+                # sweep must refuse what assembly would refuse (#290 review, REV).
+                raise ValidationError(f"{wp}: a delegation is not a mapping (C7)")
             seat = d.get("seat")
             if seat is None:
                 without += 1

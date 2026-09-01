@@ -131,6 +131,20 @@ class SeatRatchetTests(_Scratch):
         r = self.gate_cmd("self-dossier", RATCHETED)
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
 
+    def test_malformed_delegation_reds_the_repo_sweep(self):
+        """REV's fork (#290 review): assembly RAISES on a non-dict delegation while the
+        repo sweep silently skipped it before the counters -- and assembly does not
+        stand on every landing path (session.json can change post-assembly; grandfathered
+        WPs never re-assemble). The two sites must agree: malformed refuses at BOTH."""
+        self.write_wp(EXEMPT)
+        b = self.root / "work" / EXEMPT / "build"; b.mkdir(parents=True, exist_ok=True)
+        (b / "session.json").write_text(json.dumps({"work_package_id": EXEMPT, "delegations": ["just-a-string"]}, indent=2) + "\n")
+        self.lock()
+        out = self.gate_cmd("repo")
+        self.assertNotEqual(out.returncode, 0, out.stdout)
+        self.assertIn(EXEMPT, out.stdout + out.stderr)
+        self.assertIn("not a mapping", out.stdout + out.stderr)
+
     def test_grandfathered_delegation_counted_not_refused(self):
         self.write_wp(EXEMPT); self.write_delegation(EXEMPT, seat=None); self.lock()
         r = self.gate_cmd("self-dossier", EXEMPT)

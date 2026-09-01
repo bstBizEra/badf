@@ -1,0 +1,494 @@
+diff --git a/badf/demands/BADF-DEM-0117.json b/badf/demands/BADF-DEM-0117.json
+new file mode 100644
+index 0000000..9df00cb
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0117.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0117",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 287,
++    "url": "https://github.com/bstBizEra/badf/issues/287",
++    "exported_at": "2026-09-01T07:17:34Z",
++    "body_digest": "sha256:74ee8f4827225a550b6e1d6fb440e3c8cc091907d7403f4ef00db012e1f42b5c"
++  },
++  "title": "GOV: AET-B-1 -- the seat roster (identity bindings only; seat-field ratchet; declaration-consistency; permissions AND time excluded by guard)",
++  "problem": "\ud83e\udde0 **SARCHI** \u2014 **AET-B-1: the seat roster** \u2014 the runtime substrate's first governed rung, as challenged and re-scoped on #236 (plan comment 5489594593; four-finding challenge 5490095978; disposition 5490111648; dispatch under the Landing Commander's convergence ruling).\n\n## Scope (post-challenge, smaller than planned)\n1. **`badf/seats.json`** \u2014 identity bindings ONLY: seat id \u2192 role \u2192 description \u2192 charter provenance refs. The six operating seats as they exist. **The stop-code guards two doctrine components now, not one:** the roster holding *permissions* forks `badf/authority-matrix.json`; the roster holding *time windows* pre-empts the #261-round decision docs/03 requires \u2014 either is `AUTHORITY_CONFLICT`, and the guard test enumerates BOTH shapes (the F4 lesson: the falsification line asks what doctrine declares, not what the author imagined).\n2. **`schemas/seats.schema.json`** + gate validation (one canonical gate).\n3. **The F1 seat-field ratchet**: delegations in `build/session.json` for WPs at/above THIS WP's id must carry `seat`; the one existing delegation grandfathered and counted; coverage stated at the point of judgment (the GOV-0108 pattern, applied by its owner).\n4. **Declaration-consistency checks, labeled as such**: the declared seat exists in the roster \u2014 consistency of what a session says about itself, NOT identity verification (that refusal lands with #261's structural referent; docs/03: a self-declared name is weaker than tool access).\n\n## Out of scope, argued on the record\nExpiry and every time-shaped key (descoped per F4 \u2014 decided in the #261 round with the docs/03 time-window question stated to the operator); the identity-verifying refusal (F2 \u2014 waits for #261); the durable-effect record (AET-B-2, adjacent by the fold test); `badf/team.yaml` (INIT-rung); any authority-matrix, lifecycle, or registry change.\n\n## Standing design law inherited\nF3: wherever expiry eventually lands, the check compares stored-against-stored \u2014 the clock is an injected input, never `datetime.now()` at the point of judgment; verdicts remain a function of the tree.\n\n## Acceptance criteria (the #270 clause applied to frame AND object)\n- an unrostered declared seat is refused at the reporting site, red-first; the grandfathered delegation is counted, never refused\n- the seat-field ratchet holds at/above threshold with coverage stated; below, counted\n- the no-permissions/no-time guard on `seats.json` is exercised red (both shapes constructed and refused), and **the criteria themselves get the frame-check**: every doctrine-declared component of authority (docs/03's full tuple) is enumerated with its home artifact named \u2014 none silently lands in the roster\n- all pre-existing tests green; repo PASS on branch and composed tree\n\nIds claimed with ceiling per protocol: **ceiling `WP-2026-0129` (#285) / `BADF-DEM-0116` (#285) \u2192 binding `WP-2026-0130` / `BADF-DEM-0117`** \u2014 allocated by the fixed sweep's first production run (comments surface READ, zero warnings). C2; QA+REV; merger per charter.\n<!-- agent: sarchi | the rung the challenge shrank -->",
++  "status": "AUTHORIZED",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "recorded_at": "2026-09-01T07:17:34Z",
++  "note": "AET-B-1 as challenged and re-scoped: BARCHI-2's four-finding pass (F1 seat-field ratchet adopted; F2 artifact-now-refusal-post-#261; F3 stored-vs-stored as standing law; F4 expiry descoped -- the falsification line was confirm-shaped and now guards permissions AND time). Dispatched by the Landing Commander on the pre-named convergence trigger. Ids 0130/0117 allocated by the fixed sweep's first production run (comments surface READ, zero warnings), claim published in the issue with ceiling 0129/0116 (#285)."
++}
+diff --git a/badf/seats.json b/badf/seats.json
+new file mode 100644
+index 0000000..e0f25be
+--- /dev/null
++++ b/badf/seats.json
+@@ -0,0 +1,75 @@
++{
++  "$schema": "../schemas/seats.schema.json",
++  "schema_version": "1.0.0",
++  "doctrine": "docs/14-agentic-engineer-team.md SS3; identity bindings ONLY -- permissions live in badf/authority-matrix.json, time windows are undecided doctrine (#261 round, docs/03 time-window question). Either shape appearing here is AUTHORITY_CONFLICT.",
++  "seats": [
++    {
++      "id": "SARCHI",
++      "role": "coordinator",
++      "status": "HELD",
++      "description": "Decomposition, ordering, integration, dispatch coordination, evidence completeness; cannot self-approve.",
++      "charter_refs": [
++        "docs/14-agentic-engineer-team.md#3",
++        "#236 ratification record"
++      ]
++    },
++    {
++      "id": "BARCHI-1",
++      "role": "builder controller",
++      "status": "HELD",
++      "description": "Senior architect/engineer seat; additionally holds the DevOps Landing Commander charter (operator-granted, channel-bound per AET-I13).",
++      "charter_refs": [
++        "docs/14-agentic-engineer-team.md#3",
++        "#236 D3 correction (channel-bound charters)"
++      ]
++    },
++    {
++      "id": "BARCHI-2",
++      "role": "builder controller",
++      "status": "HELD",
++      "description": "Senior architect/engineer seat; finder-review challenger of record.",
++      "charter_refs": [
++        "docs/14-agentic-engineer-team.md#3",
++        "#246 build/review swap record"
++      ]
++    },
++    {
++      "id": "BARCHI-3",
++      "role": "builder controller",
++      "status": "HELD",
++      "description": "Senior architect/engineer seat; G10 program author of record.",
++      "charter_refs": [
++        "docs/14-agentic-engineer-team.md#3",
++        "#277 amended ruling"
++      ]
++    },
++    {
++      "id": "BADF-QA",
++      "role": "verifier",
++      "status": "HELD",
++      "description": "Runs and validates deterministic observations; never implements the change under verification.",
++      "charter_refs": [
++        "docs/14-agentic-engineer-team.md#3",
++        "#270 (plan-defect authority over criteria)"
++      ]
++    },
++    {
++      "id": "BADF-REV",
++      "role": "independent reviewer",
++      "status": "HELD",
++      "description": "Challenges architecture, implementation and evidence; independent of the authoring run wherever independence is required.",
++      "charter_refs": [
++        "docs/14-agentic-engineer-team.md#3"
++      ]
++    },
++    {
++      "id": "LIBRARIAN",
++      "role": "librarian",
++      "status": "VACANT",
++      "description": "Close-out learning, durable knowledge, skill candidates. UNHELD -- stated out loud rather than implied; learnings currently land via doctrine sections and issue records.",
++      "charter_refs": [
++        "docs/14-agentic-engineer-team.md#3"
++      ]
++    }
++  ]
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 92080b4..e1cef2b 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -2258,6 +2258,33 @@ produced refusal 2, the inverse of the one probe that was listed. **The open-end
+ its place on the first package that was made to answer it**, which is the argument for keeping it
+ on the next one.
+ 
++## The seat roster — the runtime's first substrate artifact holds identity and nothing else (`BADF-WP-0130` / AET-B-1, Issue #287)
++
++AET-B opened with a plan, a named adversarial challenge, and a rung that came out **smaller** than
++planned — which is the challenge working. `badf/seats.json` now binds the operating seats to the
++docs/14 §3 contract roles with charter provenance, the librarian vacancy stated out loud rather than
++implied. **The roster holds identity and NOTHING else**, and the guard enumerates *both*
++doctrine-declared shapes that must never land in it: a permission-shaped key forks
++`badf/authority-matrix.json`; a time-shaped key pre-empts the #261-round decision docs/03's
++time-window component requires. Both refusals run before the schema so the doctrine-declared shape
++gets the doctrine-declared message — `AUTHORITY_CONFLICT`, and where the undecided half lives.
++
++Delegations gain the **seat-field ratchet** (mandatory from `WP-2026-0130` forward, sentinels
++exempt, the one grandfathered delegation counted at the point of judgment) and
++**declaration-consistency**: a declared seat must exist in the roster — labeled as consistency of
++what a session says about itself, NOT identity verification, which lands only when #261 gives seats
++a structural referent. The full docs/03 authority tuple, each component with its home artifact:
++**actor/role** → the roster (identity) and, post-#261, the structural actor field; **action +
++target** → `badf/authority-matrix.json`; **environment** → the runbook/CI identity in evidence
++bindings; **time window** → UNDECIDED, the #261-round question, deliberately homeless until ruled;
++**work package** → `work/<WP>/`; **conditions** → the dossier. None lands in the roster silently —
++the enumeration is the frame-check #270 demands, applied to the plan's own falsification line after
++the challenge proved the original confirm-shaped.
++
++Standing design law inherited by whoever eventually builds expiry (F3): the clock is an injected
++input — the check compares stored-against-stored, never `datetime.now()` at the point of judgment,
++so verdicts stay a function of the tree alone.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/schemas/seats.schema.json b/schemas/seats.schema.json
+new file mode 100644
+index 0000000..87a634a
+--- /dev/null
++++ b/schemas/seats.schema.json
+@@ -0,0 +1,67 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "$id": "seats.schema.json",
++  "title": "BADF seat roster (AET-B-1): identity bindings only",
++  "type": "object",
++  "required": [
++    "schema_version",
++    "doctrine",
++    "seats"
++  ],
++  "properties": {
++    "$schema": {
++      "type": "string"
++    },
++    "schema_version": {
++      "type": "string"
++    },
++    "doctrine": {
++      "type": "string"
++    },
++    "seats": {
++      "type": "array",
++      "items": {
++        "type": "object",
++        "required": [
++          "id",
++          "role",
++          "status",
++          "description",
++          "charter_refs"
++        ],
++        "properties": {
++          "id": {
++            "type": "string"
++          },
++          "role": {
++            "enum": [
++              "coordinator",
++              "builder controller",
++              "verifier",
++              "independent reviewer",
++              "release/runtime observer",
++              "librarian"
++            ]
++          },
++          "status": {
++            "enum": [
++              "HELD",
++              "VACANT"
++            ]
++          },
++          "description": {
++            "type": "string"
++          },
++          "charter_refs": {
++            "type": "array",
++            "items": {
++              "type": "string"
++            }
++          }
++        },
++        "additionalProperties": false
++      }
++    }
++  },
++  "additionalProperties": false
++}
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 91e464d..af44ccf 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -38,6 +38,7 @@ REQUIRED_FILES = [
+     "docs/13-artifact-model.md",
+     "badf/lifecycle.json",
+     "badf/authority-matrix.json",
++    "badf/seats.json",
+     "badf/tool-registry.json",
+     "badf/mcp-registry.json",
+     "badf/skill-registry.json",
+@@ -823,6 +824,69 @@ def verify_surface_ratchet() -> None:
+     print(f"BADF SURFACE RATCHET: declared {declared}/{total}; grandfathered undeclared {grandfathered} (threshold WP-2026-0126; sentinels exempt; {ratcheted} record(s) under the ratchet); over-reach and over-declaration judged separately at assembly/binding (GOV-0108)")
+ 
+ 
++# ---- AET-B-1 (#287, WP-2026-0130): the seat roster ----
++SEAT_RATCHET_THRESHOLD = 130
++_SEAT_FORBIDDEN_PERMISSION_KEYS = ("allowed_paths", "allowed_tools", "actions", "permissions", "prohibited")
++_SEAT_FORBIDDEN_TIME_KEYS = ("expires", "expiry", "until", "valid_until", "window", "time_window")
++
++
++def _seat_ratchet_applies(wp_id: str) -> bool:
++    """The delegation seat field is mandatory from WP-2026-0130 forward (the WP that
++    shipped the roster); earlier delegations are grandfathered and counted; sentinel
++    ids stay exempt by declaration (same shape as the surface ratchet, same reasons)."""
++    m = WP_ID_FORMS.match(str(wp_id))
++    if not m:
++        return False
++    n = int(m.group(1))
++    return n >= SEAT_RATCHET_THRESHOLD and n not in SURFACE_RATCHET_SENTINELS
++
++
++def _rostered_seats() -> set[str]:
++    data = load_json(ROOT / "badf/seats.json")
++    return {str(s.get("id")) for s in (data.get("seats") or []) if isinstance(s, dict)}
++
++
++def verify_seat_roster() -> None:
++    """AET-B-1: the roster holds identity and NOTHING else. Both doctrine-declared
++    shapes that must never land in it are refused by name -- permissions fork
++    badf/authority-matrix.json, and time windows pre-empt the #261-round decision
++    docs/03 requires. Delegation seat coverage is counted at the point of judgment."""
++    data = load_json(ROOT / "badf/seats.json")
++    held = vacant = 0
++    # The named guard runs BEFORE the schema: additionalProperties would refuse the
++    # same keys, but a doctrine-declared shape deserves the doctrine-declared message
++    # (AUTHORITY_CONFLICT, and where the undecided half lives). Schema stays backstop.
++    for s in data.get("seats") or []:
++        for k in _SEAT_FORBIDDEN_PERMISSION_KEYS:
++            if k in s:
++                raise ValidationError(f"seat {s.get('id')!r} carries permission-shaped key {k!r}: the roster holding permissions forks badf/authority-matrix.json -- AUTHORITY_CONFLICT (AET-B-1 / #287)")
++        for k in _SEAT_FORBIDDEN_TIME_KEYS:
++            if k in s:
++                raise ValidationError(f"seat {s.get('id')!r} carries time-shaped key {k!r}: the time window is a doctrine-declared component of authority whose home is undecided (#261 round, docs/03) -- AUTHORITY_CONFLICT (AET-B-1 / #287)")
++        if s.get("status") == "VACANT":
++            vacant += 1
++        else:
++            held += 1
++    check_schema("seats", data)
++    seats = _rostered_seats()
++    with_seat = without = 0
++    for path in sorted((ROOT / "work").glob(f"{WP_NAMESPACE}*/build/session.json")):
++        wp = path.parent.parent.name
++        for d in (load_json(path) or {}).get("delegations") or []:
++            if not isinstance(d, dict):
++                continue
++            seat = d.get("seat")
++            if seat is None:
++                without += 1
++                if _seat_ratchet_applies(wp):
++                    raise ValidationError(f"{wp}: delegation {d.get('task')!r} names no seat -- mandatory at and above the threshold {WP_NAMESPACE}0130 (AET-B-1 / #287)")
++            else:
++                with_seat += 1
++                if str(seat) not in seats:
++                    raise ValidationError(f"{wp}: delegation {d.get('task')!r} declares seat {seat!r}, which is not in badf/seats.json (declaration-consistency; identity verification lands with #261)")
++    print(f"BADF SEAT ROSTER: {held} held, {vacant} VACANT; delegations naming a seat {with_seat}, grandfathered without {without} (threshold {WP_NAMESPACE}0130; sentinels exempt) -- declaration-consistency only until #261 gives seats a structural referent (AET-B-1)")
++
++
+ def reconcile_work_package(wp_arg: str) -> str:
+     m = WP_ID_FORMS.match(wp_arg.strip())
+     if not m:
+@@ -961,6 +1025,7 @@ def validate_repo() -> None:
+     verify_monotonic_authority()
+     verify_work_ledger()
+     verify_surface_ratchet()
++    verify_seat_roster()
+ 
+ def check_non_coverage(dossier: dict[str, Any], evidence_type: str, outcome: str) -> None:
+     """G08 exit criterion: 'non-coverage declared'. Before WP-0014 nothing on a
+@@ -1670,6 +1735,11 @@ def _check_delegations(wp_dir: Path, wp: dict[str, Any], wp_id: str) -> None:
+         if not isinstance(d, dict):
+             raise ValidationError(f"{wp_id}: a delegation is not a mapping (C7)")
+         name = str(d.get("task") or "?")
++        _seat = d.get("seat")
++        if _seat is None and _seat_ratchet_applies(wp_id):
++            raise ValidationError(f"{wp_id}: delegation {name} names no seat -- mandatory at and above the threshold {WP_NAMESPACE}0130 (AET-B-1 / #287)")
++        if _seat is not None and str(_seat) not in _rostered_seats():
++            raise ValidationError(f"{wp_id}: delegation {name} declares seat {_seat!r}, which is not in badf/seats.json (declaration-consistency; identity verification lands with #261)")
+         if not surface:
+             raise ValidationError(f"{wp_id}: delegation {name} declared but the work package declares no expected_surfaces; a subset of nothing cannot be granted (BLD-I10 / C7)")
+         for ap in d.get("allowed_paths") or []:
+diff --git a/tests/test_badf_seat_roster.py b/tests/test_badf_seat_roster.py
+new file mode 100644
+index 0000000..ca542ea
+--- /dev/null
++++ b/tests/test_badf_seat_roster.py
+@@ -0,0 +1,145 @@
++"""AET-B-1 (#287, WP-2026-0130): the seat roster, red-first.
++
++The roster binds operating seats to contract roles -- identity and NOTHING else. The
++guard enumerates BOTH doctrine-declared shapes that must never land in it (permissions
++and time windows), each constructed and observed refused -- the F4 lesson made
++mechanical: the falsification line asks what docs/03 declares a component of
++authority, not what the author imagined. Delegations gain the F1 seat-field ratchet
++(threshold = this WP's own id; sentinels exempt; the grandfathered delegation counted)
++with declaration-consistency labeled as what it is: consistency of what a session says
++about itself, not identity verification -- that refusal lands with #261.
++"""
++import json
++import os
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
++import badf_gate as gate  # noqa: E402
++from tests._scratch import seed_clone  # noqa: E402
++
++RATCHETED = "WP-2026-9996"   # >= threshold, non-sentinel: the seat ratchet must bite
++EXEMPT = "WP-2026-0998"      # sentinel: existing-fixture shape, must stay green
++DEM = "BADF-DEM-0996"
++
++
++class _Scratch(unittest.TestCase):
++    def setUp(self):
++        self.tmp = tempfile.mkdtemp(); self.root = Path(self.tmp) / "badf"
++        self.base = seed_clone(self.root, carry_working_state=True)
++        self.env = {k: v for k, v in os.environ.items() if not k.startswith("BADF_")}
++        on_ledger = set(self.git("ls-tree", "-r", "--name-only", "origin/main", "--", "work/").splitlines())
++        for rec in list((self.root / "work").glob("WP-*/work-package.json")):
++            if rec.relative_to(self.root).as_posix() not in on_ledger:
++                shutil.rmtree(rec.parent)
++        for rec in list((self.root / "work").glob("WP-*/work-package.json")):
++            subprocess.run([sys.executable, "scripts/badf_gate.py", "reconcile", rec.parent.name], cwd=self.root, env=self.env, capture_output=True)
++        (self.root / "README.md").write_text((self.root / "README.md").read_text() + "\n<!-- roster deliverable -->\n")
++        self.git("add", "README.md"); self.commit("deliverable")
++        src = json.loads((self.root / "badf/demands/BADF-DEM-0001.json").read_text(encoding="utf-8"))
++        src["demand_id"] = DEM; src["status"] = "AUTHORIZED"
++        src["authorized_by"] = {"principal": "operator", "principal_type": "human"}
++        (self.root / "badf/demands" / f"{DEM}.json").write_text(json.dumps(src, indent=2) + "\n", encoding="utf-8")
++        self.lock()
++
++    def write_wp(self, wp_id, **extra):
++        d = self.root / "work" / wp_id; d.mkdir(parents=True, exist_ok=True)
++        rec = {"$schema": "../../schemas/work-package.schema.json", "schema_version": "1.0.0", "id": wp_id,
++               "title": "scratch roster work package", "owner": "human_sponsor", "repository": "bstBizEra/badf",
++               "demand": DEM, "objective": "x", "business_value": "x", "in_scope": ["x"], "out_of_scope": ["y"],
++               "target_gate": "G07", "change_class": "C2", "data_classification": "internal",
++               "acceptance_criteria": ["x"], "permissions": ["write: bstBizEra/badf via PR"], "tests": ["tests/test_probe.py (3)"],
++               "evidence": ["source-change"], "rollback": {"reversible": True, "method": "revert"},
++               "status": "IN_PROGRESS",
++               "expected_surfaces": {"files": ["README.md"]},
++               "external_target": {"repository": "bstBizEra/badf", "branch": "main", "base_revision": self.base}}
++        rec.update(extra)
++        (d / "work-package.json").write_text(json.dumps(rec, indent=2) + "\n")
++
++    def write_delegation(self, wp_id, seat=None):
++        b = self.root / "work" / wp_id / "build"; b.mkdir(parents=True, exist_ok=True)
++        d = {"task": "probe-task", "allowed_paths": ["README.md"], "allowed_tools": [],
++             "prohibited": list(gate.DELEGATION_PROHIBITED)}
++        if seat is not None:
++            d["seat"] = seat
++        (b / "session.json").write_text(json.dumps({"work_package_id": wp_id, "delegations": [d]}, indent=2) + "\n")
++
++    def roster(self):
++        return json.loads((self.root / "badf/seats.json").read_text(encoding="utf-8"))
++
++    def write_roster(self, data):
++        (self.root / "badf/seats.json").write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
++
++    def tearDown(self): shutil.rmtree(self.tmp, ignore_errors=True)
++    def git(self, *a): return subprocess.run(["git", "-C", str(self.root), "-c", "user.email=t@t", "-c", "user.name=t", *a], capture_output=True, text=True, check=True).stdout.strip()
++    def commit(self, msg): self.git("commit", "-q", "-m", msg)
++    def lock(self): subprocess.run([sys.executable, "scripts/badf_gate.py", "lock"], cwd=self.root, env=self.env, capture_output=True, check=True)
++    def gate_cmd(self, *args): return subprocess.run([sys.executable, "scripts/badf_gate.py", *args], cwd=self.root, env=self.env, capture_output=True, text=True)
++
++
++class RosterArtifactTests(_Scratch):
++    def test_roster_exists_schema_validates_and_names_the_vacancy(self):
++        r = self.roster()
++        ids = [s["id"] for s in r["seats"]]
++        for seat in ("SARCHI", "BARCHI-1", "BARCHI-2", "BARCHI-3", "BADF-QA", "BADF-REV"):
++            self.assertIn(seat, ids, seat)
++        vacant = [s for s in r["seats"] if s.get("status") == "VACANT"]
++        self.assertTrue(any(s["role"] == "librarian" for s in vacant),
++                        "the librarian vacancy is stated out loud, never implied")
++        out = self.gate_cmd("repo")
++        self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
++        self.assertIn("BADF SEAT ROSTER", out.stdout)
++        self.assertIn("VACANT", out.stdout)
++
++    def test_permission_shaped_key_in_a_seat_is_refused(self):
++        r = self.roster(); r["seats"][0]["allowed_tools"] = ["git-push"]
++        self.write_roster(r); self.lock()
++        out = self.gate_cmd("repo")
++        self.assertNotEqual(out.returncode, 0, out.stdout)
++        self.assertIn("AUTHORITY_CONFLICT", out.stdout + out.stderr)
++
++    def test_time_shaped_key_in_a_seat_is_refused(self):
++        r = self.roster(); r["seats"][1]["expires"] = "2027-01-01T00:00:00Z"
++        self.write_roster(r); self.lock()
++        out = self.gate_cmd("repo")
++        self.assertNotEqual(out.returncode, 0, out.stdout)
++        self.assertIn("AUTHORITY_CONFLICT", out.stdout + out.stderr)
++        self.assertIn("#261", out.stdout + out.stderr, "the refusal points at where the decision lives")
++
++
++class SeatRatchetTests(_Scratch):
++    def test_delegation_at_threshold_without_seat_refused_at_assembly(self):
++        self.write_wp(RATCHETED); self.write_delegation(RATCHETED, seat=None); self.lock()
++        r = self.gate_cmd("self-dossier", RATCHETED)
++        self.assertNotEqual(r.returncode, 0, r.stdout)
++        out = r.stdout + r.stderr
++        self.assertIn("seat", out); self.assertIn(RATCHETED, out)
++
++    def test_declared_seat_absent_from_roster_is_refused(self):
++        self.write_wp(RATCHETED); self.write_delegation(RATCHETED, seat="GHOST-SEAT"); self.lock()
++        r = self.gate_cmd("self-dossier", RATCHETED)
++        self.assertNotEqual(r.returncode, 0, r.stdout)
++        self.assertIn("GHOST-SEAT", r.stdout + r.stderr)
++
++    def test_rostered_seat_accepted_and_labeled_declaration_consistency(self):
++        self.write_wp(RATCHETED); self.write_delegation(RATCHETED, seat="BARCHI-2"); self.lock()
++        r = self.gate_cmd("self-dossier", RATCHETED)
++        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++
++    def test_grandfathered_delegation_counted_not_refused(self):
++        self.write_wp(EXEMPT); self.write_delegation(EXEMPT, seat=None); self.lock()
++        r = self.gate_cmd("self-dossier", EXEMPT)
++        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        out = self.gate_cmd("repo")
++        self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
++        line = [l for l in out.stdout.splitlines() if "BADF SEAT ROSTER" in l]
++        self.assertTrue(line and "delegation" in line[0].lower(), out.stdout)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0121/work-package.json b/work/WP-2026-0121/work-package.json
+index d2f1075..093a525 100644
+--- a/work/WP-2026-0121/work-package.json
++++ b/work/WP-2026-0121/work-package.json
+@@ -69,12 +69,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR (test assertions removed; no control or product surface touched)"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "wp/WP-2026-0121-negative-controls",
+     "base_revision": "4a1c028",
+-    "composition_verified": false
++    "composition_verified": true,
++    "landed_content_tree": "a52c272efb3b3e25985d1bf41c29fcb90b14faa7",
++    "landed_as": "c8d1b6a5c8f4ab8c80a4240ecf24faa60c7589bb"
+   },
+   "note": "Granted by SARCHI before BARCHI-1 held the landing order; BARCHI-1 confirmed it stays here and queues third (#255 -> #259 -> #258 -> this). Clustered as ONE WP because the remedy is identical and two PRs would each re-sign the lockfile and conflict by construction -- deviation from one-issue-one-task flagged per BADF-QA's batching rule. #234's floor is >= 1 DELIBERATELY: the terminal population was 4 at filing, is 9 now, and would be ~88 if #220 lands, so any pin fails for being right about an improvement. Obligation shape read from schemas/unit-test.schema.json rather than copied -- a short object is refused by check_schema BEFORE C4, which would have made the probe pass for the wrong reason had it asserted only the exit code. REV's method note is honoured: the battery script ships in the PR body rather than being described, since their own first run reported 7 survivors of which 4 were an instrument artifact."
+ }
