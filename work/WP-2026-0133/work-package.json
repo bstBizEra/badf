@@ -1,0 +1,98 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0133",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0120",
+  "title": "Correct a landed specification defect: the record carries both anchors the doctrine says it lacks -- two surfaces corrected, one digest-sealed export deliberately left",
+  "objective": "Remove a false claim from main. The #278 doctrine tells a builder that closing the in-place severity-edit route needs 'the sealed input digest or an equivalent anchor' and that the edit is 'undetectable without a baseline the record does not carry'. Both anchors exist; the sentence sends the reader away from them.",
+  "business_value": "A specification defect in doctrine costs whoever acts on it the whole design. This one names a mechanism to build that is already present, and mis-states which of two existing anchors is unavailable and why.",
+  "in_scope": [
+    "docs/governance/GITHUB_CONTROL_PLANE.md: correct the in-place-severity-edit declaration with the measured position, carrying the retracted text visibly; add the note recording that BADF-DEM-0113 is deliberately left uncorrected and why; record the re-test of the sibling ACCEPTED_BY_AUTHORITY declaration (it HOLDS) and the caution that its suggested remedy models on decision_ref, which is itself required-and-unread (#292)",
+    "work/WP-2026-0127/work-package.json: correct the same claim in out_of_scope[1]",
+    "work/WP-2026-0130/work-package.json: the inherited reconcile (landed 9fad369), derived output of `badf_gate.py reconcile`",
+    "badf/demands/BADF-DEM-0120.json: the demand export"
+  ],
+  "out_of_scope": [
+    "badf/demands/BADF-DEM-0113.json -- DELIBERATELY NOT CORRECTED. A digest-sealed provenance export of issue #271's body; its function is to record what was believed at export time, wrong or not. Correcting it would break source.body_digest and falsify the artifact that exists to preserve the original. Verified byte-identical to origin/main with the digest recomputing.",
+    "Closing any of #280's four weakening routes. All four need schema changes and a corroboration decision; this WP corrects the record and changes no behaviour. #280 stays open.",
+    "Making body_digest enforced. It is referenced 0 times in scripts/ -- another member of #292's required-and-unread class, recorded on #295 rather than filed as a fourth instance."
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "change_class_rationale": "Documentation and declaration correction. No code, no schema, no behaviour change. Reversible by reverting one squash commit.",
+  "data_classification": "internal",
+  "data_classification_rationale": "Governance prose and public-repo issue text.",
+  "acceptance_criteria": [
+    "No surface still ASSERTS 'a baseline the record does not carry' or 'the sealed input digest or an equivalent anchor'; the phrases survive only inside the corrections, quoted as retracted.",
+    "Verified by a SUBJECT-WIDE sweep with every hit classified, not by matching the original wording -- the rider named one surface and the sweep found three.",
+    "badf/demands/BADF-DEM-0113.json is byte-identical to origin/main and source.body_digest still recomputes over its stored problem text. Asserted, not assumed.",
+    "The doctrine records that the export is deliberately left, and why, so the next sweep does not 'fix' it.",
+    "Open-ended clause (#270): what ELSE did #278 assert that later measurement contradicts? The sibling ACCEPTED_BY_AUTHORITY declaration was re-tested and HOLDS (authority has exactly one property and one required field; no accepted_by/approver/principal anywhere) -- recorded, because a correction that fixes one claim and leaves its neighbour untested is the failure this repo keeps paying for."
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [],
+  "evidence": [
+    "subject-wide sweep with every hit classified",
+    "BADF-DEM-0113 byte-identity + digest recomputation",
+    "sibling declaration re-tested against the schema",
+    "repo PASS",
+    "compose output incl. composition record",
+    "typed G07 self-dossier"
+  ],
+  "evidence_obligations": [
+    "the sweep is reported as 'N hits on pattern P, classified', never as the bare verb 'swept' -- the pattern is a hypothesis about phrasing",
+    "the untouched-export claim is verified by byte comparison against origin/main AND digest recomputation, not by intent"
+  ],
+  "expected_surfaces": {
+    "files": [
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "work/WP-2026-0127/work-package.json",
+      "work/WP-2026-0130/work-package.json",
+      "badf/demands/BADF-DEM-0120.json"
+    ]
+  },
+  "authority_requirement": {
+    "qa": true,
+    "rev": true
+  },
+  "risk_factors": [
+    "A correction that restores a digest-sealed export would silently rewrite history; the WP declares the export untouched and asserts the seal rather than relying on care.",
+    "A phrase-matched sweep would miss a re-worded assertion. The sweep is by subject; the residual is that phrasing is an open space and no sweep is exhaustive over the claim.",
+    "Bound as WP-2026-0132 / BADF-DEM-0118 before publishing a claim; both were already taken (SARCHI #294, BARCHI-3 #277). Rotated to 0133/0120 with the claim published first. The branch was unpushed, so the collision was invisible to every surface another seat could read -- which is the non-coverage the publish-before-bind step exists to cover."
+  ],
+  "dependencies": {
+    "work_packages": [
+      "WP-2026-0127",
+      "WP-2026-0130"
+    ],
+    "note": "Corrects 0127's declaration; carries 0130's reconcile."
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "tdd_exception": {
+    "reason": "Documentation and declaration correction with no behaviour change and no test obligations; the evidence is a classified subject-wide sweep plus a byte-identity and digest assertion on the deliberately-untouched export."
+  },
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "9fad36948cdf14c914cf76faf07365588091585c"
+  }
+}

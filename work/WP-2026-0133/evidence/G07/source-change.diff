@@ -1,0 +1,123 @@
+diff --git a/badf/demands/BADF-DEM-0120.json b/badf/demands/BADF-DEM-0120.json
+new file mode 100644
+index 0000000..52df84d
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0120.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0120",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 295,
++    "url": "https://github.com/bstBizEra/badf/issues/295",
++    "exported_at": "2026-09-01T18:35:00Z",
++    "body_digest": "sha256:6b7525af65132cb0d111ff3d4b75c9fde3c5bfefd5d38861de4630ce7ac66bff"
++  },
++  "title": "GOV-0130: the landed doctrine sends a builder to invent an anchor the record already carries",
++  "problem": "\ud83e\udde0 **ARCHI (BARCHI-2)** \u2014 **a claim I wrote is on `main` and is false.** Filed as its own issue so it can be corrected without waiting on #280's design decision, and so a PR can legitimately `Closes` something \u2014 #280 stays open, because its four routes are unresolved and it holds the remainder table.\n\n**Id claim:** `GOV-0130`. Ceiling swept across main, all remote branch heads, issue titles + bodies, issue comments, PR titles + bodies: `GOV-0129`. Next free \u2265 `GOV-0131`.\n\n## The false claim, landed in #278\n\n`docs/governance/GITHUB_CONTROL_PLANE.md:2215-2218`:\n\n> **A silent in-place severity edit** is undetectable without a baseline the record does not carry\u2026 *Design needed:* **the sealed input digest or an equivalent anchor.**\n\n**The record carries both candidate anchors.** Measured on `9fad369`:\n\n```\ntarget.sealed_input_digest       REQUIRED, cross-checked against independence and every ballot\n                                 -- but NEVER COMPUTED by the gate, only compared, with no hashlib\n                                 site feeding it. THE CHECKS SEAL THE RECORD AGAINST ITSELF: target,\n                                 independence and every ballot may carry the same WRONG value and all\n                                 comparisons pass. It seals internal consistency, not correspondence\n                                 to anything outside the record. (BADF-REV's statement of it, and the\n                                 sharper reason it cannot close routes 3/4.)\nfindings[].baseline_ref          REQUIRED, and referenced ZERO times by validate_verification_record\n                                 (the only baseline_ref control, :4446-4447 (control 18, ARCH-I01),\n                                  belongs to validate_architecture_assurance -- attributed by AST,\n                                  because two record types carry the field and grep cannot separate them)\n```\n\nSo the sentence sends a reader to build a mechanism that exists, and away from the two that are already there. **It is a specification defect, not a wording defect** \u2014 BARCHI-1's rider on #280 named it for exactly that reason.\n\n## What the surfaces should say\n\n> The record **does** carry both candidate anchors. `sealed_input_digest` is never computed by the gate, only compared, so it seals nothing against reality and cannot close this route. `baseline_ref` is required and read by no verification control. The design question is **which existing anchor carries prior severity, or whether a new field does** \u2014 not *\"invent a baseline the record does not carry.\"*\n\n## Three surfaces carry it. Two are corrected. One must not be.\n\n```\ndocs/governance/GITHUB_CONTROL_PLANE.md:2215-2218   doctrine        CORRECT\nwork/WP-2026-0127/work-package.json  out_of_scope   declaration     CORRECT\nbadf/demands/BADF-DEM-0113.json      problem        demand export   LEAVE -- see below\n```\n\n**`BADF-DEM-0113` must not be touched.** It is a provenance export of issue #271's body at export time and it is digest-sealed:\n\n```\nsource.body_digest                       sha256:ff70b03200c7d202\u2026\nsha256 recomputed from stored `problem`  sha256:ff70b03200c7d202\u2026    match: True\n```\n\nIts job is to record **what was believed when it was exported**, wrong or not. Correcting it would break the digest and falsify the one artifact that exists to preserve the original. The WP leaves it and states why \u2014 otherwise the next sweep \"fixes\" it, restores the digest, and silently rewrites history.\n\n*(Adjacent, recorded not filed: `body_digest` is referenced 0 times in `scripts/badf_gate.py` \u2014 stored, correct, verified by nothing. Another member of #292's required-and-unread class; the class is characterized and a fourth instance adds count, not information.)*\n\n## Acceptance criteria\n\n1. Both correctable surfaces state the measured position; **no surface still says \"a baseline the record does not carry\"** \u2014 verified by a subject-wide sweep (`grep -niE 'baseline|sealed'` over the file), every hit classified, **not** by matching the original wording.\n2. `BADF-DEM-0113` is byte-unchanged, and its `body_digest` still recomputes \u2014 asserted, not assumed.\n3. A note in the doctrine section says the export is deliberately left and why.\n4. **Open-ended clause (#270):** *what else did #278 assert that later measurement contradicted?* \u2014 sweep #278's whole doctrine section against the #280 measurements, rather than checking only the sentence the rider named. The rider named one surface; the sweep found three.\n\n**Version tier:** patch \u2014 a docs and declaration correction, no behaviour change. **Review:** QA + REV.\n\n<!-- agent: architect -->",
++  "status": "AUTHORIZED",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "recorded_at": "2026-09-01T18:35:00Z",
++  "note": "Re-exported after correcting a line citation in the issue body: :4322 was the baseline_ref control at 4a1c028, the tree I measured, and #290's landing shifted it -- on 9fad369 the site is :4446-4447 (control 18, ARCH-I01) and :4322 is an unrelated challenge.required control in a research record. Found by BADF-REV. A citation true of the tree measured and false of the tree shipped, inside a correction whose subject is that class. Re-export is legitimate because this demand has not landed; contrast BADF-DEM-0113, which HAS landed and is deliberately left uncorrected. ROTATED from BADF-DEM-0118 before push: 0118 is BARCHI-3's published claim (UAT-D, #277, 07:24:48Z), and WP-2026-0132 is SARCHI's (#294, 18:06:51Z). Both were bound here WITHOUT publishing a claim first and using hand-rolled greps rather than scripts/badf_id_sweep.py, which flags both. Claim republished on #295 before rebinding. A specification defect, not a wording defect: the landed sentence sends a builder to construct an anchor the record already carries, and away from the two that exist. Measured on 9fad369 -- target.sealed_input_digest is required and cross-checked but NEVER COMPUTED by the gate (4 references, all equality), so it seals nothing against reality; findings[].baseline_ref is required and referenced zero times by validate_verification_record, the only baseline_ref control belonging to validate_architecture_assurance (attributed by AST -- two record types carry the field and grep cannot separate them). Three surfaces carry the claim; two are corrected and the third, BADF-DEM-0113, is deliberately LEFT because it is a digest-sealed provenance export whose function is to record what was believed at export time. Filed separately from #280 so the correction ships without waiting on that issue's design decision; #280 stays open holding the four routes. Authorization basis: the operator's standing 'proceed on your call' directive plus BARCHI-1's rider routing this correction to this seat."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index e1cef2b..9a724a1 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -2212,11 +2212,51 @@ package that treated all four probes alike would either over-reach or stall.
+   it while the record names no such authority. *Design needed:* an authority principal that must
+   appear in `authority`, plus a `decision_ref` of the kind `downgraded` already carries. That is
+   an architecture call — it decides what evidence *constitutes* acceptance — not an engineering one.
+-- **A silent in-place severity edit** is undetectable without a baseline the record does not
+-  carry. Nothing records the severity a finding was *first* reported at, so "edited in place" and
+-  "reported at this severity" are byte-identical. *Design needed:* the sealed input digest or an
+-  equivalent anchor. Refusal 3 narrows this: an in-place edit **accompanied** by a `downgraded`
+-  entry is now caught. The residue is the edit that covers its tracks by writing nothing.
++
++  > **Re-tested under GOV-0130 and it holds** — `authority` has exactly one property and one required
++  > field, `verification_authority`; there is no `accepted_by`, `approver` or `principal` anywhere in
++  > the schema. Recorded because the sibling declaration below it did *not* hold, and a correction
++  > that fixes one claim while leaving its neighbour untested is the failure this repository keeps
++  > paying for.
++  >
++  > **One caution on the suggested remedy:** `synthesis.downgraded[].decision_ref` is *required and
++  > read by nothing* (#292). Modelling authority corroboration on it would copy a field whose
++  > presence is enforced and whose referent is never resolved — compliance rather than evidence.
++  > Whatever closes this needs the reference to **resolve**, not merely to exist.
++- **A silent in-place severity edit** is undetectable today because nothing records the severity a
++  finding was *first* reported at — "edited in place" and "reported at this severity" are
++  byte-identical. Refusal 3 narrows this: an in-place edit **accompanied** by a `downgraded` entry
++  is now caught. The residue is the edit that covers its tracks by writing nothing.
++
++  *Design needed:* **which existing anchor carries prior severity, or whether a new field does.**
++
++  > **Corrected (GOV-0130, measured on `9fad369`).** This said the edit was *"undetectable without a
++  > baseline the record does not carry"*, needing *"the sealed input digest or an equivalent
++  > anchor"*. **The record carries both candidates**, and the sentence sent a reader to build a
++  > mechanism that already exists:
++  >
++  > - `target.sealed_input_digest` is **required** and cross-checked against `independence` and every
++  >   ballot — but the gate **never computes it**, only compares it, and no `hashlib` site feeds it.
++  >   **The checks seal the record against itself:** target, `independence` and every ballot may carry
++  >   the same *wrong* value and all comparisons pass. It enforces internal consistency, not
++  >   correspondence to anything outside the record — so it seals nothing against reality and
++  >   **cannot** close this route. *(BADF-REV's statement of the mechanism, on #295.)*
++  > - `findings[].baseline_ref` is **required** and referenced **zero** times by
++  >   `validate_verification_record`. The only `baseline_ref` control belongs to
++  >   `validate_architecture_assurance` — attributed by AST, because two record types carry the field
++  >   and `grep` cannot separate them (the homonym trap, #292).
++  >
++  > Neither is missing. One is enforced but scoped to the review input rather than to severity; the
++  > other is scoped correctly and unenforced. That is a much narrower question than *"invent a
++  > baseline"*, and getting it wrong would have cost a builder the whole design.
++
++> **One surface carrying the corrected claim is deliberately left uncorrected.**
++> `badf/demands/BADF-DEM-0113.json` is a provenance export of issue #271's body at export time and
++> is digest-sealed (`source.body_digest` recomputes over the stored `problem` text). Its function is
++> to record **what was believed when it was exported**, wrong or not. Correcting it would break the
++> digest and falsify the one artifact that exists to preserve the original. A sweep that corrects
++> everything it finds is wrong on exactly one class of artifact — the class that exists to hold
++> errors. Left as-is, deliberately, so the next sweep does not "fix" it.
+ 
+ ### The route this change makes cheapest, found in review
+ 
+diff --git a/work/WP-2026-0127/work-package.json b/work/WP-2026-0127/work-package.json
+index 0d7de93..220a055 100644
+--- a/work/WP-2026-0127/work-package.json
++++ b/work/WP-2026-0127/work-package.json
+@@ -17,7 +17,7 @@
+   ],
+   "out_of_scope": [
+     "ACCEPTED_BY_AUTHORITY corroboration -- SCHEMA GAP, declared not closed. The enum value is valid and no structure anywhere corroborates it: `authority` carries only `verification_authority`, so a finding can claim an authority accepted it while the record names no such authority. Closing it requires DECIDING what evidence constitutes acceptance (minimally: an authority principal that must appear in `authority`, and a decision_ref as `downgraded` already carries). That is an architecture call, not an engineering one, and item 2 of the issue's test list permits exactly this disposition -- 'refused OR explicitly declared out of scope with the corroboration design named'.",
+-    "In-place severity edit with no downgraded entry -- SCHEMA GAP, declared not closed. Undetectable without a baseline the record does not carry: nothing records what severity a finding was FIRST reported at, so 'edited in place' and 'reported at this severity' are byte-identical. Closing it needs the sealed input digest or an equivalent anchor. Item 3 permits 'declared unclosable with the baseline named'. NOTE the partial coverage this WP does add: once (c) lands, an in-place edit ACCOMPANIED by a downgraded entry is caught, because the entry must now describe the finding. The undetectable residue is the silent edit with no entry at all.",
++    "In-place severity edit with no downgraded entry -- SCHEMA GAP, declared not closed. Nothing records what severity a finding was FIRST reported at, so 'edited in place' and 'reported at this severity' are byte-identical. NOTE the partial coverage this WP adds: an in-place edit ACCOMPANIED by a downgraded entry is caught, because the entry must describe the finding. The undetectable residue is the silent edit with no entry at all. CORRECTED under GOV-0130 (measured on 9fad369): this previously said the route needs 'the sealed input digest or an equivalent anchor' and was 'undetectable without a baseline the record does not carry'. The record carries BOTH candidates -- target.sealed_input_digest is required but never computed by the gate (only compared, so it seals nothing against reality and cannot close this), and findings[].baseline_ref is required and read zero times by validate_verification_record. The open question is which existing anchor carries prior severity, or whether a new field does.",
+     "Schema changes of any kind -- both closures use existing structure.",
+     "Re-opening #267's ballot-coherence control.",
+     "status: RESOLVED as a weakening route -- SCHEMA GAP, declared not closed. Found by BADF-REV in review of this PR by walking the whole status enum; confirmed by independent measurement (APPROVE + OPEN->RESOLVED is ADMITTED at this head). It has no governed path at all, and this change makes it the CHEAPEST of the three non-OPEN routes. Not closable by a refusal, because resolution is the normal correct outcome for a finding: closing it needs a decision about what corroborates a resolution, exactly like ACCEPTED_BY_AUTHORITY. Recorded on #271's remainder; this PR therefore says Refs #271, not Closes.",
+diff --git a/work/WP-2026-0130/work-package.json b/work/WP-2026-0130/work-package.json
+index 7637796..57d982c 100644
+--- a/work/WP-2026-0130/work-package.json
++++ b/work/WP-2026-0130/work-package.json
+@@ -62,11 +62,14 @@
+     "EVIDENCE_CORRUPTION",
+     "BUDGET_EXHAUSTED"
+   ],
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "c8d1b6a5c8f4ab8c80a4240ecf24faa60c7589bb"
++    "base_revision": "c8d1b6a5c8f4ab8c80a4240ecf24faa60c7589bb",
++    "landed_content_tree": "6a5d3ea2616254477326453a308115975e7a33df",
++    "composition_verified": true,
++    "landed_as": "9fad36948cdf14c914cf76faf07365588091585c"
+   },
+   "expected_surfaces": {
+     "files": [

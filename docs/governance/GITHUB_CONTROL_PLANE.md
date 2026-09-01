@@ -2212,11 +2212,51 @@ package that treated all four probes alike would either over-reach or stall.
   it while the record names no such authority. *Design needed:* an authority principal that must
   appear in `authority`, plus a `decision_ref` of the kind `downgraded` already carries. That is
   an architecture call — it decides what evidence *constitutes* acceptance — not an engineering one.
-- **A silent in-place severity edit** is undetectable without a baseline the record does not
-  carry. Nothing records the severity a finding was *first* reported at, so "edited in place" and
-  "reported at this severity" are byte-identical. *Design needed:* the sealed input digest or an
-  equivalent anchor. Refusal 3 narrows this: an in-place edit **accompanied** by a `downgraded`
-  entry is now caught. The residue is the edit that covers its tracks by writing nothing.
+
+  > **Re-tested under GOV-0130 and it holds** — `authority` has exactly one property and one required
+  > field, `verification_authority`; there is no `accepted_by`, `approver` or `principal` anywhere in
+  > the schema. Recorded because the sibling declaration below it did *not* hold, and a correction
+  > that fixes one claim while leaving its neighbour untested is the failure this repository keeps
+  > paying for.
+  >
+  > **One caution on the suggested remedy:** `synthesis.downgraded[].decision_ref` is *required and
+  > read by nothing* (#292). Modelling authority corroboration on it would copy a field whose
+  > presence is enforced and whose referent is never resolved — compliance rather than evidence.
+  > Whatever closes this needs the reference to **resolve**, not merely to exist.
+- **A silent in-place severity edit** is undetectable today because nothing records the severity a
+  finding was *first* reported at — "edited in place" and "reported at this severity" are
+  byte-identical. Refusal 3 narrows this: an in-place edit **accompanied** by a `downgraded` entry
+  is now caught. The residue is the edit that covers its tracks by writing nothing.
+
+  *Design needed:* **which existing anchor carries prior severity, or whether a new field does.**
+
+  > **Corrected (GOV-0130, measured on `9fad369`).** This said the edit was *"undetectable without a
+  > baseline the record does not carry"*, needing *"the sealed input digest or an equivalent
+  > anchor"*. **The record carries both candidates**, and the sentence sent a reader to build a
+  > mechanism that already exists:
+  >
+  > - `target.sealed_input_digest` is **required** and cross-checked against `independence` and every
+  >   ballot — but the gate **never computes it**, only compares it, and no `hashlib` site feeds it.
+  >   **The checks seal the record against itself:** target, `independence` and every ballot may carry
+  >   the same *wrong* value and all comparisons pass. It enforces internal consistency, not
+  >   correspondence to anything outside the record — so it seals nothing against reality and
+  >   **cannot** close this route. *(BADF-REV's statement of the mechanism, on #295.)*
+  > - `findings[].baseline_ref` is **required** and referenced **zero** times by
+  >   `validate_verification_record`. The only `baseline_ref` control belongs to
+  >   `validate_architecture_assurance` — attributed by AST, because two record types carry the field
+  >   and `grep` cannot separate them (the homonym trap, #292).
+  >
+  > Neither is missing. One is enforced but scoped to the review input rather than to severity; the
+  > other is scoped correctly and unenforced. That is a much narrower question than *"invent a
+  > baseline"*, and getting it wrong would have cost a builder the whole design.
+
+> **One surface carrying the corrected claim is deliberately left uncorrected.**
+> `badf/demands/BADF-DEM-0113.json` is a provenance export of issue #271's body at export time and
+> is digest-sealed (`source.body_digest` recomputes over the stored `problem` text). Its function is
+> to record **what was believed when it was exported**, wrong or not. Correcting it would break the
+> digest and falsify the one artifact that exists to preserve the original. A sweep that corrects
+> everything it finds is wrong on exactly one class of artifact — the class that exists to hold
+> errors. Left as-is, deliberately, so the next sweep does not "fix" it.
 
 ### The route this change makes cheapest, found in review
 
