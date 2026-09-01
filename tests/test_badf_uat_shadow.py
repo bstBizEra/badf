@@ -235,6 +235,77 @@ class DefectClassCoverageTests(unittest.TestCase):
                     self.assertIn(field, basis, f"{path.name} is missing {field}")
 
 
+# The ADVERSARIAL members: defects NO control claims to catch. Required by SARCHI's ruling on
+# #277 as one case; the search for one found FOUR, and declaring only the one asked for would
+# reproduce exactly the defect the requirement exists to prevent -- a gap found and not written
+# down. Each is ADMITTED by the gate, and each must be named in the shadow evidence.
+#
+# Ten cases, one per defect_class, is the CONFIRM-SHAPED form: each class's imagined defect,
+# caught by the control built to catch it. These eleven-and-beyond test the property the battery
+# exists to certify -- that what the shadow does not cover is DECLARED, never implied.
+DECLARED_UNCOVERED = {
+    "coverage-contradicts-observation":
+        "a criterion marked covered_pass while its own scenario's observation is FAIL",
+    "scenario-dropped-entirely":
+        "a scenario carrying no observation at all -- dropped rather than reported NOT_EXECUTED",
+    "critical-not-executed-unclassified":
+        "a critical scenario NOT_EXECUTED with no defect class, under RECOMMEND_REJECT",
+    "defect-statement-empty":
+        "a classified defect whose statement is the empty string",
+}
+
+
+def _uncovered_case(name, b):
+    """Build each declared-uncovered binding. Kept beside the declaration so a case cannot be
+    declared without being constructible, nor constructed without being declared."""
+    def fail_crit(dc="IMPLEMENTATION_DEFECT"):
+        b["observations"][0]["result"] = "FAIL"
+        b["defects"] = [{"scenario_id": CRIT, "defect_class": dc, "statement": "x"}]
+        b["coverage"]["criteria"][0]["state"] = "covered_fail"
+        b["recommendation"] = "RECOMMEND_REJECT"
+        b.pop("acceptance", None)
+    if name == "coverage-contradicts-observation":
+        fail_crit()
+        b["coverage"]["criteria"][0] = {"acceptance_criterion_ref": "AC-1", "state": "covered_pass"}
+    elif name == "scenario-dropped-entirely":
+        b["observations"].pop(0)
+        b["recommendation"] = "RECOMMEND_REJECT"; b.pop("acceptance", None)
+    elif name == "critical-not-executed-unclassified":
+        b["observations"][0] = dict(b["observations"][0], result="NOT_EXECUTED")
+        b["recommendation"] = "RECOMMEND_REJECT"; b.pop("acceptance", None)
+    elif name == "defect-statement-empty":
+        fail_crit(); b["defects"][0]["statement"] = ""
+    else:
+        raise AssertionError(f"undeclared case {name}")
+
+
+class DeclaredNonCoverageTests(unittest.TestCase):
+    """SARCHI's #270 addition: the shadow must distinguish declaring its gaps from having none."""
+
+    def setUp(self):
+        self.ev = json.loads(ACCEPTED.read_text(encoding="utf-8"))
+
+    def test_each_declared_uncovered_case_is_genuinely_admitted(self):
+        """If one of these starts being REFUSED, a control now covers it and the declaration is
+        stale -- remove it from DECLARED_UNCOVERED and from the shadow doc in the same change.
+        A stale non-coverage entry understates the gate, which is its own kind of lie."""
+        for name in DECLARED_UNCOVERED:
+            with self.subTest(case=name):
+                ev = copy.deepcopy(self.ev)
+                _uncovered_case(name, ev["binding"])
+                check(ev)   # admitted: no control claims this one
+
+    def test_every_uncovered_case_is_DECLARED_in_the_shadow_evidence(self):
+        """The property the battery exists to certify. Without this, a shadow that declares its
+        gaps and one that merely has none visible are indistinguishable."""
+        doc = DOC.read_text(encoding="utf-8")
+        for name, description in DECLARED_UNCOVERED.items():
+            with self.subTest(case=name):
+                self.assertIn(name, doc,
+                              f"uncovered case {name!r} is exercised but not declared in "
+                              f"{DOC.relative_to(gate.ROOT)} -- a gap found and not written down")
+
+
 class TripwireTests(unittest.TestCase):
     """The claims that must EXPIRE BY THEMSELVES rather than by anyone remembering."""
 

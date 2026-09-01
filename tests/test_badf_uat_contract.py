@@ -161,10 +161,11 @@ class UatContractTests(unittest.TestCase):
         # #218: the two issues are in tension, and fixing one naively causes the other.
         #
         # The exact pin lives HERE, and it MOVES with the ladder rather than being relaxed away.
-        # WP-UAT-C leaves the rung at IMPLEMENTED (C adds controls; the admission is WP-UAT-E),
-        # so the current rung is IMPLEMENTED. A later rung updates this line and the ladder in
-        # acceptance.md in the SAME PR -- that co-edit is the point, not an inconvenience.
-        self.assertEqual("IMPLEMENTED", entry["status"],
+        # WP-UAT-D advances the registry to SHADOWED, declaring BOTH earned steps: VALIDATED was
+        # earned at rung C and the advance was OMITTED (#268's class -- named in shadow-evidence.md
+        # rather than repaired silently), and SHADOWED is earned by D. The co-edit this comment
+        # demanded is being honoured in that PR, which is the point of writing it down.
+        self.assertEqual("SHADOWED", entry["status"],
                          "the ONE exact status pin for badf-uat (#218). If a rung advanced the "
                          "registry, update this line and references/acceptance.md together; do "
                          "not relax it to a floor -- a floor alone pins nothing.")

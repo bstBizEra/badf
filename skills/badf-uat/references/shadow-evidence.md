@@ -91,6 +91,7 @@ representative rather than partial.
 | 1b | **Real-project acceptance.** No scenario derivation from a real PRD, no real execution adapter, no real triage workflow. | No G10 has ever run. This is the caveat above, and the trigger below. |
 | 2 | **C7/C9 substring matching (#289, OPEN).** A failing critical scenario named only by a *longer* id passes as acknowledged. | Found while building this shadow. These two controls are **not** reported as sound; the shadow asserts the hole is still open, so it cannot be forgotten. |
 | 3 | **Encodings nobody imagined.** The realism gap named above. | Inherent to a representative corpus; discharged only by the real re-shadow. |
+| 4 | **Four defect shapes no control catches**, each ADMITTED by the gate today and each asserted admitted in `tests/test_badf_uat_shadow.py::DeclaredNonCoverageTests`: `coverage-contradicts-observation` (a criterion marked `covered_pass` while its own scenario's observation is `FAIL`), `scenario-dropped-entirely` (a scenario carrying no observation at all — dropped rather than reported `NOT_EXECUTED`), `critical-not-executed-unclassified` (a critical scenario `NOT_EXECUTED` with no defect class under `RECOMMEND_REJECT`), `defect-statement-empty` (a classified defect whose statement is empty). | SARCHI's #270 addition asked for **one** adversarial case beyond the ten. The search for one found **four**, and declaring only the one asked for would reproduce precisely the defect the requirement exists to prevent — a gap found and not written down. Ten cases, one per class, is the confirm-shaped form; these four test that what the shadow does not cover is **declared, never implied**. |
 
 ## Tripwires — the caveat expires by itself
 
@@ -103,6 +104,22 @@ representative rather than partial.
 
 Neither may be deleted to make a red suite green. Both are in
 `tests/test_badf_uat_shadow.py`, and each says so in its own docstring.
+
+## Registry advance — both earned steps declared
+
+Per SARCHI's ruling on #277, this rung advances `badf-uat` **`IMPLEMENTED` → `SHADOWED`** in one
+registry edit, declaring both earned steps rather than repairing one silently:
+
+- **`VALIDATED` was earned at rung C** (`WP-UAT-C`, landed as `bc7ca27`) **and the advance was
+  omitted.** C's own exact-pin comment set the status to the unadvanced value and nothing flagged
+  it — the co-edit-obligation-silently-unmet shape, **#268's class**, named here rather than
+  quietly fixed. The omission was mine.
+- **`SHADOWED` is earned by this rung**, on the calibration above.
+
+The standing fix is a line in the ladder, not a new checker: *each rung's PR advances the registry
+status in the same change; a rung PR that does not is refused at review.* That puts the obligation
+in REV's path rather than in anyone's memory — a doc line consumed by an existing control, rather
+than an instrument built for a defect observed once.
 
 ## Provenance
 

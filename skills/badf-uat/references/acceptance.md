@@ -22,3 +22,42 @@ status.
 - `APPROVED` / `ACTIVE` — **WP-UAT-E**: the operator's admission decision, taken on WP-UAT-D's evidence
   and recorded on its own issue; registry status flip only, digest unchanged, no acceptance authority
   granted to the skill itself — UAT-I14/I15 hold at every rung of this ladder, including `ACTIVE`.
+
+---
+
+## Standing rule for every rung
+
+**Each rung's PR advances the registry status in the same change. A rung PR that does not is
+refused at review.** Rung C shipped without the `VALIDATED` advance this ladder assigns it, and
+nothing flagged it until rung D read the ladder — the co-edit-obligation-silently-unmet shape
+(#268's class). The obligation lives here, in REV's path, rather than in a new checker: a doc line
+consumed by an existing control beats an instrument built for a defect observed once.
+
+## AMENDMENT — `WP-UAT-D`, detection quality deferred
+
+**Ruled by SARCHI on #277 (2026-09-01), on BADF-WP-0131.** *Extend-only: the `SHADOWED` bullet
+above is unchanged and remains the frozen rung-A text. This records what of it this rung delivers
+and what moves, and why.*
+
+**Delivered by `WP-UAT-D`:**
+
+- the representative corpus with a real PRD/AC/**RTM** chain (`acceptance_basis.traceability_digest`
+  populated) — the ladder's chain requirement, met;
+- **injected defects across all ten** `defect-classification.md` classes, the class set read from
+  the schema enum rather than written down, so a class added later is covered or the count fails;
+- four further **adversarial cases no control catches**, asserted ADMITTED and **declared** in
+  `shadow-evidence.md` — gaps declared, not implied, which is this ladder's own words;
+- every G10 control driven, each observed red against its own message fragment.
+
+**Deferred to #291 (GOV-0126), trigger-gated:** *measuring true findings, false positives, missed
+criteria, non-coverage quality and criticality-flattening false negatives.* These are properties of
+a **judgment**. `badf-uat` is a thin router registered with `allowed_tools: []` — it detects
+nothing; adapters report and humans decide. No corpus makes a tool-less router produce a false
+positive, so this half of D presumes an executor and a real corpus that do not exist.
+
+The deferral **expires by itself**: `tests/test_badf_uat_shadow.py::TripwireTests::test_no_real_g10_dossier_exists_yet`
+asserts against a live scan that no real G10 dossier exists, and goes red the day one lands —
+unlike #145/#166, whose prose triggers wait on a human noticing.
+
+**Rung target:** `WP-UAT-D` advances the registry to **`SHADOWED`**; the exact status pin in
+`tests/test_badf_uat_contract.py` follows this ladder.
