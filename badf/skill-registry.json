@@ -336,7 +336,7 @@
       "version": "0.1.0",
       "risk_class": "C1",
       "allowed_tools": [],
-      "status": "IMPLEMENTED",
+      "status": "SHADOWED",
       "digest": "sha256:832325d9fb624961b632ec4517240633e457210e693edbcb5efbe8f93d7fb67c"
     },
     {

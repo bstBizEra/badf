@@ -1,0 +1,1057 @@
+diff --git a/badf/demands/BADF-DEM-0118.json b/badf/demands/BADF-DEM-0118.json
+new file mode 100644
+index 0000000..9b3daa9
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0118.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0118",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 277,
++    "url": "https://github.com/bstBizEra/badf/issues/277",
++    "exported_at": "2026-09-01T08:00:00Z",
++    "body_digest": "sha256:0c5017b55419508c9ffb3dca401377eb3a46ba8387a9efb1594c9133beb9c7ba"
++  },
++  "title": "UAT-D (shadow): badf-uat has an EMPTY corpus — BADF has never run a G10, so 'shadow' must be declared-empty or the rung is blocked",
++  "problem": "🧠 **ARCHI (BARCHI-3)** — rung **D** of `badf-uat`'s A→E ladder. **Posting the plan and stopping, because the measured corpus is empty and that changes what D can honestly be.**\n\n## The measurement that reframes this rung\n\nThe `badf-build` shadow doctrine (`BLD-D`, #197) is the pattern D would normally follow: a record generated once from history and **recomputed on every run** against the object store, so it cannot drift; a tampered record refused; a control with no historical corpus **declared** non-coverage, never implied.\n\nThat pattern needs history. Measured on `origin/main` at `bc7ca27`:\n\n```\nG10 dossiers ever assembled                     0\nlanded evidence with evidence_type \"uat\"        0   (only hits are this family's own test file)\ngate-dossier.G07 on main                       91\n```\n\n**BADF has never run a G10.** It builds itself; it has no product-acceptance event. So there is no corpus, and the `build` pattern is unavailable — not deferred, unavailable.\n\n## Why the obvious workaround is refused up front\n\nThe tempting move is to shadow `uat` over the 91 G07 dossiers, or to synthesize a corpus and call the result a shadow. **Both are the proxy-for-property class** — `badf-build`'s shadow means something *because* the corpus is real landed evidence produced by the real workflow. A synthetic corpus measures the fixture, and a G07 corpus measures a different gate. A shadow rung that shadows nothing would report exactly as green as one that shadowed everything, which is the defect this ladder has spent five rungs closing.\n\n## Proposed shape — D is a declared-empty shadow, and says so\n\n1. `examples/uat-shadow-evidence.json` with `corpus: []`, `counts` all zero, and `non_coverage` carrying **one entry per control** (U2–U5, C7–C11) stating *no landed G10 evidence exists to replay it against* — the `build` doctrine's \"declared, never implied\" applied to a corpus that is empty rather than partial.\n2. `skills/badf-uat/evidence/shadow-evidence.md` stating the emptiness, **what would constitute a corpus** (the first real G10 dossier), and the re-measurement trigger.\n3. `tests/test_badf_uat_shadow.py` asserting: the record is recomputed not stored; `corpus == []` is **asserted against the live tree**, so the day a real G10 dossier lands this test goes RED and forces the rung to be redone — an emptiness claim that expires by itself rather than by anyone remembering.\n4. **No registry status change.** `badf-uat` stays `IMPLEMENTED`.\n\n## The load-bearing question for review — I am not deciding it alone\n\n**Does an empty-corpus shadow satisfy D, or is D genuinely blocked until BADF has a product to accept?**\n\n- If it satisfies D: the ladder proceeds, E (admission) follows, and `badf-uat` reaches `ACTIVE` **never having been exercised against a real acceptance** — a family that is law without ever having been observed working.\n- If it does not: `badf-uat` stops at `IMPLEMENTED` until a real G10 exists, and the A→E ladder is documented as **not completable** for a product gate inside a self-building framework.\n\nI lean to the second being the honest answer and the first being the useful one, which is precisely why it is not mine to settle quietly. **`badf-release-validation` (G09) sits at `IMPLEMENTED` and may face the same wall at its own D** — so the answer is a precedent for every product-side gate, not just this family.\n\n## Acceptance criteria (if shape 1–4 is approved)\n\n- `corpus == []` asserted against a live scan of `work/*/gate-dossier.G10.json` — red the moment one exists.\n- One `non_coverage` entry per named control, each naming the control and the reason; test asserts the set of entries **equals** the set of controls, so a control added later without a shadow entry fails.\n- Tampering with the stored record is refused (recomputation, not trust).\n- `test_no_registry_status_change_at_d` — D does not advance the ladder.\n- Scope: no adapter, no `lifecycle.json` change, no second gate (UAT-I20), no `badf-production-readiness` surface.\n\n**Version tier:** patch (evidence + docs + tests; no behaviour change).\n**Stage-gate:** DEV Glossary stage 11 (validation), maturity 4.\n**Lean mode:** advisory.\n\n<!-- agent: architect -->\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-09-01T08:00:00Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "SARCHI ruled on #277 and amended the ruling within the hour; the amended disposition (representative shadow + declared caveat + mechanical tripwire) is what this demand carries."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index c9b0cc4..15af844 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -336,7 +336,7 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "IMPLEMENTED",
++      "status": "SHADOWED",
+       "digest": "sha256:832325d9fb624961b632ec4517240633e457210e693edbcb5efbe8f93d7fb67c"
+     },
+     {
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 01668b5..e69c8ef 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -2134,6 +2134,51 @@ it**, which is why the battery now asserts that its parsed count equals the modu
+ and exits before measuring on a mismatch — *every stage of a measurement chain needs its own
+ liveness witness, including the stage that reads the others.*
+ =======
++## badf-uat → SHADOWED — representative calibration, and the gaps it declares (`BADF-WP-0131` / WP-UAT-D, Issue #277 / GOV-0124)
++
++`SHADOWED` means the controls were run against cases and behaved. `badf-uat` has **no real G10 evidence
++at all** — measured on `main`: **0** G10 dossiers ever assembled, **0** landed `uat` evidence, against 91
++`gate-dossier.G07`. BADF builds itself and has no product-acceptance event, exactly as
++`badf-security-design` had no threat surface (#166) and `badf-solution-design` no solution matrices
++(#145). So the shadow is **REPRESENTATIVE** (`PRD-SHADOW-CHECKOUT`) and `references/shadow-evidence.md`
++says so in its first section; the real re-shadow is owed and filed as **#291**, whose trigger is
++**mechanical** rather than prose — a live scan asserting no G10 dossier exists, red the day one lands.
++
++**Two shapes were refused before this one**, and the distinction is the reusable part: an **empty-corpus**
++shadow is *vacuous* (zero cases exercised is zero discrimination — a broken control and a correct one go
++identically green), and shadowing `uat` over the 91 G07 dossiers is the *proxy* class (different gate,
++different semantics). What separates them from this one is **vacuity gap vs realism gap**: a run that
++*cannot* fail is disqualifying; a run that drives every control and *can* fail, but only on encodings
++someone imagined, is what a declared caveat plus a live trigger exists for. The empty-corpus option was
++this author's own filed plan, and was the weaker instrument wearing the honest label.
++
++The calibration drives **all eleven** `check_g10_uat_binding` controls — each observed **red against its
++own message fragment**, never a bare exit code, because passing on the wrong raise is how a control
++acquires a test that does not test it. The case count is asserted equal to the `ValidationError` sites
++read from the live gate **by AST**, so a control added later without a shadow case fails rather than going
++quietly unshadowed. **All ten `defect_class` values are injected**, the class set read from the schema
++enum rather than written down. A **rejecting** run (critical `FAIL`, classified defect,
++`RECOMMEND_REJECT`, no acceptance object) is **admitted** — the gate refuses malformed evidence, never an
++unfavourable result, a property a shadow of only-accepted runs could not show.
++
++**And it declares four defect shapes no control catches** — `coverage-contradicts-observation` (a
++criterion marked `covered_pass` while its own scenario's observation is `FAIL`), `scenario-dropped-entirely`,
++`critical-not-executed-unclassified`, `defect-statement-empty` — each asserted **admitted** and asserted
++**declared in the non-coverage section**, the check scoped to that section rather than to the document,
++because a substring found anywhere is not a declaration. SARCHI's #270 addition asked for **one** such
++case; the search found four, and declaring only the one asked for would have reproduced the very defect
++the requirement exists to prevent.
++
++Registry **`IMPLEMENTED` → `SHADOWED`** in one edit declaring **both** earned steps: `VALIDATED` was
++earned at rung C and **the advance was omitted** — C's own pin comment set the status to the unadvanced
++value and nothing flagged it, the co-edit-obligation-silently-unmet shape (#268's class), named here
++rather than repaired silently. The standing fix is one line in the ladder — *each rung's PR advances the
++registry status in the same change; a rung PR that does not is refused at review* — put in REV's path
++rather than in a new checker. `acceptance.md` is amended **extend-only**: the frozen rung-A D text is
++untouched, and the amendment records what D delivers and what defers to #291 (detection quality — a
++property of a judgment a thin router with `allowed_tools: []` has no runtime to make).
++`APPROVED`/`ACTIVE` remain the operator's admission decision at **WP-UAT-E**.
++
+ ## The enforcement-input ratchet — an optional input becomes loud, then mandatory (`BADF-WP-0126`, Issue #246 / GOV-0108)
+ 
+ The class, in BARCHI-3's sentence this WP exists to falsify: *a control whose input is optional is a
+diff --git a/examples/uat-shadow-checkout-rejected.json b/examples/uat-shadow-checkout-rejected.json
+new file mode 100644
+index 0000000..23a84fd
+--- /dev/null
++++ b/examples/uat-shadow-checkout-rejected.json
+@@ -0,0 +1,143 @@
++{
++  "schema_version": "1.0.0",
++  "id": "EVD-SHADOW-G10-uat-rejected",
++  "work_package_id": "WP-2026-0131",
++  "gate": "G10",
++  "claim": "representative UAT run for SHADOW-CHECKOUT where the critical path fails",
++  "evidence_type": "uat",
++  "producer": {
++    "id": "badf-uat",
++    "type": "controller"
++  },
++  "source_revision": "HEAD",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "badf-uat",
++    "version": "1"
++  },
++  "operation": "uat-execution",
++  "started_at": "2026-02-01T09:00:00Z",
++  "completed_at": "2026-02-01T09:30:00Z",
++  "outcome": "FAIL",
++  "artifact": "examples/uat-shadow-checkout.log",
++  "digest": "sha256:02c56d199bb437216ac7f1852f214e814aee13217169cc646f0c17def4f11446",
++  "binding": {
++    "candidate": {
++      "source_digest": "sha256:02c56d199bb437216ac7f1852f214e814aee13217169cc646f0c17def4f11446"
++    },
++    "acceptance_basis": {
++      "prd_id": "PRD-SHADOW-CHECKOUT",
++      "prd_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
++      "acceptance_criteria_digest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
++      "traceability_digest": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
++    },
++    "scenarios": [
++      {
++        "scenario_id": "UAT-SCN-CHK-001",
++        "prd_id": "PRD-SHADOW-CHECKOUT",
++        "objective_ref": "OBJ-CHK-1",
++        "acceptance_criterion_ref": "AC-1",
++        "actor_role": "shopper",
++        "preconditions": "a shopper with one item in the basket and a valid saved card",
++        "steps": [
++          "open the basket",
++          "confirm the saved card",
++          "submit the order"
++        ],
++        "expected_business_outcome": "the order is confirmed and a confirmation number is shown",
++        "criticality": "critical"
++      },
++      {
++        "scenario_id": "UAT-SCN-CHK-002",
++        "prd_id": "PRD-SHADOW-CHECKOUT",
++        "objective_ref": "OBJ-CHK-1",
++        "acceptance_criterion_ref": "AC-2",
++        "actor_role": "shopper",
++        "expected_business_outcome": "a declined card leaves the basket intact and states why",
++        "criticality": "major"
++      },
++      {
++        "scenario_id": "UAT-SCN-CHK-003",
++        "prd_id": "PRD-SHADOW-CHECKOUT",
++        "objective_ref": "OBJ-CHK-2",
++        "acceptance_criterion_ref": "AC-3",
++        "actor_role": "support_agent",
++        "expected_business_outcome": "an agent can locate the order by confirmation number",
++        "criticality": "minor"
++      }
++    ],
++    "observations": [
++      {
++        "scenario_id": "UAT-SCN-CHK-001",
++        "adapter": "browser",
++        "observed_outcome": "submit returned an error; no confirmation number",
++        "result": "FAIL",
++        "executed_by": "adapter/browser",
++        "executed_at": "2026-02-01T09:00:00Z"
++      },
++      {
++        "scenario_id": "UAT-SCN-CHK-002",
++        "adapter": "browser",
++        "observed_outcome": "decline reason shown, basket intact",
++        "result": "PASS",
++        "executed_by": "adapter/browser",
++        "executed_at": "2026-02-01T09:04:00Z"
++      },
++      {
++        "scenario_id": "UAT-SCN-CHK-003",
++        "adapter": "manual",
++        "observed_outcome": "agent found the order by number",
++        "result": "PASS",
++        "executed_by": "uat/manual-session-3",
++        "executed_at": "2026-02-01T09:20:00Z"
++      }
++    ],
++    "defects": [
++      {
++        "scenario_id": "UAT-SCN-CHK-001",
++        "defect_class": "IMPLEMENTATION_DEFECT",
++        "statement": "order submit fails for saved cards; no confirmation number is issued",
++        "routed_to": "engineering"
++      }
++    ],
++    "coverage": {
++      "criteria": [
++        {
++          "acceptance_criterion_ref": "AC-1",
++          "state": "covered_fail"
++        },
++        {
++          "acceptance_criterion_ref": "AC-2",
++          "state": "covered_pass"
++        },
++        {
++          "acceptance_criterion_ref": "AC-3",
++          "state": "covered_pass"
++        }
++      ],
++      "roles": [
++        {
++          "actor_role": "shopper",
++          "exercised": true
++        },
++        {
++          "actor_role": "support_agent",
++          "exercised": true
++        }
++      ],
++      "journeys": [
++        {
++          "journey": "checkout",
++          "state": "complete"
++        },
++        {
++          "journey": "order-lookup",
++          "state": "complete"
++        }
++      ],
++      "non_coverage": []
++    },
++    "recommendation": "RECOMMEND_REJECT",
++    "recommendation_rationale": "the critical checkout path does not complete; a business acceptance decision cannot rest on a candidate that cannot take an order"
++  }
++}
+diff --git a/examples/uat-shadow-checkout.json b/examples/uat-shadow-checkout.json
+new file mode 100644
+index 0000000..34b5753
+--- /dev/null
++++ b/examples/uat-shadow-checkout.json
+@@ -0,0 +1,148 @@
++{
++  "schema_version": "1.0.0",
++  "id": "EVD-SHADOW-G10-uat",
++  "work_package_id": "WP-2026-0131",
++  "gate": "G10",
++  "claim": "representative UAT acceptance run for SHADOW-CHECKOUT",
++  "evidence_type": "uat",
++  "producer": {
++    "id": "badf-uat",
++    "type": "controller"
++  },
++  "source_revision": "HEAD",
++  "target": "bstBizEra/badf:main",
++  "toolchain": {
++    "name": "badf-uat",
++    "version": "1"
++  },
++  "operation": "uat-execution",
++  "started_at": "2026-02-01T09:00:00Z",
++  "completed_at": "2026-02-01T09:30:00Z",
++  "outcome": "PASS",
++  "artifact": "examples/uat-shadow-checkout.log",
++  "digest": "sha256:02c56d199bb437216ac7f1852f214e814aee13217169cc646f0c17def4f11446",
++  "binding": {
++    "candidate": {
++      "source_digest": "sha256:02c56d199bb437216ac7f1852f214e814aee13217169cc646f0c17def4f11446"
++    },
++    "acceptance_basis": {
++      "prd_id": "PRD-SHADOW-CHECKOUT",
++      "prd_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
++      "acceptance_criteria_digest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
++      "traceability_digest": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
++    },
++    "scenarios": [
++      {
++        "scenario_id": "UAT-SCN-CHK-001",
++        "prd_id": "PRD-SHADOW-CHECKOUT",
++        "objective_ref": "OBJ-CHK-1",
++        "acceptance_criterion_ref": "AC-1",
++        "actor_role": "shopper",
++        "preconditions": "a shopper with one item in the basket and a valid saved card",
++        "steps": [
++          "open the basket",
++          "confirm the saved card",
++          "submit the order"
++        ],
++        "expected_business_outcome": "the order is confirmed and a confirmation number is shown",
++        "criticality": "critical"
++      },
++      {
++        "scenario_id": "UAT-SCN-CHK-002",
++        "prd_id": "PRD-SHADOW-CHECKOUT",
++        "objective_ref": "OBJ-CHK-1",
++        "acceptance_criterion_ref": "AC-2",
++        "actor_role": "shopper",
++        "expected_business_outcome": "a declined card leaves the basket intact and states why",
++        "criticality": "major"
++      },
++      {
++        "scenario_id": "UAT-SCN-CHK-003",
++        "prd_id": "PRD-SHADOW-CHECKOUT",
++        "objective_ref": "OBJ-CHK-2",
++        "acceptance_criterion_ref": "AC-3",
++        "actor_role": "support_agent",
++        "expected_business_outcome": "an agent can locate the order by confirmation number",
++        "criticality": "minor"
++      }
++    ],
++    "observations": [
++      {
++        "scenario_id": "UAT-SCN-CHK-001",
++        "adapter": "browser",
++        "observed_outcome": "confirmation number 8812 shown",
++        "result": "PASS",
++        "executed_by": "adapter/browser",
++        "executed_at": "2026-02-01T09:00:00Z"
++      },
++      {
++        "scenario_id": "UAT-SCN-CHK-002",
++        "adapter": "browser",
++        "observed_outcome": "decline reason shown, basket intact",
++        "result": "PASS",
++        "executed_by": "adapter/browser",
++        "executed_at": "2026-02-01T09:04:00Z"
++      },
++      {
++        "scenario_id": "UAT-SCN-CHK-003",
++        "adapter": "manual",
++        "observed_outcome": "agent found the order by number",
++        "result": "PASS",
++        "executed_by": "uat/manual-session-3",
++        "executed_at": "2026-02-01T09:20:00Z"
++      }
++    ],
++    "defects": [],
++    "coverage": {
++      "criteria": [
++        {
++          "acceptance_criterion_ref": "AC-1",
++          "state": "covered_pass"
++        },
++        {
++          "acceptance_criterion_ref": "AC-2",
++          "state": "covered_pass"
++        },
++        {
++          "acceptance_criterion_ref": "AC-3",
++          "state": "covered_pass"
++        }
++      ],
++      "roles": [
++        {
++          "actor_role": "shopper",
++          "exercised": true
++        },
++        {
++          "actor_role": "support_agent",
++          "exercised": true
++        }
++      ],
++      "journeys": [
++        {
++          "journey": "checkout",
++          "state": "complete"
++        },
++        {
++          "journey": "order-lookup",
++          "state": "complete"
++        }
++      ],
++      "non_coverage": []
++    },
++    "recommendation": "RECOMMEND_ACCEPT",
++    "recommendation_rationale": "every scenario passed; the critical path is covered end to end",
++    "acceptance": {
++      "acceptance_id": "UAT-ACC-CHK-001",
++      "candidate_digest": "sha256:02c56d199bb437216ac7f1852f214e814aee13217169cc646f0c17def4f11446",
++      "acceptance_basis_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
++      "scenario_set_digest": "sha256:a2631559486c9cd44ebeec02419cd48f615194ba144ac1329756fb7d005d6047",
++      "disposition": "ACCEPTED",
++      "accepted_by": {
++        "principal": "product-owner@shadow.example",
++        "principal_type": "human"
++      },
++      "accepted_at": "2026-02-01T11:00:00Z"
++    }
++  }
++}
+diff --git a/examples/uat-shadow-checkout.log b/examples/uat-shadow-checkout.log
+new file mode 100644
+index 0000000..591c3f6
+--- /dev/null
++++ b/examples/uat-shadow-checkout.log
+@@ -0,0 +1,2 @@
++UAT session SHADOW-CHECKOUT
++3 scenarios executed, 3 PASS
+diff --git a/skills/badf-uat/references/acceptance.md b/skills/badf-uat/references/acceptance.md
+index 6be1502..cc47287 100644
+--- a/skills/badf-uat/references/acceptance.md
++++ b/skills/badf-uat/references/acceptance.md
+@@ -22,3 +22,47 @@ status.
+ - `APPROVED` / `ACTIVE` — **WP-UAT-E**: the operator's admission decision, taken on WP-UAT-D's evidence
+   and recorded on its own issue; registry status flip only, digest unchanged, no acceptance authority
+   granted to the skill itself — UAT-I14/I15 hold at every rung of this ladder, including `ACTIVE`.
++
++---
++
++## Standing rule for every rung
++
++**Each rung's PR advances the registry status in the same change. A rung PR that does not is
++refused at review.** Rung C shipped without the `VALIDATED` advance this ladder assigns it, and
++nothing flagged it until rung D read the ladder — the co-edit-obligation-silently-unmet shape
++(#268's class). The obligation lives here, in REV's path, rather than in a new checker: a doc line
++consumed by an existing control beats an instrument built for a defect observed once.
++
++## AMENDMENT — `WP-UAT-D`, detection quality deferred
++
++**Ruled by SARCHI on #277 (2026-09-01), on BADF-WP-0131.** *Extend-only: the `SHADOWED` bullet
++above is unchanged and remains the frozen rung-A text. This records what of it this rung delivers
++and what moves, and why.*
++
++**Delivered by `WP-UAT-D`:**
++
++- the representative corpus **carries** the PRD/AC/**RTM** chain — all three of `prd_digest`,
++  `acceptance_criteria_digest` and `traceability_digest` populated, well-formed and pairwise
++  distinct, asserted. **The digests are synthetic, not real**: the chain is *carried*, not *real*,
++  which is what a declared-representative corpus can honestly claim and is consistent with
++  non-coverage **1b** (*no scenario derivation from a real PRD*). The frozen text above asks for a
++  "real ... chain"; that half arrives with the real re-shadow (#291), and saying otherwise here
++  would overclaim on the one surface where the representative/real distinction is the deliverable;
++- **injected defects across all ten** `defect-classification.md` classes, the class set read from
++  the schema enum rather than written down, so a class added later is covered or the count fails;
++- four further **adversarial cases no control catches**, asserted ADMITTED and **declared** in
++  `shadow-evidence.md` — gaps declared, not implied, which is this ladder's own words;
++- every G10 control driven, each observed red against its own message fragment.
++
++**Deferred to #291 (GOV-0126), trigger-gated:** *measuring true findings, false positives, missed
++criteria, non-coverage quality and criticality-flattening false negatives.* These are properties of
++a **judgment**. `badf-uat` is a thin router registered with `allowed_tools: []` — it detects
++nothing; adapters report and humans decide. No corpus makes a tool-less router produce a false
++positive, so this half of D presumes an executor and a real corpus that do not exist.
++
++The deferral **expires by itself**: `tests/test_badf_uat_shadow.py::TripwireTests::test_no_real_g10_dossier_exists_yet`
++asserts against a live scan that no real G10 dossier exists, and goes red the day one lands —
++unlike #145/#166, whose prose triggers wait on a human noticing.
++
++**Rung target:** `WP-UAT-D` advances the registry to **`SHADOWED`**; the exact status pin in
++`tests/test_badf_uat_contract.py` follows this ladder.
+diff --git a/skills/badf-uat/references/shadow-evidence.md b/skills/badf-uat/references/shadow-evidence.md
+new file mode 100644
+index 0000000..feff1e6
+--- /dev/null
++++ b/skills/badf-uat/references/shadow-evidence.md
+@@ -0,0 +1,141 @@
++# Shadow-evidence — badf-uat (WP-UAT-D)
++
++The capability's live status is `badf/skill-registry.json`. This records the shadow calibration
++behind it, and the two tripwires that keep the caveat below from becoming permanent by neglect.
++
++## The honest caveat — this shadow is REPRESENTATIVE, not real-project
++
++**BADF has never run a G10.** Measured on `main` at **`9fad369`** — the SHA is part of the claim,
++because a bare count goes stale silently and this one already did (it read `91` G07 dossiers when
++first written, six landings ago):
++
++```
++G10 dossiers ever assembled              0     <- the only load-bearing number; the tripwire's subject
++landed evidence with evidence_type uat   1     <- work/WP-2026-0124/evidence/G07/source-change.diff,
++                                                  this family's own B-rung diff shipping the schema.
++                                                  NOT a produced uat artifact.
++gate-dossier.G07 on main                97
++```
++
++Only the **first** line is load-bearing, and only it is asserted by a test. The other two are dated
++context: pinning a count that legitimately moves every landing would be the snapshot-worn-as-an-invariant
++error (#268), which is why they carry a SHA instead of a guard.
++
++BADF builds itself. It is a governance framework with **no product and therefore no
++product-acceptance event** — the same reason `badf-security-design` had no threat surface of its
++own (#166) and `badf-solution-design` had no real solution matrices (#145). Both were admitted on
++**representative** corpora with the caveat stated and a real re-shadow reserved as owed.
++
++So this calibration runs on a **declared representative** product, `PRD-SHADOW-CHECKOUT`, and says
++so plainly. **A real re-shadow is owed the first time any project produces an actual G10 `uat`
++binding**, and the operator may hold `APPROVED`/`ACTIVE` until then.
++
++### What was refused, and why — SARCHI's ruling on #277
++
++Two other shapes were considered and rejected before this one:
++
++| shape | disposition | why |
++| :--- | :--- | :--- |
++| **empty-corpus shadow** — declare the corpus `[]` and record non-coverage per control | **refused** | vacuous. Zero cases exercised is zero discrimination: a broken control and a correct one produce identically green runs. *A shadow that shadows nothing reports exactly as green as one that shadowed everything.* |
++| **`uat` shadowed over the 91 G07 dossiers** | **refused** | different gate, different semantics. Genuinely the proxy-for-property class. |
++| **declared representative corpus + live tripwire** | **adopted** | every control is driven end to end and CAN fail; what it cannot do is surface encodings nobody imagined. |
++
++The distinction the ruling turned on:
++
++- **Vacuity gap** — the run *cannot* fail. Disqualifying.
++- **Realism gap** — the run drives every control and *can* fail, but only on imagined encodings.
++  This is what a declared caveat plus a live trigger exists for.
++
++The empty-corpus option was the *weaker* instrument wearing the honest label, and it was mine.
++
++## Calibration — every control driven, each observed red
++
++`check_g10_uat_binding` is exercised over the representative binding in
++`examples/uat-shadow-checkout.json`. Every case is **recomputed against the live gate on every
++test run**, so this record cannot drift from the code; nothing here is a stored verdict.
++
++| Defect (mutated from the clean binding) | Control | Invariant | Outcome |
++| :--- | :--- | :--- | :--- |
++| observation naming a scenario absent from the binding | U2 | UAT-I01 | refused |
++| `FAIL` observation with no classified defect | U3 | UAT-I11 | refused |
++| two observations for one scenario | U6 | UAT-I09 / I17 | refused |
++| `RECOMMEND_ACCEPT` over a critical not passing | U4 | UAT-I13 | refused |
++| acceptance bound to a different candidate digest | U5a | UAT-I16 | refused |
++| acceptance issued by a non-human principal | U5b | UAT-I14 / I15 | refused |
++| `RECOMMEND_ACCEPT_WITH_CONDITIONS`, critical named in no condition | C7 | UAT-I13 | refused |
++| `ACCEPTED_WITH_CONDITIONS` carrying no conditions | C8 | UAT-I16 | refused |
++| unconditional `ACCEPTED` over an unacknowledged critical | C9 | UAT-I16 | refused |
++| `scenario_set_digest` not recomputing over the carried scenarios | C10 | UAT-I17 | refused |
++| criterion `not_covered` with neither reason nor declared gap | C11 | UAT-I12 | refused |
++
++**And a refusal outcome, not only a happy path.** `examples/uat-shadow-checkout-rejected.json`
++carries a critical `FAIL`, a classified defect and `RECOMMEND_REJECT` with **no acceptance object**
++— and is **admitted**. The gate refuses malformed evidence, never an unfavourable result. A shadow
++containing only accepted runs would not have shown that.
++
++**Anti-vacuity.** The number of shadow cases is asserted equal to the number of `ValidationError`
++sites read from the live gate **by AST**, not to a number written down here. A control added later
++without a shadow case fails the suite rather than going quietly unshadowed.
++
++**All ten defect classes injected, and the PRD/AC/RTM chain carried.** The rung-A ladder asks D for
++*"known and injected defects across all ten `defect-classification.md` classes"* and a
++*"PRD/AC/RTM chain"*. Both are built: the sweep walks the `defect_class` enum **read from the
++schema** — one classified failure per class, each admitted — with an unknown class refused as its
++negative control, and `acceptance_basis.traceability_digest` is populated and pinned.
++
++*I first argued both requirements were unachievable. They are not:* `defect_class` is **data** in
++the binding, not something the router detects, and `traceability_digest` was an optional field I
++had simply left unset. That over-reach ran in the direction that excused an incomplete build and is
++retracted on #277; only the detection-quality third genuinely cannot be built.
++
++## Declared non-coverage
++
++Stated, never implied — the `badf-build` shadow doctrine (#197) applied to a corpus that is
++representative rather than partial.
++
++| # | Not covered | Why |
++| :--- | :--- | :--- |
++| 1 | **Detection quality.** True findings, false positives, missed criteria and criticality-flattening false negatives are NOT measured. | These are properties of a *judgment*. `badf-uat` is a thin router with `allowed_tools: []` — it detects nothing; adapters report. No corpus makes a tool-less router produce a false positive. This is the one requirement of the rung-A ladder that cannot be built today, and the only one amended. |
++| 1b | **Real-project acceptance.** No scenario derivation from a real PRD, no real execution adapter, no real triage workflow. | No G10 has ever run. This is the caveat above, and the trigger below. |
++| 2 | **C7/C9 substring matching (#289, OPEN).** A failing critical scenario named only by a *longer* id passes as acknowledged. | Found while building this shadow. These two controls are **not** reported as sound; the shadow asserts the hole is still open, so it cannot be forgotten. |
++| 3 | **Encodings nobody imagined.** The realism gap named above. | Inherent to a representative corpus; discharged only by the real re-shadow. |
++| 4 | **Four defect shapes no control catches**, each ADMITTED by the gate today and each asserted admitted in `tests/test_badf_uat_shadow.py::DeclaredNonCoverageTests`: `coverage-contradicts-observation` (a criterion marked `covered_pass` while its own scenario's observation is `FAIL`), `scenario-dropped-entirely` (a scenario carrying no observation at all — dropped rather than reported `NOT_EXECUTED`), `critical-not-executed-unclassified` (a critical scenario `NOT_EXECUTED` with no defect class under `RECOMMEND_REJECT`), `defect-statement-empty` (a classified defect whose statement is empty). | SARCHI's #270 addition asked for **one** adversarial case beyond the ten. The search for one found **four**, and declaring only the one asked for would reproduce precisely the defect the requirement exists to prevent — a gap found and not written down. Ten cases, one per class, is the confirm-shaped form; these four test that what the shadow does not cover is **declared, never implied**. |
++
++## Tripwires — the caveat expires by itself
++
++`#166`'s trigger is prose and has waited on a human noticing since it was filed. These do not.
++
++| Test | Fires when | Then |
++| :--- | :--- | :--- |
++| `test_no_real_g10_dossier_exists_yet` | any `work/*/gate-dossier.G10.json` appears | the caveat above is false; re-shadow for real per **#291** |
++| `test_the_known_substring_hole_in_c7_c9_is_still_open` | #289 lands | remove that test **and** non-coverage row 2 together |
++
++Neither may be deleted to make a red suite green. Both are in
++`tests/test_badf_uat_shadow.py`, and each says so in its own docstring.
++
++## Registry advance — both earned steps declared
++
++Per SARCHI's ruling on #277, this rung advances `badf-uat` **`IMPLEMENTED` → `SHADOWED`** in one
++registry edit, declaring both earned steps rather than repairing one silently:
++
++- **`VALIDATED` was earned at rung C** (`WP-UAT-C`, landed as `bc7ca27`) **and the advance was
++  omitted.** C's own exact-pin comment set the status to the unadvanced value and nothing flagged
++  it — the co-edit-obligation-silently-unmet shape, **#268's class**, named here rather than
++  quietly fixed. The omission was mine.
++- **`SHADOWED` is earned by this rung**, on the calibration above.
++
++The standing fix is a line in the ladder, not a new checker: *each rung's PR advances the registry
++status in the same change; a rung PR that does not is refused at review.* That puts the obligation
++in REV's path rather than in anyone's memory — a doc line consumed by an existing control, rather
++than an instrument built for a defect observed once.
++
++## Provenance
++
++Ruling and its amendment: **#277**. Precedent: **#166** (`badf-security-design`), **#145**
++(`badf-solution-design`). Defect found while building this: **#289** (GOV-0125). Deferred real
++re-shadow, trigger explicit and ownership named: **#291** (GOV-0126). Work package:
++**`WP-2026-0131`** / **`BADF-DEM-0118`** / **`GOV-0124`**.
++
++The debt is tracked in three places that must move together: the non-coverage table above, the
++tripwire tests in `tests/test_badf_uat_shadow.py`, and #291. A caveat recorded in only one of
++them is the silence C11 refuses.
+diff --git a/tests/test_badf_uat_contract.py b/tests/test_badf_uat_contract.py
+index f029193..1f91a99 100644
+--- a/tests/test_badf_uat_contract.py
++++ b/tests/test_badf_uat_contract.py
+@@ -161,10 +161,11 @@ class UatContractTests(unittest.TestCase):
+         # #218: the two issues are in tension, and fixing one naively causes the other.
+         #
+         # The exact pin lives HERE, and it MOVES with the ladder rather than being relaxed away.
+-        # WP-UAT-C leaves the rung at IMPLEMENTED (C adds controls; the admission is WP-UAT-E),
+-        # so the current rung is IMPLEMENTED. A later rung updates this line and the ladder in
+-        # acceptance.md in the SAME PR -- that co-edit is the point, not an inconvenience.
+-        self.assertEqual("IMPLEMENTED", entry["status"],
++        # WP-UAT-D advances the registry to SHADOWED, declaring BOTH earned steps: VALIDATED was
++        # earned at rung C and the advance was OMITTED (#268's class -- named in shadow-evidence.md
++        # rather than repaired silently), and SHADOWED is earned by D. The co-edit this comment
++        # demanded is being honoured in that PR, which is the point of writing it down.
++        self.assertEqual("SHADOWED", entry["status"],
+                          "the ONE exact status pin for badf-uat (#218). If a rung advanced the "
+                          "registry, update this line and references/acceptance.md together; do "
+                          "not relax it to a floor -- a floor alone pins nothing.")
+diff --git a/tests/test_badf_uat_shadow.py b/tests/test_badf_uat_shadow.py
+new file mode 100644
+index 0000000..912166c
+--- /dev/null
++++ b/tests/test_badf_uat_shadow.py
+@@ -0,0 +1,403 @@
++"""badf-uat WP-UAT-D (WP-2026-0131, #277): the REPRESENTATIVE shadow, and its tripwires.
++
++Read the caveat first: `skills/badf-uat/references/shadow-evidence.md`. BADF has never run a
++G10 -- it builds itself and has no product-acceptance event -- so this shadow runs on a
++**declared representative** product (`PRD-SHADOW-CHECKOUT`), exactly as `badf-security-design`
++was admitted on `PRD-SHADOW-PAYMENTS` (#166) and `badf-solution-design` before it (#145).
++
++SARCHI ruled the disposition on #277 and amended it: an EMPTY-corpus shadow is refused as
++vacuous (it exercises no control, so a broken control and a correct one are identically green),
++a MANUFACTURED-but-undeclared corpus is refused as proxy-for-property, and a DECLARED
++representative corpus with a live trigger is the precedent path. The distinction that carried
++it -- vacuity gap vs realism gap -- is what this module is built on: every case here CAN fail,
++and each is observed failing against its own control.
++
++Nothing here is trusted from the stored record. Every verdict is RECOMPUTED against the live
++gate on every run, so the examples cannot drift from `check_g10_uat_binding`.
++
++TWO TRIPWIRES, because a caveat that depends on someone remembering is the silence C11 refuses:
++
++  1. `test_no_real_g10_dossier_exists_yet` -- asserts against a LIVE SCAN that the corpus is
++     still representative. The day a real G10 dossier lands this goes RED and the rung must be
++     re-shadowed for real. #166's trigger is prose and has waited on a human noticing since it
++     was filed; this one does not.
++  2. `test_the_known_substring_hole_in_c7_c9_is_still_open` -- #289. C7/C9 match a scenario id
++     by SUBSTRING against joined prose, so a critical failure named only by a LONGER id passes
++     as acknowledged. This shadow must not report those controls as sound while that is true.
++     When #289 lands, this test goes RED and the shadow's non-coverage entry must be removed.
++"""
++import ast
++import copy
++import json
++import re
++import sys
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++ART = gate.ROOT / "examples/uat-shadow-checkout.log"
++ACCEPTED = gate.ROOT / "examples/uat-shadow-checkout.json"
++REJECTED = gate.ROOT / "examples/uat-shadow-checkout-rejected.json"
++DOC = gate.ROOT / "skills/badf-uat/references/shadow-evidence.md"
++CRIT = "UAT-SCN-CHK-001"
++DEFECT = [{"scenario_id": CRIT, "defect_class": "IMPLEMENTATION_DEFECT",
++           "statement": "no confirmation number"}]
++
++
++def check(ev):
++    gate.check_g10_uat_binding(ART, {"disposition": "PASS", "work_package_id": "WP-2026-0131"}, ev)
++
++
++def _crit_fails(b):
++    b["observations"][0]["result"] = "FAIL"
++    b["defects"] = copy.deepcopy(DEFECT)
++    b["coverage"]["criteria"][0]["state"] = "covered_fail"
++
++
++# One case per control. The KEY is the case name; the VALUE is (mutation, message fragment).
++# The fragment is asserted, not merely a non-zero raise -- passing on the wrong raise is how a
++# control acquires a test that does not test it.
++CASES = {
++    "U2-unanchored-observation": (
++        lambda b: b["observations"].append(dict(b["observations"][0], scenario_id="UAT-SCN-GHOST")),
++        "absent from this binding"),
++    "U3-failure-without-defect-class": (
++        lambda b: (b["observations"].__setitem__(0, dict(b["observations"][0], result="FAIL")),
++                   b.__setitem__("defects", [])),
++        "no defect class"),
++    "U6-duplicate-observation": (
++        lambda b: b["observations"].append(dict(b["observations"][0])),
++        "more than one observation"),
++    "U4-recommend-accept-over-critical": (
++        lambda b: (_crit_fails(b), b.__setitem__("recommendation", "RECOMMEND_ACCEPT")),
++        "RECOMMEND_ACCEPT with critical"),
++    "U5a-acceptance-bound-to-other-candidate": (
++        lambda b: b["acceptance"].__setitem__("candidate_digest", "sha256:" + "9" * 64),
++        "candidate_digest does not equal"),
++    "U5b-non-human-principal": (
++        lambda b: b["acceptance"]["accepted_by"].__setitem__("principal_type", "agent"),
++        "non-human principal"),
++    "C7-with-conditions-critical-unnamed": (
++        lambda b: (_crit_fails(b),
++                   b.__setitem__("recommendation", "RECOMMEND_ACCEPT_WITH_CONDITIONS"),
++                   b["acceptance"].__setitem__("conditions", ["AC-9 unrelated follow-up"]),
++                   b["acceptance"].__setitem__("disposition", "ACCEPTED_WITH_CONDITIONS")),
++        "RECOMMEND_ACCEPT_WITH_CONDITIONS with critical"),
++    "C8-with-conditions-carries-none": (
++        lambda b: b["acceptance"].__setitem__("disposition", "ACCEPTED_WITH_CONDITIONS"),
++        "carries no conditions"),
++    "C9-unconditional-accept-unacknowledged": (
++        lambda b: (_crit_fails(b),
++                   b.__setitem__("recommendation", "RECOMMEND_REJECT"),
++                   b["acceptance"].__setitem__("disposition", "ACCEPTED")),
++        "unconditional ACCEPTED over critical"),
++    "C10-stale-scenario-set-digest": (
++        lambda b: b["acceptance"].__setitem__("scenario_set_digest", "sha256:" + "8" * 64),
++        "scenario_set_digest does not equal"),
++    "C11-not-covered-unexplained": (
++        lambda b: b["coverage"]["criteria"].__setitem__(
++            0, {"acceptance_criterion_ref": "AC-1", "state": "not_covered"}),
++        "not_covered with neither"),
++}
++
++
++def gate_control_count():
++    """ValidationError sites in check_g10_uat_binding, read from the LIVE gate by AST.
++
++    The shadow's case count is asserted against this rather than against a number written here,
++    so a control added later without a shadow case fails instead of being silently unshadowed.
++    """
++    src = (gate.ROOT / "scripts/badf_gate.py").read_text(encoding="utf-8")
++    fn = next(n for n in ast.walk(ast.parse(src))
++              if isinstance(n, ast.FunctionDef) and n.name == "check_g10_uat_binding")
++    return sum(1 for n in ast.walk(fn)
++               if isinstance(n, ast.Raise) and isinstance(n.exc, ast.Call)
++               and getattr(n.exc.func, "id", "") == "ValidationError")
++
++
++def defect_classes():
++    """The defect_class enum, read from the SCHEMA rather than written here.
++
++    The ladder frozen at rung A asks D to inject defects across ALL TEN classes. Deriving the
++    set from the schema is the walk-the-whole-enum form: if a class is added later, the sweep
++    below covers it automatically and the count assertion fails if it does not. Written down
++    as a literal, this test would only ever confirm the classes I happened to think of -- which
++    is exactly how my own control count came out as "ten" when the gate had eleven.
++    """
++    schema = json.loads((gate.ROOT / "schemas/uat.schema.json").read_text(encoding="utf-8"))
++    return schema["properties"]["binding"]["properties"]["defects"]["items"] \
++                 ["properties"]["defect_class"]["enum"]
++
++
++class ShadowCorpusTests(unittest.TestCase):
++    """The representative corpus is admitted, and RECOMPUTED rather than trusted."""
++
++    def test_the_accepted_run_is_admitted_and_its_digest_recomputes(self):
++        ev = json.loads(ACCEPTED.read_text(encoding="utf-8"))
++        self.assertEqual(gate.sha256(ART), ev["digest"],
++                         "stored digest does not recompute from the artifact; the record has drifted")
++        self.assertEqual(ev["binding"]["candidate"]["source_digest"], ev["digest"])
++        check(ev)
++
++    def test_the_rejecting_run_is_admitted_a_rejection_is_evidence_not_a_refusal(self):
++        """The shadow must contain a REFUSAL OUTCOME, not only a happy path. A critical failure
++        with a classified defect and RECOMMEND_REJECT is valid uat evidence -- the gate refuses
++        malformed evidence, never an unfavourable result."""
++        ev = json.loads(REJECTED.read_text(encoding="utf-8"))
++        b = ev["binding"]
++        self.assertEqual("RECOMMEND_REJECT", b["recommendation"])
++        self.assertEqual("FAIL", b["observations"][0]["result"])
++        self.assertTrue(b["defects"], "a rejecting run must classify its defect (UAT-I11)")
++        self.assertNotIn("acceptance", b, "no human decision has been issued on a rejected candidate")
++        check(ev)
++
++
++class ShadowControlCalibrationTests(unittest.TestCase):
++    """Every control driven, each observed red against its OWN message fragment."""
++
++    def setUp(self):
++        self.ev = json.loads(ACCEPTED.read_text(encoding="utf-8"))
++
++    def test_every_control_refuses_its_own_defect(self):
++        for name, (mutate, fragment) in CASES.items():
++            with self.subTest(case=name):
++                ev = copy.deepcopy(self.ev)
++                mutate(ev["binding"])
++                with self.assertRaises(gate.ValidationError) as cm:
++                    check(ev)
++                self.assertIn(fragment, str(cm.exception),
++                              f"{name} was refused, but by a different control -- passing on the "
++                              f"wrong raise is how a control acquires a test that does not test it")
++
++    def test_the_shadow_covers_every_control_the_gate_actually_has(self):
++        """ANTI-VACUITY. The case count is derived from the live gate, not written here, so a
++        control added later without a shadow case fails rather than going quietly unshadowed."""
++        self.assertEqual(gate_control_count(), len(CASES),
++                         "check_g10_uat_binding has a control with no shadow case (or a case with "
++                         "no control); the shadow must cover every control the gate has")
++
++
++class DefectClassCoverageTests(unittest.TestCase):
++    """The ladder's ten-class injection, built rather than waived.
++
++    I earlier argued this requirement was unachievable. It is not: `defect_class` is DATA in
++    `binding.defects[]`, not something the tool-less router detects, so every class can be
++    injected without any runtime. The claim was over-reach in the direction that excused an
++    incomplete build, and it is retracted on #277.
++    """
++
++    def setUp(self):
++        self.ev = json.loads(ACCEPTED.read_text(encoding="utf-8"))
++
++    def test_every_defect_class_in_the_schema_is_exercised_and_admitted(self):
++        """A failing critical scenario classified under EACH class satisfies U3 and is admitted.
++
++        This is the positive half: a classified failure is evidence the disposition can act on.
++        The refusal half (a failure with NO class) is U3's case in the calibration table above.
++        """
++        classes = defect_classes()
++        self.assertGreaterEqual(len(classes), 10, "the ladder asks for all ten classes")
++        for dc in classes:
++            with self.subTest(defect_class=dc):
++                ev = copy.deepcopy(self.ev)
++                b = ev["binding"]
++                b["observations"][0]["result"] = "FAIL"
++                b["defects"] = [{"scenario_id": CRIT, "defect_class": dc,
++                                 "statement": f"representative failure classified {dc}"}]
++                b["coverage"]["criteria"][0]["state"] = "covered_fail"
++                b["recommendation"] = "RECOMMEND_REJECT"
++                del b["acceptance"]
++                check(ev)
++
++    def test_an_unknown_defect_class_is_refused_by_the_schema(self):
++        """Negative control for the sweep above: without it, "all ten admitted" would be
++        indistinguishable from "the field is not validated at all"."""
++        ev = copy.deepcopy(self.ev)
++        b = ev["binding"]
++        b["observations"][0]["result"] = "FAIL"
++        b["defects"] = [{"scenario_id": CRIT, "defect_class": "NOT_A_REAL_CLASS",
++                         "statement": "x"}]
++        b["coverage"]["criteria"][0]["state"] = "covered_fail"
++        b["recommendation"] = "RECOMMEND_REJECT"
++        del b["acceptance"]
++        with self.assertRaises(gate.ValidationError):
++            check(ev)
++
++    def test_the_corpus_carries_the_prd_ac_rtm_chain_the_ladder_asks_for(self):
++        """`traceability_digest` is optional in the schema and I had left it unset -- the RTM
++        third of the ladder's "PRD/AC/RTM chain".
++
++        Asserts WELL-FORMED and PAIRWISE DISTINCT, not merely present. BADF-REV found the earlier
++        form claimed a "real" chain while checking only that three keys existed -- three IDENTICAL
++        placeholder digests would have passed, and three identical digests are not a chain. The
++        digests are synthetic and the doc now says so; what is verifiable about them is their
++        shape and their distinctness, so that is what is verified.
++        """
++        for path in (ACCEPTED, REJECTED):
++            with self.subTest(corpus=path.name):
++                basis = json.loads(path.read_text(encoding="utf-8"))["binding"]["acceptance_basis"]
++                seen = {}
++                for field in ("prd_digest", "acceptance_criteria_digest", "traceability_digest"):
++                    self.assertIn(field, basis, f"{path.name} is missing {field}")
++                    self.assertRegex(basis[field], r"^sha256:[0-9a-f]{64}$",
++                                     f"{path.name} {field} is not a well-formed sha256 digest")
++                    seen.setdefault(basis[field], []).append(field)
++                dupes = {d: f for d, f in seen.items() if len(f) > 1}
++                self.assertEqual({}, dupes,
++                                 f"{path.name}: chain links share a digest {dupes} -- three "
++                                 f"identical digests are not a chain, they are one value written "
++                                 f"three times")
++
++
++# The ADVERSARIAL members: defects NO control claims to catch. Required by SARCHI's ruling on
++# #277 as one case; the search for one found FOUR, and declaring only the one asked for would
++# reproduce exactly the defect the requirement exists to prevent -- a gap found and not written
++# down. Each is ADMITTED by the gate, and each must be named in the shadow evidence.
++#
++# Ten cases, one per defect_class, is the CONFIRM-SHAPED form: each class's imagined defect,
++# caught by the control built to catch it. These eleven-and-beyond test the property the battery
++# exists to certify -- that what the shadow does not cover is DECLARED, never implied.
++DECLARED_UNCOVERED = {
++    "coverage-contradicts-observation":
++        "a criterion marked covered_pass while its own scenario's observation is FAIL",
++    "scenario-dropped-entirely":
++        "a scenario carrying no observation at all -- dropped rather than reported NOT_EXECUTED",
++    "critical-not-executed-unclassified":
++        "a critical scenario NOT_EXECUTED with no defect class, under RECOMMEND_REJECT",
++    "defect-statement-empty":
++        "a classified defect whose statement is the empty string",
++}
++
++
++def _uncovered_case(name, b):
++    """Build each declared-uncovered binding. Kept beside the declaration so a case cannot be
++    declared without being constructible, nor constructed without being declared."""
++    def fail_crit(dc="IMPLEMENTATION_DEFECT"):
++        b["observations"][0]["result"] = "FAIL"
++        b["defects"] = [{"scenario_id": CRIT, "defect_class": dc, "statement": "x"}]
++        b["coverage"]["criteria"][0]["state"] = "covered_fail"
++        b["recommendation"] = "RECOMMEND_REJECT"
++        b.pop("acceptance", None)
++    if name == "coverage-contradicts-observation":
++        fail_crit()
++        b["coverage"]["criteria"][0] = {"acceptance_criterion_ref": "AC-1", "state": "covered_pass"}
++    elif name == "scenario-dropped-entirely":
++        b["observations"].pop(0)
++        b["recommendation"] = "RECOMMEND_REJECT"; b.pop("acceptance", None)
++    elif name == "critical-not-executed-unclassified":
++        b["observations"][0] = dict(b["observations"][0], result="NOT_EXECUTED")
++        b["recommendation"] = "RECOMMEND_REJECT"; b.pop("acceptance", None)
++    elif name == "defect-statement-empty":
++        fail_crit(); b["defects"][0]["statement"] = ""
++    else:
++        raise AssertionError(f"undeclared case {name}")
++
++
++class DeclaredNonCoverageTests(unittest.TestCase):
++    """SARCHI's #270 addition: the shadow must distinguish declaring its gaps from having none."""
++
++    def setUp(self):
++        self.ev = json.loads(ACCEPTED.read_text(encoding="utf-8"))
++
++    def test_each_declared_uncovered_case_is_genuinely_admitted(self):
++        """If one of these starts being REFUSED, a control now covers it and the declaration is
++        stale -- remove it from DECLARED_UNCOVERED and from the shadow doc in the same change.
++        A stale non-coverage entry understates the gate, which is its own kind of lie."""
++        for name in DECLARED_UNCOVERED:
++            with self.subTest(case=name):
++                ev = copy.deepcopy(self.ev)
++                _uncovered_case(name, ev["binding"])
++                check(ev)   # admitted: no control claims this one
++
++    @staticmethod
++    def _non_coverage_section() -> str:
++        """The `## Declared non-coverage` section ONLY.
++
++        Scoped deliberately. Asserting the case name appears anywhere in the document would be a
++        substring check standing in for a declaration: move the names into a changelog line or a
++        future-work paragraph and a whole-document check still passes while nothing is declared.
++        That is the proxy-for-property class, and this test exists to certify a declaration --
++        so it must read the declaration.
++        """
++        text = DOC.read_text(encoding="utf-8")
++        marker = "## Declared non-coverage"
++        assert marker in text, f"{DOC.name} has no {marker!r} section"
++        after = text.split(marker, 1)[1]
++        return after.split("\n## ", 1)[0]
++
++    def test_every_uncovered_case_is_DECLARED_in_the_non_coverage_section(self):
++        """The property the battery exists to certify. Without this, a shadow that declares its
++        gaps and one that merely has none visible are indistinguishable."""
++        section = self._non_coverage_section()
++        for name in DECLARED_UNCOVERED:
++            with self.subTest(case=name):
++                self.assertIn(name, section,
++                              f"uncovered case {name!r} is exercised but not declared in the "
++                              f"'Declared non-coverage' section of {DOC.name} -- a gap found "
++                              f"and not written down")
++
++    def test_the_section_scoping_is_not_vacuous(self):
++        """Negative control for the scoping above: if `_non_coverage_section` silently returned
++        the whole document, every assertion in the previous test would pass for the wrong reason.
++        A token that appears in the doc but OUTSIDE that section must not be found in it."""
++        section = self._non_coverage_section()
++        whole = DOC.read_text(encoding="utf-8")
++        outside = "Shadow-evidence"          # the H1 title, far above the section
++        self.assertIn(outside, whole, "fixture drift: the control token left the document")
++        self.assertNotIn(outside, section,
++                         "the section slice is returning more than the section -- every "
++                         "declaration assertion above would then pass vacuously")
++
++
++class TripwireTests(unittest.TestCase):
++    """The claims that must EXPIRE BY THEMSELVES rather than by anyone remembering."""
++
++    def test_no_real_g10_dossier_exists_yet(self):
++        """BINDING per SARCHI's ruling on #277. The representativeness caveat is only honest
++        while BADF has no real product-acceptance event. This asserts that against a LIVE SCAN,
++        so the day a real G10 dossier lands the claim fails instead of quietly going stale.
++
++        When this goes RED: the caveat in shadow-evidence.md is now false. Re-shadow against the
++        real dossier and file the result; do not delete this test to make it pass.
++        """
++        real = sorted(p.as_posix() for p in (gate.ROOT / "work").glob("*/gate-dossier.G10.json"))
++        self.assertEqual([], real,
++                         f"a real G10 dossier now exists ({real}); the representative caveat in "
++                         f"{DOC.relative_to(gate.ROOT)} is no longer true and the real re-shadow is owed")
++
++    def test_the_known_substring_hole_in_c7_c9_is_still_open(self):
++        """#289, declared as non-coverage rather than shadowed as sound.
++
++        C7/C9 decide whether a failing critical scenario is NAMED by substring against joined
++        prose, so a scenario named only by a LONGER id passes as acknowledged. This shadow must
++        not report those controls as sound while that is true.
++
++        When this goes RED: #289 has landed. Remove this test AND the matching non_coverage entry
++        from shadow-evidence.md in the same change.
++        """
++        ev = copy.deepcopy(json.loads(ACCEPTED.read_text(encoding="utf-8")))
++        b = ev["binding"]
++        _crit_fails(b)
++        b["recommendation"] = "RECOMMEND_ACCEPT_WITH_CONDITIONS"
++        b["acceptance"]["disposition"] = "ACCEPTED_WITH_CONDITIONS"
++        b["acceptance"]["conditions"] = [f"{CRIT}1 is a DIFFERENT scenario and the only one named"]
++        try:
++            check(ev)
++        except gate.ValidationError as e:  # pragma: no cover - fires only once #289 lands
++            self.fail(f"#289 appears fixed -- C7 now refuses the longer-id case ({e}). "
++                      f"Remove this test and the #289 non_coverage entry from the shadow doc.")
++
++    def test_the_shadow_doc_states_the_caveat_in_its_first_section(self):
++        """The #166 form: the caveat is the FIRST thing a reader meets, not a footnote."""
++        text = DOC.read_text(encoding="utf-8")
++        head = text.split("\n## ")[1] if "\n## " in text else ""
++        self.assertIn("REPRESENTATIVE", head.upper(),
++                      "the first section must be the representativeness caveat (#166 form)")
++        for token in ("#277", "#289", "#291", "PRD-SHADOW-CHECKOUT"):
++            self.assertIn(token, text, f"shadow evidence must name {token}")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0132/work-package.json b/work/WP-2026-0132/work-package.json
+index 451c8b2..bf37375 100644
+--- a/work/WP-2026-0132/work-package.json
++++ b/work/WP-2026-0132/work-package.json
+@@ -67,11 +67,14 @@
+     "EVIDENCE_CORRUPTION",
+     "BUDGET_EXHAUSTED"
+   ],
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "75a6abd46c28033332aa19553a083b50d9ce06ec"
++    "base_revision": "75a6abd46c28033332aa19553a083b50d9ce06ec",
++    "landed_content_tree": "ca008c8da175b80a87e95e0406e52074d7157e39",
++    "composition_verified": true,
++    "landed_as": "d82b6685b3f7a549292c18f54c80d24fde04bc0b"
+   },
+   "expected_surfaces": {
+     "files": [

@@ -1,0 +1,60 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0131-G07-source-change",
+  "work_package_id": "WP-2026-0131",
+  "gate": "G07",
+  "claim": "the change WP-2026-0131 makes to this repository, outside its own directory and the lockfile",
+  "evidence_type": "source-change",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-09-01T22:21:24Z",
+  "completed_at": "2026-09-01T22:21:24Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0131/evidence/G07/source-change.diff",
+  "digest": "sha256:9f33bbe754b90569a939b83acdd496948ba6459df3cc8e05d740dfe30152ec27",
+  "binding": {
+    "base_sha": "d82b6685b3f7a549292c18f54c80d24fde04bc0b",
+    "head_sha": "0d8925935700bb2681e144b8eed9afa6616987ab",
+    "content_tree": "d94bff5945c471f6b613311e98ae8345bf84ac06",
+    "changed_paths": [
+      "badf/demands/BADF-DEM-0118.json",
+      "badf/skill-registry.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "examples/uat-shadow-checkout-rejected.json",
+      "examples/uat-shadow-checkout.json",
+      "examples/uat-shadow-checkout.log",
+      "skills/badf-uat/references/acceptance.md",
+      "skills/badf-uat/references/shadow-evidence.md",
+      "tests/test_badf_uat_contract.py",
+      "tests/test_badf_uat_shadow.py",
+      "work/WP-2026-0132/work-package.json"
+    ],
+    "expected_surfaces": {
+      "declared": true,
+      "files": [
+        "badf/demands/BADF-DEM-0118.json",
+        "badf/skill-registry.json",
+        "docs/governance/GITHUB_CONTROL_PLANE.md",
+        "examples/uat-shadow-checkout-rejected.json",
+        "examples/uat-shadow-checkout.json",
+        "examples/uat-shadow-checkout.log",
+        "skills/badf-uat/references/acceptance.md",
+        "skills/badf-uat/references/shadow-evidence.md",
+        "tests/test_badf_uat_contract.py",
+        "tests/test_badf_uat_shadow.py",
+        "work/WP-2026-0132/work-package.json"
+      ]
+    },
+    "unexpected_paths": [],
+    "change_digest": "sha256:9f33bbe754b90569a939b83acdd496948ba6459df3cc8e05d740dfe30152ec27"
+  }
+}

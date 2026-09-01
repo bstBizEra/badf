@@ -2134,6 +2134,51 @@ it**, which is why the battery now asserts that its parsed count equals the modu
 and exits before measuring on a mismatch — *every stage of a measurement chain needs its own
 liveness witness, including the stage that reads the others.*
 =======
+## badf-uat → SHADOWED — representative calibration, and the gaps it declares (`BADF-WP-0131` / WP-UAT-D, Issue #277 / GOV-0124)
+
+`SHADOWED` means the controls were run against cases and behaved. `badf-uat` has **no real G10 evidence
+at all** — measured on `main`: **0** G10 dossiers ever assembled, **0** landed `uat` evidence, against 91
+`gate-dossier.G07`. BADF builds itself and has no product-acceptance event, exactly as
+`badf-security-design` had no threat surface (#166) and `badf-solution-design` no solution matrices
+(#145). So the shadow is **REPRESENTATIVE** (`PRD-SHADOW-CHECKOUT`) and `references/shadow-evidence.md`
+says so in its first section; the real re-shadow is owed and filed as **#291**, whose trigger is
+**mechanical** rather than prose — a live scan asserting no G10 dossier exists, red the day one lands.
+
+**Two shapes were refused before this one**, and the distinction is the reusable part: an **empty-corpus**
+shadow is *vacuous* (zero cases exercised is zero discrimination — a broken control and a correct one go
+identically green), and shadowing `uat` over the 91 G07 dossiers is the *proxy* class (different gate,
+different semantics). What separates them from this one is **vacuity gap vs realism gap**: a run that
+*cannot* fail is disqualifying; a run that drives every control and *can* fail, but only on encodings
+someone imagined, is what a declared caveat plus a live trigger exists for. The empty-corpus option was
+this author's own filed plan, and was the weaker instrument wearing the honest label.
+
+The calibration drives **all eleven** `check_g10_uat_binding` controls — each observed **red against its
+own message fragment**, never a bare exit code, because passing on the wrong raise is how a control
+acquires a test that does not test it. The case count is asserted equal to the `ValidationError` sites
+read from the live gate **by AST**, so a control added later without a shadow case fails rather than going
+quietly unshadowed. **All ten `defect_class` values are injected**, the class set read from the schema
+enum rather than written down. A **rejecting** run (critical `FAIL`, classified defect,
+`RECOMMEND_REJECT`, no acceptance object) is **admitted** — the gate refuses malformed evidence, never an
+unfavourable result, a property a shadow of only-accepted runs could not show.
+
+**And it declares four defect shapes no control catches** — `coverage-contradicts-observation` (a
+criterion marked `covered_pass` while its own scenario's observation is `FAIL`), `scenario-dropped-entirely`,
+`critical-not-executed-unclassified`, `defect-statement-empty` — each asserted **admitted** and asserted
+**declared in the non-coverage section**, the check scoped to that section rather than to the document,
+because a substring found anywhere is not a declaration. SARCHI's #270 addition asked for **one** such
+case; the search found four, and declaring only the one asked for would have reproduced the very defect
+the requirement exists to prevent.
+
+Registry **`IMPLEMENTED` → `SHADOWED`** in one edit declaring **both** earned steps: `VALIDATED` was
+earned at rung C and **the advance was omitted** — C's own pin comment set the status to the unadvanced
+value and nothing flagged it, the co-edit-obligation-silently-unmet shape (#268's class), named here
+rather than repaired silently. The standing fix is one line in the ladder — *each rung's PR advances the
+registry status in the same change; a rung PR that does not is refused at review* — put in REV's path
+rather than in a new checker. `acceptance.md` is amended **extend-only**: the frozen rung-A D text is
+untouched, and the amendment records what D delivers and what defers to #291 (detection quality — a
+property of a judgment a thin router with `allowed_tools: []` has no runtime to make).
+`APPROVED`/`ACTIVE` remain the operator's admission decision at **WP-UAT-E**.
+
 ## The enforcement-input ratchet — an optional input becomes loud, then mandatory (`BADF-WP-0126`, Issue #246 / GOV-0108)
 
 The class, in BARCHI-3's sentence this WP exists to falsify: *a control whose input is optional is a

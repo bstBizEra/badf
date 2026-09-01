@@ -1,0 +1,148 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-SHADOW-G10-uat",
+  "work_package_id": "WP-2026-0131",
+  "gate": "G10",
+  "claim": "representative UAT acceptance run for SHADOW-CHECKOUT",
+  "evidence_type": "uat",
+  "producer": {
+    "id": "badf-uat",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "badf-uat",
+    "version": "1"
+  },
+  "operation": "uat-execution",
+  "started_at": "2026-02-01T09:00:00Z",
+  "completed_at": "2026-02-01T09:30:00Z",
+  "outcome": "PASS",
+  "artifact": "examples/uat-shadow-checkout.log",
+  "digest": "sha256:02c56d199bb437216ac7f1852f214e814aee13217169cc646f0c17def4f11446",
+  "binding": {
+    "candidate": {
+      "source_digest": "sha256:02c56d199bb437216ac7f1852f214e814aee13217169cc646f0c17def4f11446"
+    },
+    "acceptance_basis": {
+      "prd_id": "PRD-SHADOW-CHECKOUT",
+      "prd_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "acceptance_criteria_digest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "traceability_digest": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    "scenarios": [
+      {
+        "scenario_id": "UAT-SCN-CHK-001",
+        "prd_id": "PRD-SHADOW-CHECKOUT",
+        "objective_ref": "OBJ-CHK-1",
+        "acceptance_criterion_ref": "AC-1",
+        "actor_role": "shopper",
+        "preconditions": "a shopper with one item in the basket and a valid saved card",
+        "steps": [
+          "open the basket",
+          "confirm the saved card",
+          "submit the order"
+        ],
+        "expected_business_outcome": "the order is confirmed and a confirmation number is shown",
+        "criticality": "critical"
+      },
+      {
+        "scenario_id": "UAT-SCN-CHK-002",
+        "prd_id": "PRD-SHADOW-CHECKOUT",
+        "objective_ref": "OBJ-CHK-1",
+        "acceptance_criterion_ref": "AC-2",
+        "actor_role": "shopper",
+        "expected_business_outcome": "a declined card leaves the basket intact and states why",
+        "criticality": "major"
+      },
+      {
+        "scenario_id": "UAT-SCN-CHK-003",
+        "prd_id": "PRD-SHADOW-CHECKOUT",
+        "objective_ref": "OBJ-CHK-2",
+        "acceptance_criterion_ref": "AC-3",
+        "actor_role": "support_agent",
+        "expected_business_outcome": "an agent can locate the order by confirmation number",
+        "criticality": "minor"
+      }
+    ],
+    "observations": [
+      {
+        "scenario_id": "UAT-SCN-CHK-001",
+        "adapter": "browser",
+        "observed_outcome": "confirmation number 8812 shown",
+        "result": "PASS",
+        "executed_by": "adapter/browser",
+        "executed_at": "2026-02-01T09:00:00Z"
+      },
+      {
+        "scenario_id": "UAT-SCN-CHK-002",
+        "adapter": "browser",
+        "observed_outcome": "decline reason shown, basket intact",
+        "result": "PASS",
+        "executed_by": "adapter/browser",
+        "executed_at": "2026-02-01T09:04:00Z"
+      },
+      {
+        "scenario_id": "UAT-SCN-CHK-003",
+        "adapter": "manual",
+        "observed_outcome": "agent found the order by number",
+        "result": "PASS",
+        "executed_by": "uat/manual-session-3",
+        "executed_at": "2026-02-01T09:20:00Z"
+      }
+    ],
+    "defects": [],
+    "coverage": {
+      "criteria": [
+        {
+          "acceptance_criterion_ref": "AC-1",
+          "state": "covered_pass"
+        },
+        {
+          "acceptance_criterion_ref": "AC-2",
+          "state": "covered_pass"
+        },
+        {
+          "acceptance_criterion_ref": "AC-3",
+          "state": "covered_pass"
+        }
+      ],
+      "roles": [
+        {
+          "actor_role": "shopper",
+          "exercised": true
+        },
+        {
+          "actor_role": "support_agent",
+          "exercised": true
+        }
+      ],
+      "journeys": [
+        {
+          "journey": "checkout",
+          "state": "complete"
+        },
+        {
+          "journey": "order-lookup",
+          "state": "complete"
+        }
+      ],
+      "non_coverage": []
+    },
+    "recommendation": "RECOMMEND_ACCEPT",
+    "recommendation_rationale": "every scenario passed; the critical path is covered end to end",
+    "acceptance": {
+      "acceptance_id": "UAT-ACC-CHK-001",
+      "candidate_digest": "sha256:02c56d199bb437216ac7f1852f214e814aee13217169cc646f0c17def4f11446",
+      "acceptance_basis_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "scenario_set_digest": "sha256:a2631559486c9cd44ebeec02419cd48f615194ba144ac1329756fb7d005d6047",
+      "disposition": "ACCEPTED",
+      "accepted_by": {
+        "principal": "product-owner@shadow.example",
+        "principal_type": "human"
+      },
+      "accepted_at": "2026-02-01T11:00:00Z"
+    }
+  }
+}

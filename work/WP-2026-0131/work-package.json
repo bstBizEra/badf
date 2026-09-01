@@ -1,0 +1,93 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0131",
+  "title": "WP-UAT-D: badf-uat representative shadow — every G10 control driven, with tripwires that expire by themselves",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0118",
+  "objective": "Complete rung D of badf-uat's A->E ladder on a DECLARED REPRESENTATIVE corpus, per SARCHI's amended ruling on #277, and make the representativeness caveat expire mechanically rather than by anyone remembering it.",
+  "business_value": "A capability admitted without ever being observed working is law without evidence. BADF has no product-acceptance event of its own, so the alternative to a declared representative shadow is either a vacuous one (zero discrimination) or a ladder documented as uncompletable for every product-side family.",
+  "in_scope": [
+    "examples/uat-shadow-checkout.json + .log: a representative accepted run for PRD-SHADOW-CHECKOUT",
+    "examples/uat-shadow-checkout-rejected.json: a critical FAIL with a classified defect and RECOMMEND_REJECT, ADMITTED",
+    "skills/badf-uat/references/shadow-evidence.md: caveat in the FIRST section, #166 form, declared non-coverage",
+    "tests/test_badf_uat_shadow.py: all 11 controls driven with observed red, recomputed not stored, two tripwires"
+  ],
+  "out_of_scope": [
+    "Any change to check_g10_uat_binding -- D observes the controls, it does not alter them",
+    "#289's substring fix: a different surface (badf_gate.py), filed rather than folded",
+    "Registry advance to APPROVED/ACTIVE -- rung E is an operator admission, not this rung",
+    "Real scenario derivation, execution adapters, defect triage -- declared non-coverage, deferred to #291"
+  ],
+  "expected_surfaces": {
+    "declared": true,
+    "files": [
+      "badf/demands/BADF-DEM-0118.json",
+      "badf/skill-registry.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "examples/uat-shadow-checkout-rejected.json",
+      "examples/uat-shadow-checkout.json",
+      "examples/uat-shadow-checkout.log",
+      "skills/badf-uat/references/acceptance.md",
+      "skills/badf-uat/references/shadow-evidence.md",
+      "tests/test_badf_uat_contract.py",
+      "tests/test_badf_uat_shadow.py",
+      "work/WP-2026-0132/work-package.json"
+    ]
+  },
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "Every ValidationError site in check_g10_uat_binding has a shadow case, asserted by AST against the LIVE gate rather than a written number",
+    "Each case observed RED against its OWN message fragment, not merely a non-zero raise",
+    "The rejecting run is ADMITTED -- the gate refuses malformed evidence, never an unfavourable result",
+    "test_no_real_g10_dossier_exists_yet goes RED when a real G10 dossier is planted (verified)",
+    "test_the_known_substring_hole_in_c7_c9_is_still_open goes RED when #289's fix is applied (verified)",
+    "The shadow doc names #277, #289, #291 and states the caveat in its first section",
+    "Every defect_class in the schema enum is injected and admitted, the enum read from the schema rather than written in the test, with an unknown class refused as the negative control",
+    "acceptance_basis.traceability_digest is populated in the corpus and pinned, so the PRD/AC/RTM chain the rung-A ladder asks for is carried",
+    "One adversarial case beyond the ten that NO control catches, asserted ADMITTED and asserted DECLARED in shadow-evidence.md -- the search for one found four, and all four are declared",
+    "Registry advances IMPLEMENTED -> SHADOWED in one edit, with BOTH earned steps declared: VALIDATED earned at rung C and omitted (#268's class), SHADOWED earned by D",
+    "acceptance.md amended EXTEND-ONLY: the frozen D bullet is unchanged; the amendment records what D delivers, what defers to #291, and the standing rung-status co-edit rule",
+    "GITHUB_CONTROL_PLANE.md carries a WP-UAT-D section in the established per-rung form, as every prior badf-uat rung and both precedent D rungs do"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_uat_shadow.py (7)"
+  ],
+  "test_obligations": [
+    {
+      "id": "TEST-UATD-1",
+      "claim": "every G10 control refuses its own defect, all ten defect classes are injected from the schema enum, and the corpus carries the PRD/AC/RTM chain",
+      "level": "unit"
+    },
+    {
+      "id": "TEST-UATD-2",
+      "claim": "both tripwires fire when their claim stops being true -- a real G10 dossier appearing, and #289's hole closing",
+      "level": "unit"
+    }
+  ],
+  "evidence": [
+    "failing-first red set",
+    "green after",
+    "mutation on each control and both tripwires",
+    "compose output incl. composition record",
+    "typed G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "wp/WP-2026-0131-uat-representative-shadow",
+    "base_revision": "d82b668",
+    "composition_verified": false
+  },
+  "note": "Lean mode ADVISORY. The empty-corpus alternative was mine and was the weaker instrument wearing the honest label; the vacuity/realism distinction is recorded in the shadow doc because it is the reusable part, not the corpus."
+}
