@@ -40,7 +40,7 @@ index c9b0cc4..15af844 100644
      },
      {
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 9a724a1..4016b97 100644
+index 01668b5..e69c8ef 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
 @@ -2134,6 +2134,51 @@ it**, which is why the battery now asserts that its parsed count equals the modu
@@ -1034,26 +1034,24 @@ index 0000000..912166c
 +
 +if __name__ == "__main__":
 +    unittest.main()
-diff --git a/work/WP-2026-0133/work-package.json b/work/WP-2026-0133/work-package.json
-index 8d0e646..63bca34 100644
---- a/work/WP-2026-0133/work-package.json
-+++ b/work/WP-2026-0133/work-package.json
-@@ -86,13 +86,16 @@
-     "reversible": true,
-     "method": "revert the squash commit via PR"
-   },
+diff --git a/work/WP-2026-0132/work-package.json b/work/WP-2026-0132/work-package.json
+index 451c8b2..bf37375 100644
+--- a/work/WP-2026-0132/work-package.json
++++ b/work/WP-2026-0132/work-package.json
+@@ -67,11 +67,14 @@
+     "EVIDENCE_CORRUPTION",
+     "BUDGET_EXHAUSTED"
+   ],
 -  "status": "IN_PROGRESS",
 +  "status": "CLOSED",
-   "tdd_exception": {
-     "reason": "Documentation and declaration correction with no behaviour change and no test obligations; the evidence is a classified subject-wide sweep plus a byte-identity and digest assertion on the deliberately-untouched export."
-   },
    "external_target": {
      "repository": "bstBizEra/badf",
      "branch": "main",
--    "base_revision": "9fad36948cdf14c914cf76faf07365588091585c"
-+    "base_revision": "9fad36948cdf14c914cf76faf07365588091585c",
-+    "landed_content_tree": "5e5bdf7a89951cc10d603d9042f67e6ea1235491",
+-    "base_revision": "75a6abd46c28033332aa19553a083b50d9ce06ec"
++    "base_revision": "75a6abd46c28033332aa19553a083b50d9ce06ec",
++    "landed_content_tree": "ca008c8da175b80a87e95e0406e52074d7157e39",
 +    "composition_verified": true,
-+    "landed_as": "75a6abd46c28033332aa19553a083b50d9ce06ec"
-   }
- }
++    "landed_as": "d82b6685b3f7a549292c18f54c80d24fde04bc0b"
+   },
+   "expected_surfaces": {
+     "files": [

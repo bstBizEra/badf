@@ -16,8 +16,8 @@
     "version": "1"
   },
   "operation": "deferred-to-compose",
-  "started_at": "2026-09-01T21:07:27Z",
-  "completed_at": "2026-09-01T21:07:27Z",
+  "started_at": "2026-09-01T22:21:24Z",
+  "completed_at": "2026-09-01T22:21:24Z",
   "outcome": "NOT_RUN",
   "artifact": "work/WP-2026-0131/evidence/G07/unit-test.txt",
   "digest": "sha256:3ebfe5e512dfeda144788ffffd16868b94226c8875f266fe231350792fa89fbc",
@@ -32,7 +32,7 @@
         "red": {
           "observed": true,
           "ref": "work/WP-2026-0131/evidence/G07/failing-first.txt",
-          "digest": "sha256:18bf030c747b677a31fb40a92c357f53f572d3067a88d22eed694c60f63e5a9c"
+          "digest": "sha256:26ff147164c163de874f196fcfb19e0242ac4c444e4bf63469fff5fea93678fe"
         },
         "green": {
           "observed": false

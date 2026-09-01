@@ -1,5 +1,5 @@
 diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
-index 9a724a1..4016b97 100644
+index 01668b5..e69c8ef 100644
 --- a/docs/governance/GITHUB_CONTROL_PLANE.md
 +++ b/docs/governance/GITHUB_CONTROL_PLANE.md
 @@ -2134,6 +2134,51 @@ it**, which is why the battery now asserts that its parsed count equals the modu
