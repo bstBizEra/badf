@@ -43,7 +43,32 @@ class IssueLearningTests(unittest.TestCase):
     def test_clean_repo_passes(self):
         gate.validate_repo()
 
+    def _terminal(self):
+        """The demands this module's central assertion is about."""
+        return [json.loads(p.read_text()) for p in sorted(DEMANDS.glob("*.json"))
+                if json.loads(p.read_text())["status"] in gate.DEMAND_TERMINAL]
+
+    def test_the_learning_check_is_not_vacuous_when_no_demand_is_terminal(self):
+        """#234: every assertion below sits behind a `status in TERMINAL` filter, so a ledger
+        with ZERO terminal demands passed while examining nothing -- "no terminal demands" was
+        indistinguishable from "all terminal demands are correct".
+
+        The floor is deliberately >= 1 and NOT pinned to today's count. #234 asks for a floor
+        justified against the ledger rather than guessed, and any specific number is a guess
+        about a moving population: it was 4 when the issue was filed, is 9 now (post-#224), and
+        #220 would take it to ~88 in one landing. A pin would then fail for being RIGHT about
+        an improvement. >= 1 is the exact property that was missing -- that the filter matched
+        something -- and it is the only floor that stays true across #220.
+        """
+        terminal = self._terminal()
+        self.assertGreaterEqual(
+            len(terminal), 1,
+            "no demand is terminal, so test_every_terminal_demand_carries_a_valid_learning "
+            "would pass having asserted nothing; the learning discipline could have collapsed "
+            "entirely and both this test and gate.verify_demand_learnings would stay green")
+
     def test_every_terminal_demand_carries_a_valid_learning(self):
+        self.assertGreaterEqual(len(self._terminal()), 1, "filter matched nothing; see #234")
         for p in DEMANDS.glob("*.json"):
             d = json.loads(p.read_text())
             if d["status"] in ("RESOLVED", "REJECTED"):

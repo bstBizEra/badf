@@ -197,6 +197,100 @@ class C6C7LedgerAndDelegationTests(_Scratch):
         self.assertEqual(json.loads(s.read_text())["delegations"][0]["task"], "slice-A", "re-assembly must preserve declared delegations")
 
 
+
+class UnwatchedControlTests(_Scratch):
+    """#250: three `check_g07_binding` controls were CORRECT but had no refusal test.
+
+    Not the usual shape. These guards fire at runtime and always would have -- what was
+    missing is any test that would notice if they stopped, so a future edit could delete
+    them with the suite staying green. BADF-REV found them with a mutation battery during
+    the #249 review; each is asserted here against its own message fragment, and each was
+    observed red against the neutered control before being trusted.
+
+    `:1691` in particular survived because the EXISTING C4 test exercises the ASSEMBLY-side
+    check (self-dossier, badf_gate.py:3616) and never the BINDING-side one -- two code paths
+    enforcing one rule, with a test on only the first.
+    """
+
+    def _sc_binding(self, **over):
+        base = self.git("rev-parse", self.base); head = self.git("rev-parse", "HEAD")
+        b = {"base_sha": base, "head_sha": head, "content_tree": gate.content_tree(self.root, WP, "HEAD"),
+             "changed_paths": ["README.md"], "change_digest": None,
+             "expected_surfaces": {"declared": False, "files": []}, "unexpected_paths": []}
+        b.update(over); return b
+
+    def test_changed_paths_must_equal_the_paths_in_the_diff_artifact(self):
+        """The equality BADF-REV's #249 approval rested on: the two-sided mirror cannot be
+        defeated by a forged binding BECAUSE changed_paths is equality-bound before the mirror
+        reads it. That guarantee was itself protected by nothing."""
+        art, ev = self.evidence_with("source-change", self._sc_binding())
+        ev["binding"]["change_digest"] = ev["digest"]
+        r = self.rule("source-change", ev["binding"])
+        self.assertIn("ACCEPTED", r.stdout, r.stderr)
+        # the artifact's diff names README.md; claim something else and the binding is refused
+        r = self.rule("source-change", dict(ev["binding"], changed_paths=["docs/forged.md"]))
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("do not equal the paths in the diff artifact", r.stderr)
+        # a SUPERSET is equally refused -- equality, not containment
+        r = self.rule("source-change", dict(ev["binding"], changed_paths=["README.md", "docs/extra.md"]))
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("do not equal the paths in the diff artifact", r.stderr)
+
+    def test_content_tree_must_equal_the_composition_records_expected_content_tree(self):
+        """What ties a binding to the composition record -- several reconcile-honesty
+        arguments rest on it (BLD-I02 / C2)."""
+        art, ev = self.evidence_with("source-change", self._sc_binding())
+        ev["binding"]["change_digest"] = ev["digest"]
+        rec = {"record": "git-composition", "work_package_id": WP, "target_ref": "refs/heads/main",
+               "target_base_sha": ev["binding"]["base_sha"], "source_head_sha": ev["binding"]["head_sha"],
+               "merge_base_sha": ev["binding"]["base_sha"], "merge_method": "squash",
+               "expected_result_tree": "0" * 40,
+               "expected_content_tree": ev["binding"]["content_tree"]}
+        record = self.wp_dir / "evidence/G07/composition-record.json"
+        record.write_text(json.dumps(rec) + "\n")
+        r = self.rule("source-change", ev["binding"])
+        self.assertIn("ACCEPTED", r.stdout, r.stderr)
+        # record says one tree, binding claims another -> refused by name
+        rec["expected_content_tree"] = "1" * 40
+        record.write_text(json.dumps(rec) + "\n")
+        r = self.rule("source-change", ev["binding"])
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("expected_content_tree", r.stderr)
+        self.assertIn("BLD-I02 / C2", r.stderr)
+
+    def test_binding_side_c4_refuses_unit_obligations_with_no_red_and_no_exception(self):
+        """The BINDING-side C4 (BLD-I07/I08). The existing C4 test drives self-dossier, which
+        is the ASSEMBLY-side check -- this path had no test at all."""
+        self.write_wp(test_obligations=[{"id": "TEST-001", "claim": "x", "level": "unit"}])
+        self.lock()
+        (self.wp_dir / "evidence/G07").mkdir(parents=True, exist_ok=True)
+        (self.wp_dir / "evidence/G07/composition-record.json").write_text(
+            json.dumps({"record": "git-composition", "work_package_id": WP}) + "\n")
+        # obligation shape read from schemas/unit-test.schema.json (id, seam, red, green all
+        # required) rather than copied -- a short object is refused by check_schema BEFORE C4,
+        # which would have made this probe pass for the wrong reason had it asserted only the
+        # exit code instead of the message.
+        oblig = {"id": "TEST-001", "seam": {"type": "unit", "ref": "tests/test_probe.py"},
+                 "red": {"observed": False}, "green": {"observed": True}}
+        no_red = {"obligations": [oblig], "command": "x",
+                  "result": "PASS", "tests_run": 3, "failures": 0, "coverage_scope": [], "fresh_run": "x"}
+        r = self.rule("unit-test", no_red)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("no observed red phase", r.stderr)
+        self.assertIn("BLD-I07 / BLD-I08 / C4", r.stderr)
+        # an explicit exception WITH a reason is the sanctioned escape
+        excepted = dict(no_red, tdd={"applies": False, "reason": "docs-only: structural lint is the verification"})
+        r = self.rule("unit-test", excepted)
+        self.assertIn("ACCEPTED", r.stdout, r.stderr)
+        # an exception with an EMPTY reason is not an exception
+        r = self.rule("unit-test", dict(no_red, tdd={"applies": False, "reason": "   "}))
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("no observed red phase", r.stderr)
+        # observed red satisfies it without any exception
+        r = self.rule("unit-test", dict(no_red, obligations=[dict(oblig, red={"observed": True})]))
+        self.assertIn("ACCEPTED", r.stdout, r.stderr)
+
+
 class SilenceTests(_Scratch):
     def test_controls_are_silent_when_fields_are_undeclared(self):
         r = self.self_dossier(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)

@@ -1,0 +1,71 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0121",
+  "title": "Give the unwatched guards something that would notice (#250 three check_g07_binding controls with no refusal test + #234 the vacuous terminal-demand learning test)",
+  "owner": "engineering_owner",
+  "demand": "BADF-DEM-0114",
+  "repository": "bstBizEra/badf",
+  "objective": "Close one defect wearing two costumes: a guard that is CORRECT and UNWATCHED. #250 -- three controls in check_g07_binding (changed_paths equality against the diff artifact; content_tree against the composition record's expected_content_tree, BLD-I02/C2; binding-side unit obligations with no observed red and no tdd exception, BLD-I07/I08/C4) fire at runtime and always would, but no test would notice if they stopped, so a future edit removes them with the suite green. #234 -- test_every_terminal_demand_carries_a_valid_learning puts every assertion behind a status-in-TERMINAL filter, so a ledger with zero terminal demands passes having examined nothing; 'no terminal demands' is indistinguishable from 'all terminal demands are correct'. The remedy is identical in both: give the guard something that would notice.",
+  "business_value": "These are the controls that make a G07 binding trustworthy, and the test that makes the learning discipline observable. Unwatched, they are removable in a future edit with no signal -- and #250's changed_paths equality is specifically what BADF-REV's #249 approval rested on, so a certified guarantee is currently protected by nothing. #234 is the test-side mirror of #220: two layers, one property, both green, neither reporting anything if the learning discipline collapsed entirely.",
+  "in_scope": [
+    "tests/test_badf_build_controls.py: UnwatchedControlTests -- one refusal test per #250 site, each asserting the message fragment rather than merely a non-zero exit",
+    "tests/test_badf_issue_learning.py: a >= 1 floor so an empty terminal set is a failure, plus test_the_learning_check_is_not_vacuous_when_no_demand_is_terminal (#234)",
+    "badf/demands/BADF-DEM-0114.json; work/WP-2026-0121/ record and G07 self-dossier; lockfile re-sign"
+  ],
+  "out_of_scope": [
+    "ANY change to the controls themselves -- they are correct; only their coverage is absent (#250 states this explicitly)",
+    "#220's gate-side unreachability: making demands become terminal is a governance decision with a live ARCHI ruling, and #234's fix is independent of it",
+    "other raises in check_g07_binding, which the battery already kills, and any control outside that function",
+    "the reference-content-assertion class (#216/#230/#210) -- shipped separately in WP-2026-0117"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "A refusal test per #250 site asserting the message fragment: changed_paths equality refuses BOTH a wrong path and a superset; content_tree mismatch refuses naming expected_content_tree and BLD-I02/C2; binding-side C4 refuses no-red and an empty-reason exception, and accepts an explicit reason and an observed red",
+    "Each new test observed RED against the neutered control before being trusted -- a refusal test never seen failing is an untested claim",
+    "The mutation battery over check_g07_binding across BOTH owning modules (test_badf_build_evidence, test_badf_build_controls) reports 0 survivors",
+    "#234: an empty terminal set is a FAILURE, red-verified by flipping every terminal demand to AUTHORIZED and observing red where it was green, with all records restored byte-identical",
+    "#234's floor is >= 1 and justified, not pinned to a count that #220 would invalidate"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_build_controls.py",
+    "tests/test_badf_issue_learning.py"
+  ],
+  "test_obligations": [
+    {
+      "id": "TO-0121-1",
+      "claim": "each of the three check_g07_binding controls refuses its violation by name",
+      "level": "contract"
+    },
+    {
+      "id": "TO-0121-2",
+      "claim": "the mutation battery reports zero survivors for check_g07_binding",
+      "level": "contract"
+    },
+    {
+      "id": "TO-0121-3",
+      "claim": "a ledger with zero terminal demands fails the learning check instead of passing vacuously",
+      "level": "contract"
+    }
+  ],
+  "evidence": [
+    "compose output"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR (test assertions removed; no control or product surface touched)"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "wp/WP-2026-0121-negative-controls",
+    "base_revision": "d910e12",
+    "composition_verified": false
+  },
+  "note": "Granted by SARCHI before BARCHI-1 held the landing order; BARCHI-1 confirmed it stays here and queues third (#255 -> #259 -> #258 -> this). Clustered as ONE WP because the remedy is identical and two PRs would each re-sign the lockfile and conflict by construction -- deviation from one-issue-one-task flagged per BADF-QA's batching rule. #234's floor is >= 1 DELIBERATELY: the terminal population was 4 at filing, is 9 now, and would be ~88 if #220 lands, so any pin fails for being right about an improvement. Obligation shape read from schemas/unit-test.schema.json rather than copied -- a short object is refused by check_schema BEFORE C4, which would have made the probe pass for the wrong reason had it asserted only the exit code. REV's method note is honoured: the battery script ships in the PR body rather than being described, since their own first run reported 7 survivors of which 4 were an instrument artifact."
+}
