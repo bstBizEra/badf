@@ -1,0 +1,22 @@
+{
+  "record": "git-composition",
+  "schema_version": "1.0.0",
+  "observed_at": "2026-09-01T06:50:34Z",
+  "repository": "bstBizEra/badf",
+  "work_package_id": "WP-2026-0129",
+  "target_ref": "refs/heads/main",
+  "target_base_sha": "0afcb1410907c8c4bbc2d8fae7bcb207ee0e04bf",
+  "source_ref": "refs/heads/wp/WP-2026-0129-registry-status-pin-guard",
+  "source_head_sha": "346aca3d4011f555f794cb3d84565c00ea484ce1",
+  "merge_base_sha": "0afcb1410907c8c4bbc2d8fae7bcb207ee0e04bf",
+  "merge_method": "squash",
+  "expected_result_tree": "26a501108932f3523b41c3af3ad4c622fb66b9d2",
+  "expected_content_tree": "5dacf4a715ba8c1e6697082d2f11645bbd250262",
+  "policy_epoch": "BADF-2026-08-25",
+  "test_set_epoch": null,
+  "suite_pattern": "test_*.py",
+  "non_coverage": [
+    "test_set_epoch: BADF defines no test-set/toolchain epoch; not recorded rather than invented",
+    "source_head_sha and expected_result_tree are informational: committing this record moves both; the binding is expected_content_tree (work/<WP>/ and the lockfile excluded)"
+  ]
+}

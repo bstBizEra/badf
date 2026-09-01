@@ -16,17 +16,19 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-09-01T06:49:31Z",
-  "completed_at": "2026-09-01T06:49:31Z",
+  "started_at": "2026-09-01T06:51:04Z",
+  "completed_at": "2026-09-01T06:51:04Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0129/evidence/G07/source-change.diff",
-  "digest": "sha256:112f4024c40776e0a4ddbb3918cc9b57323454bed8b7728eb8dec87e96b88d68",
+  "digest": "sha256:cb5925b1bfdf1a6ad41bc89f9db426ebb3ae4371de6067972e3b9bc911bf0fc9",
   "binding": {
     "base_sha": "0afcb1410907c8c4bbc2d8fae7bcb207ee0e04bf",
-    "head_sha": "7146371f80fb015f4279f83c6681ebd23cc9e8b0",
-    "content_tree": "8df2a93afb66e22414399dfd6cc439048e9dd078",
+    "head_sha": "346aca3d4011f555f794cb3d84565c00ea484ce1",
+    "content_tree": "5dacf4a715ba8c1e6697082d2f11645bbd250262",
     "changed_paths": [
-      "tests/test_badf_registry_status_pins.py"
+      "badf/demands/BADF-DEM-0116.json",
+      "tests/test_badf_registry_status_pins.py",
+      "work/WP-2026-0128/work-package.json"
     ],
     "expected_surfaces": {
       "declared": true,
@@ -37,6 +39,6 @@
       ]
     },
     "unexpected_paths": [],
-    "change_digest": "sha256:112f4024c40776e0a4ddbb3918cc9b57323454bed8b7728eb8dec87e96b88d68"
+    "change_digest": "sha256:cb5925b1bfdf1a6ad41bc89f9db426ebb3ae4371de6067972e3b9bc911bf0fc9"
   }
 }

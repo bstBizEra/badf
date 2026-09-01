@@ -25,6 +25,10 @@
     {
       "type": "documentation",
       "path": "work/WP-2026-0129/evidence/G07/documentation.json"
+    },
+    {
+      "type": "composition",
+      "path": "work/WP-2026-0129/evidence/G07/composition.json"
     }
   ],
   "approvals": [],
@@ -37,16 +41,6 @@
       "blocking_scope": "G09",
       "owner": "engineering_owner",
       "closure_predicate": "a distinct human independent_reviewer records an approval, or the deviation is accepted in a decision record",
-      "closure_authority": "quality_authority"
-    },
-    {
-      "condition_id": "C-2",
-      "statement": "GOV-0102 two-sided scope containment: 2 declared expected_surfaces pattern(s) match no changed path: badf/demands/BADF-DEM-0116.json, work/WP-2026-0128/work-package.json; an unexercised declaration widens the C7 delegation ceiling (BLD-I04 / C3)",
-      "status": "OPEN",
-      "severity": "Major",
-      "blocking_scope": "G07",
-      "owner": "engineering_owner",
-      "closure_predicate": "planning prunes the pattern or moves it to discovery_allowance, or the change grows to touch it",
       "closure_authority": "quality_authority"
     }
   ],
@@ -61,6 +55,6 @@
   "risks": [],
   "council": null,
   "disposition": "HUMAN_REQUIRED",
-  "created_at": "2026-09-01T06:49:31Z",
-  "held_because": "BADF's own work package WP-2026-0129 at G07: evidence prepared and digest-bound; the independent-reviewer condition C-1 is open under a single collaborator; a human merges. The tool binds evidence, it does not approve. Declared surfaces matching no changed path: badf/demands/BADF-DEM-0116.json, work/WP-2026-0128/work-package.json (BLD-I04 / GOV-0102) -- pruned or exercised, never carried."
+  "created_at": "2026-09-01T06:51:04Z",
+  "held_because": "BADF's own work package WP-2026-0129 at G07: evidence prepared and digest-bound; the independent-reviewer condition C-1 is open under a single collaborator; a human merges. The tool binds evidence, it does not approve."
 }
