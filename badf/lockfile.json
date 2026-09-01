@@ -1654,6 +1654,7 @@
     "work/WP-2026-0126/work-package.json": "sha256:acbab8845d7a064a6194a5e62d84ab236f5b393d41d4421368aca3c3deffa94d",
     "work/WP-2026-0127/build/progress.jsonl": "sha256:e9338ca7393e5aa7c2c5ca11a941054c7d17556f31a467b98fc178fc7f465ede",
     "work/WP-2026-0127/build/session.json": "sha256:e767d934693c13e8c1116f54d3f6aee64a1204f25b64c98e266a6ad74af17170",
+    "work/WP-2026-0127/composition.json": "sha256:437c2efcf28969abd029982d76ace5fb25946f80f0ff2e5b39bf452355c08fc8",
     "work/WP-2026-0127/evidence/G07/build.json": "sha256:fbd0fad1c73062eb64daae6326a316690aec1d2b80aeb579b21b61b67c813e1b",
     "work/WP-2026-0127/evidence/G07/build.txt": "sha256:72b8c609edaf2f1bb7f9d4fdefee6a3aa089239b7dc6dac61b5a144e8cf39a57",
     "work/WP-2026-0127/evidence/G07/documentation.diff": "sha256:0fa6c1d71237633c92fce4877c27e9cc46b0477db4cf87de8db9c3bfd9105d6b",
