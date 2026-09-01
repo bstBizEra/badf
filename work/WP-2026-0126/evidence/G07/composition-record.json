@@ -1,0 +1,22 @@
+{
+  "record": "git-composition",
+  "schema_version": "1.0.0",
+  "observed_at": "2026-09-01T00:51:46Z",
+  "repository": "bstBizEra/badf",
+  "work_package_id": "WP-2026-0126",
+  "target_ref": "refs/heads/main",
+  "target_base_sha": "bc7ca27088eb5e6bb3bf7a27b61540a19971f659",
+  "source_ref": "refs/heads/wp/WP-2026-0126-enforcement-input-ratchet",
+  "source_head_sha": "94b1085e76d0365a4af29b5662f3e4d9152a9e55",
+  "merge_base_sha": "bc7ca27088eb5e6bb3bf7a27b61540a19971f659",
+  "merge_method": "squash",
+  "expected_result_tree": "2bf113e95055891f84b07204758b6cf2f07f1e49",
+  "expected_content_tree": "8b043b140b65d2e0a1c13ab7259f6eae21cb1ed0",
+  "policy_epoch": "BADF-2026-08-25",
+  "test_set_epoch": null,
+  "suite_pattern": "test_badf_surface_ratchet.py",
+  "non_coverage": [
+    "test_set_epoch: BADF defines no test-set/toolchain epoch; not recorded rather than invented",
+    "source_head_sha and expected_result_tree are informational: committing this record moves both; the binding is expected_content_tree (work/<WP>/ and the lockfile excluded)"
+  ]
+}

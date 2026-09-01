@@ -1,0 +1,77 @@
+F..FFFFF
+======================================================================
+FAIL: test_assembly_site_allowance_covered_path_draws_no_c2 (tests.test_badf_surface_ratchet.MayTouchUnificationTests.test_assembly_site_allowance_covered_path_draws_no_c2)
+Per-site red case ONE (assembly): today an allowance-covered path lands in
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_surface_ratchet.py", line 141, in test_assembly_site_allowance_covered_path_draws_no_c2
+    self.assertEqual(b["unexpected_paths"], [], "an allowance-covered path is may-touch, not unexpected")
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: ['docs/probe-ratchet.md'] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+'docs/probe-ratchet.md'
+
+- ['docs/probe-ratchet.md']
++ [] : an allowance-covered path is may-touch, not unexpected
+
+======================================================================
+FAIL: test_coverage_counts_are_computed_not_asserted (tests.test_badf_surface_ratchet.ThresholdTests.test_coverage_counts_are_computed_not_asserted)
+The counter observed CHANGING: its numbers must track the ledger, so adding
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_surface_ratchet.py", line 114, in test_coverage_counts_are_computed_not_asserted
+    self.assertTrue(line_b and line_a, before + after)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: [] is not true : BADF GATE PASS: repo
+BADF GATE PASS: repo
+
+
+======================================================================
+FAIL: test_sentinel_and_grandfathered_records_stay_green_and_are_counted (tests.test_badf_surface_ratchet.ThresholdTests.test_sentinel_and_grandfathered_records_stay_green_and_are_counted)
+The grandfather is a statement, not an edit: the whole landed ledger is
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_surface_ratchet.py", line 101, in test_sentinel_and_grandfathered_records_stay_green_and_are_counted
+    self.assertIn("SURFACE RATCHET", r.stdout)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'SURFACE RATCHET' not found in 'BADF GATE PASS: repo\n'
+
+======================================================================
+FAIL: test_undeclared_at_or_above_threshold_is_refused_at_assembly (tests.test_badf_surface_ratchet.ThresholdTests.test_undeclared_at_or_above_threshold_is_refused_at_assembly)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_surface_ratchet.py", line 83, in test_undeclared_at_or_above_threshold_is_refused_at_assembly
+    self.assertNotEqual(r.returncode, 0, r.stdout)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : re-signed badf/lockfile.json over 1635 governance paths
+BADF SELF-DOSSIER: WP-2026-9998 G07 assembled, disposition HUMAN_REQUIRED; source-change 324 bytes bound to 5138b24..HEAD; a human merges. Validate: python3 scripts/badf_gate.py dossier work/WP-2026-9998/gate-dossier.G07.json (exit 3 = HELD).
+BADF GATE PASS: self-dossier
+
+
+======================================================================
+FAIL: test_undeclared_at_or_above_threshold_turns_repo_red_naming_the_id (tests.test_badf_surface_ratchet.ThresholdTests.test_undeclared_at_or_above_threshold_turns_repo_red_naming_the_id)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_surface_ratchet.py", line 91, in test_undeclared_at_or_above_threshold_turns_repo_red_naming_the_id
+    self.assertNotEqual(r.returncode, 0, r.stdout)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : BADF GATE PASS: repo
+
+
+======================================================================
+FAIL: test_own_dir_or_lockfile_in_declaration_is_refused (tests.test_badf_surface_ratchet.UnmatchableDeclarationTests.test_own_dir_or_lockfile_in_declaration_is_refused)
+The VAL-B near-miss: both paths are excluded from the governed diff, so a
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_surface_ratchet.py", line 124, in test_own_dir_or_lockfile_in_declaration_is_refused
+    self.assertNotEqual(r.returncode, 0, r.stdout)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 == 0 : BADF GATE PASS: repo
+
+
+----------------------------------------------------------------------
+Ran 8 tests in 76.164s
+
+FAILED (failures=6)

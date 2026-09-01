@@ -1,0 +1,406 @@
+diff --git a/badf/demands/BADF-DEM-0112.json b/badf/demands/BADF-DEM-0112.json
+new file mode 100644
+index 0000000..b3493cc
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0112.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0112",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 246,
++    "url": "https://github.com/bstBizEra/badf/issues/246",
++    "exported_at": "2026-08-31T23:10:09Z",
++    "body_digest": "sha256:8a0bc6cff6e6e14a5333f66b561d8ccd2ef11209abb0f47fef56829ca3c02d4d"
++  },
++  "title": "GOV-0108: DISCOVERED -- expected_surfaces is an optional enforcement key, so C3 containment and the C7 delegation ceiling read an input 2 of 95 work packages have ever supplied",
++  "problem": "\ud83e\udde0 **ARCHI (BARCHI-3)** \u2014 DISCOVERED: `expected_surfaces` is an **optional** enforcement key, so the C3 containment and C7 delegation controls read an input that two work packages in this repository's history have ever supplied.\n\n**Discovered-by:** WP-2026-0115 / WP-2026-0114 (measured while checking whether my own WPs declared it \u2014 they do not). Filed separately per *Discovery \u2260 scope expansion*; not fixed in either branch.\n**Measurement credit:** BARCHI-1 (`bst-sa-40`), who measured it and declined to own the issue. Independently re-measured here before filing, per the rule that a peer's claim is unmeasured until you run it.\n\n## Measured on `main` (`87dd192`)\n\n```\ntotal work packages                             95\nwith a usable expected_surfaces.files list       2   (WP-2026-0109, WP-2026-0111)\nwith expected_surfaces in some other shape       0\nwith no expected_surfaces at all                93\n```\n\nSchema: `expected_surfaces` is **not** in `work-package.schema.json`'s `required[]`. Its defined sub-keys are `files`, `services`, `interfaces`, `discovery_allowance`. There is **no `paths` key** \u2014 a point that matters below.\n\nWhere the gate reads it:\n\n```\nbadf_gate.py:1610   surface = [... (wp.get(\"expected_surfaces\") or {}).get(\"files\") or []]\nbadf_gate.py:1616   delegation declared but the work package declares no expected_surfaces (BLD-I10 / C7)\nbadf_gate.py:1666   PASS claimed with changed paths outside expected_surfaces ... (BLD-I04 / C3)\nbadf_gate.py:3539   non_coverage: \"expected_surfaces not declared ...; surface containment is not measurable\"\n```\n\n## The honest framing, which is narrower than the arithmetic\n\n**93 of 95 is not 93 authors ignoring a control.** The key was introduced late, by `WP-2026-0092` (#180), so most of those records predate its existence. BARCHI-1 caught themselves before sending the 97% version, and that caveat is the reason this issue is filed as a design question rather than an adoption scandal.\n\nThe defensible statement: **the C3 containment control and the C7 delegation ceiling read a key that two records have ever supplied.** `badf_gate.py:3539` is honest about the consequence \u2014 it emits non-coverage saying containment \"is not measurable\" \u2014 so the system is not lying about it. It is just off, by default, almost everywhere.\n\n## Why it is worth filing now rather than later\n\n`bst-sa-90` is building two-sided containment (WP-2026-0116) on top of this key: a control that refuses a **declared-but-unmatched** surface. Where nothing is declared, *both* directions are vacuous \u2014 so the strengthened control inherits the same near-empty input. Worth knowing while it is still being built.\n\n## The reframe, which I think is the actual issue\n\nNot *\"why do records omit it\"* but **whether an optional enforcement key is a coherent design.** A control that activates only when an author volunteers its input is one an author can always switch off by silence. That is the *authority* form of the vacuity class this repo has been cataloguing all week, rather than the tooling form: not a guard that passes when its input is missing by accident, but a guard whose input is missing by permission.\n\nTwo live illustrations that it is not hypothetical:\n\n1. **BARCHI-1 declared `paths` instead of `files`.** The schema defines no `paths`, the gate reads `files`, and `work-package.schema.json` is permissive \u2014 so the declaration validated, passed `repo`, and enforced **nothing**. A scope commitment that is silently inert looks identical to one that works. Caught pre-push only because another seat happened to use the correct key in an unrelated message.\n2. **My own two WPs declare nothing at all** \u2014 which is not the same as passing. The `files`/`paths` trap cannot fire on me, but not because I got the key right: because I made no machine-checkable scope commitment for the control to read.\n\n## Relationship to open issues\n\n- **#240** (schema objects are permissive; an invented key validates and is silently ignored) is the mechanism behind illustration 1 and is the closer fix for it. This issue is adjacent, not duplicate: #240 is about *wrong* keys validating; this is about a *correct* key being optional.\n- **#232** (GOV-0102: C3 containment is one-sided; an over-broad `expected_surfaces` silently widens the C7 ceiling) is the same key from the opposite direction \u2014 over-broad declaration vs. absent declaration. The two should probably be resolved together.\n\n## Not proposing a fix\n\nDeliberately. The options \u2014 make it required, derive it from the diff, keep it optional but make the non-coverage blocking rather than advisory, or fold it into #240's separator so the expectation becomes a fact in the schema \u2014 trade differently against 93 existing records and against the Lean gate, and that is an architecture call rather than an engineering one. Acceptance criteria and a version tier belong in whichever plan takes it.\n\n<!-- agent: architect -->",
++  "status": "AUTHORIZED",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "recorded_at": "2026-08-31T23:10:09Z",
++  "note": "The class: a control whose input is optional is a control that is off by default, and nothing says so. Three instances consolidated on the issue (C3/C7 reading expected_surfaces; recordless reconcile rendering; the walker classes routed to #265/#240). Remediated by WP-2026-0126 under D2 of the ratified #236 checkpoint: id-threshold ratchet (>= 0126, sentinels exempt) making expected_surfaces.files mandatory forward with grandfathered history counted out loud; coverage counters with an observed failing case; structurally-unmatchable declarations refused; the #272 fold (one stated may-touch semantic across assembly and binding); #257 direction-disambiguation. Builder SARCHI, reviewer BARCHI-2 (build/review swap recorded on the issue); ids claimed with ceiling printed (comment 5485986015) after ceding 0125/0111 to #274."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 4155250..bc4b64d 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -2075,6 +2075,7 @@ remedy when a declaration is over-broad and the **wrong** one when the declarati
+ went missing — both emit a byte-identical condition. That gap is filed as **#257 / GOV-0113** and is not fixed
+ here: this rung's subject is family names, and editing the same file is not sharing the subject.
+ 
++<<<<<<< HEAD
+ ## badf-uat → deterministic G10 controls — a defence that names a field must require the field (`BADF-WP-0125` / WP-UAT-C, Issue #273 / GOV-0120)
+ 
+ **Lean mode DISABLED.** These are HARD INVARIANTS, the same tier as the G08 controls at VER-C.
+@@ -2124,6 +2125,35 @@ unwatched-controls finding against correct code. **The negative control's own pr
+ it**, which is why the battery now asserts that its parsed count equals the module-declared count
+ and exits before measuring on a mismatch — *every stage of a measurement chain needs its own
+ liveness witness, including the stage that reads the others.*
++=======
++## The enforcement-input ratchet — an optional input becomes loud, then mandatory (`BADF-WP-0126`, Issue #246 / GOV-0108)
++
++The class, in BARCHI-3's sentence this WP exists to falsify: *a control whose input is optional is a
++control that is off by default, and nothing says so.* `expected_surfaces` fed both C3 containment and
++the C7 delegation ceiling, and 2 of 95 work packages had ever supplied it. Now: **every `repo` run
++counts the coverage out loud** (`BADF SURFACE RATCHET: declared N/M; grandfathered undeclared G…`),
++and **from `WP-2026-0126` forward the declaration is mandatory** — refused at self-dossier assembly
++and RED in `validate_repo`, both naming the record, with the threshold being the very record that
++shipped the ratchet. History below the threshold is grandfathered: counted at the point of judgment,
++never edited. Sentinel ids (#199 / GOV-0085) are exempt by declaration, not by silence. A declaration
++naming the record's own `work/` directory or the lockfile — both excluded from the governed diff by
++construction — is refused as unmatchable: C7 authority attached to nothing (the VAL-B near-miss).
++
++**The may-touch semantic, one sentence (#272 / GOV-0119, folded here by dependency):** `files` is
++must-touch — the C7 ceiling, mirror-required; `discovery_allowance` is may-touch — never `unexpected`
++at assembly, never refused at binding, never mirror-required, never widens C7. Before this WP the two
++containment sites disagreed (assembly never consulted the allowance; binding exempted by it), so no
++declaration was correct in both directions for a may-touch path. Assembly now consults the allowance
++exactly as binding does; binding keeps its own filter because pre-unification bindings still carry
++allowance-covered paths in `unexpected_paths`. Over-reach (changed-but-undeclared) and
++over-declaration (declared-but-unmatched) remain **distinct** conditions with distinct counts — no
++emitted number means two things (#257). `services`, `interfaces` and `data` remain schema-declared
++with **zero consumers**: reserved, unconsumed, stated here so nobody discovers it — their enforcement
++or removal is #240-lane work under the replay-first doctrine, not this WP's.
++
++Five control branches, each red-observed by mutation; the sub-key × consumer matrix (measured on
++#272 pre-build) re-verified post-change: no pair of consumers disagrees about any key.
++>>>>>>> 1150843 (feat(gate): the enforcement-input ratchet -- expected_surfaces mandatory from WP-2026-0126, coverage counted, unmatchable refused, may-touch unified (WP-2026-0126))
+ 
+ ## Discovery ≠ scope expansion
+ 
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index fd20f32..cffa8f9 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -766,6 +766,63 @@ def verify_work_ledger() -> list[str]:
+     return [wp for wp, _ in unreconciled]
+ 
+ 
++# ---- GOV-0108 (#246, WP-2026-0126): the enforcement-input ratchet ----
++SURFACE_RATCHET_THRESHOLD = 126
++SURFACE_RATCHET_SENTINELS = frozenset({997, 998, 999, 9999})
++
++
++def _surface_ratchet_applies(wp_id: str) -> bool:
++    """expected_surfaces.files is mandatory from WP-2026-0126 forward -- the record
++    that shipped the ratchet is the first one it binds. Earlier records are
++    grandfathered (counted at the point of judgment, never edited); the sentinel ids
++    (#199 / GOV-0085 synthetic fixtures) are exempt by declaration, not by silence."""
++    m = WP_ID_FORMS.match(str(wp_id))
++    if not m:
++        return False
++    n = int(m.group(1))
++    return n >= SURFACE_RATCHET_THRESHOLD and n not in SURFACE_RATCHET_SENTINELS
++
++
++def _unmatchable_declared(wp_id: str, patterns: list[str]) -> list[str]:
++    """Patterns that can NEVER match a governed diff: the record's own work/ dir and
++    the lockfile are excluded from that diff by construction, so declaring either is
++    noise wearing C7 authority (the VAL-B near-miss, #232 thread)."""
++    bad = []
++    for pat in patterns:
++        p = str(pat)
++        if p == "badf/lockfile.json" or p == f"work/{wp_id}" or p.startswith(f"work/{wp_id}/"):
++            bad.append(p)
++    return bad
++
++
++def verify_surface_ratchet() -> None:
++    """GOV-0108: a control whose input is optional is a control that is off by
++    default, and nothing says so. This says so -- coverage is counted out loud on
++    every run, records at or above the threshold are refused without a declaration,
++    and a declaration that can never match is refused outright. Over-reach and
++    over-declaration remain DISTINCT judgments at the assembly/binding sites (#257);
++    this counter never blends them into one number."""
++    declared = grandfathered = ratcheted = 0
++    for path, rec in self_work_packages():
++        wp = rec.get("id") or path.parent.name
++        files = [str(x) for x in ((rec.get("expected_surfaces") or {}).get("files") or [])]
++        under = _surface_ratchet_applies(wp)
++        if under:
++            ratcheted += 1
++        if files:
++            declared += 1
++            if under:
++                bad = _unmatchable_declared(wp, files)
++                if bad:
++                    raise ValidationError(f"{wp}: expected_surfaces.files declares {bad}, which can never match a governed diff (the record's own work/ dir and the lockfile are excluded from it by construction) -- an unmatchable pattern is C7 authority attached to nothing (GOV-0108)")
++        elif under:
++            raise ValidationError(f"{wp}: no expected_surfaces.files declared -- mandatory at and above the threshold WP-2026-0126; C3 containment and the C7 delegation ceiling cannot read an absent input (GOV-0108)")
++        else:
++            grandfathered += 1
++    total = declared + grandfathered
++    print(f"BADF SURFACE RATCHET: declared {declared}/{total}; grandfathered undeclared {grandfathered} (threshold WP-2026-0126; sentinels exempt; {ratcheted} record(s) under the ratchet); over-reach and over-declaration judged separately at assembly/binding (GOV-0108)")
++
++
+ def reconcile_work_package(wp_arg: str) -> str:
+     m = WP_ID_FORMS.match(wp_arg.strip())
+     if not m:
+@@ -903,6 +960,7 @@ def validate_repo() -> None:
+     verify_demand_learnings()
+     verify_monotonic_authority()
+     verify_work_ledger()
++    verify_surface_ratchet()
+ 
+ def check_non_coverage(dossier: dict[str, Any], evidence_type: str, outcome: str) -> None:
+     """G08 exit criterion: 'non-coverage declared'. Before WP-0014 nothing on a
+@@ -3741,6 +3799,15 @@ def self_dossier(wp_id: str) -> str:
+     if not base:
+         raise ValidationError(f"{wp_id} has no external_target.base_revision to diff against")
+     _require_authorized_demand(wp, wp_id)                       # C1: no request without validated authority
++    # GOV-0108: the ratchet bites at assembly too -- the same refusal at the moment
++    # planning would otherwise skate past it, reported where controls report.
++    if _surface_ratchet_applies(wp_id):
++        _files = [str(x) for x in ((wp.get("expected_surfaces") or {}).get("files") or [])]
++        if not _files:
++            raise ValidationError(f"{wp_id}: no expected_surfaces.files declared -- mandatory at and above the threshold WP-2026-0126 (GOV-0108); declare the surface before assembling")
++        _bad = _unmatchable_declared(wp_id, _files)
++        if _bad:
++            raise ValidationError(f"{wp_id}: expected_surfaces.files declares {_bad}, which can never match the governed diff (GOV-0108)")
+     _check_build_budget_and_stop(wp_dir, wp, wp_id)             # C6: a stopped or exhausted build is not packaged
+     _check_delegations(wp_dir, wp, wp_id)                       # C7: delegations must be subsets before anything is bound
+     now = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+@@ -3762,7 +3829,14 @@ def self_dossier(wp_id: str) -> str:
+     surfaces = wp.get("expected_surfaces") or {}
+     patterns = [str(x) for x in (surfaces.get("files") or [])]
+     declared = bool(patterns)
+-    unexpected = [n for n in names if declared and not any(_surface_match(n, pat) for pat in patterns)]
++    allowance = [str(x) for x in (surfaces.get("discovery_allowance") or [])]
++    # #272 unification (GOV-0119): may-touch means ONE thing at both sites. A path
++    # covered by discovery_allowance is never `unexpected` here, exactly as the
++    # binding-side C3 exempts it; binding keeps its own filter because bindings
++    # written before this unification still carry allowance-covered paths.
++    unexpected = [n for n in names if declared
++                  and not any(_surface_match(n, pat) for pat in patterns)
++                  and not any(_surface_match(n, a) for a in allowance)]
+     # GOV-0102 (#232): the mirror direction -- a declared files pattern that matched no changed
+     # path. files is must-touch (it is also the C7 delegation ceiling, BLD-I10); a pattern that
+     # is supposed to match nothing belongs in discovery_allowance, which never widens C7.
+diff --git a/tests/test_badf_surface_ratchet.py b/tests/test_badf_surface_ratchet.py
+new file mode 100644
+index 0000000..27eb1f8
+--- /dev/null
++++ b/tests/test_badf_surface_ratchet.py
+@@ -0,0 +1,186 @@
++"""GOV-0108 (#246, WP-2026-0126): the enforcement-input ratchet, red-first.
++
++The class: an optional enforcement input is a control that is off by default, and
++nothing says so. This module proves the remedy at its two reporting sites:
++expected_surfaces.files becomes MANDATORY for records at or above the threshold
++(WP-2026-0126 -- the first record the ratchet binds is the one that ships it),
++grandfathered history is COUNTED out loud and never edited, structurally-unmatchable
++declarations are refused (the VAL-B near-miss), and the #272 site-disagreement about
++discovery_allowance is unified: may-touch means the same thing at assembly and binding.
++
++Fixture ids, deliberately: sentinel ids (0997-0999, 9999) are EXEMPT from the ratchet
++so the suite's existing scratch records stay green; the threshold tests therefore use
++WP-2026-9998 -- inside GOV-0085's unallocatable region, outside the exempt set by
++design. If 9998 is ever added to the sentinel set, these tests fail loudly, which is
++the correct outcome of that conversation, not an accident.
++
++Per-site discipline (BARCHI-2's fold condition 5): the unification carries one red
++case at EACH site -- a shared case goes green while the other site still disagrees.
++"""
++import json
++import os
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
++import badf_gate as gate  # noqa: E402
++from tests._scratch import seed_clone  # noqa: E402
++
++RATCHETED = "WP-2026-9998"   # >= threshold, non-sentinel: the ratchet must bite
++EXEMPT = "WP-2026-0998"      # sentinel: existing-fixture shape, must stay green
++DEM = "BADF-DEM-0997"
++
++
++class _Scratch(unittest.TestCase):
++    def setUp(self):
++        self.tmp = tempfile.mkdtemp(); self.root = Path(self.tmp) / "badf"
++        self.base = seed_clone(self.root, carry_working_state=True)
++        self.env = {k: v for k, v in os.environ.items() if not k.startswith("BADF_")}
++        on_ledger = set(self.git("ls-tree", "-r", "--name-only", "origin/main", "--", "work/").splitlines())
++        for rec in list((self.root / "work").glob("WP-*/work-package.json")):
++            if rec.relative_to(self.root).as_posix() not in on_ledger:
++                shutil.rmtree(rec.parent)
++        for rec in list((self.root / "work").glob("WP-*/work-package.json")):
++            subprocess.run([sys.executable, "scripts/badf_gate.py", "reconcile", rec.parent.name], cwd=self.root, env=self.env, capture_output=True)
++        (self.root / "README.md").write_text((self.root / "README.md").read_text() + "\n<!-- ratchet deliverable -->\n")
++        self.git("add", "README.md"); self.commit("deliverable")
++        self.write_demand()
++
++    def write_demand(self):
++        src = json.loads((self.root / "badf/demands/BADF-DEM-0001.json").read_text(encoding="utf-8"))
++        src["demand_id"] = DEM; src["status"] = "AUTHORIZED"
++        src["authorized_by"] = {"principal": "operator", "principal_type": "human"}
++        (self.root / "badf/demands" / f"{DEM}.json").write_text(json.dumps(src, indent=2) + "\n", encoding="utf-8")
++
++    def write_wp(self, wp_id, **extra):
++        d = self.root / "work" / wp_id; d.mkdir(parents=True, exist_ok=True)
++        rec = {"$schema": "../../schemas/work-package.schema.json", "schema_version": "1.0.0", "id": wp_id,
++               "title": "scratch ratchet work package", "owner": "human_sponsor", "repository": "bstBizEra/badf",
++               "demand": DEM, "objective": "x", "business_value": "x", "in_scope": ["x"], "out_of_scope": ["y"],
++               "target_gate": "G07", "change_class": "C2", "data_classification": "internal",
++               "acceptance_criteria": ["x"], "permissions": ["write: bstBizEra/badf via PR"], "tests": ["tests/test_probe.py (3)"],
++               "evidence": ["source-change"], "rollback": {"reversible": True, "method": "revert"},
++               "status": "IN_PROGRESS", "external_target": {"repository": "bstBizEra/badf", "branch": "main", "base_revision": self.base}}
++        rec.update(extra)
++        (d / "work-package.json").write_text(json.dumps(rec, indent=2) + "\n")
++
++    def tearDown(self): shutil.rmtree(self.tmp, ignore_errors=True)
++    def git(self, *a): return subprocess.run(["git", "-C", str(self.root), "-c", "user.email=t@t", "-c", "user.name=t", *a], capture_output=True, text=True, check=True).stdout.strip()
++    def commit(self, msg): self.git("commit", "-q", "-m", msg)
++    def lock(self): subprocess.run([sys.executable, "scripts/badf_gate.py", "lock"], cwd=self.root, env=self.env, capture_output=True, check=True)
++    def gate_cmd(self, *args): return subprocess.run([sys.executable, "scripts/badf_gate.py", *args], cwd=self.root, env=self.env, capture_output=True, text=True)
++
++
++class ThresholdTests(_Scratch):
++    def test_undeclared_at_or_above_threshold_is_refused_at_assembly(self):
++        self.write_wp(RATCHETED); self.lock()
++        r = self.gate_cmd("self-dossier", RATCHETED)
++        self.assertNotEqual(r.returncode, 0, r.stdout)
++        out = r.stdout + r.stderr
++        self.assertIn(RATCHETED, out); self.assertIn("expected_surfaces", out)
++        self.assertIn("GOV-0108", out, "the refusal names the class it enforces")
++
++    def test_undeclared_at_or_above_threshold_turns_repo_red_naming_the_id(self):
++        self.write_wp(RATCHETED); self.lock()
++        r = self.gate_cmd("repo")
++        self.assertNotEqual(r.returncode, 0, r.stdout)
++        self.assertIn(RATCHETED, r.stdout + r.stderr)
++
++    def test_sentinel_and_grandfathered_records_stay_green_and_are_counted(self):
++        """The grandfather is a statement, not an edit: the whole landed ledger is
++        below threshold, sentinel fixtures are exempt, and repo stays green -- but
++        the coverage line says so out loud."""
++        self.write_wp(EXEMPT); self.lock()
++        r = self.gate_cmd("repo")
++        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        self.assertIn("SURFACE RATCHET", r.stdout)
++        self.assertIn("grandfathered", r.stdout)
++        self.assertIn("WP-2026-0126", r.stdout, "the threshold is named, not implied")
++
++    def test_coverage_counts_are_computed_not_asserted(self):
++        """The counter observed CHANGING: its numbers must track the ledger, so adding
++        a declared >= threshold record moves the declared count by exactly one."""
++        self.lock()
++        before = self.gate_cmd("repo").stdout
++        self.write_wp(RATCHETED, expected_surfaces={"files": ["README.md"]}); self.lock()
++        after = self.gate_cmd("repo").stdout
++        line_b = [l for l in before.splitlines() if "SURFACE RATCHET" in l]
++        line_a = [l for l in after.splitlines() if "SURFACE RATCHET" in l]
++        self.assertTrue(line_b and line_a, before + after)
++        self.assertNotEqual(line_b, line_a, "a new declared record must move the counter")
++
++
++class UnmatchableDeclarationTests(_Scratch):
++    def test_own_dir_or_lockfile_in_declaration_is_refused(self):
++        """The VAL-B near-miss: both paths are excluded from the governed diff, so a
++        pattern naming them can never match -- noise with C7 authority attached."""
++        self.write_wp(RATCHETED, expected_surfaces={"files": ["README.md", f"work/{RATCHETED}/work-package.json"]}); self.lock()
++        r = self.gate_cmd("repo")
++        self.assertNotEqual(r.returncode, 0, r.stdout)
++        self.assertIn("never match", r.stdout + r.stderr)
++        self.write_wp(RATCHETED, expected_surfaces={"files": ["README.md", "badf/lockfile.json"]}); self.lock()
++        r = self.gate_cmd("repo")
++        self.assertNotEqual(r.returncode, 0, r.stdout)
++
++
++class MayTouchUnificationTests(_Scratch):
++    def test_assembly_site_allowance_covered_path_draws_no_c2(self):
++        """Per-site red case ONE (assembly): today an allowance-covered path lands in
++        `unexpected` and draws C-2 because assembly never consults the allowance."""
++        (self.root / "docs" / "probe-ratchet.md").write_text("probe\n", encoding="utf-8")
++        self.git("add", "docs/probe-ratchet.md"); self.commit("may-touch discovery")
++        self.write_wp(EXEMPT, expected_surfaces={"files": ["README.md"], "discovery_allowance": ["docs/**"]}); self.lock()
++        r = self.gate_cmd("self-dossier", EXEMPT)
++        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        b = json.loads((self.root / "work" / EXEMPT / "evidence/G07/source-change.json").read_text())["binding"]
++        self.assertEqual(b["unexpected_paths"], [], "an allowance-covered path is may-touch, not unexpected")
++        d = json.loads((self.root / "work" / EXEMPT / "gate-dossier.G07.json").read_text())
++        self.assertFalse([c for c in d["conditions"] if "BLD-I04 scope containment" in c["statement"]], d["conditions"])
++
++    def test_binding_site_still_exempts_pre_unification_bindings(self):
++        """Per-site case TWO (binding, pinned regression): a binding written BEFORE the
++        unification may still carry allowance-covered paths in unexpected_paths; the
++        binding-side filter stays load-bearing for that history."""
++        self.write_wp(EXEMPT, expected_surfaces={"files": ["README.md"], "discovery_allowance": ["docs/**"]}); self.lock()
++        art = self.root / "work" / EXEMPT / "evidence/G07/probe.txt"; art.parent.mkdir(parents=True, exist_ok=True)
++        art.write_text("diff --git a/README.md b/README.md\n", encoding="utf-8")
++        base = self.git("rev-parse", self.base); head = self.git("rev-parse", "HEAD")
++        ev = {"schema_version": "1.0.0", "id": f"EVD-{EXEMPT}-G07-source-change", "work_package_id": EXEMPT, "gate": "G07",
++              "claim": "x", "evidence_type": "source-change", "producer": {"id": "t", "type": "controller"},
++              "source_revision": "HEAD", "target": "bstBizEra/badf:main", "toolchain": {"name": "t", "version": "1"},
++              "operation": "t", "started_at": "2026-01-01T00:00:00Z", "completed_at": "2026-01-01T00:00:00Z",
++              "outcome": "PASS", "artifact": f"work/{EXEMPT}/evidence/G07/probe.txt", "digest": gate.sha256(art),
++              "binding": {"base_sha": base, "head_sha": head, "content_tree": gate.content_tree(self.root, EXEMPT, "HEAD"),
++                          "changed_paths": ["README.md"], "change_digest": None,
++                          "expected_surfaces": {"declared": True, "files": ["README.md"]},
++                          "unexpected_paths": ["docs/legacy-discovery.md"]}}
++        ev["binding"]["change_digest"] = ev["digest"]
++        code = (f"art = gate.ROOT / {str(art.relative_to(self.root))!r}\nev = json.loads({json.dumps(json.dumps(ev))})\n"
++                f"gate.check_g07_binding(art, {{'disposition': 'PASS', 'work_package_id': {EXEMPT!r}}}, ev)\nprint('ACCEPTED')\n")
++        pre = "import sys, json; sys.path.insert(0, 'scripts'); import badf_gate as gate\n"
++        r = subprocess.run([sys.executable, "-c", pre + code], cwd=self.root, env=self.env, capture_output=True, text=True)
++        self.assertIn("ACCEPTED", r.stdout, r.stderr)
++
++    def test_directions_stay_distinct_in_conditions(self):
++        """#257 discipline: over-reach (changed-but-undeclared) and over-declaration
++        (declared-but-unmatched) must never share a statement or a number."""
++        (self.root / "docs" / "reach.md").write_text("probe\n", encoding="utf-8")
++        self.git("add", "docs/reach.md"); self.commit("over-reach")
++        self.write_wp(EXEMPT, expected_surfaces={"files": ["README.md", "docs/never-touched.md"]}); self.lock()
++        r = self.gate_cmd("self-dossier", EXEMPT)
++        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
++        d = json.loads((self.root / "work" / EXEMPT / "gate-dossier.G07.json").read_text())
++        reach = [c for c in d["conditions"] if "fall outside the declared" in c["statement"]]
++        decl = [c for c in d["conditions"] if "match no changed path" in c["statement"]]
++        self.assertEqual(1, len(reach), d["conditions"])
++        self.assertEqual(1, len(decl), d["conditions"])
++        self.assertNotEqual(reach[0]["condition_id"], decl[0]["condition_id"])
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0125/work-package.json b/work/WP-2026-0125/work-package.json
+index 82552dd..1477897 100644
+--- a/work/WP-2026-0125/work-package.json
++++ b/work/WP-2026-0125/work-package.json
+@@ -2,7 +2,7 @@
+   "$schema": "../../schemas/work-package.schema.json",
+   "schema_version": "1.0.0",
+   "id": "WP-2026-0125",
+-  "title": "WP-UAT-C: deterministic G10 controls, lean disabled — enforce the precondition B's judgement rested on, and make UAT-I17 mechanical",
++  "title": "WP-UAT-C: deterministic G10 controls, lean disabled \u2014 enforce the precondition B's judgement rested on, and make UAT-I17 mechanical",
+   "owner": "engineering_owner",
+   "demand": "BADF-DEM-0111",
+   "repository": "bstBizEra/badf",
+@@ -72,12 +72,14 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR; the rung is additive for untyped bindings, so reverting restores the pre-C admissibility exactly"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "wp/WP-2026-0125-uat-deterministic-controls",
+     "base_revision": "5138b24",
+-    "composition_verified": false
++    "composition_verified": true,
++    "landed_content_tree": "24ddc6f7f6372954e5f2102bb45376e8e50493fb",
++    "landed_as": "bc7ca27088eb5e6bb3bf7a27b61540a19971f659"
+   },
+   "note": "Rung C of the badf-uat A-E ladder; B landed as #264 (d0986b0). PROVENANCE PER CONTROL, stated because C is deliberately wider than #266: C7/C8/C9 are #266 criteria 2/1/3 and fully close it; C10 and C11 come from the ladder's own C-rung text (staleness detection; non-derivable-criterion declared, never dropped) plus BADF-QA's routed coverage-exactness note. A reviewer should not read C10/C11 as scope creep. expected_surfaces DECLARED UP FRONT -- the #264 lesson, where its absence cost a REV condition; the gate-forced reconcile sits in discovery_allowance because a reconcile collapses to a no-op for whoever lands second, though note GOV-0119/#272: the assembly-side containment does not consult discovery_allowance, so if that raises C-2 the reconcile moves to files with a prune-on-collapse obligation. FIXTURE NOTE: five B-rung fixtures needed a scenario_set_digest C10 can recompute. Those tests do not assert C10's ABSENCE -- their DATA simply has to satisfy a new control, which is a normal consequence of adding one and is distinct from #268's snapshot-pins. CONFIRMED LIVE: discovery_allowance did NOT exempt the reconcile at assembly-side containment -- C-2 raised naming work/WP-2026-0124/work-package.json, exactly as GOV-0119/#272 documents and as this record pre-committed to handling. Reconcile moved to files with the standing prune-on-collapse obligation; discovery_allowance removed rather than left as a declaration that enforces nothing. This is a second, independent reproduction of #272 and is noted on that issue."
+ }

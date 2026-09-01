@@ -1,0 +1,6 @@
+python3 -m unittest tests.test_badf_surface_ratchet  # at base bc7ca27, post-#274 rebase
+........
+----------------------------------------------------------------------
+Ran 8 tests in 74.635s
+
+OK
