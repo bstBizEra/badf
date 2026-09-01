@@ -16,8 +16,8 @@
     "version": "1"
   },
   "operation": "python3 -B -m unittest -v tests.test_badf_verification_evidence",
-  "started_at": "2026-09-01T01:50:49Z",
-  "completed_at": "2026-09-01T01:50:49Z",
+  "started_at": "2026-09-01T02:44:07Z",
+  "completed_at": "2026-09-01T02:44:07Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0127/evidence/G07/unit-test.log",
   "digest": "sha256:60bdbeedfffb4a7a17256ce9dd6cd2ff85d044e4b140db8055e4af35c4035829",
