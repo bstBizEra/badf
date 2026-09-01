@@ -5,13 +5,21 @@ behind it, and the two tripwires that keep the caveat below from becoming perman
 
 ## The honest caveat — this shadow is REPRESENTATIVE, not real-project
 
-**BADF has never run a G10.** Measured on `main` when this was written:
+**BADF has never run a G10.** Measured on `main` at **`9fad369`** — the SHA is part of the claim,
+because a bare count goes stale silently and this one already did (it read `91` G07 dossiers when
+first written, six landings ago):
 
 ```
-G10 dossiers ever assembled              0
-landed evidence with evidence_type uat   0   (only hits are this family's own tests)
-gate-dossier.G07 on main                91
+G10 dossiers ever assembled              0     <- the only load-bearing number; the tripwire's subject
+landed evidence with evidence_type uat   1     <- work/WP-2026-0124/evidence/G07/source-change.diff,
+                                                  this family's own B-rung diff shipping the schema.
+                                                  NOT a produced uat artifact.
+gate-dossier.G07 on main                97
 ```
+
+Only the **first** line is load-bearing, and only it is asserted by a test. The other two are dated
+context: pinning a count that legitimately moves every landing would be the snapshot-worn-as-an-invariant
+error (#268), which is why they carry a SHA instead of a guard.
 
 BADF builds itself. It is a governance framework with **no product and therefore no
 product-acceptance event** — the same reason `badf-security-design` had no threat surface of its
