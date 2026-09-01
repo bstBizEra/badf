@@ -841,25 +841,54 @@ def _seat_ratchet_applies(wp_id: str) -> bool:
     return n >= SEAT_RATCHET_THRESHOLD and n not in SURFACE_RATCHET_SENTINELS
 
 
-def _rostered_seats() -> set[str]:
-    """The single authoritative reader of seat identity (QA's two-site extension of
-    Finding 1, #290): id well-formedness and uniqueness are enforced HERE, at roster
-    load, so BOTH consumers -- verify_seat_roster and _check_delegations -- inherit the
-    refusal. A guard placed in only one consumer reproduces the exact asymmetry the
-    third certification fold corrected. The schema's minLength is decorative until
-    #265 Rung A lands; this is the sole enforcer (#264 pattern, stated)."""
+def _seat_entries() -> list[dict[str, Any]]:
+    """The single authoritative loader and validator of roster CONTENT (#290, sixth
+    reseal): every refusal a seat's content can earn lives HERE, so both consumers --
+    verify_seat_roster's walk and _rostered_seats()/_check_delegations -- inherit all
+    of it. Consumer-side validation is how the id asymmetry, the shape divergence
+    (sweep crashed, loader skipped), and the invisible-to-assembly authority guards
+    each happened; this closes the CLASS at one site instead of patching instances.
+    The schema's declarations remain backstop where the walker enforces them and
+    decorative where it does not (#265); this loader is the sole code-side enforcer
+    (#264 pattern, stated). Runs before any check_schema call, so doctrine-declared
+    shapes get doctrine-declared messages; schema stays backstop."""
     data = load_json(ROOT / "badf/seats.json")
-    seats: set[str] = set()
-    for s in data.get("seats") or []:
+    entries = data.get("seats") or []
+    if not entries:
+        # A loop finding nothing passes like one finding everything (REV, vacuity).
+        raise ValidationError("badf/seats.json declares no seats: an empty roster reports clean over its own absence -- refused (AET-B-1 / #287, enumeration-vacuity)")
+    seen: set[str] = set()
+    for s in entries:
         if not isinstance(s, dict):
-            continue
+            # Governed refusal, never a skip and never a crash: the loader skipping
+            # while the sweep crashed was the delegation-fork divergence at the roster.
+            raise ValidationError(f"a seat entry is not a mapping: {s!r} (#290 REV, roster shape)")
         sid = str(s.get("id") or "")
         if not sid.strip() or sid != sid.strip():
             raise ValidationError(f"seat id {sid!r} is empty, whitespace-only, or padded: it names nothing a delegation could safely bind to (QA Finding 1, #290 / #293 degenerate-content)")
-        if sid in seats:
+        if sid in seen:
             raise ValidationError(f"seat id {sid!r} appears more than once: a set would collapse the duplicate silently on a roster whose subject is identity (QA Finding 2, #290)")
-        seats.add(sid)
-    return seats
+        seen.add(sid)
+        for k in _SEAT_FORBIDDEN_PERMISSION_KEYS:
+            if k in s:
+                raise ValidationError(f"seat {sid!r} carries permission-shaped key {k!r}: the roster holding permissions forks badf/authority-matrix.json -- AUTHORITY_CONFLICT (AET-B-1 / #287)")
+        for k in _SEAT_FORBIDDEN_TIME_KEYS:
+            if k in s:
+                raise ValidationError(f"seat {sid!r} carries time-shaped key {k!r}: the time window is a doctrine-declared component of authority whose home is undecided (#261 round, docs/03) -- AUTHORITY_CONFLICT (AET-B-1 / #287)")
+        for field in ("role", "status", "description"):
+            if not str(s.get(field) or "").strip():
+                raise ValidationError(f"seat {sid!r} has blank {field}: degenerate content on the identity surface (#290 sixth reseal / #293)")
+        refs = s.get("charter_refs") or []
+        # Non-emptiness of the CONTENTS, not the container: [""] is truthy (#293,
+        # REV's third-appearance finding -- truthiness on the list, verbatim).
+        if not refs or not all(str(r).strip() for r in refs):
+            raise ValidationError(f"seat {sid!r} has empty charter_refs or a blank entry: provenance-free identity is the degenerate-content shape (QA Finding 2 + REV cc3ca64, #290)")
+    return entries
+
+
+def _rostered_seats() -> set[str]:
+    """Thin projection of the validated roster; all refusals live in _seat_entries()."""
+    return {str(s["id"]) for s in _seat_entries()}
 
 
 def _declared_seat(d: dict[str, Any]) -> str | None:
@@ -879,36 +908,18 @@ def verify_seat_roster() -> None:
     shapes that must never land in it are refused by name -- permissions fork
     badf/authority-matrix.json, and time windows pre-empt the #261-round decision
     docs/03 requires. Delegation seat coverage is counted at the point of judgment."""
-    data = load_json(ROOT / "badf/seats.json")
-    if not (data.get("seats") or []):
-        # REV's enumeration-vacuity finding: a loop finding nothing passes like one
-        # finding everything. The schema also declares minItems, which the walker does
-        # not implement (#265 Rung A unlanded) -- THIS check is the enforcement, and it
-        # is the sole enforcer until that rung lands (the #264 pattern, stated).
-        raise ValidationError("badf/seats.json declares no seats: an empty roster reports clean over its own absence -- refused (AET-B-1 / #287, enumeration-vacuity)")
+    entries = _seat_entries()   # every content refusal lives in the loader (sixth reseal)
     held = vacant = 0
-    # The named guard runs BEFORE the schema: additionalProperties would refuse the
-    # same keys, but a doctrine-declared shape deserves the doctrine-declared message
-    # (AUTHORITY_CONFLICT, and where the undecided half lives). Schema stays backstop.
-    for s in data.get("seats") or []:
-        sid = str(s.get("id") or "")
-        # Id well-formedness and uniqueness are enforced in _rostered_seats() -- the
-        # single authoritative load site both consumers inherit (QA two-site extension,
-        # #290). Only roster-content checks with no assembly consumer live in this walk.
-        if not (s.get("charter_refs") or []):
-            raise ValidationError(f"seat {sid!r} has empty charter_refs: provenance-free identity is the degenerate-content shape (QA Finding 2, #290)")
-        for k in _SEAT_FORBIDDEN_PERMISSION_KEYS:
-            if k in s:
-                raise ValidationError(f"seat {s.get('id')!r} carries permission-shaped key {k!r}: the roster holding permissions forks badf/authority-matrix.json -- AUTHORITY_CONFLICT (AET-B-1 / #287)")
-        for k in _SEAT_FORBIDDEN_TIME_KEYS:
-            if k in s:
-                raise ValidationError(f"seat {s.get('id')!r} carries time-shaped key {k!r}: the time window is a doctrine-declared component of authority whose home is undecided (#261 round, docs/03) -- AUTHORITY_CONFLICT (AET-B-1 / #287)")
+    for s in entries:
         if s.get("status") == "VACANT":
             vacant += 1
         else:
             held += 1
-    check_schema("seats", data)
-    seats = _rostered_seats()
+    # Schema stays backstop for what the loader does not name (e.g. an arbitrary
+    # undeclared key): additionalProperties is walker-enforced (#265, measured). The
+    # loader has already run, so doctrine shapes got doctrine messages first.
+    check_schema("seats", load_json(ROOT / "badf/seats.json"))
+    seats = {str(s["id"]) for s in entries}
     with_seat = without = 0
     for path in sorted((ROOT / "work").glob(f"{WP_NAMESPACE}*/build/session.json")):
         wp = path.parent.parent.name

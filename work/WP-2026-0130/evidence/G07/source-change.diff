@@ -222,7 +222,7 @@ index 0000000..f2b80bf
 +  "additionalProperties": false
 +}
 diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
-index 91e464d..6d1b8ac 100644
+index 91e464d..0b61839 100644
 --- a/scripts/badf_gate.py
 +++ b/scripts/badf_gate.py
 @@ -38,6 +38,7 @@ REQUIRED_FILES = [
@@ -233,7 +233,7 @@ index 91e464d..6d1b8ac 100644
      "badf/tool-registry.json",
      "badf/mcp-registry.json",
      "badf/skill-registry.json",
-@@ -823,6 +824,103 @@ def verify_surface_ratchet() -> None:
+@@ -823,6 +824,112 @@ def verify_surface_ratchet() -> None:
      print(f"BADF SURFACE RATCHET: declared {declared}/{total}; grandfathered undeclared {grandfathered} (threshold WP-2026-0126; sentinels exempt; {ratcheted} record(s) under the ratchet); over-reach and over-declaration judged separately at assembly/binding (GOV-0108)")
  
  
@@ -255,8 +255,24 @@ index 91e464d..6d1b8ac 100644
 +
 +
 +def _rostered_seats() -> set[str]:
++    """The single authoritative reader of seat identity (QA's two-site extension of
++    Finding 1, #290): id well-formedness and uniqueness are enforced HERE, at roster
++    load, so BOTH consumers -- verify_seat_roster and _check_delegations -- inherit the
++    refusal. A guard placed in only one consumer reproduces the exact asymmetry the
++    third certification fold corrected. The schema's minLength is decorative until
++    #265 Rung A lands; this is the sole enforcer (#264 pattern, stated)."""
 +    data = load_json(ROOT / "badf/seats.json")
-+    return {str(s.get("id")) for s in (data.get("seats") or []) if isinstance(s, dict)}
++    seats: set[str] = set()
++    for s in data.get("seats") or []:
++        if not isinstance(s, dict):
++            continue
++        sid = str(s.get("id") or "")
++        if not sid.strip() or sid != sid.strip():
++            raise ValidationError(f"seat id {sid!r} is empty, whitespace-only, or padded: it names nothing a delegation could safely bind to (QA Finding 1, #290 / #293 degenerate-content)")
++        if sid in seats:
++            raise ValidationError(f"seat id {sid!r} appears more than once: a set would collapse the duplicate silently on a roster whose subject is identity (QA Finding 2, #290)")
++        seats.add(sid)
++    return seats
 +
 +
 +def _declared_seat(d: dict[str, Any]) -> str | None:
@@ -284,21 +300,14 @@ index 91e464d..6d1b8ac 100644
 +        # is the sole enforcer until that rung lands (the #264 pattern, stated).
 +        raise ValidationError("badf/seats.json declares no seats: an empty roster reports clean over its own absence -- refused (AET-B-1 / #287, enumeration-vacuity)")
 +    held = vacant = 0
-+    seen_ids: set[str] = set()
 +    # The named guard runs BEFORE the schema: additionalProperties would refuse the
 +    # same keys, but a doctrine-declared shape deserves the doctrine-declared message
 +    # (AUTHORITY_CONFLICT, and where the undecided half lives). Schema stays backstop.
 +    for s in data.get("seats") or []:
 +        sid = str(s.get("id") or "")
-+        # QA Findings 1+2 (#290): [{"id": ""}] carries the same information as [] and
-+        # passed the very check that refuses [] -- the degenerate-content shape (#293)
-+        # on the identity surface. The schema's minLength/minItems declarations are
-+        # decorative until #265 Rung A lands; these checks are the sole enforcers.
-+        if not sid.strip() or sid != sid.strip():
-+            raise ValidationError(f"seat id {sid!r} is empty, whitespace-only, or padded: it names nothing a delegation could safely bind to (QA Finding 1, #290 / #293 degenerate-content)")
-+        if sid in seen_ids:
-+            raise ValidationError(f"seat id {sid!r} appears more than once: _rostered_seats() is a set, so the duplicate would collapse silently on a roster whose subject is identity (QA Finding 2, #290)")
-+        seen_ids.add(sid)
++        # Id well-formedness and uniqueness are enforced in _rostered_seats() -- the
++        # single authoritative load site both consumers inherit (QA two-site extension,
++        # #290). Only roster-content checks with no assembly consumer live in this walk.
 +        if not (s.get("charter_refs") or []):
 +            raise ValidationError(f"seat {sid!r} has empty charter_refs: provenance-free identity is the degenerate-content shape (QA Finding 2, #290)")
 +        for k in _SEAT_FORBIDDEN_PERMISSION_KEYS:
@@ -337,7 +346,7 @@ index 91e464d..6d1b8ac 100644
  def reconcile_work_package(wp_arg: str) -> str:
      m = WP_ID_FORMS.match(wp_arg.strip())
      if not m:
-@@ -961,6 +1059,7 @@ def validate_repo() -> None:
+@@ -961,6 +1068,7 @@ def validate_repo() -> None:
      verify_monotonic_authority()
      verify_work_ledger()
      verify_surface_ratchet()
@@ -345,7 +354,7 @@ index 91e464d..6d1b8ac 100644
  
  def check_non_coverage(dossier: dict[str, Any], evidence_type: str, outcome: str) -> None:
      """G08 exit criterion: 'non-coverage declared'. Before WP-0014 nothing on a
-@@ -1670,6 +1769,11 @@ def _check_delegations(wp_dir: Path, wp: dict[str, Any], wp_id: str) -> None:
+@@ -1670,6 +1778,11 @@ def _check_delegations(wp_dir: Path, wp: dict[str, Any], wp_id: str) -> None:
          if not isinstance(d, dict):
              raise ValidationError(f"{wp_id}: a delegation is not a mapping (C7)")
          name = str(d.get("task") or "?")
@@ -359,10 +368,10 @@ index 91e464d..6d1b8ac 100644
          for ap in d.get("allowed_paths") or []:
 diff --git a/tests/test_badf_seat_roster.py b/tests/test_badf_seat_roster.py
 new file mode 100644
-index 0000000..5efa7c0
+index 0000000..6d99300
 --- /dev/null
 +++ b/tests/test_badf_seat_roster.py
-@@ -0,0 +1,252 @@
+@@ -0,0 +1,275 @@
 +"""AET-B-1 (#287, WP-2026-0130): the seat roster, red-first.
 +
 +The roster binds operating seats to contract roles -- identity and NOTHING else. The
@@ -572,6 +581,29 @@ index 0000000..5efa7c0
 +        self.assertNotEqual(out.returncode, 0, out.stdout)
 +        text = out.stdout + out.stderr
 +        self.assertIn("GHOST-SEAT", text); self.assertIn("declaration-consistency", text)
++
++    def test_blank_seat_id_reds_assembly_resolution(self):
++        """QA's two-site extension of Finding 1 (15:58:56Z): _rostered_seats() is consumed
++        at BOTH sites, so id validity must live at roster LOAD -- one authoritative site
++        both consumers inherit. A degenerate id anywhere in the roster reds assembly the
++        moment resolution consults it, even when the delegation declares a REAL seat."""
++        r = self.roster(); r["seats"].append({"id": "", "role": "builder controller", "status": "HELD",
++                                              "description": "x", "charter_refs": ["docs/14-agentic-engineer-team.md"]})
++        self.write_roster(r)
++        self.write_wp(RATCHETED); self.write_delegation(RATCHETED, seat="BARCHI-2"); self.lock()
++        res = self.gate_cmd("self-dossier", RATCHETED)
++        self.assertNotEqual(res.returncode, 0, res.stdout)
++        self.assertIn("names nothing", res.stdout + res.stderr)
++
++    def test_duplicate_seat_id_reds_assembly_resolution(self):
++        """Two-site twin for the duplicate refusal: assembly's consumer must inherit it
++        from the load site, not depend on the sweep having run first."""
++        r = self.roster(); r["seats"].append(dict(r["seats"][0]))
++        self.write_roster(r)
++        self.write_wp(RATCHETED); self.write_delegation(RATCHETED, seat="BARCHI-2"); self.lock()
++        res = self.gate_cmd("self-dossier", RATCHETED)
++        self.assertNotEqual(res.returncode, 0, res.stdout)
++        self.assertIn("more than once", res.stdout + res.stderr)
 +
 +    def test_blank_delegation_seat_is_absent_at_assembly(self):
 +        """QA Finding 1's second leg: seat: "" counted as NAMING a seat (only None read

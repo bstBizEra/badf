@@ -1,6 +1,6 @@
-python3 -m unittest tests.test_badf_seat_roster  # QA Findings 1+2, two-site form (load-site validation)
-...................
+python3 -m unittest tests.test_badf_seat_roster  # sixth reseal: class closure at the loader
+........................
 ----------------------------------------------------------------------
-Ran 19 tests in 188.232s
+Ran 24 tests in 248.286s
 
 OK

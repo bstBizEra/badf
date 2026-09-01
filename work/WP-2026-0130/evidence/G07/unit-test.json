@@ -15,12 +15,12 @@
     "name": "unittest",
     "version": "1"
   },
-  "operation": "python3 -m unittest tests.test_badf_seat_roster  # QA Findings 1+2 fold (degenerate identity)",
-  "started_at": "2026-09-01T16:05:17Z",
-  "completed_at": "2026-09-01T16:05:17Z",
+  "operation": "python3 -m unittest tests.test_badf_seat_roster  # QA Findings 1+2, two-site form (load-site validation)",
+  "started_at": "2026-09-01T16:22:36Z",
+  "completed_at": "2026-09-01T16:22:36Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0130/evidence/G07/unit-test.log",
-  "digest": "sha256:7d68f743e341a2d3aba521807d933c3554499542a14b79978143de56049f180b",
+  "digest": "sha256:8ae035f749bb992969ce2afdb08e161bb0d67f957ec15f9d99dd4f644a746cd2",
   "binding": {
     "obligations": [
       {
@@ -37,13 +37,13 @@
         "green": {
           "observed": true,
           "ref": "work/WP-2026-0130/evidence/G07/unit-test.log",
-          "digest": "sha256:7d68f743e341a2d3aba521807d933c3554499542a14b79978143de56049f180b"
+          "digest": "sha256:8ae035f749bb992969ce2afdb08e161bb0d67f957ec15f9d99dd4f644a746cd2"
         }
       }
     ],
-    "command": "python3 -m unittest tests.test_badf_seat_roster  # QA Findings 1+2 fold (degenerate identity)",
+    "command": "python3 -m unittest tests.test_badf_seat_roster  # QA Findings 1+2, two-site form (load-site validation)",
     "result": "PASS",
-    "tests_run": 17,
+    "tests_run": 19,
     "failures": 0,
     "coverage_scope": [
       "tests/test_badf_seat_roster.py"

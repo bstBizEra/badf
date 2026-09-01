@@ -137,6 +137,39 @@ class RosterArtifactTests(_Scratch):
         self.assertNotEqual(out.returncode, 0, out.stdout)
         self.assertIn("charter_refs", out.stdout + out.stderr)
 
+    def test_non_mapping_seat_entry_refused_not_crashed(self):
+        """REV at cc3ca64: a bare string in `seats` crashed the sweep's walk with an
+        AttributeError (ungoverned) while _rostered_seats silently skipped it -- the
+        delegation-fork divergence at the roster, in its loudest form. A governed
+        refusal, never a traceback."""
+        r = self.roster(); r["seats"].append("just-a-string")
+        self.write_roster(r); self.lock()
+        out = self.gate_cmd("repo")
+        self.assertNotEqual(out.returncode, 0, out.stdout)
+        text = out.stdout + out.stderr
+        self.assertIn("not a mapping", text)
+        self.assertNotIn("Traceback", text, "governed refusal, not a crash")
+
+    def test_blank_charter_ref_element_is_refused(self):
+        """REV at cc3ca64: charter_refs [""] was ADMITTED -- #293's truthiness-on-the-list
+        defect verbatim, in the very check written to close a degenerate-content finding.
+        Non-emptiness of the CONTENTS, not the container."""
+        r = self.roster(); r["seats"][0]["charter_refs"] = ["docs/14-agentic-engineer-team.md", "  "]
+        self.write_roster(r); self.lock()
+        out = self.gate_cmd("repo")
+        self.assertNotEqual(out.returncode, 0, out.stdout)
+        self.assertIn("charter_refs", out.stdout + out.stderr)
+
+    def test_blank_role_status_description_refused(self):
+        """Sixth-reseal class closure: every declared property of a seat is non-degenerate,
+        one uniform rule at the loader, rather than a per-property exception table."""
+        for field in ("role", "status", "description"):
+            r = self.roster(); r["seats"][0][field] = ""
+            self.write_roster(r); self.lock()
+            out = self.gate_cmd("repo")
+            self.assertNotEqual(out.returncode, 0, f"blank {field} admitted: {out.stdout}")
+            self.assertIn("blank", out.stdout + out.stderr, field)
+
     def test_permission_shaped_key_in_a_seat_is_refused(self):
         r = self.roster(); r["seats"][0]["allowed_tools"] = ["git-push"]
         self.write_roster(r); self.lock()
@@ -230,6 +263,29 @@ class SeatRatchetTests(_Scratch):
         res = self.gate_cmd("self-dossier", RATCHETED)
         self.assertNotEqual(res.returncode, 0, res.stdout)
         self.assertIn("more than once", res.stdout + res.stderr)
+
+    def test_non_mapping_seat_entry_reds_assembly_resolution(self):
+        """Assembly-consumer twin of the shape refusal: _rostered_seats silently SKIPPED
+        a non-mapping entry, so assembly diverged from the sweep (which crashed). One
+        loader, one governed refusal, both consumers inherit."""
+        r = self.roster(); r["seats"].append("just-a-string")
+        self.write_roster(r)
+        self.write_wp(RATCHETED); self.write_delegation(RATCHETED, seat="BARCHI-2"); self.lock()
+        res = self.gate_cmd("self-dossier", RATCHETED)
+        self.assertNotEqual(res.returncode, 0, res.stdout)
+        self.assertIn("not a mapping", res.stdout + res.stderr)
+
+    def test_authority_intrusion_reds_assembly_resolution(self):
+        """Assembly-consumer twin of the AUTHORITY_CONFLICT guards: consumer-side, a
+        roster carrying a time-shaped key was invisible to assembly. With the guards at
+        the loader, resolution inherits the refusal -- proving assembly reaches every
+        refusal in the loader body, not only the shape check."""
+        r = self.roster(); r["seats"][0]["expires"] = "2027-01-01T00:00:00Z"
+        self.write_roster(r)
+        self.write_wp(RATCHETED); self.write_delegation(RATCHETED, seat="BARCHI-2"); self.lock()
+        res = self.gate_cmd("self-dossier", RATCHETED)
+        self.assertNotEqual(res.returncode, 0, res.stdout)
+        self.assertIn("AUTHORITY_CONFLICT", res.stdout + res.stderr)
 
     def test_blank_delegation_seat_is_absent_at_assembly(self):
         """QA Finding 1's second leg: seat: "" counted as NAMING a seat (only None read
