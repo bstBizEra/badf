@@ -227,12 +227,28 @@ class DefectClassCoverageTests(unittest.TestCase):
 
     def test_the_corpus_carries_the_prd_ac_rtm_chain_the_ladder_asks_for(self):
         """`traceability_digest` is optional in the schema and I had left it unset -- the RTM
-        third of the ladder's "PRD/AC/RTM chain". Populated, and pinned so it stays."""
+        third of the ladder's "PRD/AC/RTM chain".
+
+        Asserts WELL-FORMED and PAIRWISE DISTINCT, not merely present. BADF-REV found the earlier
+        form claimed a "real" chain while checking only that three keys existed -- three IDENTICAL
+        placeholder digests would have passed, and three identical digests are not a chain. The
+        digests are synthetic and the doc now says so; what is verifiable about them is their
+        shape and their distinctness, so that is what is verified.
+        """
         for path in (ACCEPTED, REJECTED):
             with self.subTest(corpus=path.name):
                 basis = json.loads(path.read_text(encoding="utf-8"))["binding"]["acceptance_basis"]
+                seen = {}
                 for field in ("prd_digest", "acceptance_criteria_digest", "traceability_digest"):
                     self.assertIn(field, basis, f"{path.name} is missing {field}")
+                    self.assertRegex(basis[field], r"^sha256:[0-9a-f]{64}$",
+                                     f"{path.name} {field} is not a well-formed sha256 digest")
+                    seen.setdefault(basis[field], []).append(field)
+                dupes = {d: f for d, f in seen.items() if len(f) > 1}
+                self.assertEqual({}, dupes,
+                                 f"{path.name}: chain links share a digest {dupes} -- three "
+                                 f"identical digests are not a chain, they are one value written "
+                                 f"three times")
 
 
 # The ADVERSARIAL members: defects NO control claims to catch. Required by SARCHI's ruling on

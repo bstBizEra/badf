@@ -41,8 +41,13 @@ and what moves, and why.*
 
 **Delivered by `WP-UAT-D`:**
 
-- the representative corpus with a real PRD/AC/**RTM** chain (`acceptance_basis.traceability_digest`
-  populated) — the ladder's chain requirement, met;
+- the representative corpus **carries** the PRD/AC/**RTM** chain — all three of `prd_digest`,
+  `acceptance_criteria_digest` and `traceability_digest` populated, well-formed and pairwise
+  distinct, asserted. **The digests are synthetic, not real**: the chain is *carried*, not *real*,
+  which is what a declared-representative corpus can honestly claim and is consistent with
+  non-coverage **1b** (*no scenario derivation from a real PRD*). The frozen text above asks for a
+  "real ... chain"; that half arrives with the real re-shadow (#291), and saying otherwise here
+  would overclaim on the one surface where the representative/real distinction is the deliverable;
 - **injected defects across all ten** `defect-classification.md` classes, the class set read from
   the schema enum rather than written down, so a class added later is covered or the count fails;
 - four further **adversarial cases no control catches**, asserted ADMITTED and **declared** in
