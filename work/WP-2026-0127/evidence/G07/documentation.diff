@@ -1,0 +1,106 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index bc4b64d..a5c943f 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -2155,6 +2155,101 @@ Five control branches, each red-observed by mutation; the sub-key × consumer ma
+ #272 pre-build) re-verified post-change: no pair of consumers disagrees about any key.
+ >>>>>>> 1150843 (feat(gate): the enforcement-input ratchet -- expected_surfaces mandatory from WP-2026-0126, coverage counted, unmatchable refused, may-touch unified (WP-2026-0126))
+ 
++## An optional governed route is not a route
++
++`GOV-0118` (#271, `WP-2026-0127`). The verification record defines a justified path for each
++way a finding can be weakened, and required none of them:
++
++| Weakening | Governed path | The free route |
++| :--- | :--- | :--- |
++| withdraw a finding | `synthesis.withdrawn[]` — `finding_id`, `reason`, `by` | set `status: WITHDRAWN` directly |
++| downgrade severity | `synthesis.downgraded[]` — `finding_id`, `from`, `to`, `decision_ref` | edit `severity` in place |
++
++`VER-I12` — *synthesis cannot erase a finding* — is exactly what `withdrawn[]` protects, and it
++was protecting nothing, because **the unjustified route was free while the justified one was
++optional.** A route you may skip is not a route; it is a suggestion with a schema.
++
++This is the *authority* form of the vacuity class this repo has been cataloguing: not a guard
++that passes because its input is missing by accident, but a guard whose input is missing **by
++permission**. It is the same shape as `GOV-0108`'s optional `expected_surfaces` — a control an
++author can switch off by silence.
++
++### Why it had to be closed with #267, not instead of it
++
++#267 refused `APPROVE` over an OPEN blocking finding. That control is correct and it made this
++gap **worse**: with the verdict side closed, editing the *finding* side became the path of least
++resistance. A control that displaces a defect rather than removing it looks like progress on
++the surface it guards and is invisible everywhere else. Closing the cheaper path is what turns
++#267 from a redirection into a removal.
++
++### The three refusals
++
++1. **`status: WITHDRAWN` with no `synthesis.withdrawn` entry** — erasure without justification.
++2. **A `synthesis.withdrawn` entry whose finding is still carried with another status** —
++   justification without effect. `withdrawn[]` is the escape hatch for findings *not carried*;
++   a record that both carries a finding open and claims it withdrawn contradicts itself.
++3. **A `synthesis.downgraded` entry whose `to` differs from the finding's real severity** — the
++   id-existence check alone let an entry name any `from`/`to` while the finding carried a third
++   value. An entry that does not describe its finding justifies nothing.
++
++Note that (1) and (2) are inverses, and only (1) was on the issue's list.
++
++### Two gaps declared, not half-closed
++
++The issue's own test list permits declaration as a disposition, and that is deliberate — a work
++package that treated all four probes alike would either over-reach or stall.
++
++- **`ACCEPTED_BY_AUTHORITY`** is a valid `status` with **no corroborating structure anywhere**:
++  `authority` carries only `verification_authority`, so a finding may claim an authority accepted
++  it while the record names no such authority. *Design needed:* an authority principal that must
++  appear in `authority`, plus a `decision_ref` of the kind `downgraded` already carries. That is
++  an architecture call — it decides what evidence *constitutes* acceptance — not an engineering one.
++- **A silent in-place severity edit** is undetectable without a baseline the record does not
++  carry. Nothing records the severity a finding was *first* reported at, so "edited in place" and
++  "reported at this severity" are byte-identical. *Design needed:* the sealed input digest or an
++  equivalent anchor. Refusal 3 narrows this: an in-place edit **accompanied** by a `downgraded`
++  entry is now caught. The residue is the edit that covers its tracks by writing nothing.
++
++### The route this change makes cheapest, found in review
++
++**Found by BADF-REV on the PR that closed the routes above, by walking the whole `status` enum.** Recorded here because the section immediately above argues that #267 displaced weakeners onto the finding side — and this change displaces them again, one enum value over.
++
++`findings[].status` has four values. #271 enumerated two of the three non-`OPEN` ones. The third:
++
++```
++APPROVE over the finding as-is (OPEN/MAJOR)   refused   #267's ballot control
++APPROVE + flip OPEN -> WITHDRAWN              refused   refusal 1, above
++APPROVE + flip OPEN -> RESOLVED               ADMITTED
++```
++
++`RESOLVED` buys exactly what `WITHDRAWN` used to: the finding leaves `OPEN`, the ballot control stops seeing a blocking finding, and a refused `APPROVE` becomes admissible. It has **no governed path, no corroboration, and no synthesis structure at all** — and after this change it is the *cheapest* of the three, because `WITHDRAWN` now requires an entry and `ACCEPTED_BY_AUTHORITY` is at least named as open.
++
++That is the honest cost of closing a route without closing its class: **each closure promotes the next-cheapest bypass**, and only walking the enum finds it. Closing `RESOLVED` is a schema-gap decision like `ACCEPTED_BY_AUTHORITY` — resolution is the *normal, correct* outcome for a finding, so a refusal cannot simply forbid it; it needs a decision about what corroborates a resolution. Left open and declared, on #271's remainder.
++
++**A related route, stated at its true reachability:** deleting a finding from `findings[]` outright is **refused** — an existing control catches a ballot that reported an id the record no longer carries. It is admitted only when the deletion is accompanied by a matching scrub of the ballot's `finding_ids`. Worth stating precisely, because "deletion is admitted" would imply a one-line bypass where the existing control in fact forces a coordinated two-place edit. Same class as the in-place edit, and equally unclosable without a baseline.
++
++### Testing a control that another control masks
++
++Every fixture here is **non-`APPROVE`**, on purpose. #267's ballot control refuses `APPROVE` over
++an OPEN blocking finding *before* synthesis is examined, so an `APPROVE`-shaped probe would go red
++whether or not this control existed — it would prove the masking, not the fix. When two controls
++guard overlapping ground, **a test must fail for the reason it names**, which means fixtures that
++the outer control lets through.
++
++### Where the third refusal came from
++
++QA observed, while probing #267, that all four of their own acceptance criteria for it had been
++**confirm-shaped** — each asked *"does the thing I thought of work?"*, none asked *"what else
++reaches the same proposition?"* — and that this is why the class survived into a control built to
++their spec. Item 5 of #271's test list encodes that lesson as a requirement: *at least one probe
++not derived from 1–4.*
++
++This work package's first draft closed exactly the two gaps the issue listed, and stopped. Turning
++QA's question back on it — *what else reaches "a finding weakened without the governed path"?* —
++produced refusal 2, the inverse of the one probe that was listed. **The open-ended clause earned
++its place on the first package that was made to answer it**, which is the argument for keeping it
++on the next one.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

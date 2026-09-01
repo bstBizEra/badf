@@ -312,6 +312,75 @@ class VerifyRecordTests(unittest.TestCase):
         with self.assertRaisesRegex(gate.ValidationError, r"ballot BALLOT-001:.*associated with it"):
             gate.validate_verification_record(self._path(r))
 
+    def test_verify_refuses_a_finding_weakened_outside_the_governed_path(self):
+        """#271: the record defines justified routes for weakening and required neither.
+
+        `synthesis.withdrawn[]` demands a `reason` and a `by`; `synthesis.downgraded[]`
+        demands `from`/`to`/`decision_ref`. Neither was required, so a finding could be
+        erased by setting `status: WITHDRAWN` directly -- with no reason and no `by` --
+        and a downgrade entry could claim any severities while the finding carried a third.
+        VER-I12 says synthesis cannot erase a finding; the unjustified route was free while
+        the justified one was optional.
+
+        EVERY fixture here is non-APPROVE, deliberately. The #211 ballot control refuses
+        APPROVE-over-OPEN before synthesis is ever examined, so an APPROVE fixture goes
+        green through that control and proves nothing about synthesis integrity. A green
+        under APPROVE says nothing here. (Method constraint, #271.)
+        """
+        # D: status set directly, synthesis untouched -- erasure with no reason and no `by`
+        r = record(findings=[finding(status="WITHDRAWN")])
+        r["ballots"][0]["verdict"] = "REJECT"
+        with self.assertRaisesRegex(gate.ValidationError, r"WITHDRAWN with no synthesis\.withdrawn"):
+            gate.validate_verification_record(self._path(r))
+
+        # the governed route stays valid: withdrawn entry present, finding not carried open
+        r = record(findings=[], synthesis={"withdrawn": [{"finding_id": "VF-001", "reason": "duplicate",
+                                                          "by": "reviewer-a"}], "downgraded": []})
+        r["ballots"][0]["verdict"] = "REJECT"
+        r["matrix"][0]["result"] = "UNVERIFIED"
+        gate.validate_verification_record(self._path(r))
+
+    def test_verify_refuses_a_withdrawal_entry_whose_finding_is_still_open(self):
+        """#271, the symmetric half of the withdrawal case.
+
+        Probe D catches `status: WITHDRAWN` with no entry -- erasure without justification.
+        This catches the inverse: an entry present while the finding is still carried OPEN --
+        justification without effect. The record then both carries the finding as open AND
+        claims it withdrawn, and `withdrawn` is the escape hatch for findings NOT carried
+        (badf_gate.py's `fid not in findings and fid not in withdrawn`), so the two states
+        contradict. Same shape as the downgrade entry that describes nothing.
+
+        Non-APPROVE fixture, per the method constraint.
+        """
+        r = record()
+        r["ballots"][0]["verdict"] = "REJECT"
+        r["synthesis"]["withdrawn"] = [{"finding_id": "VF-001", "reason": "fiat", "by": "nobody"}]
+        with self.assertRaisesRegex(gate.ValidationError, r"withdraws VF-001 but the record still carries it"):
+            gate.validate_verification_record(self._path(r))
+
+    def test_verify_refuses_a_downgrade_entry_that_does_not_describe_its_finding(self):
+        """#271, second site: `downgraded[].to` must match the severity the finding carries.
+
+        `badf_gate.py` checked only that the downgraded id exists, so an entry could claim
+        MAJOR -> MINOR while the finding still read MAJOR -- a justification describing
+        nothing. Separate test from the withdrawal case on purpose: a shared case goes
+        green while one site still disagrees, which is the lesson from the #211 union join
+        where the code was right and the coverage silent.
+        """
+        r = record()
+        r["ballots"][0]["verdict"] = "REJECT"
+        r["synthesis"]["downgraded"] = [{"finding_id": "VF-001", "from": "MAJOR", "to": "MINOR",
+                                          "decision_ref": "DEC-1"}]
+        with self.assertRaisesRegex(gate.ValidationError, r"downgrades VF-001 to MINOR but the finding carries"):
+            gate.validate_verification_record(self._path(r))
+
+        # honest downgrade: the entry describes the finding it names
+        r = record(findings=[finding(severity="MINOR")])
+        r["ballots"][0]["verdict"] = "REJECT"
+        r["synthesis"]["downgraded"] = [{"finding_id": "VF-001", "from": "MAJOR", "to": "MINOR",
+                                          "decision_ref": "DEC-1"}]
+        gate.validate_verification_record(self._path(r))
+
     def test_verify_requires_non_coverage_and_refuses_authority(self):
         r = record(non_coverage=[])
         with self.assertRaisesRegex(gate.ValidationError, "non-coverage|VER-I11"): gate.validate_verification_record(self._path(r))

@@ -4365,6 +4365,29 @@ def validate_verification_record(path: Path) -> str:
     for d in rec["synthesis"]["downgraded"]:
         if d["finding_id"] not in findings:
             raise ValidationError(f"synthesis downgrades {d['finding_id']}, which the record does not carry (VER-I12)")
+        # #271: the entry must DESCRIBE the finding it names. Only id-existence was checked,
+        # so a downgrade could claim any from/to while the finding carried a third severity --
+        # a justification that justifies nothing. The governed path existed and was optional.
+        if findings[d["finding_id"]]["severity"] != d["to"]:
+            raise ValidationError(f"synthesis downgrades {d['finding_id']} to {d['to']} but the finding carries "
+                                  f"severity {findings[d['finding_id']]['severity']}; a downgrade entry that does not "
+                                  f"describe its finding justifies nothing (VER-I12)")
+    # #271: WITHDRAWN is reachable only through synthesis.withdrawn, which requires a reason and
+    # a `by`. Setting the status directly erases the finding with neither -- the unjustified route
+    # was free while the justified one was optional, which is what VER-I12 exists to prevent.
+    # #271: and the inverse -- an entry whose finding is still carried open is justification
+    # without effect. `withdrawn` is the escape hatch for findings NOT carried, so a record
+    # that both carries a finding open and claims it withdrawn contradicts itself.
+    for w in rec["synthesis"]["withdrawn"]:
+        f = findings.get(w["finding_id"])
+        if f is not None and f["status"] != "WITHDRAWN":
+            raise ValidationError(f"synthesis withdraws {w['finding_id']} but the record still carries it with "
+                                  f"status {f['status']}; a finding cannot be both carried and withdrawn (VER-I12)")
+    for f in rec["findings"]:
+        if f["status"] == "WITHDRAWN" and f["finding_id"] not in withdrawn:
+            raise ValidationError(f"finding {f['finding_id']} carries status WITHDRAWN with no synthesis.withdrawn "
+                                  f"entry naming a reason and a `by`; a finding withdrawn by fiat is erased, not "
+                                  f"withdrawn (VER-I12)")
     for b in ballots:
         # #211: the ballot layer's own coherence. The matrix layer already refuses a VERIFIED row
         # over an OPEN blocking finding, and check_g08_binding refuses this shape on a review

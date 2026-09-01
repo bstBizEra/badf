@@ -1,0 +1,33 @@
+python3 -B -m unittest -v tests.test_badf_verification_evidence
+test_all_four_types_carry_a_rule_and_generic_objects_stay_admissible (tests.test_badf_verification_evidence.G08RuleTests.test_all_four_types_carry_a_rule_and_generic_objects_stay_admissible) ... ok
+test_composed_binding_must_agree_with_the_artifact_tree (tests.test_badf_verification_evidence.G08RuleTests.test_composed_binding_must_agree_with_the_artifact_tree) ... ok
+test_contract_result_maps_onto_outcome_and_indeterminate_never_passes (tests.test_badf_verification_evidence.G08RuleTests.test_contract_result_maps_onto_outcome_and_indeterminate_never_passes) ... ok
+test_integration_binding_counts_must_agree_with_the_log (tests.test_badf_verification_evidence.G08RuleTests.test_integration_binding_counts_must_agree_with_the_log) ... ok
+test_observations_refuse_an_agent_producer (tests.test_badf_verification_evidence.G08RuleTests.test_observations_refuse_an_agent_producer) ... ok
+test_typed_review_refuses_bare_pass_and_verdict_contradicting_findings (tests.test_badf_verification_evidence.G08RuleTests.test_typed_review_refuses_bare_pass_and_verdict_contradicting_findings) ... ok
+test_registry_pin_is_at_least_implemented_and_skill_digest_unchanged (tests.test_badf_verification_evidence.RegistryTests.test_registry_pin_is_at_least_implemented_and_skill_digest_unchanged) ... ok
+test_four_schemas_specialize_evidence_schema_and_close_the_binding (tests.test_badf_verification_evidence.SchemaTests.test_four_schemas_specialize_evidence_schema_and_close_the_binding) ... ok
+test_verification_record_schema_reuses_the_assurance_finding_item (tests.test_badf_verification_evidence.SchemaTests.test_verification_record_schema_reuses_the_assurance_finding_item) ... ok
+test_verify_accepts_a_coherent_record_and_grants_no_authority (tests.test_badf_verification_evidence.VerifyRecordTests.test_verify_accepts_a_coherent_record_and_grants_no_authority) ... ok
+test_verify_cli_mirrors_assure (tests.test_badf_verification_evidence.VerifyRecordTests.test_verify_cli_mirrors_assure) ... ok
+test_verify_matrix_rows_resolve_and_verified_needs_no_open_major_and_a_composed_observation (tests.test_badf_verification_evidence.VerifyRecordTests.test_verify_matrix_rows_resolve_and_verified_needs_no_open_major_and_a_composed_observation) ... ok
+test_verify_preserves_findings_across_synthesis (tests.test_badf_verification_evidence.VerifyRecordTests.test_verify_preserves_findings_across_synthesis) ... ok
+test_verify_refuses_a_downgrade_entry_that_does_not_describe_its_finding (tests.test_badf_verification_evidence.VerifyRecordTests.test_verify_refuses_a_downgrade_entry_that_does_not_describe_its_finding)
+#271, second site: `downgraded[].to` must match the severity the finding carries. ... ok
+test_verify_refuses_a_finding_weakened_outside_the_governed_path (tests.test_badf_verification_evidence.VerifyRecordTests.test_verify_refuses_a_finding_weakened_outside_the_governed_path)
+#271: the record defines justified routes for weakening and required neither. ... ok
+test_verify_refuses_a_withdrawal_entry_whose_finding_is_still_open (tests.test_badf_verification_evidence.VerifyRecordTests.test_verify_refuses_a_withdrawal_entry_whose_finding_is_still_open)
+#271, the symmetric half of the withdrawal case. ... ok
+test_verify_refuses_an_APPROVE_ballot_associated_by_either_join (tests.test_badf_verification_evidence.VerifyRecordTests.test_verify_refuses_an_APPROVE_ballot_associated_by_either_join)
+#211: the association is two-sided, so the refusal must be too. ... ok
+test_verify_refuses_an_APPROVE_ballot_associated_only_via_also_reported_by (tests.test_badf_verification_evidence.VerifyRecordTests.test_verify_refuses_an_APPROVE_ballot_associated_only_via_also_reported_by)
+#211 vector C: the third attribution surface, pinned separately from B. ... ok
+test_verify_refuses_an_APPROVE_ballot_citing_its_own_open_blocking_finding (tests.test_badf_verification_evidence.VerifyRecordTests.test_verify_refuses_an_APPROVE_ballot_citing_its_own_open_blocking_finding)
+#211: a ballot may not carry a verdict its own cited findings contradict. ... ok
+test_verify_refuses_invented_ballot_digest_duplicate_reviewer_and_author_ballot (tests.test_badf_verification_evidence.VerifyRecordTests.test_verify_refuses_invented_ballot_digest_duplicate_reviewer_and_author_ballot) ... ok
+test_verify_requires_non_coverage_and_refuses_authority (tests.test_badf_verification_evidence.VerifyRecordTests.test_verify_requires_non_coverage_and_refuses_authority) ... ok
+
+----------------------------------------------------------------------
+Ran 21 tests in 0.782s
+
+OK
