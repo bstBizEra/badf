@@ -1,0 +1,243 @@
+test_a_committed_effect_cannot_be_re_committed_on_the_append_path (tests.test_badf_durable_effect.TerminalOutcomesAreTerminal.test_a_committed_effect_cannot_be_re_committed_on_the_append_path) ... ERROR
+test_a_committed_effect_cannot_be_re_prepared_on_the_append_path (tests.test_badf_durable_effect.TerminalOutcomesAreTerminal.test_a_committed_effect_cannot_be_re_prepared_on_the_append_path)
+The probed hole: PREPARED -> COMMITTED -> PREPARED was admitted, which is a ... ERROR
+test_a_different_effect_is_unaffected_by_another_effects_terminal_state (tests.test_badf_durable_effect.TerminalOutcomesAreTerminal.test_a_different_effect_is_unaffected_by_another_effects_terminal_state)
+Positive control on the scoping: the rule is per-effect_id. A committed ... ERROR
+test_a_non_terminal_outcome_still_accepts_a_successor (tests.test_badf_durable_effect.TerminalOutcomesAreTerminal.test_a_non_terminal_outcome_still_accepts_a_successor)
+Positive control: the rule refuses transitions OUT OF terminal states only. ... ERROR
+test_a_terminal_but_unestablished_outcome_may_still_be_prepared_again (tests.test_badf_durable_effect.TerminalOutcomesAreTerminal.test_a_terminal_but_unestablished_outcome_may_still_be_prepared_again)
+The distinction the ledger's OWN tests already encoded and my first rule ... ok
+test_compensation_may_follow_an_established_effect (tests.test_badf_durable_effect.TerminalOutcomesAreTerminal.test_compensation_may_follow_an_established_effect)
+Positive control on the allowed set: an effect that really happened may be ... ERROR
+test_events_without_an_effect_id_are_unaffected (tests.test_badf_durable_effect.TerminalOutcomesAreTerminal.test_events_without_an_effect_id_are_unaffected)
+Positive control: workflow-step events carry no effect_id and must keep ... ok
+test_every_established_outcome_seals_re_execution_walking_the_declared_set (tests.test_badf_durable_effect.TerminalOutcomesAreTerminal.test_every_established_outcome_seals_re_execution_walking_the_declared_set)
+The closed set walked WHOLE from the declared constant -- EFFECT_ESTABLISHED ... ERROR
+test_replay_does_not_report_a_twice_executed_effect_as_one_clean_commit (tests.test_badf_durable_effect.TerminalOutcomesAreTerminal.test_replay_does_not_report_a_twice_executed_effect_as_one_clean_commit)
+The consequence the rule exists to prevent, asserted on the OUTPUT rather ... ok
+test_the_read_path_refuses_a_chain_the_append_path_would_have (tests.test_badf_durable_effect.TerminalOutcomesAreTerminal.test_the_read_path_refuses_a_chain_the_append_path_would_have)
+Per-consumer inheritance: a ledger written around append_event (edited by ... FAIL
+test_a_sequence_outside_the_declared_table_is_refused_or_declared (tests.test_badf_durable_effect.TheAdversarialCase.test_a_sequence_outside_the_declared_table_is_refused_or_declared)
+#270, pointed where a walk of the existing vocabulary is blind: a ... ERROR
+test_a_grandfathered_work_package_is_not_refused (tests.test_badf_durable_effect.TheAuthorityCheckIsWitnessed.test_a_grandfathered_work_package_is_not_refused) ... ok
+test_an_authority_checked_event_admits_the_commit (tests.test_badf_durable_effect.TheAuthorityCheckIsWitnessed.test_an_authority_checked_event_admits_the_commit)
+Positive control: the rule demands a witness, it does not forbid committing. ... ERROR
+test_committing_without_an_authority_check_is_refused_at_and_above_threshold (tests.test_badf_durable_effect.TheAuthorityCheckIsWitnessed.test_committing_without_an_authority_check_is_refused_at_and_above_threshold) ... FAIL
+test_the_read_path_inherits_the_witness_rule (tests.test_badf_durable_effect.TheAuthorityCheckIsWitnessed.test_the_read_path_inherits_the_witness_rule)
+Per-consumer inheritance again: a chain written around append_event is ... FAIL
+test_the_sentinel_is_exempt (tests.test_badf_durable_effect.TheAuthorityCheckIsWitnessed.test_the_sentinel_is_exempt) ... ok
+test_the_witness_is_per_effect_not_per_run (tests.test_badf_durable_effect.TheAuthorityCheckIsWitnessed.test_the_witness_is_per_effect_not_per_run)
+A check for one effect must not authorize a different one -- otherwise the ... ERROR
+test_a_declared_event_still_validates (tests.test_badf_durable_effect.TheEventRecordIsClosed.test_a_declared_event_still_validates)
+Negative control for the closure: the real shape must stay admissible. ... ok
+test_an_undeclared_key_on_a_ledger_event_is_refused (tests.test_badf_durable_effect.TheEventRecordIsClosed.test_an_undeclared_key_on_a_ledger_event_is_refused)
+Probed on main: an event carrying 'granted_authority' was ADMITTED -- ... FAIL
+
+======================================================================
+ERROR: test_a_committed_effect_cannot_be_re_committed_on_the_append_path (tests.test_badf_durable_effect.TerminalOutcomesAreTerminal.test_a_committed_effect_cannot_be_re_committed_on_the_append_path)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 85, in test_a_committed_effect_cannot_be_re_committed_on_the_append_path
+    self.append("PREPARED"); self.authorize(); self.append("COMMITTED")
+                             ~~~~~~~~~~~~~~^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 50, in authorize
+    return self.append("AUTHORITY_CHECKED", effect_id=effect_id, step="authority")
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 42, in append
+    return gate.append_event(self.wp, step, outcome, "SARCHI", "agent",
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             effect_id=effect_id,
+                             ^^^^^^^^^^^^^^^^^^^^
+                             output_digest=digest if digest is not None else DIGEST)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/scripts/badf_gate.py", line 2889, in append_event
+    raise ValidationError(f"invalid outcome {outcome!r}")
+badf_gate.ValidationError: invalid outcome 'AUTHORITY_CHECKED'
+
+======================================================================
+ERROR: test_a_committed_effect_cannot_be_re_prepared_on_the_append_path (tests.test_badf_durable_effect.TerminalOutcomesAreTerminal.test_a_committed_effect_cannot_be_re_prepared_on_the_append_path)
+The probed hole: PREPARED -> COMMITTED -> PREPARED was admitted, which is a
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 78, in test_a_committed_effect_cannot_be_re_prepared_on_the_append_path
+    self.append("PREPARED"); self.authorize(); self.append("COMMITTED")
+                             ~~~~~~~~~~~~~~^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 50, in authorize
+    return self.append("AUTHORITY_CHECKED", effect_id=effect_id, step="authority")
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 42, in append
+    return gate.append_event(self.wp, step, outcome, "SARCHI", "agent",
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             effect_id=effect_id,
+                             ^^^^^^^^^^^^^^^^^^^^
+                             output_digest=digest if digest is not None else DIGEST)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/scripts/badf_gate.py", line 2889, in append_event
+    raise ValidationError(f"invalid outcome {outcome!r}")
+badf_gate.ValidationError: invalid outcome 'AUTHORITY_CHECKED'
+
+======================================================================
+ERROR: test_a_different_effect_is_unaffected_by_another_effects_terminal_state (tests.test_badf_durable_effect.TerminalOutcomesAreTerminal.test_a_different_effect_is_unaffected_by_another_effects_terminal_state)
+Positive control on the scoping: the rule is per-effect_id. A committed
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 186, in test_a_different_effect_is_unaffected_by_another_effects_terminal_state
+    self.append("PREPARED", effect_id="EFF-1"); self.authorize("EFF-1")
+                                                ~~~~~~~~~~~~~~^^^^^^^^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 50, in authorize
+    return self.append("AUTHORITY_CHECKED", effect_id=effect_id, step="authority")
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 42, in append
+    return gate.append_event(self.wp, step, outcome, "SARCHI", "agent",
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             effect_id=effect_id,
+                             ^^^^^^^^^^^^^^^^^^^^
+                             output_digest=digest if digest is not None else DIGEST)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/scripts/badf_gate.py", line 2889, in append_event
+    raise ValidationError(f"invalid outcome {outcome!r}")
+badf_gate.ValidationError: invalid outcome 'AUTHORITY_CHECKED'
+
+======================================================================
+ERROR: test_a_non_terminal_outcome_still_accepts_a_successor (tests.test_badf_durable_effect.TerminalOutcomesAreTerminal.test_a_non_terminal_outcome_still_accepts_a_successor)
+Positive control: the rule refuses transitions OUT OF terminal states only.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 177, in test_a_non_terminal_outcome_still_accepts_a_successor
+    self.authorize()
+    ~~~~~~~~~~~~~~^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 50, in authorize
+    return self.append("AUTHORITY_CHECKED", effect_id=effect_id, step="authority")
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 42, in append
+    return gate.append_event(self.wp, step, outcome, "SARCHI", "agent",
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             effect_id=effect_id,
+                             ^^^^^^^^^^^^^^^^^^^^
+                             output_digest=digest if digest is not None else DIGEST)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/scripts/badf_gate.py", line 2889, in append_event
+    raise ValidationError(f"invalid outcome {outcome!r}")
+badf_gate.ValidationError: invalid outcome 'AUTHORITY_CHECKED'
+
+======================================================================
+ERROR: test_compensation_may_follow_an_established_effect (tests.test_badf_durable_effect.TerminalOutcomesAreTerminal.test_compensation_may_follow_an_established_effect)
+Positive control on the allowed set: an effect that really happened may be
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 133, in test_compensation_may_follow_an_established_effect
+    self.append("PREPARED"); self.authorize(); self.append("COMMITTED")
+                             ~~~~~~~~~~~~~~^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 50, in authorize
+    return self.append("AUTHORITY_CHECKED", effect_id=effect_id, step="authority")
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 42, in append
+    return gate.append_event(self.wp, step, outcome, "SARCHI", "agent",
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             effect_id=effect_id,
+                             ^^^^^^^^^^^^^^^^^^^^
+                             output_digest=digest if digest is not None else DIGEST)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/scripts/badf_gate.py", line 2889, in append_event
+    raise ValidationError(f"invalid outcome {outcome!r}")
+badf_gate.ValidationError: invalid outcome 'AUTHORITY_CHECKED'
+
+======================================================================
+ERROR: test_every_established_outcome_seals_re_execution_walking_the_declared_set (tests.test_badf_durable_effect.TerminalOutcomesAreTerminal.test_every_established_outcome_seals_re_execution_walking_the_declared_set)
+The closed set walked WHOLE from the declared constant -- EFFECT_ESTABLISHED
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 155, in test_every_established_outcome_seals_re_execution_walking_the_declared_set
+    for terminal in sorted(gate.EFFECT_ESTABLISHED):
+                           ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'badf_gate' has no attribute 'EFFECT_ESTABLISHED'
+
+======================================================================
+ERROR: test_a_sequence_outside_the_declared_table_is_refused_or_declared (tests.test_badf_durable_effect.TheAdversarialCase.test_a_sequence_outside_the_declared_table_is_refused_or_declared)
+#270, pointed where a walk of the existing vocabulary is blind: a
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 289, in test_a_sequence_outside_the_declared_table_is_refused_or_declared
+    self.append("PREPARED"); self.authorize(); self.append("COMMITTED")
+                             ~~~~~~~~~~~~~~^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 50, in authorize
+    return self.append("AUTHORITY_CHECKED", effect_id=effect_id, step="authority")
+           ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 42, in append
+    return gate.append_event(self.wp, step, outcome, "SARCHI", "agent",
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                             effect_id=effect_id,
+                             ^^^^^^^^^^^^^^^^^^^^
+                             output_digest=digest if digest is not None else DIGEST)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/scripts/badf_gate.py", line 2889, in append_event
+    raise ValidationError(f"invalid outcome {outcome!r}")
+badf_gate.ValidationError: invalid outcome 'AUTHORITY_CHECKED'
+
+======================================================================
+ERROR: test_an_authority_checked_event_admits_the_commit (tests.test_badf_durable_effect.TheAuthorityCheckIsWitnessed.test_an_authority_checked_event_admits_the_commit)
+Positive control: the rule demands a witness, it does not forbid committing.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 245, in test_an_authority_checked_event_admits_the_commit
+    gate.append_event(wp, "authority", "AUTHORITY_CHECKED", "SARCHI", "agent", effect_id=EFFECT, output_digest=DIGEST)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/scripts/badf_gate.py", line 2889, in append_event
+    raise ValidationError(f"invalid outcome {outcome!r}")
+badf_gate.ValidationError: invalid outcome 'AUTHORITY_CHECKED'
+
+======================================================================
+ERROR: test_the_witness_is_per_effect_not_per_run (tests.test_badf_durable_effect.TheAuthorityCheckIsWitnessed.test_the_witness_is_per_effect_not_per_run)
+A check for one effect must not authorize a different one -- otherwise the
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 253, in test_the_witness_is_per_effect_not_per_run
+    gate.append_event(wp, "authority", "AUTHORITY_CHECKED", "SARCHI", "agent", effect_id="EFF-1", output_digest=DIGEST)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/scripts/badf_gate.py", line 2889, in append_event
+    raise ValidationError(f"invalid outcome {outcome!r}")
+badf_gate.ValidationError: invalid outcome 'AUTHORITY_CHECKED'
+
+======================================================================
+FAIL: test_the_read_path_refuses_a_chain_the_append_path_would_have (tests.test_badf_durable_effect.TerminalOutcomesAreTerminal.test_the_read_path_refuses_a_chain_the_append_path_would_have)
+Per-consumer inheritance: a ledger written around append_event (edited by
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 101, in test_the_read_path_refuses_a_chain_the_append_path_would_have
+    self.assertIn("established", str(cm.exception).lower())
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'established' not found in "ledger line 2: invalid outcome 'authority_checked'"
+
+======================================================================
+FAIL: test_committing_without_an_authority_check_is_refused_at_and_above_threshold (tests.test_badf_durable_effect.TheAuthorityCheckIsWitnessed.test_committing_without_an_authority_check_is_refused_at_and_above_threshold)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 235, in test_committing_without_an_authority_check_is_refused_at_and_above_threshold
+    with self.assertRaises(gate.ValidationError) as cm:
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValidationError not raised
+
+======================================================================
+FAIL: test_the_read_path_inherits_the_witness_rule (tests.test_badf_durable_effect.TheAuthorityCheckIsWitnessed.test_the_read_path_inherits_the_witness_rule)
+Per-consumer inheritance again: a chain written around append_event is
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 276, in test_the_read_path_inherits_the_witness_rule
+    with self.assertRaises(gate.ValidationError) as cm:
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValidationError not raised
+
+======================================================================
+FAIL: test_an_undeclared_key_on_a_ledger_event_is_refused (tests.test_badf_durable_effect.TheEventRecordIsClosed.test_an_undeclared_key_on_a_ledger_event_is_refused)
+Probed on main: an event carrying 'granted_authority' was ADMITTED --
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-opt-bst-sa/5c4809c0-2db5-45fb-81d0-22cfaf153a5f/scratchpad/badf-work/tests/test_badf_durable_effect.py", line 208, in test_an_undeclared_key_on_a_ledger_event_is_refused
+    with self.assertRaises(gate.ValidationError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValidationError not raised
+
+----------------------------------------------------------------------
+Ran 19 tests in 0.019s
+
+FAILED (failures=4, errors=9)

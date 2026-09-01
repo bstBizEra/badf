@@ -1,0 +1,6 @@
+python3 -m unittest tests.test_badf_durable_effect  # AET-B-2, green after QA F1 fold
+...................
+----------------------------------------------------------------------
+Ran 19 tests in 0.018s
+
+OK

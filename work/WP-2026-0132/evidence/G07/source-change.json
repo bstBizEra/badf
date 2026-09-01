@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0132-G07-source-change",
+  "work_package_id": "WP-2026-0132",
+  "gate": "G07",
+  "claim": "the change WP-2026-0132 makes to this repository, outside its own directory and the lockfile",
+  "evidence_type": "source-change",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-09-01T21:32:29Z",
+  "completed_at": "2026-09-01T21:32:29Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0132/evidence/G07/source-change.diff",
+  "digest": "sha256:b9e7760c4f952afbc87c0e29131ea86ab7fe6e3b190fe8015d8f9e6aa84df0e5",
+  "binding": {
+    "base_sha": "75a6abd46c28033332aa19553a083b50d9ce06ec",
+    "head_sha": "6a89a0aa0aa49c6ebde2bbc567f73094b38d2b7b",
+    "content_tree": "ca008c8da175b80a87e95e0406e52074d7157e39",
+    "changed_paths": [
+      "badf/demands/BADF-DEM-0119.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "schemas/run-ledger-event.schema.json",
+      "scripts/badf_gate.py",
+      "tests/test_badf_durable_effect.py",
+      "work/WP-2026-0133/work-package.json"
+    ],
+    "expected_surfaces": {
+      "declared": true,
+      "files": [
+        "scripts/badf_gate.py",
+        "schemas/run-ledger-event.schema.json",
+        "tests/test_badf_durable_effect.py",
+        "badf/demands/BADF-DEM-0119.json",
+        "docs/governance/GITHUB_CONTROL_PLANE.md",
+        "work/WP-2026-0133/work-package.json"
+      ]
+    },
+    "unexpected_paths": [],
+    "change_digest": "sha256:b9e7760c4f952afbc87c0e29131ea86ab7fe6e3b190fe8015d8f9e6aa84df0e5"
+  }
+}

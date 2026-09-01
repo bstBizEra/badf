@@ -86,13 +86,16 @@
     "reversible": true,
     "method": "revert the squash commit via PR"
   },
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "tdd_exception": {
     "reason": "Documentation and declaration correction with no behaviour change and no test obligations; the evidence is a classified subject-wide sweep plus a byte-identity and digest assertion on the deliberately-untouched export."
   },
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "9fad36948cdf14c914cf76faf07365588091585c"
+    "base_revision": "9fad36948cdf14c914cf76faf07365588091585c",
+    "landed_content_tree": "5e5bdf7a89951cc10d603d9042f67e6ea1235491",
+    "composition_verified": true,
+    "landed_as": "75a6abd46c28033332aa19553a083b50d9ce06ec"
   }
 }

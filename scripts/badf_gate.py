@@ -137,8 +137,26 @@ LEDGER_NAME = "run-ledger.jsonl"
 GENESIS_HASH = "sha256:" + "0" * 64
 LEDGER_FIELDS = {"event_id", "workflow_id", "sequence", "step", "outcome", "actor", "recorded_at",
                  "previous_event_hash", "event_hash"}
-LEDGER_OUTCOMES = {"PREPARED", "COMMITTED", "REJECTED", "OUTCOME_UNKNOWN", "PROVEN_ABSENT",
-                   "COMPENSATED", "MANUAL_REMEDIATION", "SKIPPED_ALREADY_COMMITTED", "OBSERVED"}
+LEDGER_OUTCOMES = {"PREPARED", "AUTHORITY_CHECKED", "COMMITTED", "REJECTED", "OUTCOME_UNKNOWN",
+                   "PROVEN_ABSENT", "COMPENSATED", "MANUAL_REMEDIATION",
+                   "SKIPPED_ALREADY_COMMITTED", "OBSERVED"}
+# AET-I05's second phase had no vocabulary: nothing recorded that the AUTHORITY CHECK
+# ran, and REJECTED is ambiguous about which phase rejected on whose authority. A phase
+# that leaves no trace cannot be shown to have happened (#294). Mandatory from the WP
+# that ships it; earlier runs are grandfathered; sentinels exempt -- the surface/seat
+# ratchet shape reused, not a new mechanism.
+AUTHORITY_RATCHET_THRESHOLD = 132
+# The outcomes that assert THE EFFECT HAPPENED. Narrower than TERMINAL_OUTCOMES on
+# purpose (#294): terminal means "this attempt concluded", established means "the world
+# changed". PROVEN_ABSENT and REJECTED are terminal and NOT established -- the protocol
+# already lets a proven-absent effect be prepared again, which is correct, because
+# proving absence is proof it is safe to retry. Conflating the two would have forbidden
+# a retry the ledger's own tests require.
+EFFECT_ESTABLISHED = {"COMMITTED", "SKIPPED_ALREADY_COMMITTED"}
+# What may follow an established effect: you may record undoing it or escalating it.
+# You may never record preparing or committing it again -- that is the double execution
+# AET-I05 exists to prevent -- nor asserting it never happened.
+AFTER_ESTABLISHED_ALLOWED = {"COMPENSATED", "MANUAL_REMEDIATION"}
 COUNCIL_DISPOSITIONS = {"CHALLENGE_REQUIRED", "CHALLENGE_OPTIONAL", "CHALLENGE_NOT_REQUIRED"}
 COUNCIL_VERDICTS = {"APPROVE", "APPROVE_WITH_CONDITIONS", "REJECT", "ABSTAIN", "INSUFFICIENT_EVIDENCE"}
 RISK_SEVERITIES = {"Critical", "Major", "Minor"}
@@ -828,6 +846,17 @@ def verify_surface_ratchet() -> None:
 SEAT_RATCHET_THRESHOLD = 130
 _SEAT_FORBIDDEN_PERMISSION_KEYS = ("allowed_paths", "allowed_tools", "actions", "permissions", "prohibited")
 _SEAT_FORBIDDEN_TIME_KEYS = ("expires", "expiry", "until", "valid_until", "window", "time_window")
+
+
+def _authority_ratchet_applies(wp_id: str) -> bool:
+    """The authority-check witness is mandatory from WP-2026-0132 forward (the WP that
+    shipped it); earlier ledgers are grandfathered, sentinels exempt (same shape and
+    same reasons as the surface and seat ratchets)."""
+    m = WP_ID_FORMS.match(str(wp_id))
+    if not m:
+        return False
+    n = int(m.group(1))
+    return n >= AUTHORITY_RATCHET_THRESHOLD and n not in SURFACE_RATCHET_SENTINELS
 
 
 def _seat_ratchet_applies(wp_id: str) -> bool:
@@ -2834,7 +2863,49 @@ def read_ledger(wp_dir: Path) -> list[dict[str, Any]]:
             raise ValidationError(f"ledger line {n}: event_hash does not match content -- ledger edited in place")
         events.append(ev)
         prev = ev["event_hash"]
+    # Inherited from the authoritative site: a ledger written around append_event --
+    # edited by hand, restored from a backup, produced by an older writer -- is refused
+    # when READ, not only when written.
+    _validate_effect_chain(events, f"ledger {path.name}")
     return events
+
+
+def _validate_effect_chain(events: list[dict[str, Any]], label: str) -> None:
+    """AET-I05, enforced (#294, WP-2026-0132): a durable effect that reached a TERMINAL
+    outcome cannot receive a further event. Before this, LEDGER_OUTCOMES was a
+    membership check at both consumers and never a state machine, so an effect could go
+    PREPARED -> COMMITTED -> PREPARED -> COMMITTED and replay_run would report it as one
+    clean commit -- a durable external effect executed twice, invisible in the record.
+
+    THIS is the authoritative site. Both consumers call it -- read_ledger over the
+    stored chain, append_event over the chain plus its candidate -- so a guard in only
+    one of them cannot exist to diverge from the other (the #290 lesson: validation at
+    the source, never at the consumer). Scoped per effect_id; events without one are
+    the run's own steps, not durable effects, and are untouched.
+    """
+    last: dict[str, str] = {}
+    checked: set[str] = set()
+    for ev in events:
+        eid = ev.get("effect_id")
+        if not eid:
+            continue
+        prior = last.get(eid)
+        if prior in EFFECT_ESTABLISHED and ev["outcome"] not in AFTER_ESTABLISHED_ALLOWED:
+            raise ValidationError(
+                f"{label}: effect {eid!r} is established as {prior} and now records "
+                f"{ev.get('outcome')!r}; the world already changed, so it is neither prepared "
+                f"nor committed again and never asserted absent -- only "
+                f"{sorted(AFTER_ESTABLISHED_ALLOWED)} may follow (AET-I05 / #294)")
+        if (ev["outcome"] == "COMMITTED" and eid not in checked
+                and _authority_ratchet_applies(ev.get("workflow_id") or "")):
+            raise ValidationError(
+                f"{label}: effect {eid!r} records COMMITTED with no AUTHORITY_CHECKED event "
+                f"before it; the contract's second phase must leave a trace in the record, "
+                f"and a check for another effect does not authorize this one "
+                f"(AET-I05 / #294, mandatory from {WP_NAMESPACE}0132)")
+        if ev["outcome"] == "AUTHORITY_CHECKED":
+            checked.add(eid)
+        last[eid] = ev["outcome"]
 
 
 def replay_run(wp_dir: Path) -> dict[str, Any]:
@@ -2900,6 +2971,9 @@ def append_event(wp_dir: Path, step: str, outcome: str, actor_id: str, actor_typ
     if note:
         ev["note"] = note
     ev["event_hash"] = _event_hash(ev)
+    # Same site, same semantic: the candidate is validated against the chain it would
+    # extend, before a byte is written.
+    _validate_effect_chain(events + [ev], f"appending to {path.name}")
     with path.open("a", encoding="utf-8") as h:
         h.write(json.dumps(ev, sort_keys=True, separators=(",", ":")) + "\n")
     return ev
@@ -3823,6 +3897,14 @@ def init_project(intent_path: Path) -> str:
                                  "registered_by": "badf-init", "registered_at": now, "work_package": wp_id,
                                  "instance": {"entrypoint": state_doc["entrypoint"], "receipt": receipt_rel}}
     registry_path.write_text(json.dumps(registry, indent=2) + "\n", encoding="utf-8")
+    # The contract's second phase, recorded rather than assumed (#294): init's authority
+    # to write this intake is the operator's invocation, and until now that basis left no
+    # trace in the ledger at all. The witness names what the authority actually WAS -- it
+    # does not assert a check that never happened, and it grants nothing: the dossier this
+    # run produces stays HELD / HUMAN_REQUIRED.
+    append_event(wp_dir, "init", "AUTHORITY_CHECKED", "badf-init", "controller", effect_id="intake",
+                 note="authority for this intake is the operator invocation of `badf init`; "
+                      "no gate authority is claimed and the G00 dossier remains HUMAN_REQUIRED")
     append_event(wp_dir, "init", "COMMITTED", "badf-init", "controller", effect_id="intake",
                  output_digest=sha256(wp_dir / "work-package.json"),
                  note=f"intake of {proj['repository']} at {head[:12]} ({classification}); instance {receipt_rel}; "

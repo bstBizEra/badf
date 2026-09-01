@@ -1,0 +1,562 @@
+diff --git a/badf/demands/BADF-DEM-0119.json b/badf/demands/BADF-DEM-0119.json
+new file mode 100644
+index 0000000..cdd2094
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0119.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0119",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 294,
++    "url": "https://github.com/bstBizEra/badf/issues/294",
++    "exported_at": "2026-09-01T18:08:06Z",
++    "body_digest": "sha256:ad5751c59b2c63f50d761675a39d6e69c9ced1e7cb5f5400b1574fb10c1b2d72"
++  },
++  "title": "AET-B-2: durable-effect record — a committed effect can be re-committed and replay reports one clean commit",
++  "problem": "🏛 **SARCHI** — **AET-B-2: the durable-effect record.** Rung B's second governed WP, gated on B-1 (#287 / PR #290) landing. Posting the spec measured rather than imagined: **most of this substrate already exists**, and the honest content of this rung is a three-item delta, one of which is a real hole.\n\n## Reuse first — what already exists, measured on `main`\n\nThe Lean ladder's first two questions answer themselves here. `run-ledger.jsonl` already implements the bulk of AET-I05:\n\n```\nhash-chained events, genesis + previous_event_hash        EXISTS\nall five contract resolutions in LEDGER_OUTCOMES          EXISTS\n  COMMITTED · PROVEN_ABSENT · OUTCOME_UNKNOWN · COMPENSATED · MANUAL_REMEDIATION\nTERMINAL_OUTCOMES correctly EXCLUDES OUTCOME_UNKNOWN      EXISTS\nreplay_run() — pure, re-executes nothing                  EXISTS\nplan_next_effect() — deny-unless-established              EXISTS\nappend_event() — verifies the chain before appending      EXISTS\n```\n\n**No new subsystem is warranted, and none is proposed.** A second effect-recording mechanism beside this one would be the \"no second gate\" failure at the substrate layer.\n\n## The delta — three gaps, all probed, with a positive control\n\n```\nPROBE 1  one effect: PREPARED -> COMMITTED -> PREPARED -> COMMITTED\n         ADMITTED (4 events). replay_run reports committed_effects=['EFF-1'],\n         unresolved=[] -- a durable external effect executed TWICE, and the\n         record reads as one clean commit.\nPROBE 2  an event carrying an undeclared key 'granted_authority': ADMITTED\n         (schemas/run-ledger-event.schema.json declares no additionalProperties)\nPROBE 3  positive control -- a bogus outcome 'TOTALLY_MADE_UP': REFUSED\n         (\"invalid outcome\") -- the instrument works, so 1 and 2 mean something\n```\n\n**Gap 1 is the rung's reason to exist.** `LEDGER_OUTCOMES` is a *membership* check at both consumers (the read path and the append path) — it is not a state machine. AET-I05's *\"an ambiguous state-changing operation is never blindly retried\"* is doctrine that no control enforces on the record. This is precisely the class #290 spent six reseals closing on the roster: **a vocabulary that constrains values but not transitions**.\n\n**Gap 2** is the same admitted-undeclared-content shape, on the durable-effect record. `additionalProperties: false` is walker-enforced — measured live on `seats.schema.json` during #290 — so the declaration is load-bearing here, not decorative.\n\n**Gap 3 — the AUTHORITY CHECK phase is unwitnessed.** The contract's four phases are `PREPARE → AUTHORITY CHECK → COMMIT → RECONCILE`, but no outcome term records that the check *ran*; `REJECTED` is ambiguous about which phase rejected and on whose authority. A phase that leaves no trace cannot be shown to have happened.\n\n## Class recurrence, named rather than left as a gap\n\n**Gap 1 is not a new defect — it is #290's defect one layer over, and this rung inherits that remedy wholesale.** #290 spent six reseals closing *a vocabulary that constrains values but not transitions* on the seat roster; here the same shape appears on the durable-effect record: enum membership checked at both consumers, no state machine, and the never-blindly-retried invariant enforced by nothing. What #290 established therefore applies without re-deriving it — **validate at one authoritative site both consumers inherit** (never a guard per consumer), and **prove inheritance by per-consumer mutation discrimination**, since a batch run showing \"at least one test reds\" does not distinguish a shared refusal from two independent ones. This is the family's third record type after the seat roster and verification records, which is the evidence the #292 consolidation question will eventually want.\n\n**Gap 2 is the permissive-object organ in a new schema** — the missing `additionalProperties` on a governed record, cross-referenced to #240 so the class ledger stays connected rather than re-discovered per schema.\n\n**Gap 3 is where the adversarial clause earns its keep.** A missing *witness* is invisible to any test that walks only the vocabulary that exists: every enum member can pass while the phase that was supposed to leave a trace left none. Criterion 6 is pointed here first.\n\n## Acceptance criteria\n\n1. An effect whose last outcome is **terminal** cannot receive a further event: refused at `append_event` **and** at the ledger read path, with one semantic from **one authoritative site both consumers inherit** — not a guard per consumer (#290's whole lesson; validation at the source).\n2. The transition rule walks the **closed** set: every member of `LEDGER_OUTCOMES` is exercised as a predecessor, and the legal successors of each are asserted from the declared table rather than from the cases that happen to be convenient.\n3. `run-ledger-event.schema.json` declares `additionalProperties: false`; a probe carrying an undeclared key is refused, and the refusal is attributed to the walker (enforced) rather than assumed.\n4. The AUTHORITY CHECK phase is witnessed by the record: either a phase-bearing outcome term or a required field naming the authority consulted. Whichever is chosen, the **sole enforcer is stated in-line** (#264) and the choice is justified against the alternative in the PR body.\n5. Every new refusal is **red-first**, and each is mutation-killed with **per-consumer discrimination** where it has two consumers — a batch run proving \"at least one test reds\" does not prove inheritance.\n6. **Adversarial clause (#270, non-optional):** the criteria above certify the transitions we thought of. The battery additionally includes at least one sequence that is *not* in the declared table and *not* obviously illegal, and states which control refuses it or declares it non-covered. A criteria set that can only confirm the imagined fix is a plan defect, and this rung's subject — a record of things that already happened in the world — is where a silent gap costs the most.\n\n## Out of scope, stated\n\nNo executor, no runtime, no retry policy engine, no second ledger. This rung governs **the record**; the thing that performs effects is not built here and gains no authority from this landing. Compensation semantics (`COMPENSATED` → what, exactly) stay with the operation that owns them.\n\n## Tier and stage\n\nPatch — a bug fix plus test additions on an existing module; no new public surface. Change class C2. DEV Glossary stage: implementation of a frozen contract clause, no new vocabulary.\n\nGated on #290 landing. Ids claimed at bind time via the sweep, never here.\n\n<!-- agent: sarchi -->\n",
++  "status": "AUTHORIZED",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "recorded_at": "2026-09-01T07:17:34Z",
++  "note": "AET-B-1 as challenged and re-scoped: BARCHI-2's four-finding pass (F1 seat-field ratchet adopted; F2 artifact-now-refusal-post-#261; F3 stored-vs-stored as standing law; F4 expiry descoped -- the falsification line was confirm-shaped and now guards permissions AND time). Dispatched by the Landing Commander on the pre-named convergence trigger. Ids 0130/0117 allocated by the fixed sweep's first production run (comments surface READ, zero warnings), claim published in the issue with ceiling 0129/0116 (#285)."
++}
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 9a724a1..01668b5 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -2325,6 +2325,56 @@ Standing design law inherited by whoever eventually builds expiry (F3): the cloc
+ input — the check compares stored-against-stored, never `datetime.now()` at the point of judgment,
+ so verdicts stay a function of the tree alone.
+ 
++## Terminal is not established (AET-B-2, #294)
++
++A durable effect's outcome vocabulary answers two different questions, and until
++`WP-2026-0132` the gate had a name for only one of them.
++
++**Terminal** means *this attempt concluded* — the run stops waiting on it.
++**Established** means *the world changed* — the external side effect happened.
++
++`TERMINAL_OUTCOMES` holds both kinds, and the difference is load-bearing:
++`PROVEN_ABSENT` is terminal and **not** established, because proving an effect did not
++happen is precisely the proof that retrying it is safe. The ledger's own tests already
++encoded this (`test_proven_absent_effect_may_be_prepared_again`); nothing named it.
++
++So `EFFECT_ESTABLISHED` = `{COMMITTED, SKIPPED_ALREADY_COMMITTED}` seals re-execution,
++and `AFTER_ESTABLISHED_ALLOWED` = `{COMPENSATED, MANUAL_REMEDIATION}` keeps a real
++effect compensable — an effect that happened must remain undoable and escalable, and a
++rule that sealed it outright would be worse than the hole it closed.
++
++**The general form, for whoever writes the next transition rule:** a criterion that says
++"assert successors from the declared table" must name where that table IS. When it does
++not exist, the criterion's true content is *invent one*, and the nearest constant whose
++NAME resembles the property will be substituted for it. That is the adjacency class at
++the level of a named set rather than a matcher, and the existing passing tests are
++usually the table you are looking for.
++
++**And the instrument:** a test that derives its cases from the constant under test can be
++silenced by a mutation that empties that constant — the loop passes over nothing exactly
++as it passes over everything. Pin the members the behavior requires, then walk the set,
++then re-run the mutation to prove the guard bites.
++
++## The authority check leaves a trace (AET-B-2, #294)
++
++`AET-I05`'s phases are `PREPARE → AUTHORITY CHECK → COMMIT → RECONCILE`, but no outcome
++recorded that the check ran, and `REJECTED` is ambiguous about which phase rejected on
++whose authority. A phase that leaves no trace cannot be shown to have happened — and it
++is invisible to any test that walks only the vocabulary that exists, which is why the
++adversarial clause was pointed here first rather than spread evenly.
++
++`AUTHORITY_CHECKED` is mandatory before `COMMITTED`, per effect, from `WP-2026-0132`
++forward; earlier ledgers are grandfathered and sentinels exempt — the surface and seat
++ratchet shape reused rather than a third mechanism invented. A check recorded for one
++effect does not authorize another.
++
++`badf init` was the first caller to meet it, and the disclosure matters: it recorded
++`COMMITTED` for its intake with **no authority basis in the ledger at all**. It now
++records what that basis actually is — the operator's invocation of the command — rather
++than a check it never performed. Recording a real weak basis beats recording a
++strong-sounding absent one; it grants nothing, and the G00 dossier stays
++`HUMAN_REQUIRED`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
+diff --git a/schemas/run-ledger-event.schema.json b/schemas/run-ledger-event.schema.json
+index dba2b8e..0bac3d8 100644
+--- a/schemas/run-ledger-event.schema.json
++++ b/schemas/run-ledger-event.schema.json
+@@ -116,5 +116,6 @@
+       "type": "string",
+       "pattern": "^sha256:[0-9a-f]{64}$"
+     }
+-  }
++  },
++  "additionalProperties": false
+ }
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index 0835d5c..ba08462 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -137,8 +137,26 @@ LEDGER_NAME = "run-ledger.jsonl"
+ GENESIS_HASH = "sha256:" + "0" * 64
+ LEDGER_FIELDS = {"event_id", "workflow_id", "sequence", "step", "outcome", "actor", "recorded_at",
+                  "previous_event_hash", "event_hash"}
+-LEDGER_OUTCOMES = {"PREPARED", "COMMITTED", "REJECTED", "OUTCOME_UNKNOWN", "PROVEN_ABSENT",
+-                   "COMPENSATED", "MANUAL_REMEDIATION", "SKIPPED_ALREADY_COMMITTED", "OBSERVED"}
++LEDGER_OUTCOMES = {"PREPARED", "AUTHORITY_CHECKED", "COMMITTED", "REJECTED", "OUTCOME_UNKNOWN",
++                   "PROVEN_ABSENT", "COMPENSATED", "MANUAL_REMEDIATION",
++                   "SKIPPED_ALREADY_COMMITTED", "OBSERVED"}
++# AET-I05's second phase had no vocabulary: nothing recorded that the AUTHORITY CHECK
++# ran, and REJECTED is ambiguous about which phase rejected on whose authority. A phase
++# that leaves no trace cannot be shown to have happened (#294). Mandatory from the WP
++# that ships it; earlier runs are grandfathered; sentinels exempt -- the surface/seat
++# ratchet shape reused, not a new mechanism.
++AUTHORITY_RATCHET_THRESHOLD = 132
++# The outcomes that assert THE EFFECT HAPPENED. Narrower than TERMINAL_OUTCOMES on
++# purpose (#294): terminal means "this attempt concluded", established means "the world
++# changed". PROVEN_ABSENT and REJECTED are terminal and NOT established -- the protocol
++# already lets a proven-absent effect be prepared again, which is correct, because
++# proving absence is proof it is safe to retry. Conflating the two would have forbidden
++# a retry the ledger's own tests require.
++EFFECT_ESTABLISHED = {"COMMITTED", "SKIPPED_ALREADY_COMMITTED"}
++# What may follow an established effect: you may record undoing it or escalating it.
++# You may never record preparing or committing it again -- that is the double execution
++# AET-I05 exists to prevent -- nor asserting it never happened.
++AFTER_ESTABLISHED_ALLOWED = {"COMPENSATED", "MANUAL_REMEDIATION"}
+ COUNCIL_DISPOSITIONS = {"CHALLENGE_REQUIRED", "CHALLENGE_OPTIONAL", "CHALLENGE_NOT_REQUIRED"}
+ COUNCIL_VERDICTS = {"APPROVE", "APPROVE_WITH_CONDITIONS", "REJECT", "ABSTAIN", "INSUFFICIENT_EVIDENCE"}
+ RISK_SEVERITIES = {"Critical", "Major", "Minor"}
+@@ -830,6 +848,17 @@ _SEAT_FORBIDDEN_PERMISSION_KEYS = ("allowed_paths", "allowed_tools", "actions",
+ _SEAT_FORBIDDEN_TIME_KEYS = ("expires", "expiry", "until", "valid_until", "window", "time_window")
+ 
+ 
++def _authority_ratchet_applies(wp_id: str) -> bool:
++    """The authority-check witness is mandatory from WP-2026-0132 forward (the WP that
++    shipped it); earlier ledgers are grandfathered, sentinels exempt (same shape and
++    same reasons as the surface and seat ratchets)."""
++    m = WP_ID_FORMS.match(str(wp_id))
++    if not m:
++        return False
++    n = int(m.group(1))
++    return n >= AUTHORITY_RATCHET_THRESHOLD and n not in SURFACE_RATCHET_SENTINELS
++
++
+ def _seat_ratchet_applies(wp_id: str) -> bool:
+     """The delegation seat field is mandatory from WP-2026-0130 forward (the WP that
+     shipped the roster); earlier delegations are grandfathered and counted; sentinel
+@@ -2834,9 +2863,51 @@ def read_ledger(wp_dir: Path) -> list[dict[str, Any]]:
+             raise ValidationError(f"ledger line {n}: event_hash does not match content -- ledger edited in place")
+         events.append(ev)
+         prev = ev["event_hash"]
++    # Inherited from the authoritative site: a ledger written around append_event --
++    # edited by hand, restored from a backup, produced by an older writer -- is refused
++    # when READ, not only when written.
++    _validate_effect_chain(events, f"ledger {path.name}")
+     return events
+ 
+ 
++def _validate_effect_chain(events: list[dict[str, Any]], label: str) -> None:
++    """AET-I05, enforced (#294, WP-2026-0132): a durable effect that reached a TERMINAL
++    outcome cannot receive a further event. Before this, LEDGER_OUTCOMES was a
++    membership check at both consumers and never a state machine, so an effect could go
++    PREPARED -> COMMITTED -> PREPARED -> COMMITTED and replay_run would report it as one
++    clean commit -- a durable external effect executed twice, invisible in the record.
++
++    THIS is the authoritative site. Both consumers call it -- read_ledger over the
++    stored chain, append_event over the chain plus its candidate -- so a guard in only
++    one of them cannot exist to diverge from the other (the #290 lesson: validation at
++    the source, never at the consumer). Scoped per effect_id; events without one are
++    the run's own steps, not durable effects, and are untouched.
++    """
++    last: dict[str, str] = {}
++    checked: set[str] = set()
++    for ev in events:
++        eid = ev.get("effect_id")
++        if not eid:
++            continue
++        prior = last.get(eid)
++        if prior in EFFECT_ESTABLISHED and ev["outcome"] not in AFTER_ESTABLISHED_ALLOWED:
++            raise ValidationError(
++                f"{label}: effect {eid!r} is established as {prior} and now records "
++                f"{ev.get('outcome')!r}; the world already changed, so it is neither prepared "
++                f"nor committed again and never asserted absent -- only "
++                f"{sorted(AFTER_ESTABLISHED_ALLOWED)} may follow (AET-I05 / #294)")
++        if (ev["outcome"] == "COMMITTED" and eid not in checked
++                and _authority_ratchet_applies(ev.get("workflow_id") or "")):
++            raise ValidationError(
++                f"{label}: effect {eid!r} records COMMITTED with no AUTHORITY_CHECKED event "
++                f"before it; the contract's second phase must leave a trace in the record, "
++                f"and a check for another effect does not authorize this one "
++                f"(AET-I05 / #294, mandatory from {WP_NAMESPACE}0132)")
++        if ev["outcome"] == "AUTHORITY_CHECKED":
++            checked.add(eid)
++        last[eid] = ev["outcome"]
++
++
+ def replay_run(wp_dir: Path) -> dict[str, Any]:
+     """Reconstruct run state from the ledger. PURE: reads only, appends
+     nothing, re-executes nothing. Mandate section 6: 'Replay reconstructs
+@@ -2900,6 +2971,9 @@ def append_event(wp_dir: Path, step: str, outcome: str, actor_id: str, actor_typ
+     if note:
+         ev["note"] = note
+     ev["event_hash"] = _event_hash(ev)
++    # Same site, same semantic: the candidate is validated against the chain it would
++    # extend, before a byte is written.
++    _validate_effect_chain(events + [ev], f"appending to {path.name}")
+     with path.open("a", encoding="utf-8") as h:
+         h.write(json.dumps(ev, sort_keys=True, separators=(",", ":")) + "\n")
+     return ev
+@@ -3823,6 +3897,14 @@ def init_project(intent_path: Path) -> str:
+                                  "registered_by": "badf-init", "registered_at": now, "work_package": wp_id,
+                                  "instance": {"entrypoint": state_doc["entrypoint"], "receipt": receipt_rel}}
+     registry_path.write_text(json.dumps(registry, indent=2) + "\n", encoding="utf-8")
++    # The contract's second phase, recorded rather than assumed (#294): init's authority
++    # to write this intake is the operator's invocation, and until now that basis left no
++    # trace in the ledger at all. The witness names what the authority actually WAS -- it
++    # does not assert a check that never happened, and it grants nothing: the dossier this
++    # run produces stays HELD / HUMAN_REQUIRED.
++    append_event(wp_dir, "init", "AUTHORITY_CHECKED", "badf-init", "controller", effect_id="intake",
++                 note="authority for this intake is the operator invocation of `badf init`; "
++                      "no gate authority is claimed and the G00 dossier remains HUMAN_REQUIRED")
+     append_event(wp_dir, "init", "COMMITTED", "badf-init", "controller", effect_id="intake",
+                  output_digest=sha256(wp_dir / "work-package.json"),
+                  note=f"intake of {proj['repository']} at {head[:12]} ({classification}); instance {receipt_rel}; "
+diff --git a/tests/test_badf_durable_effect.py b/tests/test_badf_durable_effect.py
+new file mode 100644
+index 0000000..239e4e0
+--- /dev/null
++++ b/tests/test_badf_durable_effect.py
+@@ -0,0 +1,304 @@
++"""AET-B-2 (#294, WP-2026-0132): the durable-effect record, red-first.
++
++AET-I05 says an ambiguous state-changing operation is never blindly retried, and the
++ledger's outcome vocabulary is a MEMBERSHIP check at both consumers -- never a state
++machine. Probed on main before this WP: an effect recorded PREPARED -> COMMITTED ->
++PREPARED -> COMMITTED is ADMITTED, and replay_run then reports it as one clean commit
++with nothing unresolved. A durable external effect executed twice, invisible.
++
++That is #290's defect one layer down -- a vocabulary constraining values but not
++transitions -- so the remedy is inherited rather than re-derived: the rule lives at ONE
++authoritative site that both the append path and the read/replay path consume, and the
++proof is PER-CONSUMER mutation discrimination, because a batch run cannot distinguish a
++shared refusal from two independent ones.
++"""
++import json
++import os
++import shutil
++import subprocess
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++EFFECT = "EFF-PROBE-1"
++DIGEST = "sha256:" + "a" * 64
++
++
++class _Ledger(unittest.TestCase):
++    def setUp(self):
++        self.tmp = tempfile.mkdtemp()
++        self.wp = Path(self.tmp) / "WP-2026-9995"
++        self.wp.mkdir(parents=True)
++
++    def tearDown(self):
++        shutil.rmtree(self.tmp, ignore_errors=True)
++
++    def append(self, outcome, effect_id=EFFECT, step="commit", digest=None):
++        return gate.append_event(self.wp, step, outcome, "SARCHI", "agent",
++                                 effect_id=effect_id,
++                                 output_digest=digest if digest is not None else DIGEST)
++
++    def authorize(self, effect_id=EFFECT):
++        """The contract's second phase, recorded. Under the #294 ratchet a COMMITTED
++        effect must carry this witness, so every legal fixture below performs it --
++        the tests exercise the real four-phase protocol rather than a shortcut."""
++        return self.append("AUTHORITY_CHECKED", effect_id=effect_id, step="authority")
++
++    def append_raw(self, **over):
++        """Write an event straight to the file, bypassing append_event, so the READ
++        path is exercised on a chain the append path would have refused. Without this
++        the two consumers cannot be told apart (the #290 site-discrimination lesson)."""
++        events = []
++        path = self.wp / gate.LEDGER_NAME
++        if path.is_file():
++            events = [json.loads(l) for l in path.read_text().splitlines() if l.strip()]
++        seq = len(events) + 1
++        ev = {"event_id": f"EVT-{self.wp.name}-{seq:04d}", "workflow_id": self.wp.name,
++              "sequence": seq, "step": "commit", "outcome": "PREPARED",
++              "actor": {"id": "SARCHI", "type": "agent"},
++              "recorded_at": "2026-09-01T00:00:00Z", "effect_id": EFFECT,
++              "output_digest": DIGEST, "provenance": "RECORDED_AT_EVENT_TIME",
++              "previous_event_hash": events[-1]["event_hash"] if events else gate.GENESIS_HASH}
++        ev.update(over)
++        ev["event_hash"] = gate._event_hash(ev)
++        with path.open("a", encoding="utf-8") as h:
++            h.write(json.dumps(ev, sort_keys=True, separators=(",", ":")) + "\n")
++        return ev
++
++
++class TerminalOutcomesAreTerminal(_Ledger):
++    def test_a_committed_effect_cannot_be_re_prepared_on_the_append_path(self):
++        """The probed hole: PREPARED -> COMMITTED -> PREPARED was admitted, which is a
++        durable external effect being scheduled a second time."""
++        self.append("PREPARED"); self.authorize(); self.append("COMMITTED")
++        with self.assertRaises(gate.ValidationError) as cm:
++            self.append("PREPARED")
++        self.assertIn(EFFECT, str(cm.exception))
++        self.assertIn("established", str(cm.exception).lower())
++
++    def test_a_committed_effect_cannot_be_re_committed_on_the_append_path(self):
++        self.append("PREPARED"); self.authorize(); self.append("COMMITTED")
++        with self.assertRaises(gate.ValidationError) as cm:
++            self.append("COMMITTED")
++        self.assertIn("established", str(cm.exception).lower())
++
++    def test_the_read_path_refuses_a_chain_the_append_path_would_have(self):
++        """Per-consumer inheritance: a ledger written around append_event (edited by
++        hand, restored from a backup, produced by an older writer) must still be
++        refused when READ. assert on the read path specifically -- append is not
++        the only way a ledger comes into being."""
++        self.append_raw(outcome="PREPARED")
++        self.append_raw(outcome="AUTHORITY_CHECKED")
++        self.append_raw(outcome="COMMITTED")
++        self.append_raw(outcome="PREPARED")     # the illegal transition, written raw
++        with self.assertRaises(gate.ValidationError) as cm:
++            gate.read_ledger(self.wp)
++        self.assertIn("established", str(cm.exception).lower())
++
++    def test_replay_does_not_report_a_twice_executed_effect_as_one_clean_commit(self):
++        """The consequence the rule exists to prevent, asserted on the OUTPUT rather
++        than on the refusal: replay_run reported committed=[EFF] / unresolved=[] over
++        a double execution. With the chain refused, replay cannot report it at all."""
++        self.append_raw(outcome="PREPARED")
++        self.append_raw(outcome="AUTHORITY_CHECKED")
++        self.append_raw(outcome="COMMITTED")
++        self.append_raw(outcome="PREPARED")
++        self.append_raw(outcome="COMMITTED")
++        with self.assertRaises(gate.ValidationError):
++            gate.replay_run(self.wp)
++
++    def test_a_terminal_but_unestablished_outcome_may_still_be_prepared_again(self):
++        """The distinction the ledger's OWN tests already encoded and my first rule
++        overrode: PROVEN_ABSENT is TERMINAL but not ESTABLISHED -- proving an effect did
++        not happen is proof it is safe to retry. A rule keyed on TERMINAL_OUTCOMES
++        forbade a retry the protocol requires (test_proven_absent_effect_may_be_prepared
++        _again). Terminal means this attempt concluded; established means the world
++        changed."""
++        self.append("PREPARED")
++        self.append("OUTCOME_UNKNOWN")
++        self.append("PROVEN_ABSENT")
++        ev = self.append("PREPARED")
++        self.assertEqual(ev["outcome"], "PREPARED")
++        self.assertEqual(gate.plan_next_effect(self.wp, EFFECT), "PREPARE")
++
++    def test_compensation_may_follow_an_established_effect(self):
++        """Positive control on the allowed set: an effect that really happened may be
++        recorded as undone or escalated -- a rule that sealed the effect entirely would
++        make compensation unrecordable, which is worse than the hole it closes."""
++        self.append("PREPARED"); self.authorize(); self.append("COMMITTED")
++        # Vacuity guard: this test derives its cases from the constant under test, so an
++        # empty set would make the loop pass like a full one -- the #290 enumeration-
++        # vacuity class, reproduced in the instrument for the rule that inherits it.
++        # Pin the members the protocol REQUIRES, then walk whatever the constant holds.
++        self.assertLessEqual({"COMPENSATED", "MANUAL_REMEDIATION"}, gate.AFTER_ESTABLISHED_ALLOWED,
++                             "an established effect must remain compensable and escalable")
++        for allowed in sorted(gate.AFTER_ESTABLISHED_ALLOWED):
++            with self.subTest(allowed=allowed):
++                tmp = Path(tempfile.mkdtemp()); wp = tmp / "WP-2026-9995"; wp.mkdir()
++                try:
++                    gate.append_event(wp, "p", "PREPARED", "S", "agent", effect_id=EFFECT, output_digest=DIGEST)
++                    gate.append_event(wp, "a", "AUTHORITY_CHECKED", "S", "agent", effect_id=EFFECT, output_digest=DIGEST)
++                    gate.append_event(wp, "c", "COMMITTED", "S", "agent", effect_id=EFFECT, output_digest=DIGEST)
++                    ev = gate.append_event(wp, "x", allowed, "S", "agent", effect_id=EFFECT, output_digest=DIGEST)
++                    self.assertEqual(ev["outcome"], allowed)
++                finally:
++                    shutil.rmtree(tmp, ignore_errors=True)
++
++    def test_every_established_outcome_seals_re_execution_walking_the_declared_set(self):
++        """The closed set walked WHOLE from the declared constant -- EFFECT_ESTABLISHED
++        read live, so a member added later is covered without editing this test."""
++        # Same vacuity guard as the sibling at the top of this class, applied here after
++        # QA measured the gap (#298 review): reading the constant live covers members
++        # ADDED later, and silently loses coverage for members REMOVED. Dropping
++        # SKIPPED_ALREADY_COMMITTED -- the idempotency outcome itself -- survived the
++        # whole module. Pin what the protocol requires, then walk whatever it holds.
++        self.assertLessEqual({"COMMITTED", "SKIPPED_ALREADY_COMMITTED"}, gate.EFFECT_ESTABLISHED,
++                             "an established effect must stay sealed against re-execution")
++        for terminal in sorted(gate.EFFECT_ESTABLISHED):
++            with self.subTest(terminal=terminal):
++                tmp = Path(tempfile.mkdtemp()); wp = tmp / "WP-2026-9994"; wp.mkdir()
++                try:
++                    gate.append_event(wp, "commit", "PREPARED", "SARCHI", "agent",
++                                      effect_id=EFFECT, output_digest=DIGEST)
++                    gate.append_event(wp, "authority", "AUTHORITY_CHECKED", "SARCHI", "agent",
++                                      effect_id=EFFECT, output_digest=DIGEST)
++                    gate.append_event(wp, "commit", terminal, "SARCHI", "agent",
++                                      effect_id=EFFECT, output_digest=DIGEST)
++                    with self.assertRaises(gate.ValidationError):
++                        gate.append_event(wp, "commit", "PREPARED", "SARCHI", "agent",
++                                          effect_id=EFFECT, output_digest=DIGEST)
++                finally:
++                    shutil.rmtree(tmp, ignore_errors=True)
++
++    def test_a_non_terminal_outcome_still_accepts_a_successor(self):
++        """Positive control: the rule refuses transitions OUT OF terminal states only.
++        OUTCOME_UNKNOWN is explicitly non-terminal (resume must reconcile it), so a
++        successor after it stays legal -- a rule that refused everything would pass
++        every test above while breaking the protocol."""
++        self.append("PREPARED")
++        self.authorize()
++        self.append("OUTCOME_UNKNOWN")
++        ev = self.append("COMMITTED")
++        self.assertEqual(ev["outcome"], "COMMITTED")
++        self.assertEqual(gate.replay_run(self.wp)["unresolved_effects"], [])
++
++    def test_a_different_effect_is_unaffected_by_another_effects_terminal_state(self):
++        """Positive control on the scoping: the rule is per-effect_id. A committed
++        EFF-1 must not freeze the whole ledger."""
++        self.append("PREPARED", effect_id="EFF-1"); self.authorize("EFF-1")
++        self.append("COMMITTED", effect_id="EFF-1")
++        ev = self.append("PREPARED", effect_id="EFF-2")
++        self.assertEqual(ev["outcome"], "PREPARED")
++
++    def test_events_without_an_effect_id_are_unaffected(self):
++        """Positive control: workflow-step events carry no effect_id and must keep
++        flowing -- the rule governs durable EFFECTS, not the run's own steps."""
++        gate.append_event(self.wp, "plan", "OBSERVED", "SARCHI", "agent")
++        gate.append_event(self.wp, "plan", "OBSERVED", "SARCHI", "agent")
++        self.assertEqual(len(gate.read_ledger(self.wp)), 2)
++
++
++class TheEventRecordIsClosed(_Ledger):
++    def test_an_undeclared_key_on_a_ledger_event_is_refused(self):
++        """Probed on main: an event carrying 'granted_authority' was ADMITTED --
++        run-ledger-event.schema.json declares no additionalProperties. The walker
++        DOES enforce additionalProperties (measured live on seats.schema.json in
++        #290), so the declaration is load-bearing here, not decorative."""
++        self.append("PREPARED")
++        ev = dict(gate.read_ledger(self.wp)[0])
++        ev["granted_authority"] = "unlimited"
++        with self.assertRaises(gate.ValidationError):
++            gate.check_schema("run-ledger-event", ev)
++
++    def test_a_declared_event_still_validates(self):
++        """Negative control for the closure: the real shape must stay admissible."""
++        self.append("PREPARED")
++        gate.check_schema("run-ledger-event", gate.read_ledger(self.wp)[0])
++
++
++class TheAuthorityCheckIsWitnessed(_Ledger):
++    """Gap 3: the contract's four phases are PREPARE -> AUTHORITY CHECK -> COMMIT ->
++    RECONCILE, but no vocabulary recorded that the check RAN, and REJECTED is ambiguous
++    about which phase rejected on whose authority. A phase that leaves no trace cannot
++    be shown to have happened -- and it is invisible to any test that walks only the
++    vocabulary that exists, which is why the adversarial clause was pointed here.
++
++    Mandatory from this WP's own id forward, grandfathered below it, sentinels exempt --
++    the surface/seat ratchet shape reused rather than a new mechanism invented.
++    """
++    def wp_at(self, wp_id):
++        d = Path(self.tmp) / wp_id
++        d.mkdir(parents=True, exist_ok=True)
++        return d
++
++    def test_committing_without_an_authority_check_is_refused_at_and_above_threshold(self):
++        wp = self.wp_at("WP-2026-9995")
++        gate.append_event(wp, "prepare", "PREPARED", "SARCHI", "agent", effect_id=EFFECT, output_digest=DIGEST)
++        with self.assertRaises(gate.ValidationError) as cm:
++            gate.append_event(wp, "commit", "COMMITTED", "SARCHI", "agent", effect_id=EFFECT, output_digest=DIGEST)
++        msg = str(cm.exception)
++        self.assertIn("authority", msg.lower())
++        self.assertIn(EFFECT, msg)
++
++    def test_an_authority_checked_event_admits_the_commit(self):
++        """Positive control: the rule demands a witness, it does not forbid committing."""
++        wp = self.wp_at("WP-2026-9995")
++        gate.append_event(wp, "prepare", "PREPARED", "SARCHI", "agent", effect_id=EFFECT, output_digest=DIGEST)
++        gate.append_event(wp, "authority", "AUTHORITY_CHECKED", "SARCHI", "agent", effect_id=EFFECT, output_digest=DIGEST)
++        ev = gate.append_event(wp, "commit", "COMMITTED", "SARCHI", "agent", effect_id=EFFECT, output_digest=DIGEST)
++        self.assertEqual(ev["outcome"], "COMMITTED")
++
++    def test_the_witness_is_per_effect_not_per_run(self):
++        """A check for one effect must not authorize a different one -- otherwise the
++        witness is satisfied by something adjacent to the thing under test."""
++        wp = self.wp_at("WP-2026-9995")
++        gate.append_event(wp, "authority", "AUTHORITY_CHECKED", "SARCHI", "agent", effect_id="EFF-1", output_digest=DIGEST)
++        with self.assertRaises(gate.ValidationError):
++            gate.append_event(wp, "commit", "COMMITTED", "SARCHI", "agent", effect_id="EFF-2", output_digest=DIGEST)
++
++    def test_a_grandfathered_work_package_is_not_refused(self):
++        wp = self.wp_at("WP-2026-0100")
++        gate.append_event(wp, "prepare", "PREPARED", "SARCHI", "agent", effect_id=EFFECT, output_digest=DIGEST)
++        ev = gate.append_event(wp, "commit", "COMMITTED", "SARCHI", "agent", effect_id=EFFECT, output_digest=DIGEST)
++        self.assertEqual(ev["outcome"], "COMMITTED")
++
++    def test_the_sentinel_is_exempt(self):
++        wp = self.wp_at("WP-2026-9999")
++        gate.append_event(wp, "prepare", "PREPARED", "SARCHI", "agent", effect_id=EFFECT, output_digest=DIGEST)
++        ev = gate.append_event(wp, "commit", "COMMITTED", "SARCHI", "agent", effect_id=EFFECT, output_digest=DIGEST)
++        self.assertEqual(ev["outcome"], "COMMITTED")
++
++    def test_the_read_path_inherits_the_witness_rule(self):
++        """Per-consumer inheritance again: a chain written around append_event is
++        refused when READ."""
++        wp = self.wp_at("WP-2026-9995")
++        self.wp = wp
++        self.append_raw(outcome="PREPARED")
++        self.append_raw(outcome="COMMITTED")
++        with self.assertRaises(gate.ValidationError) as cm:
++            gate.read_ledger(wp)
++        self.assertIn("authority", str(cm.exception).lower())
++
++
++class TheAdversarialCase(_Ledger):
++    def test_a_sequence_outside_the_declared_table_is_refused_or_declared(self):
++        """#270, pointed where a walk of the existing vocabulary is blind: a
++        COMMITTED effect that later reports PROVEN_ABSENT is not in any table, is not
++        obviously illegal (a reconciler might genuinely discover the effect absent),
++        and is a contradiction the record must not simply absorb. Whichever way the
++        rule falls it must be STATED -- refused here, because two terminal outcomes
++        for one effect assert two different facts about the world."""
++        self.append("PREPARED"); self.authorize(); self.append("COMMITTED")
++        with self.assertRaises(gate.ValidationError) as cm:
++            self.append("PROVEN_ABSENT")
++        msg = str(cm.exception).lower()
++        self.assertIn("established", msg)
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0133/work-package.json b/work/WP-2026-0133/work-package.json
+index 8d0e646..63bca34 100644
+--- a/work/WP-2026-0133/work-package.json
++++ b/work/WP-2026-0133/work-package.json
+@@ -86,13 +86,16 @@
+     "reversible": true,
+     "method": "revert the squash commit via PR"
+   },
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "tdd_exception": {
+     "reason": "Documentation and declaration correction with no behaviour change and no test obligations; the evidence is a classified subject-wide sweep plus a byte-identity and digest assertion on the deliberately-untouched export."
+   },
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "9fad36948cdf14c914cf76faf07365588091585c"
++    "base_revision": "9fad36948cdf14c914cf76faf07365588091585c",
++    "landed_content_tree": "5e5bdf7a89951cc10d603d9042f67e6ea1235491",
++    "composition_verified": true,
++    "landed_as": "75a6abd46c28033332aa19553a083b50d9ce06ec"
+   }
+ }
