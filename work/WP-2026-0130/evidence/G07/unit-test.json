@@ -15,12 +15,12 @@
     "name": "unittest",
     "version": "1"
   },
-  "operation": "python3 -m unittest tests.test_badf_seat_roster  # QA Findings 1+2, two-site form (load-site validation)",
-  "started_at": "2026-09-01T16:22:36Z",
-  "completed_at": "2026-09-01T16:22:36Z",
+  "operation": "python3 -m unittest tests.test_badf_seat_roster  # sixth reseal: class closure at the loader",
+  "started_at": "2026-09-01T16:46:46Z",
+  "completed_at": "2026-09-01T16:46:46Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0130/evidence/G07/unit-test.log",
-  "digest": "sha256:8ae035f749bb992969ce2afdb08e161bb0d67f957ec15f9d99dd4f644a746cd2",
+  "digest": "sha256:ff13bf1665a8a6a9106753c9308c03b3d330dd31766a4b4b85da4cb518cf7561",
   "binding": {
     "obligations": [
       {
@@ -37,13 +37,13 @@
         "green": {
           "observed": true,
           "ref": "work/WP-2026-0130/evidence/G07/unit-test.log",
-          "digest": "sha256:8ae035f749bb992969ce2afdb08e161bb0d67f957ec15f9d99dd4f644a746cd2"
+          "digest": "sha256:ff13bf1665a8a6a9106753c9308c03b3d330dd31766a4b4b85da4cb518cf7561"
         }
       }
     ],
-    "command": "python3 -m unittest tests.test_badf_seat_roster  # QA Findings 1+2, two-site form (load-site validation)",
+    "command": "python3 -m unittest tests.test_badf_seat_roster  # sixth reseal: class closure at the loader",
     "result": "PASS",
-    "tests_run": 19,
+    "tests_run": 24,
     "failures": 0,
     "coverage_scope": [
       "tests/test_badf_seat_roster.py"
