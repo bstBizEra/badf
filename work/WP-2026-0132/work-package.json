@@ -1,0 +1,87 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0132",
+  "title": "AET-B-2: the durable-effect record -- terminal outcomes are terminal, the event record is closed, and the authority-check phase is witnessed",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0119",
+  "objective": "Close the measured gap between AET-I05's four-phase durable-effect protocol and what the run-ledger actually enforces: an effect that reached a terminal outcome can be re-PREPARED and re-COMMITTED, and replay reports one clean commit over a durable external effect executed twice. The vocabulary constrains values but never transitions -- #290's defect one layer down -- so the fix inherits #290's remedy: one authoritative site both consumers inherit, proven by per-consumer mutation discrimination.",
+  "business_value": "AET-B's second rung. The substrate already exists (hash-chained ledger, five contract resolutions, pure replay, deny-unless-established resume); this makes its central invariant enforceable rather than doctrinal, without adding a second effect-recording mechanism.",
+  "in_scope": [
+    "scripts/badf_gate.py: a transition rule for effect outcomes -- an effect whose last recorded outcome is terminal cannot receive a further event -- enforced at ONE authoritative site that both the append path and the read/replay path inherit",
+    "schemas/run-ledger-event.schema.json: additionalProperties false (walker-enforced, measured live on seats.schema.json during #290)",
+    "the AUTHORITY CHECK phase witnessed in the record, so the contract's second phase leaves a trace; the sole enforcer stated in-line and the alternative justified",
+    "tests/test_badf_durable_effect.py: red-first for every refusal; the closed outcome set walked whole; per-consumer mutation discrimination with a negative control",
+    "reconcile WP-2026-0130 (composition_verified: true) -- taken as first opener of three composing lanes"
+  ],
+  "out_of_scope": [
+    "any executor, runtime, or retry-policy engine: this rung governs the RECORD, and the thing that performs effects gains no authority from it landing",
+    "compensation semantics -- what COMPENSATED must have done -- which stays with the operation that owns them",
+    "a second ledger or effect-recording mechanism: the hash-chained run-ledger is reused, per no-second-gate",
+    "detection-quality measurement of any kind (belongs to the families that have runtimes)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "an effect whose last outcome is terminal cannot receive a further event: refused on the append path AND on the read/replay path, from one authoritative site, with one semantic",
+    "the transition rule walks the closed LEDGER_OUTCOMES set: every member exercised as a predecessor, legal successors asserted from the declared table rather than from convenient cases",
+    "run-ledger-event.schema.json declares additionalProperties false; an event carrying an undeclared key is refused, and the refusal is attributed to the walker by measurement rather than assumed",
+    "the AUTHORITY CHECK phase is witnessed by the record; the sole enforcer is stated in-line per the #264 pattern and the choice justified against its alternative in the PR body",
+    "every new refusal is red-first, and each with two consumers is mutation-killed by per-consumer discrimination against a green negative control -- a batch run cannot distinguish a shared refusal from two independent ones",
+    "ADVERSARIAL (#270): the battery includes at least one sequence not in the declared table and not obviously illegal, and states which control refuses it or declares it non-covered; a missing WITNESS is invisible to any test that walks only the vocabulary that exists, so the clause is pointed at the authority-check gap first"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_durable_effect.py"
+  ],
+  "test_obligations": [
+    {
+      "id": "TEST-001",
+      "claim": "a durable effect that reached a terminal outcome cannot be recorded as re-prepared or re-committed, at either consumer; the event record admits no undeclared keys; and the authority-check phase leaves a trace",
+      "method": "red-first against the current gate, then per-consumer mutation discrimination on each shared refusal with a negative control; the closed outcome set walked from the declared constant, not sampled"
+    }
+  ],
+  "evidence": [
+    "failing-first red set",
+    "green after",
+    "per-consumer mutation discrimination + negative control",
+    "compose output incl. composition record",
+    "typed G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "75a6abd46c28033332aa19553a083b50d9ce06ec"
+  },
+  "expected_surfaces": {
+    "files": [
+      "scripts/badf_gate.py",
+      "schemas/run-ledger-event.schema.json",
+      "tests/test_badf_durable_effect.py",
+      "badf/demands/BADF-DEM-0119.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "work/WP-2026-0133/work-package.json"
+    ]
+  },
+  "note": "Scoped from measurement, not imagination: the reuse survey found the substrate already present and the delta probed to three gaps with a positive control (a bogus outcome IS refused, so the two ADMITTEDs mean something). Gap 1 named as #290's class one layer down so this rung inherits that remedy rather than re-deriving it."
+}
