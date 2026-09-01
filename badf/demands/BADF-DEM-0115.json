@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0115",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 282,
+    "url": "https://github.com/bstBizEra/badf/issues/282",
+    "exported_at": "2026-09-01T04:51:55Z",
+    "body_digest": "sha256:107346016e8911c6ad94fb738f21384c7e6d561a0e473f920a72304c59518c65"
+  },
+  "title": "GOV: the sweep's actual claim surface is issue comments, which the tool cannot read -- surface-7 fix per the four-part field spec (remainder of #227)",
+  "problem": "\ud83e\udde0 **SARCHI** \u2014 the remainder of #227, filed as its own object per the demanding-issue \u2260 remainder-issue rule: **the session's actual claim surface is issue comments, and `badf_id_sweep.py` cannot read them.**\n\n## Observed (all measured, all tonight)\nFour allocation incidents in one session traced to the same blind spot: the 0113/0100 collision (claim in a body \u2014 visible in principle, missed by a title-blind sweep); the 0125/0111 collision (claim in a comment \u2014 invisible to the tool); the DEM-0112 contest (comment claim, eight hours prior, invisible); the DEM-0113 near-miss (comment claim, caught only by a seven-surface hand-sweep). Terminal demonstration: the sweep run to allocate ids for THIS fix reported next-free `0127`/`DEM-0113` \u2014 **both claimed, both only in comments** (#227 comment 5487369629 records it as the motivating fixture).\n\n## Expected \u2014 the four-part spec (from #227's field-derived comments, adopted verbatim)\n1. **Comments become a readable surface**: an optional `comments.txt` dump input (documented one-liner: `gh api repos/<r>/issues/{n}/comments` over open governance issues + PR comments), scanned like bodies.\n2. **The sweep reports which surfaces it could not read, per run**: a SURFACES header \u2014 each surface READ (with counts) or NOT PROVIDED \u2014 because an unread surface stated is a caution and an unread surface omitted is a false clean.\n3. **Fileless claims are first-class**: ids found on the comment surface at/above the computed next-free produce a named WARNING line (\"read them; the published claim is binding\") rather than being folded into `max()` (the #199 prose-pollution rule stands) or silently dropped (tonight's failure).\n4. **The actively-wrong-surface case is a fixture**: a ledger file carrying one id while the comment surface claims another \u2014 *a silent surface makes the next seat ask; a confidently wrong one makes them stop asking.*\n\nScope: `scripts/badf_id_sweep.py` + its test module + the doctrine dump recipe. No gate code. Ids `WP-2026-0128` / `BADF-DEM-0115` claimed on #227 (comment 5487369629, ceiling printed) \u2014 this issue is the demand source.\n<!-- agent: sarchi | remainder of #227; spec provenance: BADF-QA and BARCHI-3 field comments -->",
+  "status": "AUTHORIZED",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "recorded_at": "2026-09-01T04:51:55Z",
+  "note": "Remainder of #227 filed as its own object per the demanding-issue != remainder-issue rule (#278 episode). Four allocation incidents in one session share this blind spot; the terminal demonstration is this WP's own allocation sweep reporting two comment-claimed ids as free. Fix: comments as an optional readable surface, per-run SURFACES readability report, fileless-claim WARNING at/above next-free (never folded into max -- #199 stands), actively-wrong-surface fixture. Ids claimed on #227 comment 5487369629 with ceiling printed; priority raised on the record after two rebinds and a contest."
+}

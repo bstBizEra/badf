@@ -1,0 +1,81 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0128",
+  "title": "The sweep reads the claim surface: comments as input, per-run surface readability report, fileless-claim warnings, actively-wrong fixture",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0115",
+  "objective": "Close #282: a protocol whose claims are invisible to its own verification tool is not a protocol yet -- make the comment surface readable, make unread surfaces loud, and make fileless claims warn instead of vanish.",
+  "business_value": "Four allocation incidents in one session; the instrument gets fixed before the AET-B phase that depends on clean id discipline.",
+  "in_scope": [
+    "scripts/badf_id_sweep.py: optional comments.txt surface (scanned; ids at/above computed next-free produce a named WARNING, never folded into max); SURFACES header reporting each surface READ-with-count or NOT PROVIDED, every run; trailer updated to name what remains blind (unpushed worktrees, independent clones)",
+    "tests/test_badf_id_sweep.py: red-first -- warning on comment id above next-free; NOT-PROVIDED reported when comments.txt absent (with backward compat green); SURFACES header lists provided surfaces; the actively-wrong fixture (ledger says one id, comment claims another)",
+    "docs/governance/GITHUB_CONTROL_PLANE.md: the dump recipe gains the comments one-liners; the protocol section names comments as the binding-claim surface the tool now reads",
+    "badf/demands/BADF-DEM-0115.json; reconcile WP-2026-0127; own composition record + typed G07 self-dossier"
+  ],
+  "out_of_scope": [
+    "any gate code; worktree scanning (stays the ask-half, named in the trailer); changing next-free semantics (#199 prose-pollution rule stands -- comments warn, never advance max)"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "with comments.txt provided and containing an id at or above the claim-shaped next-free, the report carries a WARNING naming the id and the surface, and next-free is unchanged",
+    "with comments.txt absent, the run succeeds (backward compatible) and the SURFACES header states comments NOT PROVIDED -- an unread surface stated, never omitted",
+    "the SURFACES header lists every surface with READ-plus-count or NOT PROVIDED, every run",
+    "the actively-wrong case (ledger file id X, comment claims Y at/above next-free) shows both and warns (the fixture from the field)",
+    "all pre-existing sweep tests stay green; repo PASS on branch and composed tree; and no other encoding of the same defect survives -- every dump input x reporting path enumerated (the #270 clause)"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_id_sweep.py (11; 4 surface-report cases added)"
+  ],
+  "test_obligations": [
+    {
+      "id": "TEST-001",
+      "claim": "the comment surface is read when provided, loudly absent when not, and fileless claims warn at the point of allocation",
+      "level": "unit"
+    }
+  ],
+  "evidence": [
+    "failing-first: the four new cases red against the comment-blind tool",
+    "green after",
+    "mutation: warning branch, NOT-PROVIDED report, header emission each neutered -> red",
+    "compose output incl. composition record",
+    "typed G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "aa49a3640b03a6be3796e60c00909cb5f9d630ee"
+  },
+  "expected_surfaces": {
+    "files": [
+      "scripts/badf_id_sweep.py",
+      "tests/test_badf_id_sweep.py",
+      "badf/demands/BADF-DEM-0115.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "work/WP-2026-0127/work-package.json"
+    ]
+  },
+  "note": "Remainder of #227 via #282 (demanding-issue != remainder-issue). Ids 0128/0115 claimed with ceiling 0127 (BARCHI-2)/DEM-0114 (BARCHI-3) printed. Reconciles WP-2026-0126. THIS is the first NEW record bound by the mandatory-declaration ratchet its predecessor shipped -- the declaration above is judged by verify_surface_ratchet, the mirror, and the two-sided containment on its own assembly. Rebased onto aa49a36 (#278): the 0126 reconcile collapsed byte-identically and left expected_surfaces in the same pass (ninth drill firing); now reconciles WP-2026-0127."
+}
