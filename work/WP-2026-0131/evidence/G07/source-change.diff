@@ -407,10 +407,10 @@ index 0000000..591c3f6
 +UAT session SHADOW-CHECKOUT
 +3 scenarios executed, 3 PASS
 diff --git a/skills/badf-uat/references/acceptance.md b/skills/badf-uat/references/acceptance.md
-index 6be1502..e01297c 100644
+index 6be1502..cc47287 100644
 --- a/skills/badf-uat/references/acceptance.md
 +++ b/skills/badf-uat/references/acceptance.md
-@@ -22,3 +22,42 @@ status.
+@@ -22,3 +22,47 @@ status.
  - `APPROVED` / `ACTIVE` — **WP-UAT-E**: the operator's admission decision, taken on WP-UAT-D's evidence
    and recorded on its own issue; registry status flip only, digest unchanged, no acceptance authority
    granted to the skill itself — UAT-I14/I15 hold at every rung of this ladder, including `ACTIVE`.
@@ -433,8 +433,13 @@ index 6be1502..e01297c 100644
 +
 +**Delivered by `WP-UAT-D`:**
 +
-+- the representative corpus with a real PRD/AC/**RTM** chain (`acceptance_basis.traceability_digest`
-+  populated) — the ladder's chain requirement, met;
++- the representative corpus **carries** the PRD/AC/**RTM** chain — all three of `prd_digest`,
++  `acceptance_criteria_digest` and `traceability_digest` populated, well-formed and pairwise
++  distinct, asserted. **The digests are synthetic, not real**: the chain is *carried*, not *real*,
++  which is what a declared-representative corpus can honestly claim and is consistent with
++  non-coverage **1b** (*no scenario derivation from a real PRD*). The frozen text above asks for a
++  "real ... chain"; that half arrives with the real re-shadow (#291), and saying otherwise here
++  would overclaim on the one surface where the representative/real distinction is the deliverable;
 +- **injected defects across all ten** `defect-classification.md` classes, the class set read from
 +  the schema enum rather than written down, so a class added later is covered or the count fails;
 +- four further **adversarial cases no control catches**, asserted ADMITTED and **declared** in
@@ -622,10 +627,10 @@ index f029193..1f91a99 100644
                           "not relax it to a floor -- a floor alone pins nothing.")
 diff --git a/tests/test_badf_uat_shadow.py b/tests/test_badf_uat_shadow.py
 new file mode 100644
-index 0000000..959bf1f
+index 0000000..912166c
 --- /dev/null
 +++ b/tests/test_badf_uat_shadow.py
-@@ -0,0 +1,387 @@
+@@ -0,0 +1,403 @@
 +"""badf-uat WP-UAT-D (WP-2026-0131, #277): the REPRESENTATIVE shadow, and its tripwires.
 +
 +Read the caveat first: `skills/badf-uat/references/shadow-evidence.md`. BADF has never run a
@@ -855,12 +860,28 @@ index 0000000..959bf1f
 +
 +    def test_the_corpus_carries_the_prd_ac_rtm_chain_the_ladder_asks_for(self):
 +        """`traceability_digest` is optional in the schema and I had left it unset -- the RTM
-+        third of the ladder's "PRD/AC/RTM chain". Populated, and pinned so it stays."""
++        third of the ladder's "PRD/AC/RTM chain".
++
++        Asserts WELL-FORMED and PAIRWISE DISTINCT, not merely present. BADF-REV found the earlier
++        form claimed a "real" chain while checking only that three keys existed -- three IDENTICAL
++        placeholder digests would have passed, and three identical digests are not a chain. The
++        digests are synthetic and the doc now says so; what is verifiable about them is their
++        shape and their distinctness, so that is what is verified.
++        """
 +        for path in (ACCEPTED, REJECTED):
 +            with self.subTest(corpus=path.name):
 +                basis = json.loads(path.read_text(encoding="utf-8"))["binding"]["acceptance_basis"]
++                seen = {}
 +                for field in ("prd_digest", "acceptance_criteria_digest", "traceability_digest"):
 +                    self.assertIn(field, basis, f"{path.name} is missing {field}")
++                    self.assertRegex(basis[field], r"^sha256:[0-9a-f]{64}$",
++                                     f"{path.name} {field} is not a well-formed sha256 digest")
++                    seen.setdefault(basis[field], []).append(field)
++                dupes = {d: f for d, f in seen.items() if len(f) > 1}
++                self.assertEqual({}, dupes,
++                                 f"{path.name}: chain links share a digest {dupes} -- three "
++                                 f"identical digests are not a chain, they are one value written "
++                                 f"three times")
 +
 +
 +# The ADVERSARIAL members: defects NO control claims to catch. Required by SARCHI's ruling on
