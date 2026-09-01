@@ -1,0 +1,106 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0129",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0116",
+  "title": "Registry status pin coverage: every capability asserted, every ACTIVE capability pinned exactly -- and the attribution instrument that can tell which family an assertion is about",
+  "objective": "Close GOV-0094 with the rule the tree can actually carry. The issue's 'exactly one EXACT pin per capability' is falsified by measurement; the guard enforces two clauses instead, and ships status assertions for the three capabilities that had none.",
+  "business_value": "A capability nothing asserts can regress or advance silently. Three did. The wider value is the instrument: attribution by data flow rather than co-occurrence, which two prior sweeps got wrong in opposite directions and which is reusable by any future registry guard.",
+  "in_scope": [
+    "tests/test_badf_registry_status_pins.py: (a) the attribution instrument -- binds each ['status'] assertion to the family whose registry entry the subscripted expression was LOOKED UP BY, argument-order agnostic, handling tuple-packed / loop-driven / aliased-iterable / helper-call shapes; (b) clause 1, every capability carries >=1 status assertion; (c) clause 2, every ACTIVE capability carries >=1 EXACT pin; (d) the control set as tests -- BARCHI-3's four plus C5 (no false rejection), each shape a named fixture with a positive control; (e) floor assertions for badf-delivery, badf-prd and repository-research, which have no contract module of their own",
+    "work/WP-2026-0128/work-package.json: the inherited reconcile (landed 0afcb14); derived output of `badf_gate.py reconcile`, ownership mechanical"
+  ],
+  "out_of_scope": [
+    "The issue's original 'exactly one EXACT pin per capability'. MEASURED AND REJECTED, not deferred: it holds for 17 of 30 families and enforcing it would require deleting 20 correct pins (badf-git carries 11). Duplicate pins are several modules independently refusing to let the root drift, not a defect. Reframing accepted by the issue's author.",
+    "Changing any existing pin or floor. The issue says they are correct as they stand and the audit agrees -- 0 exact pins disagree with the registry.",
+    "A badf_gate.py `repo` control. This is a test-suite property, not a repository one; the issue named a gate control as probable over-engineering and the Lean ladder stops at the cheapest thing that works.",
+    "#268's consolidation (a pin on a surface the capability does not own). The two issues fail in opposite directions; this one is the buildable half and does not resolve the other.",
+    "Exact pins for mid-ladder families. Clause 2 is deliberately restricted to ACTIVE per BARCHI-3's refinement and the denominator rule."
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "change_class_rationale": "One new test module plus a derived reconcile. No production code, no schema, no gate control. Reversible by reverting one squash commit.",
+  "data_classification": "internal",
+  "data_classification_rationale": "Test-suite and registry metadata; no credentials or personal data.",
+  "acceptance_criteria": [
+    "Clause 1 red-first: with the three new assertions excised, the guard fails NAMING badf-delivery, badf-prd and repository-research.",
+    "Clause 2 green for all 8 ACTIVE families without any new exact pin -- it codifies what already holds.",
+    "The control set passes: C1 pin-moved, C2 pin-stayed-literal-first, C3 the six two-family badf-git functions, C4 non-registry rejection, C5 no false rejection of a real pin.",
+    "C5 uses a REAL pin as its must-not-reject case, never a synthetic one (BARCHI-3): a synthetic pin would be a fixture testing itself.",
+    "Each of the three shapes prior sweeps missed -- tuple-packed, loop-driven, aliased-iterable -- has a named fixture and a positive control.",
+    "The instrument is proven able to SEE floors, by reproducing the three floor tuples #218's own body names. Without this, 'no family is floor-only' is indistinguishable from 'the instrument is blind to floors'.",
+    "Mutation: each control neutered -> its own named test red, with an in-process positive control staying GREEN.",
+    "The synthetic fixture's syntheticness is CHECKED, not claimed: a test asserts badf-midladder is absent from the registry.",
+    "Open-ended adversarial clause (#270): what else reaches 'a capability whose status nothing asserts'? Walk the registry, not the examples -- the audit's own failure was a regex that sampled shapes instead of enumerating them."
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_registry_status_pins.py (18)"
+  ],
+  "test_obligations": [
+    {
+      "id": "TEST-001",
+      "level": "unit",
+      "claim": "clause 1 fires naming the three unasserted capabilities; the control set including C5 passes; each missed shape has a fixture; every control dies under mutation with a positive control surviving"
+    }
+  ],
+  "evidence": [
+    "failing-first: clause 1 red with the three assertions excised",
+    "green after: 18 tests",
+    "control set: 5/5 including the added C5",
+    "mutation: 5/5 controls killed, in-process positive control GREEN each",
+    "audit measurement published before any id was bound (comment 5489640064)",
+    "compose output incl. composition record",
+    "typed G07 self-dossier"
+  ],
+  "evidence_obligations": [
+    "the audit numbers were measured with a gate-passing instrument, and the gate was extended (C5) when the first build passed C4 while making four false rejections",
+    "the floor-visibility control runs before any floor-derived claim is made"
+  ],
+  "expected_surfaces": {
+    "files": [
+      "tests/test_badf_registry_status_pins.py",
+      "badf/demands/BADF-DEM-0116.json",
+      "work/WP-2026-0128/work-package.json"
+    ]
+  },
+  "authority_requirement": {
+    "qa": true,
+    "rev": true
+  },
+  "risk_factors": [
+    "The guard scans tests/ by AST; a future pin written in a shape the instrument does not model would be invisible to clause 1 and the capability would silently lose coverage. Mitigated by the shape fixtures, not eliminated -- stated rather than hidden.",
+    "This work package creates the first three real floor-only families, which changes the premise the synthetic fixture was justified by. Recorded in the module docstring."
+  ],
+  "dependencies": {
+    "work_packages": [
+      "WP-2026-0128"
+    ],
+    "note": "Carries 0128's reconcile; the guard itself is independent."
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "0afcb1410907c8c4bbc2d8fae7bcb207ee0e04bf"
+  }
+}

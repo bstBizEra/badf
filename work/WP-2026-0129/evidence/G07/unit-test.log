@@ -1,0 +1,35 @@
+python3 -B -m unittest -v tests.test_badf_registry_status_pins
+test_argument_order_does_not_change_the_result (tests.test_badf_registry_status_pins.InstrumentTests.test_argument_order_does_not_change_the_result) ... ok
+test_c1_resolves_a_pin_that_moved_out_of_the_contract_module (tests.test_badf_registry_status_pins.InstrumentTests.test_c1_resolves_a_pin_that_moved_out_of_the_contract_module) ... ok
+test_c2_resolves_a_pin_that_stayed_literal_first (tests.test_badf_registry_status_pins.InstrumentTests.test_c2_resolves_a_pin_that_stayed_literal_first) ... ok
+test_c3_resolves_two_family_functions_that_co_occurrence_cannot (tests.test_badf_registry_status_pins.InstrumentTests.test_c3_resolves_two_family_functions_that_co_occurrence_cannot)
+Six functions name badf-git AND a subskill. No co-occurrence rule resolves them. ... ok
+test_c4_rejects_status_subscripts_that_are_not_registry_lookups (tests.test_badf_registry_status_pins.InstrumentTests.test_c4_rejects_status_subscripts_that_are_not_registry_lookups) ... ok
+test_c5_does_not_reject_a_real_pin (tests.test_badf_registry_status_pins.InstrumentTests.test_c5_does_not_reject_a_real_pin)
+C4's twin. `must reject X` is satisfied by rejecting X *and more*, so the ... ok
+test_resolves_a_loop_driven_pin (tests.test_badf_registry_status_pins.InstrumentTests.test_resolves_a_loop_driven_pin)
+One assertion pinning every family in a module-level literal tuple. ... ok
+test_resolves_a_tuple_packed_pin (tests.test_badf_registry_status_pins.InstrumentTests.test_resolves_a_tuple_packed_pin)
+`assertEqual((entry["status"], ...), ("IMPLEMENTED", ...))` -- an exact pin ... ok
+test_resolves_an_aliased_registry_iterable (tests.test_badf_registry_status_pins.InstrumentTests.test_resolves_an_aliased_registry_iterable)
+`sk = r.get("skills", r)` then comprehending over `sk`, returned from an IfExp. ... ok
+test_the_instrument_can_see_floors_at_all (tests.test_badf_registry_status_pins.InstrumentTests.test_the_instrument_can_see_floors_at_all)
+Without this, `no family is floor-only` would be indistinguishable from ... ok
+test_every_active_capability_carries_an_exact_pin (tests.test_badf_registry_status_pins.RegistryStatusCoverageTests.test_every_active_capability_carries_an_exact_pin)
+Clause 2. Terminal status is pinned exactly; mid-ladder may floor. ... ok
+test_every_capability_carries_a_status_assertion (tests.test_badf_registry_status_pins.RegistryStatusCoverageTests.test_every_capability_carries_a_status_assertion)
+Clause 1. A capability nothing asserts can regress or advance silently. ... ok
+test_exact_pins_agree_with_the_registry (tests.test_badf_registry_status_pins.RegistryStatusCoverageTests.test_exact_pins_agree_with_the_registry)
+A pin asserting a status the registry does not carry is a stale pin. ... ok
+test_the_synthetic_family_is_actually_synthetic (tests.test_badf_registry_status_pins.RegistryStatusCoverageTests.test_the_synthetic_family_is_actually_synthetic)
+Keeps `declared synthetic` honest. If `badf-midladder` ever became a real ... ok
+test_the_two_clauses_are_distinguishable (tests.test_badf_registry_status_pins.RegistryStatusCoverageTests.test_the_two_clauses_are_distinguishable)
+Nothing in the real tree is floor-only, so clause 1 and clause 2 pass and fail ... ok
+test_badf_delivery_status (tests.test_badf_registry_status_pins.UnpinnedCapabilityPins.test_badf_delivery_status) ... ok
+test_badf_prd_status (tests.test_badf_registry_status_pins.UnpinnedCapabilityPins.test_badf_prd_status) ... ok
+test_repository_research_status (tests.test_badf_registry_status_pins.UnpinnedCapabilityPins.test_repository_research_status) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 3.148s
+
+OK
