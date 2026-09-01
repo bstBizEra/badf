@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0129-G07-source-change",
+  "work_package_id": "WP-2026-0129",
+  "gate": "G07",
+  "claim": "the change WP-2026-0129 makes to this repository, outside its own directory and the lockfile",
+  "evidence_type": "source-change",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-09-01T06:49:31Z",
+  "completed_at": "2026-09-01T06:49:31Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0129/evidence/G07/source-change.diff",
+  "digest": "sha256:112f4024c40776e0a4ddbb3918cc9b57323454bed8b7728eb8dec87e96b88d68",
+  "binding": {
+    "base_sha": "0afcb1410907c8c4bbc2d8fae7bcb207ee0e04bf",
+    "head_sha": "7146371f80fb015f4279f83c6681ebd23cc9e8b0",
+    "content_tree": "8df2a93afb66e22414399dfd6cc439048e9dd078",
+    "changed_paths": [
+      "tests/test_badf_registry_status_pins.py"
+    ],
+    "expected_surfaces": {
+      "declared": true,
+      "files": [
+        "tests/test_badf_registry_status_pins.py",
+        "badf/demands/BADF-DEM-0116.json",
+        "work/WP-2026-0128/work-package.json"
+      ]
+    },
+    "unexpected_paths": [],
+    "change_digest": "sha256:112f4024c40776e0a4ddbb3918cc9b57323454bed8b7728eb8dec87e96b88d68"
+  }
+}
