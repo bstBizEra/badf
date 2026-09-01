@@ -1,0 +1,61 @@
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 9a724a1..01668b5 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -2325,6 +2325,56 @@ Standing design law inherited by whoever eventually builds expiry (F3): the cloc
+ input — the check compares stored-against-stored, never `datetime.now()` at the point of judgment,
+ so verdicts stay a function of the tree alone.
+ 
++## Terminal is not established (AET-B-2, #294)
++
++A durable effect's outcome vocabulary answers two different questions, and until
++`WP-2026-0132` the gate had a name for only one of them.
++
++**Terminal** means *this attempt concluded* — the run stops waiting on it.
++**Established** means *the world changed* — the external side effect happened.
++
++`TERMINAL_OUTCOMES` holds both kinds, and the difference is load-bearing:
++`PROVEN_ABSENT` is terminal and **not** established, because proving an effect did not
++happen is precisely the proof that retrying it is safe. The ledger's own tests already
++encoded this (`test_proven_absent_effect_may_be_prepared_again`); nothing named it.
++
++So `EFFECT_ESTABLISHED` = `{COMMITTED, SKIPPED_ALREADY_COMMITTED}` seals re-execution,
++and `AFTER_ESTABLISHED_ALLOWED` = `{COMPENSATED, MANUAL_REMEDIATION}` keeps a real
++effect compensable — an effect that happened must remain undoable and escalable, and a
++rule that sealed it outright would be worse than the hole it closed.
++
++**The general form, for whoever writes the next transition rule:** a criterion that says
++"assert successors from the declared table" must name where that table IS. When it does
++not exist, the criterion's true content is *invent one*, and the nearest constant whose
++NAME resembles the property will be substituted for it. That is the adjacency class at
++the level of a named set rather than a matcher, and the existing passing tests are
++usually the table you are looking for.
++
++**And the instrument:** a test that derives its cases from the constant under test can be
++silenced by a mutation that empties that constant — the loop passes over nothing exactly
++as it passes over everything. Pin the members the behavior requires, then walk the set,
++then re-run the mutation to prove the guard bites.
++
++## The authority check leaves a trace (AET-B-2, #294)
++
++`AET-I05`'s phases are `PREPARE → AUTHORITY CHECK → COMMIT → RECONCILE`, but no outcome
++recorded that the check ran, and `REJECTED` is ambiguous about which phase rejected on
++whose authority. A phase that leaves no trace cannot be shown to have happened — and it
++is invisible to any test that walks only the vocabulary that exists, which is why the
++adversarial clause was pointed here first rather than spread evenly.
++
++`AUTHORITY_CHECKED` is mandatory before `COMMITTED`, per effect, from `WP-2026-0132`
++forward; earlier ledgers are grandfathered and sentinels exempt — the surface and seat
++ratchet shape reused rather than a third mechanism invented. A check recorded for one
++effect does not authorize another.
++
++`badf init` was the first caller to meet it, and the disclosure matters: it recorded
++`COMMITTED` for its intake with **no authority basis in the ledger at all**. It now
++records what that basis actually is — the operator's invocation of the command — rather
++than a check it never performed. Recording a real weak basis beats recording a
++strong-sounding absent one; it grants nothing, and the G00 dossier stays
++`HUMAN_REQUIRED`.
++
+ ## Discovery ≠ scope expansion
+ 
+ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

@@ -152,6 +152,13 @@ class TerminalOutcomesAreTerminal(_Ledger):
     def test_every_established_outcome_seals_re_execution_walking_the_declared_set(self):
         """The closed set walked WHOLE from the declared constant -- EFFECT_ESTABLISHED
         read live, so a member added later is covered without editing this test."""
+        # Same vacuity guard as the sibling at the top of this class, applied here after
+        # QA measured the gap (#298 review): reading the constant live covers members
+        # ADDED later, and silently loses coverage for members REMOVED. Dropping
+        # SKIPPED_ALREADY_COMMITTED -- the idempotency outcome itself -- survived the
+        # whole module. Pin what the protocol requires, then walk whatever it holds.
+        self.assertLessEqual({"COMMITTED", "SKIPPED_ALREADY_COMMITTED"}, gate.EFFECT_ESTABLISHED,
+                             "an established effect must stay sealed against re-execution")
         for terminal in sorted(gate.EFFECT_ESTABLISHED):
             with self.subTest(terminal=terminal):
                 tmp = Path(tempfile.mkdtemp()); wp = tmp / "WP-2026-9994"; wp.mkdir()

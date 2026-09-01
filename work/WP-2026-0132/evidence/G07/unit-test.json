@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0132-G07-unit-test",
+  "work_package_id": "WP-2026-0132",
+  "gate": "G07",
+  "claim": "the author's unit-test run, bound; the composed-tree gate is the fresh run",
+  "evidence_type": "unit-test",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "unittest",
+    "version": "1"
+  },
+  "operation": "python3 -m unittest tests.test_badf_durable_effect  # AET-B-2, green after (rebased onto 75a6abd)",
+  "started_at": "2026-09-01T20:55:34Z",
+  "completed_at": "2026-09-01T20:55:34Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0132/evidence/G07/unit-test.log",
+  "digest": "sha256:72401c91fb3addf2f1903d66067f8581cbc633e213a35c4b34cba22d4040dd01",
+  "binding": {
+    "obligations": [
+      {
+        "id": "TEST-001",
+        "seam": {
+          "type": "module",
+          "ref": "tests/test_badf_durable_effect.py"
+        },
+        "red": {
+          "observed": true,
+          "ref": "work/WP-2026-0132/evidence/G07/failing-first.txt",
+          "digest": "sha256:4c0456a93abf359c0ba35f3a2ce9384692ac141492a1a63a1b3e2036a2f28cbe"
+        },
+        "green": {
+          "observed": true,
+          "ref": "work/WP-2026-0132/evidence/G07/unit-test.log",
+          "digest": "sha256:72401c91fb3addf2f1903d66067f8581cbc633e213a35c4b34cba22d4040dd01"
+        }
+      }
+    ],
+    "command": "python3 -m unittest tests.test_badf_durable_effect  # AET-B-2, green after (rebased onto 75a6abd)",
+    "result": "PASS",
+    "tests_run": 19,
+    "failures": 0,
+    "coverage_scope": [
+      "tests/test_badf_durable_effect.py"
+    ],
+    "fresh_run": "scripts/badf_compose.py (the composed-tree gate) re-runs the suite on the tree that would land; CI is the fresh, authoritative run (BLD-I09)"
+  }
+}
