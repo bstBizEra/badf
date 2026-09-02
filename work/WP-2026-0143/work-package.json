@@ -1,0 +1,67 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0143",
+  "title": "retry-and-budget.md: mark the 1/2/3 sequence illustrative and name execution_budget as the normative source",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0129",
+  "objective": "Close GOV-0112 (#254): a reader arriving at retry-and-budget.md's diagram first can read its 1/2/3 as a normative attempt threshold. The normative value is the Work Package's execution_budget.max_attempts, enforced at badf_gate.py:1792-1803. The file's prose already defers to it two lines above the diagram; the diagram does not say so. This is a caption, not a rewrite.",
+  "business_value": "A frozen reference that reads as normative where it is illustrative mis-sets the budget for every build that reads it -- under-running a WP declaring max_attempts 5 and over-running one declaring 2. The correction already existed in a TEST COMMENT (tests/test_badf_build_contract.py:44); this moves it to the file a reader actually opens.",
+  "in_scope": [
+    "skills/badf-build/references/retry-and-budget.md: a caption after the diagram marking 1/2/3 illustrative, naming execution_budget.max_attempts as normative, and citing where each control is enforced",
+    "carry the WP-2026-0134 reconcile (byte-identical to the copies in #316 and #321; whichever lands first applies it)"
+  ],
+  "out_of_scope": [
+    "rewriting the diagram or the doctrine block -- the sequence is correct as an illustration and the anchors are pinned by tests/test_badf_build_contract.py",
+    "changing any threshold, schema or control -- no enforcement surface is touched",
+    "the G07 self-dossier: BADF-DEM-0129 is kind=discovery and status=OPEN, so self_dossier (:4007) refuses it until a human authorizes. Declared, not worked around."
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the caption states that 1/2/3 is an illustration and that three is not the limit, in terms a reader meeting the diagram first cannot mistake",
+    "it names execution_budget.max_attempts as the normative value and cites the control that enforces it (badf_gate.py:1792-1803), distinguishing it from the work-breakdown control at :1653-1658 which guards a different object -- #254's own body cites the second for a claim the first enforces",
+    "every anchor pinned for this file by tests/test_badf_build_contract.py REFERENCE_ANCHORS survives (BLD-I11, BLD-I12, execution_budget, ROOT_CAUSE_MODE, 'retries must add information')",
+    "ADVERSARIAL (#270): the proposition is 'a reader takes a number off this file as normative'. Enumerate every other number the file states or implies, and confirm none is left readable as a threshold -- including the doctrine block's equality, which states no figure at all."
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [],
+  "evidence": [
+    "contract + doc + skill suite green with the caption in",
+    "full suite green",
+    "repo PASS"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "310a660259752260142458f1e7f51976b218a79d"
+  },
+  "expected_surfaces": {
+    "files": [
+      "skills/badf-build/references/retry-and-budget.md",
+      "badf/demands/BADF-DEM-0129.json",
+      "work/WP-2026-0134/work-package.json"
+    ]
+  },
+  "note": "Docs-only (C1): no enforcement control is introduced or strengthened, so no unit obligations and no TDD gate -- stated rather than exempted. The demand is kind=discovery with no authorized_by: an agent originated this and agents do not authorize (badf_gate.py:3121-3128). The authority chain is therefore OPENLY INCOMPLETE and legible as such in the record."
+}

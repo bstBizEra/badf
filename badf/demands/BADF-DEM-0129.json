@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0129",
+  "kind": "discovery",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 254,
+    "url": "https://github.com/bstBizEra/badf/issues/254",
+    "exported_at": "2026-09-02T14:00:46Z",
+    "body_digest": "sha256:d44204d66fb79764cc79f621f55d758c85771e1c8dcfda8e2321c3d1fea101bc"
+  },
+  "title": "GOV-0112: DISCOVERED \u2014 retry-and-budget.md's illustrative 1/2/3 sequence reads as a normative threshold; the budget lives in the WP's execution_budget",
+  "problem": "\ud83e\udde0 **ARCHI (BARCHI-3)** \u2014 DISCOVERED: `skills/badf-build/references/retry-and-budget.md` presents an illustrative retry sequence that a reader can mistake for a normative threshold.\n\n**Discovered-by:** `WP-2026-0117` (#253), while choosing content anchors for #230. **Filed rather than fixed in-PR** \u2014 the remedy edits a frozen reference's prose, which is outside a test-only work package. *Review notes become issues, not fixes.*\n**Found by:** BADF-QA, while answering a design question I asked them about anchoring thresholds.\n\n## The observation\n\n`retry-and-budget.md` shows:\n\n```text\nattempt 1\n   \u2193 failure\nchange hypothesis\n   \u2193\nattempt 2\n   \u2193 materially similar failure\nROOT_CAUSE_MODE\n```\n\nThe `1 / 2 / 3` sequence is a **worked illustration**. The normative value lives in the Work Package's `execution_budget` and is guarded in code \u2014 `badf_gate.py` IMP-C3 / IMP-I11, `max_attempts must be a positive integer`. The file's own prose says so: *\"It inherits the BADF Engineering Loop and the Work Package's `execution_budget`.\"*\n\nBut a reader arriving at the diagram first can reasonably read \"three attempts then ROOT_CAUSE_MODE\" as the rule.\n\n## Why it is worth an issue rather than nothing\n\nThe failure mode is quiet: someone implements to the illustration, and their build stops at three attempts on a WP whose `execution_budget` says otherwise. Nothing fails \u2014 the number is simply wrong and looks authoritative because it is in a governance reference.\n\n## Suggested remedy (not prescriptive)\n\nMark the sequence explicitly as illustrative, so the anchor a test can pin is *\"these numbers are an example; the budget is the WP's\"* rather than the digits. BADF-QA's framing: **anchor the illustration marker, not the value** \u2014 that pins the thing which would actually be wrong if it drifted, and avoids test churn every time a legitimate budget changes.\n\nThis is the same structure-versus-value question `WP-2026-0117` records as a rule, seen from the document side rather than the test side:\n\n> Pin the value where the file is the source of truth; pin the structure where the value is owned and guarded elsewhere.\n\nHere the file is **not** the source of truth, so the fix is to make that unmistakable in the prose rather than to pin the number.\n\n**Version tier:** patch (docs). No gate, schema or lifecycle change. Small enough to ride along with any `badf-build` docs work rather than needing its own WP.\n\n<!-- agent: architect -->\n\n",
+  "status": "OPEN",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "recorded_at": "2026-09-02T14:00:46Z",
+  "note": "kind=discovery: an agent-originated demand. Per badf_gate.py:3121-3128 -- \"a demand is where authority enters; agents discover, they do not authorize\" -- authorized_by is REQUIRED for every other kind and EXEMPT for discovery. It is omitted here rather than filled, because no human has authorized this work and a filled field would assert one. status stays OPEN for the same reason. self_dossier (:4007) therefore refuses this demand until a human authorizes it, which is the control working rather than a gap."
+}
