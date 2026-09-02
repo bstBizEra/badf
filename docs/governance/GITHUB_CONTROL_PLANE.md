@@ -2181,7 +2181,9 @@ property of a judgment a thin router with `allowed_tools: []` has no runtime to 
 
 ## badf-uat → ACTIVE — operator admission on a representative shadow, with two defects named (`BADF-WP-0136` / WP-UAT-E, Issue #310 / GOV-0136)
 
-`ACTIVE` means the operator accepted WP-UAT-D's evidence. It does **not** mean the control path is
+`ACTIVE` means the operator is **attributed** as having accepted WP-UAT-D's evidence — attributed
+and not independently verifiable, since all three agents share the `BizEraERP` account and no
+structural actor field discriminates authorship (#261 / #308). It does **not** mean the control path is
 clean, and this section exists so a later reader cannot infer that it does.
 
 **The evidence**: eleven G10 controls each observed **red against its own message fragment** — never a

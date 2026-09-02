@@ -67,10 +67,17 @@ unlike #145/#166, whose prose triggers wait on a human noticing.
 **Rung target:** `WP-UAT-D` advances the registry to **`SHADOWED`**; the exact status pin in
 `tests/test_badf_uat_contract.py` follows this ladder.
 
-## ADMISSION — `WP-UAT-E`, operator decision (#310)
+## ADMISSION — `WP-UAT-E`, operator decision as attributed (#310)
 
 **Extend-only: the `APPROVED`/`ACTIVE` bullet above is unchanged rung-A text.** This records the
 decision taken under it.
+
+**The decision is ATTRIBUTED, not independently verifiable.** All three agents act under the
+shared `BizEraERP` account and no structural actor field discriminates authorship (#261 / #308),
+so a reader cannot distinguish *"the operator ruled this"* from *"an agent recorded that the
+operator ruled this."* Nothing here disputes the attribution; it is simply not checkable, and
+this ladder is what a later reader consults. The qualifier comes out when `merged_by`
+discriminates.
 
 `badf-uat` is admitted **`SHADOWED` → `ACTIVE`** on WP-UAT-D's evidence (landed `272e6036a`):
 eleven G10 controls each observed red against its own message fragment, ten defect classes
