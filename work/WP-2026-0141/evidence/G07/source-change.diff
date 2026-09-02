@@ -198,3 +198,24 @@ index 0000000..8791ef5
 +
 +if __name__ == "__main__":
 +    unittest.main()
+diff --git a/work/WP-2026-0134/work-package.json b/work/WP-2026-0134/work-package.json
+index 7f78e07..bbd84c0 100644
+--- a/work/WP-2026-0134/work-package.json
++++ b/work/WP-2026-0134/work-package.json
+@@ -56,11 +56,14 @@
+     "EVIDENCE_CORRUPTION",
+     "BUDGET_EXHAUSTED"
+   ],
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "272e6036a6f288c191b9afc208de06740846898a"
++    "base_revision": "272e6036a6f288c191b9afc208de06740846898a",
++    "landed_content_tree": "406c20122132ca15497343ec916e40d24c567ae7",
++    "composition_verified": true,
++    "landed_as": "310a660259752260142458f1e7f51976b218a79d"
+   },
+   "expected_surfaces": {
+     "files": [

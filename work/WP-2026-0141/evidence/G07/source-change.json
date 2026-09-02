@@ -16,29 +16,31 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-09-02T06:02:15Z",
-  "completed_at": "2026-09-02T06:02:15Z",
+  "started_at": "2026-09-02T14:43:34Z",
+  "completed_at": "2026-09-02T14:43:34Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0141/evidence/G07/source-change.diff",
-  "digest": "sha256:274e66908ad5ec6f0a255aa00c91e878cecfeb274f3ee366b4b70739eb42f22e",
+  "digest": "sha256:e82ec0cbd24712ee9ffc7d3a30e259200b4374b62c72e7100c898093f56d75d0",
   "binding": {
     "base_sha": "310a660259752260142458f1e7f51976b218a79d",
-    "head_sha": "1c6cc259207bebb0565877e2e9bd57b92cb46213",
-    "content_tree": "47a8575bf3147caa3c3b2f31c59b86f21f8605dd",
+    "head_sha": "c0a5f954b2c6350a34c44568665d2aa737d0e709",
+    "content_tree": "ba114b7019bd652016597bd996b4aba1260c1d12",
     "changed_paths": [
       "badf/demands/BADF-DEM-0127.json",
       "schemas/prd.schema.json",
-      "tests/test_badf_schema_refs.py"
+      "tests/test_badf_schema_refs.py",
+      "work/WP-2026-0134/work-package.json"
     ],
     "expected_surfaces": {
       "declared": true,
       "files": [
         "badf/demands/BADF-DEM-0127.json",
         "schemas/prd.schema.json",
-        "tests/test_badf_schema_refs.py"
+        "tests/test_badf_schema_refs.py",
+        "work/WP-2026-0134/work-package.json"
       ]
     },
     "unexpected_paths": [],
-    "change_digest": "sha256:274e66908ad5ec6f0a255aa00c91e878cecfeb274f3ee366b4b70739eb42f22e"
+    "change_digest": "sha256:e82ec0cbd24712ee9ffc7d3a30e259200b4374b62c72e7100c898093f56d75d0"
   }
 }
