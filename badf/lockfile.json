@@ -129,7 +129,7 @@
     "badf/demands/BADF-DEM-0119.json": "sha256:39bd10bca1225d9163a889b9dc6123ce0ba92bede9859d942485c06f3fdecbe3",
     "badf/demands/BADF-DEM-0120.json": "sha256:0743127e9ab24fbf80097cde4f9a9b079c332c42abac3a4d283caededefddfc4",
     "badf/demands/BADF-DEM-0121.json": "sha256:44e50f68999322c33278d6586c18e17f23843893f55f71b46cecfd58654b9f35",
-    "badf/demands/BADF-DEM-0123.json": "sha256:7393c6b0d39d977ba700ec2a7414f2eac284cc8ff2cf3cfeac6b7ab9eb8df647",
+    "badf/demands/BADF-DEM-0123.json": "sha256:f34f7b493ceabb7faaa727d293f09f0a4f1f41378a143e3f8f5fb071b80d04de",
     "badf/lifecycle.json": "sha256:9f5218c5ca7e94feafd62acec4d90b55ea39f52c21d7639b1984dc3676cb55f3",
     "badf/mcp-registry.json": "sha256:cf93976e41ccd3bc8f8e918da96e42ffac10bce601d0c859f2639aedbb3fc85e",
     "badf/releases/BADF-BASELINE-1.0.0.json": "sha256:3b3b69e1df01592d99f65e95f2e4a9375bfec277d3ab9198b18af373795a7667",

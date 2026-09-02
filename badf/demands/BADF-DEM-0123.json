@@ -18,5 +18,5 @@
   "recorded_at": "2026-09-02T03:10:00Z",
   "provenance": "EXPORTED_FROM_SOURCE",
   "status": "AUTHORIZED",
-  "note": "Operator ruled admit-now-with-defects-recorded when offered admission after #289 lands; the choice is recorded on the issue and in the ladder rather than smoothed."
+  "note": "ATTRIBUTED, not independently verifiable. The operator disposition recorded here -- admit-now-with-defects-recorded, chosen when admission after #289 lands was offered as the alternative -- is attributed to the operator and carries NO independent operator artifact. All three agents act under the shared BizEraERP account, #310 carries only BARCHI-3's comments, and no structural actor field discriminates authorship (#261 / #308). A reader therefore cannot distinguish 'the operator ruled this' from 'an agent recorded that the operator ruled this'. Nothing here disputes the attribution; the point is that it is not checkable, and this record is what the next agent greps. The qualifier comes out when merged_by discriminates. SARCHI amendment on PR #316, required pre-merge."
 }
