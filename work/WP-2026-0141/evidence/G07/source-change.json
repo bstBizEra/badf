@@ -16,16 +16,17 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-09-02T06:00:30Z",
-  "completed_at": "2026-09-02T06:00:30Z",
+  "started_at": "2026-09-02T06:02:15Z",
+  "completed_at": "2026-09-02T06:02:15Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0141/evidence/G07/source-change.diff",
-  "digest": "sha256:e8d8b3bd45fcd242119c343055157f6d326b9308bbaa1d2e2220619f1659db1a",
+  "digest": "sha256:274e66908ad5ec6f0a255aa00c91e878cecfeb274f3ee366b4b70739eb42f22e",
   "binding": {
     "base_sha": "310a660259752260142458f1e7f51976b218a79d",
-    "head_sha": "901da939f019d8254a1633e877d52831acc60c06",
-    "content_tree": "3bb35672a9e9f95fa4583c220dbb5e6ec872b760",
+    "head_sha": "1c6cc259207bebb0565877e2e9bd57b92cb46213",
+    "content_tree": "47a8575bf3147caa3c3b2f31c59b86f21f8605dd",
     "changed_paths": [
+      "badf/demands/BADF-DEM-0127.json",
       "schemas/prd.schema.json",
       "tests/test_badf_schema_refs.py"
     ],
@@ -38,6 +39,6 @@
       ]
     },
     "unexpected_paths": [],
-    "change_digest": "sha256:e8d8b3bd45fcd242119c343055157f6d326b9308bbaa1d2e2220619f1659db1a"
+    "change_digest": "sha256:274e66908ad5ec6f0a255aa00c91e878cecfeb274f3ee366b4b70739eb42f22e"
   }
 }

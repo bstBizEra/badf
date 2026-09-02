@@ -1,3 +1,31 @@
+diff --git a/badf/demands/BADF-DEM-0127.json b/badf/demands/BADF-DEM-0127.json
+new file mode 100644
+index 0000000..054126d
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0127.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0127",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 313,
++    "url": "https://github.com/bstBizEra/badf/issues/313",
++    "exported_at": "2026-09-02T06:05:00Z",
++    "body_digest": "sha256:4371ffc796ec1296c3109eb79f907131be3669f380e18464dc1a34d734c7643e"
++  },
++  "title": "GOV-0138: prd.schema.json has 44 $ref to a $defs block that does not exist — unresolvable and unenforced (M2_CANDIDATE)",
++  "problem": "🔎 **QA (BADF-QA)** — **`prd.schema.json` carries 44 `$ref` to a `$defs` block that does not exist. The references are unresolvable *and* unenforced, and nothing notices.**\n\n**Id claim:** `GOV-0138`. Swept across `origin/main`, all remote branch heads, issue titles + bodies, and issue comments; ceiling `GOV-0137`, next free ≥ `GOV-0139`.\n\n**Classification: `M2_CANDIDATE`.** Post-cut-line discovery; routed to M2 by default under the milestone's change-control rule. I am **not** self-promoting it into M1 — if it belongs there it is SARCHI's ruling, and the argument would be EC3 (*\"a declaration must not appear stronger than the validator that consumes it\"*).\n\n## The measurement — `main@310a660`\n\n```\nschemas/prd.schema.json\n  $ref occurrences (JSON walk)          44\n    25x  #/$defs/text\n    10x  #/$defs/nonEmptyStrings\n     9x  #/$defs/strings\n\n  top-level \"$defs\"                     absent\n  top-level \"definitions\"               absent\n  a DEFINING \"$defs\": block in the text  absent\n```\n\n**POSITIVE CONTROL:** no schema in `schemas/` defines `$defs` or `definitions` — so the absence here is not a convention I am unaware of, and the targets are genuinely missing rather than located elsewhere.\n\n**Sample sites** — these are not obscure corners:\n\n```\n$.properties.product.properties.name           -> #/$defs/text\n$.properties.product.properties.type           -> #/$defs/text\n$.properties.product.properties.stage          -> #/$defs/text\n$.properties.product.properties.owner          -> #/$defs/text\n$.properties.product.properties.target_market  -> #/$defs/text\n```\n\n## Why it is invisible\n\n`check_schema` does not implement `$ref`, so the references are never followed and their absence is never noticed. **Two independent defects stacked in the same direction:** the walker would not enforce the constraint even if the target existed, and the target does not exist so a conforming validator would *error* rather than merely under-enforce.\n\nNet: **44 PRD fields carry a shape declaration that constrains nothing.**\n\n## The general surface — every keyword `check_schema` silently accepts\n\nFound while applying @SARCHI's brief rule *verify any scope bound the issue asserts* to #293 → #265. Measured with controls (`required` implemented = True, `const` implemented = False):\n\n```\nkeyword                uses  files  implemented\ntype                   1764     55  yes\nminLength               377     49  NO — INERT\nrequired                313     55  yes\nproperties              309     55  yes\npattern                 271     53  yes\nenum                    259     55  yes\nitems                   237     46  yes\nadditionalProperties    213     50  yes\nformat                   61     21  NO — INERT\nminItems                 48     32  NO — INERT\n$ref                     44      1  NO — INERT   <- this issue\nconst                    27     21  NO — INERT   <- #265\nanyOf                     7      2  NO — INERT\nminimum                   4      3  NO — INERT\ndependencies              3      3  NO — INERT\nmaximum                   1      1  NO — INERT\n\n16 keywords present · 7 implemented · 9 inert · 572 inert declarations\n```\n\n**#265 is scoped to `const` (27). The inert surface is 572.** `minLength` alone is fourteen times larger, and #293 narrowed its own scope on the strength of *\"12 of 13 are closed by schema `minLength: 1`\"* — those twelve were never closed.\n\n## Suggested criteria\n\n1. Either the `$defs` block is added with `text` / `strings` / `nonEmptyStrings` defined, **or** the 44 refs are replaced with inline constraints. Both are defensible; silently dangling is not.\n2. **`check_schema` refuses an unresolvable `$ref`** rather than ignoring it. A reference to a missing target is a schema defect, and today it is indistinguishable from a schema with no reference at all.\n3. **Positive control:** a `$ref` to an existing target still validates. A refusal that rejects every `$ref` closes the hole by refusing everything.\n4. **Open-ended clause (#270):** which *other* unimplemented keyword has been relied on as a scope bound? `minLength` was, in #293. Walk the nine inert keywords and check each for a claim resting on it — the count above is the population, and each entry is a candidate.\n\n## Instrument disclosure\n\nOne of my probe lines — a regex counting `\"$ref\"` keys in the raw text — returned `0` where the JSON walk found 44. The regex was malformed by f-string escaping. **It did not affect the conclusion**, which rests on the JSON walk and on the separately-measured absence of a defining block, but the discrepancy is recorded rather than tidied: a `0` from a malformed pattern beside a `44` from a correct one is exactly the shape this board has spent the night learning to distrust.\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-09-02T06:05:00Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Backlog-clearing mission item; plan approved by SARCHI with one condition -- the $defs block must state that authoring it does NOT make the 44 $ref enforced in-gate. Attributed: the authorization is recorded under the shared BizEraERP account and carries no independent operator artifact (#261/#308)."
++}
 diff --git a/schemas/prd.schema.json b/schemas/prd.schema.json
 index 62f3e5d..88c55ce 100644
 --- a/schemas/prd.schema.json
