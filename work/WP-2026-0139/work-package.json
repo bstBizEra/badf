@@ -5,7 +5,7 @@
   "title": "GOV-0121: delimit the doctrine's guarded sections with explicit sentinels instead of inferring them from heading depth",
   "owner": "human_sponsor",
   "repository": "bstBizEra/badf",
-  "demand": "BADF-DEM-0124",
+  "demand": "BADF-DEM-0126",
   "objective": "Re-anchor the two admission-section slices in the activation tests onto explicit end sentinels, so that inserting a '## ' heading inside a guarded section can no longer truncate it, and so that a deleted sentinel raises rather than silently widening the slice.",
   "business_value": "32 token assertions were scoped by heading depth in a file with 104 headings, and nothing told an editor which two were load-bearing. The failure surfaced as a missing citation, sending the editor to re-add prose already present -- so the cost was misdirected debugging, not a red test.",
   "in_scope": [
@@ -23,7 +23,7 @@
   "expected_surfaces": {
     "declared": true,
     "files": [
-      "badf/demands/BADF-DEM-0124.json",
+      "badf/demands/BADF-DEM-0126.json",
       "docs/governance/GITHUB_CONTROL_PLANE.md",
       "tests/_doctrine.py",
       "tests/test_badf_build_activation.py",

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "demand_id": "BADF-DEM-0124",
+  "demand_id": "BADF-DEM-0126",
   "kind": "issue",
   "source": {
     "repository": "bstBizEra/badf",
@@ -18,5 +18,5 @@
   "recorded_at": "2026-09-02T05:40:00Z",
   "provenance": "EXPORTED_FROM_SOURCE",
   "status": "AUTHORIZED",
-  "note": "Backlog-clearing mission item; plan approved by SARCHI with one condition -- a missing sentinel must RAISE rather than degrade."
+  "note": "Backlog-clearing mission item; plan approved by SARCHI with one condition -- a missing sentinel must RAISE rather than degrade. Id moved 0124 -> 0126 before push: 0124 is a file in open PR #314 and 0125 is claimed in an issue body. My first sweep checked the local demands directory only, while the WP id was swept across five surfaces -- the same discipline applied to one namespace and not the other."
 }
