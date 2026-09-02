@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bizera.la/badf/schemas/council-registry.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schema_version", "registry_id", "registry_epoch", "owner_role", "status", "authorization_mode", "identity_source", "authority_source", "chair", "profiles", "runtime_identity_required", "independence_cluster_key", "conflicts", "sealed_rounds", "anonymous_cross_review_round", "minority_risk_preservation", "active_members", "grants_authority"],
+  "properties": {
+    "$schema": {"const": "../schemas/council-registry.schema.json"}, "schema_version": {"const": "0.1.0"},
+    "registry_id": {"pattern": "^BADF-COUNCIL-[0-9]{4,}$"}, "registry_epoch": {"type": "string"}, "owner_role": {"const": "human_sponsor"},
+    "status": {"const": "DESIGNED"}, "authorization_mode": {"const": "ADVISORY_ONLY"}, "identity_source": {"const": "badf/seats.json"}, "authority_source": {"const": "badf/authority-matrix.json"},
+    "chair": {
+      "type": "object", "additionalProperties": false, "required": ["profile_id", "seat_role", "voting", "weight_bp", "may", "may_not"],
+      "properties": {"profile_id": {"const": "chair"}, "seat_role": {"const": "coordinator"}, "voting": {"const": false}, "weight_bp": {"const": 0}, "may": {"type": "array", "items": {"type": "string"}}, "may_not": {"type": "array", "items": {"type": "string"}}}
+    },
+    "profiles": {
+      "type": "array", "minItems": 1,
+      "items": {"type": "object", "additionalProperties": false, "required": ["id", "lens", "eligible_status", "seat_ref", "domain_relevance_bp"], "properties": {"id": {"type": "string"}, "lens": {"type": "string"}, "eligible_status": {"const": "DESIGNED"}, "seat_ref": {"type": ["string", "null"]}, "domain_relevance_bp": {"type": "integer"}}}
+    },
+    "runtime_identity_required": {"type": "array", "items": {"type": "string"}}, "independence_cluster_key": {"type": "array", "items": {"type": "string"}},
+    "conflicts": {"type": "object"}, "sealed_rounds": {"type": "array", "items": {"type": "integer"}}, "anonymous_cross_review_round": {"type": "integer"},
+    "minority_risk_preservation": {"const": true}, "active_members": {"const": 0}, "grants_authority": {"const": false}
+  }
+}

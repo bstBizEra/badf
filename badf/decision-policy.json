@@ -1,0 +1,183 @@
+{
+  "$schema": "../schemas/decision-policy.schema.json",
+  "schema_version": "0.1.0",
+  "policy_id": "BADF-DGP-0001",
+  "policy_epoch": "BADF-DECISION-2026-09-02",
+  "owner_role": "human_sponsor",
+  "status": "DESIGNED",
+  "authorization_mode": "ADVISORY_ONLY",
+  "authority_source": "badf/authority-matrix.json",
+  "risk_source": "badf/risk-appetite.json",
+  "council_source": "badf/council-registry.json",
+  "arithmetic": {
+    "unit": "basis_points",
+    "minimum": 0,
+    "maximum": 10000,
+    "rounding": "INTEGER_ROUND_HALF_UP",
+    "floating_point_authoritative": false,
+    "zero_denominator": "INSUFFICIENT_EVIDENCE"
+  },
+  "decision_layers": [
+    "CONSTITUTION",
+    "BINDING_AND_EVIDENCE",
+    "HARD_RULES",
+    "RISK",
+    "COUNCIL_SUPPORT",
+    "AUTHORITY"
+  ],
+  "criteria": [
+    {"id": "correctness", "weight_bp": 2000},
+    {"id": "business_value", "weight_bp": 1500},
+    {"id": "security_privacy", "weight_bp": 1500},
+    {"id": "architecture_maintainability", "weight_bp": 1500},
+    {"id": "quality_verification", "weight_bp": 1000},
+    {"id": "operations_resilience", "weight_bp": 1000},
+    {"id": "data_integration", "weight_bp": 500},
+    {"id": "cost_delivery_efficiency", "weight_bp": 500},
+    {"id": "reversibility_recovery", "weight_bp": 500}
+  ],
+  "decision_classes": {
+    "C0": {
+      "support_threshold_bp": 6000,
+      "minimum_eligible_ballots": 1,
+      "minimum_independence_clusters": 1,
+      "mandatory_lenses": ["quality_verification"]
+    },
+    "C1": {
+      "support_threshold_bp": 6700,
+      "minimum_eligible_ballots": 3,
+      "minimum_independence_clusters": 2,
+      "mandatory_lenses": ["quality_verification"]
+    },
+    "C2": {
+      "support_threshold_bp": 7500,
+      "minimum_eligible_ballots": 5,
+      "minimum_independence_clusters": 3,
+      "mandatory_lenses": ["security_privacy", "quality_verification", "operations_resilience"]
+    },
+    "C3A": {
+      "support_threshold_bp": 8500,
+      "minimum_eligible_ballots": 7,
+      "minimum_independence_clusters": 4,
+      "mandatory_lenses": ["architecture_maintainability", "security_privacy", "quality_verification", "operations_resilience", "evidence_audit"]
+    },
+    "C3R": {
+      "support_threshold_bp": null,
+      "minimum_eligible_ballots": 7,
+      "minimum_independence_clusters": 4,
+      "mandatory_lenses": ["architecture_maintainability", "security_privacy", "quality_verification", "operations_resilience", "evidence_audit"],
+      "human_ratification_required": true
+    }
+  },
+  "c3_routing": {
+    "ambiguity_routes_to": "C3R",
+    "c3a_requires_all": [
+      "no_reserved_action",
+      "bounded_blast_radius",
+      "reversible_effect",
+      "executable_rollback",
+      "canary_and_stop_conditions",
+      "complete_current_evidence",
+      "explicit_future_ratified_delegation"
+    ],
+    "c3r_if_any": [
+      "modify_authority_policy",
+      "expand_machine_authority",
+      "accept_legal_or_privacy_risk",
+      "handle_production_credentials",
+      "execute_destructive_production_data_change",
+      "waive_mandatory_gate",
+      "irreversible_action",
+      "external_contractual_commitment",
+      "major_capital_commitment",
+      "authorize_high_impact_production_release"
+    ]
+  },
+  "eligibility": {
+    "exclude_if_any": [
+      "author_or_authoring_run",
+      "undeclared_conflict",
+      "artifact_digest_mismatch",
+      "duplicate_run_identity",
+      "missing_required_lens",
+      "ineligible_registry_profile",
+      "ballot_finding_contradiction",
+      "expired_or_stale_evidence"
+    ],
+    "abstain_weight": 0,
+    "insufficient_evidence_weight": 0,
+    "approve_with_conditions_effect": "HOLD"
+  },
+  "weight_factors": [
+    "domain_relevance_bp",
+    "calibration_bp",
+    "evidence_coverage_bp",
+    "freshness_bp",
+    "independence_bp"
+  ],
+  "calibration": {
+    "minimum_domain_observations": 20,
+    "uncalibrated_shadow_prior_bp": 5000,
+    "minimum_calibration_bp": 2500,
+    "formula": "MAX(minimum_calibration_bp, 10000 - brier_score_bp)",
+    "active_uncalibrated_behavior": "INELIGIBLE"
+  },
+  "freshness_buckets": [
+    {"maximum_age_seconds": 3600, "factor_bp": 10000},
+    {"maximum_age_seconds": 86400, "factor_bp": 9000},
+    {"maximum_age_seconds": 604800, "factor_bp": 7500},
+    {"maximum_age_seconds": 2592000, "factor_bp": 5000}
+  ],
+  "older_evidence_behavior": "STALE_EVIDENCE",
+  "correlation_discount": [
+    {"cluster_size": 1, "factor_bp": 10000},
+    {"cluster_size": 2, "factor_bp": 7071},
+    {"cluster_size": 3, "factor_bp": 5774},
+    {"cluster_size": 4, "factor_bp": 5000},
+    {"cluster_size": 5, "factor_bp": 4472},
+    {"cluster_size": 6, "factor_bp": 4082},
+    {"cluster_size": 7, "factor_bp": 3780},
+    {"cluster_size": 8, "factor_bp": 3536}
+  ],
+  "aggregation": {
+    "raw_weight_formula": "relevance_bp * calibration_bp * evidence_coverage_bp * freshness_bp * independence_bp",
+    "criterion_support_formula": "FLOOR((2 * SUM(raw_weight * probability_satisfy_bp) + SUM(raw_weight)) / (2 * SUM(raw_weight)))",
+    "overall_support_formula": "FLOOR((2 * SUM(criterion_weight_bp * criterion_support_bp) + 10000) / 20000)",
+    "tie_margin_bp": 100,
+    "tie_disposition": "HOLD",
+    "record_intermediate_values": true
+  },
+  "hard_rules": {
+    "evaluation_order": "BEFORE_WEIGHTED_AGGREGATION",
+    "non_compensable": true,
+    "rules": [
+      "authority_current",
+      "action_permitted",
+      "artifact_and_policy_digests_current",
+      "required_evidence_complete",
+      "independent_quorum_valid",
+      "mandatory_lenses_present",
+      "no_self_approval",
+      "no_verified_blocker",
+      "no_unresolved_condition",
+      "no_conflict_of_interest",
+      "risk_within_appetite"
+    ]
+  },
+  "v0_1_dispositions": [
+    "RECOMMEND_AUTHORIZE",
+    "HOLD",
+    "REJECT",
+    "ESCALATE",
+    "HUMAN_REQUIRED"
+  ],
+  "autonomous_merge_enabled": false,
+  "activation_ladder": [
+    "DESIGNED",
+    "IMPLEMENTED",
+    "VALIDATED",
+    "SHADOWED",
+    "RATIFIED",
+    "ACTIVE"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bizera.la/badf/schemas/calibration-ledger.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "ledger_id", "policy_epoch", "status", "authority_effect", "genesis_hash", "events"],
+  "properties": {
+    "schema_version": {"const": "0.1.0"}, "ledger_id": {"pattern": "^BADF-CAL-[0-9]{4,}$"}, "policy_epoch": {"type": "string"},
+    "status": {"enum": ["SHADOW", "ACTIVE"]}, "authority_effect": {"const": "NONE"}, "genesis_hash": {"pattern": "^sha256:[0-9a-f]{64}$"},
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["event_id", "sequence", "decision_id", "ballot_id", "member_identity_digest", "calibration_domain", "criterion_id", "forecast_recorded_at", "outcome_observed_at", "observation_window", "forecast_probability_bp", "observed_outcome", "brier_score_bp", "blocker_prediction", "blocker_outcome", "previous_event_hash", "event_hash", "outcome_evidence_digest"],
+        "properties": {
+          "event_id": {"pattern": "^BADF-CAL-EVT-[0-9]{4,}$"}, "sequence": {"type": "integer"}, "decision_id": {"type": "string"}, "ballot_id": {"type": "string"},
+          "member_identity_digest": {"pattern": "^sha256:[0-9a-f]{64}$"}, "calibration_domain": {"type": "string"}, "criterion_id": {"type": "string"},
+          "forecast_recorded_at": {"type": "string", "format": "date-time"}, "outcome_observed_at": {"type": "string", "format": "date-time"}, "observation_window": {"type": "string"},
+          "forecast_probability_bp": {"type": "integer", "minimum": 0, "maximum": 10000}, "observed_outcome": {"enum": ["OCCURRED", "DID_NOT_OCCUR", "INDETERMINATE"]},
+          "brier_score_bp": {"type": ["integer", "null"]}, "blocker_prediction": {"type": "boolean"}, "blocker_outcome": {"enum": ["TRUE_POSITIVE", "TRUE_NEGATIVE", "FALSE_POSITIVE", "FALSE_NEGATIVE", "NOT_APPLICABLE"]},
+          "previous_event_hash": {"pattern": "^sha256:[0-9a-f]{64}$"}, "event_hash": {"pattern": "^sha256:[0-9a-f]{64}$"}, "outcome_evidence_digest": {"pattern": "^sha256:[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}

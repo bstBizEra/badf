@@ -1,0 +1,63 @@
+{
+  "$schema": "../schemas/risk-appetite.schema.json",
+  "schema_version": "0.1.0",
+  "policy_id": "BADF-RISK-0001",
+  "policy_epoch": "BADF-RISK-2026-09-02",
+  "owner_role": "human_sponsor",
+  "status": "DESIGNED",
+  "authorization_mode": "ADVISORY_ONLY",
+  "authority_source": "badf/authority-matrix.json",
+  "uncertainty_behavior": "HOLD_OR_C3R",
+  "dimensions": [
+    {"id": "security", "c0_max_residual_bp": 1500, "c1_max_residual_bp": 1250, "c2_max_residual_bp": 750, "c3a_max_residual_bp": 400},
+    {"id": "privacy_legal", "c0_max_residual_bp": 1000, "c1_max_residual_bp": 750, "c2_max_residual_bp": 400, "c3a_max_residual_bp": 200},
+    {"id": "data_integrity", "c0_max_residual_bp": 1500, "c1_max_residual_bp": 1000, "c2_max_residual_bp": 600, "c3a_max_residual_bp": 300},
+    {"id": "availability_operations", "c0_max_residual_bp": 2000, "c1_max_residual_bp": 1500, "c2_max_residual_bp": 900, "c3a_max_residual_bp": 500},
+    {"id": "financial_reputation", "c0_max_residual_bp": 2000, "c1_max_residual_bp": 1500, "c2_max_residual_bp": 900, "c3a_max_residual_bp": 500}
+  ],
+  "risk_calculation": {
+    "probability_unit": "basis_points",
+    "impact_factors_bp": {"1": 2000, "2": 4000, "3": 6000, "4": 8000, "5": 10000},
+    "exposure_unit": "basis_points",
+    "formula": "FLOOR((2 * probability_bp * impact_factor_bp * exposure_bp + 100000000) / 200000000)",
+    "dimension_aggregation": "MAX_RESIDUAL_RISK_WITHIN_DIMENSION",
+    "cross_dimension_aggregation": "PROHIBITED"
+  },
+  "verified_blockers": [
+    "constitutional_or_authority_violation",
+    "verified_critical_security_finding",
+    "unaccepted_legal_or_privacy_obligation",
+    "credential_exposure_or_unauthorized_credential_path",
+    "destructive_production_data_change_without_human_authority",
+    "unexecutable_rollback_for_c2_or_c3a",
+    "stale_or_contradictory_evidence",
+    "missing_required_independent_review",
+    "unresolved_major_or_critical_condition"
+  ],
+  "reserved_risks": [
+    "authority_expansion",
+    "legal_acceptance",
+    "privacy_acceptance",
+    "credential_handling",
+    "irreversible_or_destructive_production_effect",
+    "mandatory_gate_waiver",
+    "external_contractual_commitment",
+    "major_capital_commitment",
+    "high_impact_production_release"
+  ],
+  "controls_by_class": {
+    "C0": {"rollback": "PREFERRED", "canary": "NOT_REQUIRED"},
+    "C1": {"rollback": "REQUIRED_WHERE_APPLICABLE", "canary": "RISK_DEPENDENT"},
+    "C2": {"rollback": "REQUIRED", "canary": "RISK_DEPENDENT"},
+    "C3A": {"rollback": "MANDATORY_AND_TESTED", "canary": "MANDATORY"},
+    "C3R": {"rollback": "CASE_SPECIFIC", "canary": "CASE_SPECIFIC", "human_ratification_required": true}
+  },
+  "risk_acceptance_authority": {
+    "C0": "authority_matrix",
+    "C1": "authority_matrix",
+    "C2": "authority_matrix",
+    "C3A": "HUMAN_REQUIRED_IN_V0_1",
+    "C3R": "BST_COMPANY_PRINCIPAL"
+  },
+  "performance_or_vote_may_waive_blocker": false
+}

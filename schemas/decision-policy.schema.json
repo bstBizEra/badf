@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bizera.la/badf/schemas/decision-policy.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schema_version", "policy_id", "policy_epoch", "owner_role", "status", "authorization_mode", "authority_source", "risk_source", "council_source", "arithmetic", "decision_layers", "criteria", "decision_classes", "c3_routing", "eligibility", "weight_factors", "calibration", "freshness_buckets", "older_evidence_behavior", "correlation_discount", "aggregation", "hard_rules", "v0_1_dispositions", "autonomous_merge_enabled", "activation_ladder"],
+  "properties": {
+    "$schema": {"const": "../schemas/decision-policy.schema.json"},
+    "schema_version": {"const": "0.1.0"},
+    "policy_id": {"pattern": "^BADF-DGP-[0-9]{4,}$"},
+    "policy_epoch": {"type": "string"},
+    "owner_role": {"const": "human_sponsor"},
+    "status": {"const": "DESIGNED"},
+    "authorization_mode": {"const": "ADVISORY_ONLY"},
+    "authority_source": {"const": "badf/authority-matrix.json"},
+    "risk_source": {"const": "badf/risk-appetite.json"},
+    "council_source": {"const": "badf/council-registry.json"},
+    "arithmetic": {
+      "type": "object", "additionalProperties": false,
+      "required": ["unit", "minimum", "maximum", "rounding", "floating_point_authoritative", "zero_denominator"],
+      "properties": {
+        "unit": {"const": "basis_points"}, "minimum": {"const": 0}, "maximum": {"const": 10000},
+        "rounding": {"const": "INTEGER_ROUND_HALF_UP"}, "floating_point_authoritative": {"const": false},
+        "zero_denominator": {"const": "INSUFFICIENT_EVIDENCE"}
+      }
+    },
+    "decision_layers": {"type": "array", "items": {"type": "string"}},
+    "criteria": {
+      "type": "array", "minItems": 1,
+      "items": {"type": "object", "additionalProperties": false, "required": ["id", "weight_bp"], "properties": {"id": {"type": "string"}, "weight_bp": {"type": "integer", "minimum": 0, "maximum": 10000}}}
+    },
+    "decision_classes": {
+      "type": "object", "additionalProperties": false, "required": ["C0", "C1", "C2", "C3A", "C3R"],
+      "properties": {
+        "C0": {"$ref": "#/$defs/classPolicy"}, "C1": {"$ref": "#/$defs/classPolicy"}, "C2": {"$ref": "#/$defs/classPolicy"}, "C3A": {"$ref": "#/$defs/classPolicy"}, "C3R": {"$ref": "#/$defs/classPolicy"}
+      }
+    },
+    "c3_routing": {
+      "type": "object", "additionalProperties": false, "required": ["ambiguity_routes_to", "c3a_requires_all", "c3r_if_any"],
+      "properties": {"ambiguity_routes_to": {"const": "C3R"}, "c3a_requires_all": {"type": "array", "items": {"type": "string"}}, "c3r_if_any": {"type": "array", "items": {"type": "string"}}}
+    },
+    "eligibility": {
+      "type": "object", "additionalProperties": false, "required": ["exclude_if_any", "abstain_weight", "insufficient_evidence_weight", "approve_with_conditions_effect"],
+      "properties": {"exclude_if_any": {"type": "array", "items": {"type": "string"}}, "abstain_weight": {"const": 0}, "insufficient_evidence_weight": {"const": 0}, "approve_with_conditions_effect": {"const": "HOLD"}}
+    },
+    "weight_factors": {"type": "array", "items": {"type": "string"}},
+    "calibration": {
+      "type": "object", "additionalProperties": false, "required": ["minimum_domain_observations", "uncalibrated_shadow_prior_bp", "minimum_calibration_bp", "formula", "active_uncalibrated_behavior"],
+      "properties": {"minimum_domain_observations": {"type": "integer"}, "uncalibrated_shadow_prior_bp": {"type": "integer"}, "minimum_calibration_bp": {"type": "integer"}, "formula": {"type": "string"}, "active_uncalibrated_behavior": {"const": "INELIGIBLE"}}
+    },
+    "freshness_buckets": {
+      "type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["maximum_age_seconds", "factor_bp"], "properties": {"maximum_age_seconds": {"type": "integer"}, "factor_bp": {"type": "integer"}}}
+    },
+    "older_evidence_behavior": {"const": "STALE_EVIDENCE"},
+    "correlation_discount": {
+      "type": "array", "items": {"type": "object", "additionalProperties": false, "required": ["cluster_size", "factor_bp"], "properties": {"cluster_size": {"type": "integer"}, "factor_bp": {"type": "integer"}}}
+    },
+    "aggregation": {
+      "type": "object", "additionalProperties": false, "required": ["raw_weight_formula", "criterion_support_formula", "overall_support_formula", "tie_margin_bp", "tie_disposition", "record_intermediate_values"],
+      "properties": {"raw_weight_formula": {"type": "string"}, "criterion_support_formula": {"type": "string"}, "overall_support_formula": {"type": "string"}, "tie_margin_bp": {"type": "integer"}, "tie_disposition": {"const": "HOLD"}, "record_intermediate_values": {"const": true}}
+    },
+    "hard_rules": {
+      "type": "object", "additionalProperties": false, "required": ["evaluation_order", "non_compensable", "rules"],
+      "properties": {"evaluation_order": {"const": "BEFORE_WEIGHTED_AGGREGATION"}, "non_compensable": {"const": true}, "rules": {"type": "array", "items": {"type": "string"}}}
+    },
+    "v0_1_dispositions": {"type": "array", "items": {"enum": ["RECOMMEND_AUTHORIZE", "HOLD", "REJECT", "ESCALATE", "HUMAN_REQUIRED"]}},
+    "autonomous_merge_enabled": {"const": false},
+    "activation_ladder": {"type": "array", "items": {"enum": ["DESIGNED", "IMPLEMENTED", "VALIDATED", "SHADOWED", "RATIFIED", "ACTIVE"]}}
+  },
+  "$defs": {
+    "classPolicy": {
+      "type": "object", "required": ["support_threshold_bp", "minimum_eligible_ballots", "minimum_independence_clusters", "mandatory_lenses"],
+      "properties": {
+        "support_threshold_bp": {"type": ["integer", "null"]}, "minimum_eligible_ballots": {"type": "integer"},
+        "minimum_independence_clusters": {"type": "integer"}, "mandatory_lenses": {"type": "array", "items": {"type": "string"}},
+        "human_ratification_required": {"type": "boolean"}
+      }
+    }
+  }
+}
