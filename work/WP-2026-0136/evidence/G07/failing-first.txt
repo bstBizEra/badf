@@ -1,0 +1,81 @@
+FAILING-FIRST OBSERVATIONS -- WP-2026-0136 (WP-UAT-E)
+
+============================================================================
+1/3  the capability is granted a tool
+  obligation: TEST-UATE-1
+  breakage  : allowed_tools = ['bash']
+============================================================================
+F
+======================================================================
+FAIL: test_active_grants_no_acceptance_authority (tests.test_badf_uat_contract.UatContractTests.test_active_grants_no_acceptance_authority)
+WP-UAT-E (#310). ACTIVE is a registry STATUS, not authority -- UAT-I14/I15 hold at
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-uate/tests/test_badf_uat_contract.py", line 191, in test_active_grants_no_acceptance_authority
+    self.assertEqual([], entry["allowed_tools"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [] != ['bash']
+
+Second list contains 1 additional elements.
+First extra element 0:
+'bash'
+
+- []
++ ['bash']
+
+----------------------------------------------------------------------
+Ran 1 test in 0.007s
+
+FAILED (failures=1)
+
+-> rc=1  RED (observed failing-first)
+
+============================================================================
+2/3  the vocabulary gains an acceptance verb
+  obligation: TEST-UATE-1
+  breakage  : recommendation enum += 'ACCEPTED'
+============================================================================
+--------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-uate/tests/test_badf_uat_contract.py", line 198, in test_active_grants_no_acceptance_authority
+    self.assertTrue(all(v.startswith("RECOMMEND_") for v in rec),
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                    f"a non-RECOMMEND_ value in {rec} would let the capability issue a verdict")
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : a non-RECOMMEND_ value in ['RECOMMEND_ACCEPT', 'RECOMMEND_ACCEPT_WITH_CONDITIONS', 'RECOMMEND_REJECT', 'RECOMMEND_INSUFFICIENT_EVIDENCE', 'ACCEPTED'] would let the capability issue a verdict
+
+----------------------------------------------------------------------
+Ran 1 test in 0.005s
+
+FAILED (failures=1)
+
+-> rc=1  RED (observed failing-first)
+
+============================================================================
+3/3  Layer-2 acceptance stops requiring a human
+  obligation: TEST-UATE-1
+  breakage  : principal_type const -> 'agent'
+============================================================================
+F
+======================================================================
+FAIL: test_active_grants_no_acceptance_authority (tests.test_badf_uat_contract.UatContractTests.test_active_grants_no_acceptance_authority)
+WP-UAT-E (#310). ACTIVE is a registry STATUS, not authority -- UAT-I14/I15 hold at
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/c/laragon/www/badf-wt-uate/tests/test_badf_uat_contract.py", line 205, in test_active_grants_no_acceptance_authority
+    self.assertEqual("human", acc["accepted_by"]["properties"]["principal_type"]["const"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'human' != 'agent'
+- human
++ agent
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.009s
+
+FAILED (failures=1)
+
+-> rc=1  RED (observed failing-first)
+
+============================================================================
+all sources restored byte-identical: True
