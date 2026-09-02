@@ -2442,6 +2442,42 @@ configuration and a non-compliant one produce byte-identical artifacts. The stru
 the operator runbook that provisions it, and an enumeration of what stays unverifiable
 afterwards are in [`IDENTITY_ATTRIBUTION.md`](IDENTITY_ATTRIBUTION.md).
 
+## An absence claim fails green (Issue #305 / GOV)
+
+`grep`'s unit is the line; a prose phrase's unit is the sentence. Source text and runtime output
+both reflow, so a literal search for a multi-word phrase can return `0` where the text is present.
+Four seats hit this in one session, each **after** the lesson had been written down — which is what
+moved it from a note to this file.
+
+**The property that decides how much it matters is direction, not count.** Measured by AST over the
+82 discoverable `test_*.py` at `main@310a660`:
+
+```
+              5+ words   2-4 words   when line-wrap defeats it
+presence          36        184      RED   -- the test fails loudly and is fixed
+ABSENCE            2         28      GREEN -- silent, in the direction that reads as success
+```
+
+**A presence claim defeated by a broken matcher fails loud. An absence claim fails green.** The
+discipline is therefore not symmetric: a *presence* assertion is self-correcting and needs nothing,
+while an **absence** assertion is the only one that can be silently wrong. So an absence claim owes a
+**positive control sampled from the population the matcher claims to cover, in the same invocation
+that reports the absence** — a matcher that has never demonstrated it *can* match is not a control,
+and one drawn from outside its own population proves nothing while looking identical to a real probe.
+
+The two committed sites carrying a 5+-word absence literal are whitespace-normalized
+(`tests/test_badf_build_controls.py`, `tests/test_badf_instance.py`). **No instrument was built**:
+the checkable population is two, and a guard over a population of two is what the Lean gate exists to
+refuse. The 220 non-literal match targets were classified before that conclusion — **none can hold a
+5+-word phrase**, and 13 are excluded *structurally* rather than empirically, because a needle built
+at runtime (`f'work/{WP}/'`, `x.as_posix()`) never appears in source as a phrase and a source-text
+hazard cannot reach it.
+
+**Declared non-coverage, and it is the larger half:** all four originating incidents were **ad-hoc
+shell searches**. No repository-side control reaches a command that leaves no trace in the
+repository, so nothing here prevents them. Whether seats can be given a search command they actually
+invoke is a separate, unscoped question — **this section does not close it.**
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,
