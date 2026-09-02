@@ -1,0 +1,22 @@
+{
+  "record": "git-composition",
+  "schema_version": "1.0.0",
+  "observed_at": "2026-09-02T05:29:00Z",
+  "repository": "bstBizEra/badf",
+  "work_package_id": "WP-2026-0139",
+  "target_ref": "refs/heads/main",
+  "target_base_sha": "310a660259752260142458f1e7f51976b218a79d",
+  "source_ref": "refs/heads/wp/WP-2026-0139-doctrine-section-sentinels",
+  "source_head_sha": "bece993dd9a6d1dc5139854e09a8e90a92a36226",
+  "merge_base_sha": "310a660259752260142458f1e7f51976b218a79d",
+  "merge_method": "squash",
+  "expected_result_tree": "52e22901bf4e3957e21f6d8b3d0dfb1730dde907",
+  "expected_content_tree": "8b4fe199d0174d5d4205d8f3a4a36d0008be03e5",
+  "policy_epoch": "BADF-2026-08-25",
+  "test_set_epoch": null,
+  "suite_pattern": "test_*.py",
+  "non_coverage": [
+    "test_set_epoch: BADF defines no test-set/toolchain epoch; not recorded rather than invented",
+    "source_head_sha and expected_result_tree are informational: committing this record moves both; the binding is expected_content_tree (work/<WP>/ and the lockfile excluded)"
+  ]
+}

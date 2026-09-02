@@ -16,16 +16,17 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-09-02T05:27:59Z",
-  "completed_at": "2026-09-02T05:27:59Z",
+  "started_at": "2026-09-02T05:29:54Z",
+  "completed_at": "2026-09-02T05:29:54Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0139/evidence/G07/source-change.diff",
-  "digest": "sha256:8eaf2ed0dd3cd9f63c983ce3a38985a53a7801f0c9093796e8c14002ea06f037",
+  "digest": "sha256:1298d6cb6b3c44226b9bd00941ed655e878c9dc2e15bb8fe986dd7dba15629c9",
   "binding": {
     "base_sha": "310a660259752260142458f1e7f51976b218a79d",
-    "head_sha": "99c7efd2698fbee6aa91135a37f75cd6f7d348cc",
-    "content_tree": "f234acbe82a7b4fa0935a1ca0a3da068cd25dc02",
+    "head_sha": "bece993dd9a6d1dc5139854e09a8e90a92a36226",
+    "content_tree": "8b4fe199d0174d5d4205d8f3a4a36d0008be03e5",
     "changed_paths": [
+      "badf/demands/BADF-DEM-0124.json",
       "docs/governance/GITHUB_CONTROL_PLANE.md",
       "tests/_doctrine.py",
       "tests/test_badf_build_activation.py",
@@ -44,6 +45,6 @@
       ]
     },
     "unexpected_paths": [],
-    "change_digest": "sha256:8eaf2ed0dd3cd9f63c983ce3a38985a53a7801f0c9093796e8c14002ea06f037"
+    "change_digest": "sha256:1298d6cb6b3c44226b9bd00941ed655e878c9dc2e15bb8fe986dd7dba15629c9"
   }
 }
