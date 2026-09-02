@@ -2420,6 +2420,28 @@ than a check it never performed. Recording a real weak basis beats recording a
 strong-sounding absent one; it grants nothing, and the G00 dossier stays
 `HUMAN_REQUIRED`.
 
+## The executor statement (interim, until the identity split lands)
+
+The executor of any merge posts a comment at merge time naming its seat and the delegation it
+acted under. **Observed convention, codified here rather than proposed** — every landing since
+adoption carries one (`#290`, `#297`, `#298`, one each, measured by first-line declaration).
+
+**Its limits travel with it, and are the reason it is safe to record:**
+
+- **Self-asserted** — text under the same shared account as every other comment.
+- **Unverifiable from outside** — no reader can confirm the delegation existed.
+- **Falsifiable in one direction only** — its *absence* is checkable; its *presence* proves nothing.
+
+It converts "no artifact" into "a claim a reader can challenge", which is what the banner
+regime already provides for comments, and no more. **Whoever cites an executor statement as
+evidence that a delegation existed has been misled by the record rather than by the seat**, so
+the limits are stated here rather than left to be rediscovered.
+
+Every landing's `merged_by` currently reads the same shared account, so a compliant
+configuration and a non-compliant one produce byte-identical artifacts. The structural remedy,
+the operator runbook that provisions it, and an enumeration of what stays unverifiable
+afterwards are in [`IDENTITY_ATTRIBUTION.md`](IDENTITY_ATTRIBUTION.md).
+
 ## Discovery ≠ scope expansion
 
 Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVERED`,

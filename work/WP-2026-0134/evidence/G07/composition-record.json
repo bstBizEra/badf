@@ -1,0 +1,22 @@
+{
+  "record": "git-composition",
+  "schema_version": "1.0.0",
+  "observed_at": "2026-09-01T23:40:01Z",
+  "repository": "bstBizEra/badf",
+  "work_package_id": "WP-2026-0134",
+  "target_ref": "refs/heads/main",
+  "target_base_sha": "272e6036a6f288c191b9afc208de06740846898a",
+  "source_ref": "refs/heads/wp/WP-2026-0134-identity-attribution",
+  "source_head_sha": "7eafac6f1437f9e903ee5615cab70cf8517100b3",
+  "merge_base_sha": "272e6036a6f288c191b9afc208de06740846898a",
+  "merge_method": "squash",
+  "expected_result_tree": "eba0860026871e4e9f25046c8c8128cf0bbd9f02",
+  "expected_content_tree": "406c20122132ca15497343ec916e40d24c567ae7",
+  "policy_epoch": "BADF-2026-08-25",
+  "test_set_epoch": null,
+  "suite_pattern": "test_badf_work_package_schema_extension.py",
+  "non_coverage": [
+    "test_set_epoch: BADF defines no test-set/toolchain epoch; not recorded rather than invented",
+    "source_head_sha and expected_result_tree are informational: committing this record moves both; the binding is expected_content_tree (work/<WP>/ and the lockfile excluded)"
+  ]
+}
