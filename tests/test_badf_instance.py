@@ -156,7 +156,11 @@ class BoundedWriteTests(InstanceScratch):
         t = self.target()
         r = self.init(self.intent(t))
         self.assertEqual(r.returncode, 0, r.stderr)
-        self.assertNotIn("nothing written to the target", r.stdout)
+        # #305: whitespace-normalized because this is an ABSENCE claim, and a load-bearing one --
+        # it guards a message that was REMOVED (the phrase appears nowhere else in the repository),
+        # so it can only ever fire on a regression. A reintroduction that wraps would slip past a
+        # literal search silently. The assertIn below is its positive control on the same haystack.
+        self.assertNotIn("nothing written to the target", " ".join(r.stdout.split()))
         self.assertIn("badf/evidence/receipts/init-", r.stdout)
 
 

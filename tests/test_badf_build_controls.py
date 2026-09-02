@@ -317,7 +317,11 @@ class UnwatchedControlTests(_Scratch):
         r = self.rule("source-change", dict(ev["binding"], change_digest=None))
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("must be a string", r.stderr)
-        self.assertNotIn("does not equal the artifact digest", r.stderr)
+        # #305: whitespace-normalized because this is an ABSENCE claim. `r.stderr` is runtime
+        # output; if the producer's message is ever reflowed across a line break, a literal
+        # search returns 0 and this assertion passes GREEN -- absent-when-present, the direction
+        # that reads as success. The presence claims above it would fail RED and self-correct.
+        self.assertNotIn("does not equal the artifact digest", " ".join(r.stderr.split()))
 
     def test_base_sha_must_equal_the_composition_records_target_base_sha(self):
         """The RECORD-side base check, distinct from the work-package-side one.
