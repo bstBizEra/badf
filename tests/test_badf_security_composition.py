@@ -9,6 +9,11 @@ residual risk (SEC-I12). The cross-artifact SEAM controls (SEC-I04 bidirectional
 SEC-I01 baseline binding, semantic ref resolution) are WP-SEC-C. Every test mutates a copy
 of the shipped example and runs the CLI.
 """
+
+# Rung A (#265, WP-2026-0138): SHADOWED, nothing stronger to re-point at. The control is
+# bare list-truthiness, so `minItems: 1` is EXACTLY equivalent and now refuses first.
+# The control is RETAINED (criterion 5) and is now unreachable on this path; recorded
+# rather than silently re-worded, per SARCHI C2. Disposition deferred, not decided.
 import copy
 import json
 import subprocess
@@ -51,7 +56,7 @@ class StructuralControlTests(SecurityCompositionBase):
     def test_an_empty_matrix_is_refused(self):
         rec = copy.deepcopy(EXAMPLE)
         rec["threats"] = []
-        self.refused(rec, "no threats")
+        self.refused(rec, "threats has 0 items")
 
     def test_a_duplicate_security_id_is_refused(self):  # SEC-C01
         rec = copy.deepcopy(EXAMPLE)

@@ -3251,8 +3251,13 @@ def parse_yaml_subset(text: str) -> dict[str, Any]:
 
 def check_schema(name: str, inst: Any) -> None:
     """Structural conformance to schemas/<name>.schema.json: required keys,
-    enum values at any depth, additionalProperties: false, string patterns.
-    Deterministic and dependency-free; runs BEFORE anything is written."""
+    enum values at any depth, additionalProperties: false, string patterns,
+    minLength on strings and minItems on arrays.
+    Deterministic and dependency-free; runs BEFORE anything is written.
+
+    minLength is a LENGTH bound, not a non-emptiness bound -- it refuses "" and admits
+    "   ", so a code control using .strip() is strictly stronger and must not be removed
+    on the strength of the declaration (#265 Rung A)."""
     sch = load_json(ROOT / "schemas" / f"{name}.schema.json")
 
     def walk(spec: dict[str, Any], val: Any, where: str) -> None:
@@ -3287,6 +3292,10 @@ def check_schema(name: str, inst: Any) -> None:
             raise ValidationError(f"{name}: {label} must be a number, got {type(val).__name__}")
         if "enum" in spec and val not in spec["enum"]:
             raise ValidationError(f"{name}: {label}={val!r} is not one of {spec['enum']}")
+        if "minLength" in spec and isinstance(val, str) and len(val) < spec["minLength"]:
+            raise ValidationError(f"{name}: {label}={val!r} is shorter than minLength {spec['minLength']}")
+        if "minItems" in spec and isinstance(val, list) and len(val) < spec["minItems"]:
+            raise ValidationError(f"{name}: {label} has {len(val)} items, fewer than minItems {spec['minItems']}")
         if "pattern" in spec and isinstance(val, str) and not re.fullmatch(spec["pattern"], val):
             raise ValidationError(f"{name}: {label}={val!r} does not match {spec['pattern']}")
         if spec.get("type") == "array" and isinstance(val, list) and "items" in spec:

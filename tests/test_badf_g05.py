@@ -9,6 +9,11 @@ controls, or an uncontrolled dependency, is refused); and residual risk is owned
 by a human security_authority whose approval is digest-bound to the threat model.
 Faithful-runner shape.
 """
+
+# Rung A (#265, WP-2026-0138): SHADOWED, nothing stronger to re-point at. The control is
+# bare list-truthiness, so `minItems: 1` is EXACTLY equivalent and now refuses first.
+# The control is RETAINED (criterion 5) and is now unreachable on this path; recorded
+# rather than silently re-worded, per SARCHI C2. Disposition deferred, not decided.
 import hashlib
 import json
 import os
@@ -78,7 +83,7 @@ class ThreatModelRuleTests(G05Scratch):
 
     def test_no_threats_is_refused(self):
         t = self.artifact("threat-model"); t["threats"] = []; self.rewrite("threat-model", t)
-        self.refused("a threat model of nothing controls nothing")
+        self.refused("threats has 0 items")
 
 
 class PrivacyRuleTests(G05Scratch):
