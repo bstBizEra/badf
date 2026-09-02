@@ -16,14 +16,14 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-09-02T05:34:10Z",
-  "completed_at": "2026-09-02T05:34:10Z",
+  "started_at": "2026-09-02T05:58:07Z",
+  "completed_at": "2026-09-02T05:58:07Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0139/evidence/G07/source-change.diff",
   "digest": "sha256:a4879cc636a43f2b8b6dd7cdd28844f443e3b788fe60ad4b417c04e8632ef990",
   "binding": {
     "base_sha": "310a660259752260142458f1e7f51976b218a79d",
-    "head_sha": "5c305f534c861409873d4dfbf7112dcde36085d4",
+    "head_sha": "cee400bbf4b1e43db606ddeca735ff1a1a778d82",
     "content_tree": "af6f13507a0b8841265c1755a0b71a554bc697dd",
     "changed_paths": [
       "badf/demands/BADF-DEM-0126.json",
