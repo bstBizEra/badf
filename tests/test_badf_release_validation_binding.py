@@ -16,6 +16,14 @@ one class's payload in another's slot structurally.
 Vacuity discipline (#234): every sweep below iterates a literal tuple, and every filtered
 lookup is followed by an assertion that the filter matched.
 """
+
+# Rung A (#265, WP-2026-0138): the four EMPTY-LIST probes below are SHADOWED -- their
+# controls are bare list-truthiness, so `minItems: 1` is EXACTLY equivalent and refuses
+# first. Nothing stronger exists to re-point them at, so the assertion moves to the
+# schema message; the controls are RETAINED (criterion 5) and are now unreachable on
+# this path. Recorded per SARCHI C2, not silently re-worded. The neighbouring probes
+# (non-executable abort, threshold bound after the run) are untouched: they are not
+# emptiness tests and their controls still fire with their own VAL-I* messages.
 import copy
 import json
 import sys
@@ -236,7 +244,7 @@ class PerClassControlTests(unittest.TestCase):
     def test_security_with_empty_obligations_is_refused(self):  # V9
         e = typed("security-validation")
         e["binding"]["security_obligations"] = []
-        with self.assertRaisesRegex(gate.ValidationError, "routing decision"):
+        with self.assertRaisesRegex(gate.ValidationError, "security_obligations has 0 items"):
             run(e)
 
     def test_security_self_accepted_risk_is_unrepresentable(self):  # V9 / VAL-I09 via schema enum
@@ -249,7 +257,7 @@ class PerClassControlTests(unittest.TestCase):
     def test_performance_with_no_measurements_is_refused(self):  # V10 / VAL-I10
         e = typed("performance-test")
         e["binding"]["measurements"] = []
-        with self.assertRaisesRegex(gate.ValidationError, "VAL-I10"):
+        with self.assertRaisesRegex(gate.ValidationError, "measurements has 0 items"):
             run(e)
 
     def test_performance_threshold_bound_after_the_run_is_refused(self):  # V10 / VAL-I06
@@ -273,7 +281,7 @@ class PerClassControlTests(unittest.TestCase):
     def test_resilience_without_abort_conditions_is_refused(self):  # V11 / VAL-I11
         e = typed("resilience-test")
         e["binding"]["fault"]["abort_conditions"] = []
-        with self.assertRaisesRegex(gate.ValidationError, "VAL-I11"):
+        with self.assertRaisesRegex(gate.ValidationError, "abort_conditions has 0 items"):
             run(e)
 
     def test_resilience_nonexecutable_abort_is_refused(self):  # V11 / VAL-I11
@@ -322,7 +330,7 @@ class PerClassControlTests(unittest.TestCase):
     def test_quality_with_no_dimensions_is_refused(self):  # V12
         e = typed("quality-validation")
         e["binding"]["quality_dimensions"] = []
-        with self.assertRaisesRegex(gate.ValidationError, "validated nothing"):
+        with self.assertRaisesRegex(gate.ValidationError, "quality_dimensions has 0 items"):
             run(e)
 
 

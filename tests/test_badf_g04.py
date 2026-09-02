@@ -11,6 +11,11 @@ fitness obligations are measurable; ADRs bind to real elements/requirements/NFRs
 data-model entities and api-contract interfaces resolve to the baseline; and
 operability declares failure/recovery/observability. Faithful-runner shape.
 """
+
+# Rung A (#265, WP-2026-0138): SHADOWED, nothing stronger to re-point at. The control is
+# bare list-truthiness, so `minItems: 1` is EXACTLY equivalent and now refuses first.
+# The control is RETAINED (criterion 5) and is now unreachable on this path; recorded
+# rather than silently re-worded, per SARCHI C2. Disposition deferred, not decided.
 import hashlib
 import json
 import os
@@ -156,7 +161,7 @@ class OperabilityRuleTests(G04Scratch):
 
     def test_operability_without_failure_modes_is_refused(self):
         d = self.artifact("operability-design"); d["failure_modes"] = []; self.rewrite("operability-design", d)
-        self.refused("no failure modes")
+        self.refused("failure_modes has 0 items")
 
     def test_a_failure_mode_without_recovery_is_refused(self):
         d = self.artifact("operability-design"); d["failure_modes"][0]["recovery"] = ""; self.rewrite("operability-design", d)

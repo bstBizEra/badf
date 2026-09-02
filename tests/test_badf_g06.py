@@ -57,6 +57,24 @@ class G06Scratch(unittest.TestCase):
         self.assertIn(needle, r.stderr, r.stderr)
 
 
+# Rung A (#265, WP-2026-0138) re-pointed the probes in this module. Two different things
+# happened and the difference is the point:
+#
+#   RE-POINTED -- description / verifies / method / environments / stop_conditions.
+#     Their code controls use `.strip()` (or filter on it), so they are STRICTLY STRONGER
+#     than `minLength: 1` / `minItems: 1`, which are LENGTH bounds and admit "   ". The
+#     probe moved from "" / [] to "   " / ["   "], which the schema admits and only the
+#     code control refuses. These still assert their own control's message.
+#
+#   SHADOWED, NOTHING STRONGER TO RE-POINT AT -- tasks / planned_tests / steps.
+#     Their controls are bare list-truthiness (`if not tasks:`), so `minItems: 1` is
+#     EXACTLY equivalent and now refuses first. There is no degenerate form the code
+#     catches and the schema does not, so the assertion moves to the schema's message.
+#     The control is RETAINED (criterion 5 forbids removing one here) and is now
+#     unreachable on this path; its disposition is deferred, not decided. Recorded rather
+#     than silently re-worded, per SARCHI C2 on #265.
+
+
 class G06ExampleTests(G06Scratch):
     def test_shipped_example_renders_approved(self):
         r = self.cli(); self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("APPROVED", r.stdout)
@@ -70,10 +88,10 @@ class G06ExampleTests(G06Scratch):
 class WorkBreakdownRuleTests(G06Scratch):
     def test_no_tasks_is_refused(self):
         wb = self.artifact("work-breakdown"); wb["tasks"] = []; self.rewrite("work-breakdown", wb)
-        self.refused("an empty breakdown bounds no work")
+        self.refused("tasks has 0 items")
 
     def test_a_task_without_a_description_is_refused(self):
-        wb = self.artifact("work-breakdown"); wb["tasks"][0]["description"] = ""; self.rewrite("work-breakdown", wb)
+        wb = self.artifact("work-breakdown"); wb["tasks"][0]["description"] = "   "; self.rewrite("work-breakdown", wb)
         self.refused("has no description")
 
     def test_a_dangling_dependency_is_refused(self):
@@ -90,30 +108,30 @@ class WorkBreakdownRuleTests(G06Scratch):
 class TestPlanRuleTests(G06Scratch):
     def test_no_planned_tests_is_refused(self):
         tp = self.artifact("test-plan"); tp["planned_tests"] = []; self.rewrite("test-plan", tp)
-        self.refused("cannot be established from an empty plan")
+        self.refused("planned_tests has 0 items")
 
     def test_a_planned_test_that_verifies_nothing_is_refused(self):
-        tp = self.artifact("test-plan"); tp["planned_tests"][0]["verifies"] = ""; self.rewrite("test-plan", tp)
+        tp = self.artifact("test-plan"); tp["planned_tests"][0]["verifies"] = "   "; self.rewrite("test-plan", tp)
         self.refused("names nothing it verifies")
 
 
 class ReleasePlanRuleTests(G06Scratch):
     def test_no_environments_is_refused(self):
-        rp = self.artifact("release-plan"); rp["environments"] = []; self.rewrite("release-plan", rp)
+        rp = self.artifact("release-plan"); rp["environments"] = ["   "]; self.rewrite("release-plan", rp)
         self.refused("environments and resources must be ready")
 
     def test_no_steps_is_refused(self):
         rp = self.artifact("release-plan"); rp["steps"] = []; self.rewrite("release-plan", rp)
-        self.refused("a release with no steps is not a plan")
+        self.refused("steps has 0 items")
 
 
 class RollbackPlanRuleTests(G06Scratch):
     def test_no_method_is_refused(self):
-        rb = self.artifact("rollback-plan"); rb["method"] = ""; self.rewrite("rollback-plan", rb)
+        rb = self.artifact("rollback-plan"); rb["method"] = "   "; self.rewrite("rollback-plan", rb)
         self.refused("rollback must be executable")
 
     def test_no_stop_conditions_is_refused(self):
-        rb = self.artifact("rollback-plan"); rb["stop_conditions"] = []; self.rewrite("rollback-plan", rb)
+        rb = self.artifact("rollback-plan"); rb["stop_conditions"] = ["   "]; self.rewrite("rollback-plan", rb)
         self.refused("a rollback plan states when to stop")
 
 

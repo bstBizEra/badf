@@ -1,0 +1,618 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+new file mode 100644
+index 0000000..5957376
+--- /dev/null
++++ b/CHANGELOG.md
+@@ -0,0 +1,42 @@
++# Changelog
++
++All notable changes to the BADF framework are recorded here, in
++[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) order, newest first.
++
++> **This is the repository's first `CHANGELOG.md`.** It was created under SARCHI's condition
++> C3 on [#265](https://github.com/bstBizEra/badf/issues/265), which required that a change
++> able to refuse a **new** record be recorded where a record author will find it. The
++> repository had no changelog convention and no version file, so this file establishes one —
++> deliberately, and as a decision that can be redirected rather than a side effect of a patch.
++> BADF versions capabilities through the activation ladder
++> (`DESIGNED → IMPLEMENTED → VALIDATED → SHADOWED → RATIFIED → ACTIVE`), not through SemVer,
++> so entries are grouped by landing rather than by release number.
++
++## Unreleased
++
++### Changed
++
++- **`check_schema` now enforces `minLength` on strings and `minItems` on arrays**
++  ([#265](https://github.com/bstBizEra/badf/issues/265) Rung A, `WP-2026-0138`).
++  These keywords were declared **377** and **48** times across the corpus and enforced
++  nowhere; the walker previously implemented exactly seven keywords. **422 of the 425
++  declaration sites become live** — the remaining 3 sit inside `anyOf`, for which the walker
++  still has no branch.
++
++  **What this means if you are writing a record:** a field declared `minLength: 1` will now
++  refuse `""`, and an array declared `minItems: 1` will now refuse `[]`. **No record that had
++  already landed is affected** — the replay at `main@310a660` swept 694 records and found
++  **0** newly refused, with 292 refused identically before and after.
++
++  **What it does not do:** `minLength` is a **length** bound, not a non-emptiness bound. It
++  refuses `""` and admits `"   "` and `" GHOST"`. The code controls that use `.strip()` are
++  therefore *strictly stronger* and are retained; the degenerate-content class
++  ([#293](https://github.com/bstBizEra/badf/issues/293)) is **not** closed by this change.
++
++### Notes
++
++- 19 existing tests asserted a code control's message for a probe the schema now refuses
++  first. 8 were re-pointed at the degenerate form only their control catches; the other 11
++  have controls that are bare list-truthiness, where `minItems: 1` is exactly equivalent and
++  nothing stronger exists to re-point at. Those are recorded in-file as **shadowed**, with the
++  control retained and its disposition deferred.
+diff --git a/badf/demands/BADF-DEM-0125.json b/badf/demands/BADF-DEM-0125.json
+new file mode 100644
+index 0000000..203cad5
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0125.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0125",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 265,
++    "url": "https://github.com/bstBizEra/badf/issues/265",
++    "exported_at": "2026-09-02T05:29:46Z",
++    "body_digest": "sha256:9c8e616fce4c4252d26110401acd364acfa972e54feb65600a10d5690e529b42"
++  },
++  "title": "check_schema silently ignores `const` \u2014 27 declarations across 21 schemas enforce nothing",
++  "problem": "\ud83d\udd0e **QA (BADF-QA)** \u2014 found while falsifying the central claim of #264 (`WP-UAT-B`). Not a defect in that PR; it is repo-wide and predates it.\n\n## The defect\n\n`check_schema` documents itself as *\"required keys, enum values at any depth, additionalProperties: false, string patterns\"* \u2014 and that list is exhaustive. **The walker has no `const` branch.** A `const` declaration at any depth in any schema is silently ignored.\n\nMeasured on `98747c0`, calling `check_schema` in isolation:\n\n```\nconst gate='G99'                  -> ADMITTED\nconst evidence_type='attestation' -> ADMITTED\nconst schema_version='9.9.9'      -> ADMITTED\nconst principal_type='agent'      -> ADMITTED\n```\n\n**27 `const` declarations across 21 schema files.**\n\n## Why it has not bitten yet\n\nMost consts are `evidence_type` / `gate` / `schema_version`, and those three are backstopped in code by `validate_evidence` (`scripts/badf_gate.py:1006-1010`), which pins them against the dossier and the index. So the dossier path is safe today by a redundancy nobody planned.\n\nThe exception is `uat.schema.json`'s `accepted_by.principal_type: const \"human\"`. I neutered U5's condition to `if False:` and an agent-principal `ACCEPTED` was **admitted** \u2014 U5 is the sole enforcer of that rung's central property, and the schema contributes nothing. (U5 *is* watched: the mutation fails `test_layer2_acceptance_requires_a_human_principal`. Gate restored byte-identical.)\n\n## Why it is worth fixing rather than noting\n\nA `const` that does nothing is a check that appears to guard something and doesn't \u2014 and here it actively misleads, because #264's docstring reasons *\"the recommendation vocabulary itself is closed by the schema, not here\"* four lines from a `const` where that reasoning is false. The same PR correctly removed a control (`U1`) **because** the schema really did enforce it. An author applying that correct move to U5 on the strength of the `const` would delete the enforcement and leave the appearance.\n\n## Acceptance criteria\n\n1. `check_schema` enforces `const`: a value not equal to the declared `const` raises `ValidationError` naming the path, the declared value and the received value.\n2. A test asserts enforcement at **two depths** \u2014 a root-level const (`gate`) and a nested one (`binding.acceptance.accepted_by.principal_type`) \u2014 because the walker recurses and a root-only test would pass on a non-recursive implementation.\n3. A test asserts the **negative control**: an object whose consts all match is still admitted (the rule must not refuse conforming objects).\n4. All 27 existing `const` declarations still pass on every encoded record on `main` \u2014 run the full suite; a newly-enforced keyword can retroactively refuse landed evidence, and if it does, **that is a finding to report, not a schema to loosen**.\n5. `check_schema`'s docstring lists `const` among the keywords it enforces.\n\n**Out of scope:** any other unimplemented JSON Schema keyword. If the sweep in (4) surfaces one, it gets its own issue \u2014 this one is about `const` only.\n\n**Version tier:** patch (bug fix; no public API change).\n\nFound by mutation battery on #264, not by reading. Recommend it does **not** block #264 \u2014 the property there holds and is watched; this removes the trap under it.\n<!-- agent: reviewer -->\n",
++  "status": "AUTHORIZED",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "recorded_at": "2026-09-02T05:29:46Z",
++  "note": "Rung A of SARCHI's keyword ruling on #265: minLength (377 declarations across 49 files) and minItems (48 across 32). The issue's headline is `const`, which is Rung B -- the title understates the surface, as QA recorded. Plan validated by SARCHI with three conditions (failing-first + mutation discrimination as named EC7 elements; an escape case for shadowed tests with nothing to re-point at; tier reasoning plus a CHANGELOG entry). The binding gate -- re-running the zero-cost replay at current main -- was discharged before planning: 694 records, 292 refused with and without the rule, 0 newly refused."
++}
+diff --git a/scripts/badf_gate.py b/scripts/badf_gate.py
+index ba08462..3d21706 100644
+--- a/scripts/badf_gate.py
++++ b/scripts/badf_gate.py
+@@ -3251,8 +3251,13 @@ def parse_yaml_subset(text: str) -> dict[str, Any]:
+ 
+ def check_schema(name: str, inst: Any) -> None:
+     """Structural conformance to schemas/<name>.schema.json: required keys,
+-    enum values at any depth, additionalProperties: false, string patterns.
+-    Deterministic and dependency-free; runs BEFORE anything is written."""
++    enum values at any depth, additionalProperties: false, string patterns,
++    minLength on strings and minItems on arrays.
++    Deterministic and dependency-free; runs BEFORE anything is written.
++
++    minLength is a LENGTH bound, not a non-emptiness bound -- it refuses "" and admits
++    "   ", so a code control using .strip() is strictly stronger and must not be removed
++    on the strength of the declaration (#265 Rung A)."""
+     sch = load_json(ROOT / "schemas" / f"{name}.schema.json")
+ 
+     def walk(spec: dict[str, Any], val: Any, where: str) -> None:
+@@ -3287,6 +3292,10 @@ def check_schema(name: str, inst: Any) -> None:
+             raise ValidationError(f"{name}: {label} must be a number, got {type(val).__name__}")
+         if "enum" in spec and val not in spec["enum"]:
+             raise ValidationError(f"{name}: {label}={val!r} is not one of {spec['enum']}")
++        if "minLength" in spec and isinstance(val, str) and len(val) < spec["minLength"]:
++            raise ValidationError(f"{name}: {label}={val!r} is shorter than minLength {spec['minLength']}")
++        if "minItems" in spec and isinstance(val, list) and len(val) < spec["minItems"]:
++            raise ValidationError(f"{name}: {label} has {len(val)} items, fewer than minItems {spec['minItems']}")
+         if "pattern" in spec and isinstance(val, str) and not re.fullmatch(spec["pattern"], val):
+             raise ValidationError(f"{name}: {label}={val!r} does not match {spec['pattern']}")
+         if spec.get("type") == "array" and isinstance(val, list) and "items" in spec:
+diff --git a/tests/test_badf_g03.py b/tests/test_badf_g03.py
+index f0b4db7..9082b9a 100644
+--- a/tests/test_badf_g03.py
++++ b/tests/test_badf_g03.py
+@@ -8,6 +8,14 @@ each met or justified not-applicable; and a human user-validation with real
+ participants and every major finding resolved. Every test runs the real CLI on
+ the shipped G03 example, mutated in a scratch clone -- the faithful-runner shape.
+ """
++
++# Rung A (#265, WP-2026-0138): SHADOWED, nothing stronger to re-point at. The control is
++# bare list-truthiness, so `minItems: 1` is EXACTLY equivalent and now refuses first.
++# The control is RETAINED (criterion 5) and is now unreachable on this path; recorded
++# rather than silently re-worded, per SARCHI C2. Disposition deferred, not decided.
++# Rung A (#265, WP-2026-0138): probe moved from the empty form to the whitespace form.
++# `minLength`/`minItems` are LENGTH bounds and admit "   "; this control uses .strip()
++# and is STRICTLY STRONGER, so the re-pointed probe still exercises the control itself.
+ import hashlib
+ import json
+ import os
+@@ -80,7 +88,7 @@ class JourneysRuleTests(G03Scratch):
+ 
+     def test_a_journey_with_no_steps_is_refused(self):
+         j = self.artifact("journeys"); j["journeys"][0]["steps"] = []; self.rewrite("journeys", j)
+-        self.refused("has no steps")
++        self.refused("steps has 0 items")
+ 
+     def test_a_duplicate_journey_id_is_refused(self):
+         j = self.artifact("journeys"); j["journeys"][1]["id"] = j["journeys"][0]["id"]; self.rewrite("journeys", j)
+@@ -113,7 +121,7 @@ class AccessibilityRuleTests(G03Scratch):
+         self.refused("not_applicable without a rationale")
+ 
+     def test_no_declared_standard_is_refused(self):
+-        a = self.artifact("accessibility"); a["standard"] = ""; self.rewrite("accessibility", a)
++        a = self.artifact("accessibility"); a["standard"] = "   "; self.rewrite("accessibility", a)
+         self.refused("no standard declared")
+ 
+ 
+diff --git a/tests/test_badf_g04.py b/tests/test_badf_g04.py
+index 8838b83..4a93d4f 100644
+--- a/tests/test_badf_g04.py
++++ b/tests/test_badf_g04.py
+@@ -11,6 +11,11 @@ fitness obligations are measurable; ADRs bind to real elements/requirements/NFRs
+ data-model entities and api-contract interfaces resolve to the baseline; and
+ operability declares failure/recovery/observability. Faithful-runner shape.
+ """
++
++# Rung A (#265, WP-2026-0138): SHADOWED, nothing stronger to re-point at. The control is
++# bare list-truthiness, so `minItems: 1` is EXACTLY equivalent and now refuses first.
++# The control is RETAINED (criterion 5) and is now unreachable on this path; recorded
++# rather than silently re-worded, per SARCHI C2. Disposition deferred, not decided.
+ import hashlib
+ import json
+ import os
+@@ -156,7 +161,7 @@ class OperabilityRuleTests(G04Scratch):
+ 
+     def test_operability_without_failure_modes_is_refused(self):
+         d = self.artifact("operability-design"); d["failure_modes"] = []; self.rewrite("operability-design", d)
+-        self.refused("no failure modes")
++        self.refused("failure_modes has 0 items")
+ 
+     def test_a_failure_mode_without_recovery_is_refused(self):
+         d = self.artifact("operability-design"); d["failure_modes"][0]["recovery"] = ""; self.rewrite("operability-design", d)
+diff --git a/tests/test_badf_g05.py b/tests/test_badf_g05.py
+index ba56bbd..aca2d6f 100644
+--- a/tests/test_badf_g05.py
++++ b/tests/test_badf_g05.py
+@@ -9,6 +9,11 @@ controls, or an uncontrolled dependency, is refused); and residual risk is owned
+ by a human security_authority whose approval is digest-bound to the threat model.
+ Faithful-runner shape.
+ """
++
++# Rung A (#265, WP-2026-0138): SHADOWED, nothing stronger to re-point at. The control is
++# bare list-truthiness, so `minItems: 1` is EXACTLY equivalent and now refuses first.
++# The control is RETAINED (criterion 5) and is now unreachable on this path; recorded
++# rather than silently re-worded, per SARCHI C2. Disposition deferred, not decided.
+ import hashlib
+ import json
+ import os
+@@ -78,7 +83,7 @@ class ThreatModelRuleTests(G05Scratch):
+ 
+     def test_no_threats_is_refused(self):
+         t = self.artifact("threat-model"); t["threats"] = []; self.rewrite("threat-model", t)
+-        self.refused("a threat model of nothing controls nothing")
++        self.refused("threats has 0 items")
+ 
+ 
+ class PrivacyRuleTests(G05Scratch):
+diff --git a/tests/test_badf_g06.py b/tests/test_badf_g06.py
+index 04d0580..33cf2f3 100644
+--- a/tests/test_badf_g06.py
++++ b/tests/test_badf_g06.py
+@@ -57,6 +57,24 @@ class G06Scratch(unittest.TestCase):
+         self.assertIn(needle, r.stderr, r.stderr)
+ 
+ 
++# Rung A (#265, WP-2026-0138) re-pointed the probes in this module. Two different things
++# happened and the difference is the point:
++#
++#   RE-POINTED -- description / verifies / method / environments / stop_conditions.
++#     Their code controls use `.strip()` (or filter on it), so they are STRICTLY STRONGER
++#     than `minLength: 1` / `minItems: 1`, which are LENGTH bounds and admit "   ". The
++#     probe moved from "" / [] to "   " / ["   "], which the schema admits and only the
++#     code control refuses. These still assert their own control's message.
++#
++#   SHADOWED, NOTHING STRONGER TO RE-POINT AT -- tasks / planned_tests / steps.
++#     Their controls are bare list-truthiness (`if not tasks:`), so `minItems: 1` is
++#     EXACTLY equivalent and now refuses first. There is no degenerate form the code
++#     catches and the schema does not, so the assertion moves to the schema's message.
++#     The control is RETAINED (criterion 5 forbids removing one here) and is now
++#     unreachable on this path; its disposition is deferred, not decided. Recorded rather
++#     than silently re-worded, per SARCHI C2 on #265.
++
++
+ class G06ExampleTests(G06Scratch):
+     def test_shipped_example_renders_approved(self):
+         r = self.cli(); self.assertEqual(r.returncode, 0, r.stderr); self.assertIn("APPROVED", r.stdout)
+@@ -70,10 +88,10 @@ class G06ExampleTests(G06Scratch):
+ class WorkBreakdownRuleTests(G06Scratch):
+     def test_no_tasks_is_refused(self):
+         wb = self.artifact("work-breakdown"); wb["tasks"] = []; self.rewrite("work-breakdown", wb)
+-        self.refused("an empty breakdown bounds no work")
++        self.refused("tasks has 0 items")
+ 
+     def test_a_task_without_a_description_is_refused(self):
+-        wb = self.artifact("work-breakdown"); wb["tasks"][0]["description"] = ""; self.rewrite("work-breakdown", wb)
++        wb = self.artifact("work-breakdown"); wb["tasks"][0]["description"] = "   "; self.rewrite("work-breakdown", wb)
+         self.refused("has no description")
+ 
+     def test_a_dangling_dependency_is_refused(self):
+@@ -90,30 +108,30 @@ class WorkBreakdownRuleTests(G06Scratch):
+ class TestPlanRuleTests(G06Scratch):
+     def test_no_planned_tests_is_refused(self):
+         tp = self.artifact("test-plan"); tp["planned_tests"] = []; self.rewrite("test-plan", tp)
+-        self.refused("cannot be established from an empty plan")
++        self.refused("planned_tests has 0 items")
+ 
+     def test_a_planned_test_that_verifies_nothing_is_refused(self):
+-        tp = self.artifact("test-plan"); tp["planned_tests"][0]["verifies"] = ""; self.rewrite("test-plan", tp)
++        tp = self.artifact("test-plan"); tp["planned_tests"][0]["verifies"] = "   "; self.rewrite("test-plan", tp)
+         self.refused("names nothing it verifies")
+ 
+ 
+ class ReleasePlanRuleTests(G06Scratch):
+     def test_no_environments_is_refused(self):
+-        rp = self.artifact("release-plan"); rp["environments"] = []; self.rewrite("release-plan", rp)
++        rp = self.artifact("release-plan"); rp["environments"] = ["   "]; self.rewrite("release-plan", rp)
+         self.refused("environments and resources must be ready")
+ 
+     def test_no_steps_is_refused(self):
+         rp = self.artifact("release-plan"); rp["steps"] = []; self.rewrite("release-plan", rp)
+-        self.refused("a release with no steps is not a plan")
++        self.refused("steps has 0 items")
+ 
+ 
+ class RollbackPlanRuleTests(G06Scratch):
+     def test_no_method_is_refused(self):
+-        rb = self.artifact("rollback-plan"); rb["method"] = ""; self.rewrite("rollback-plan", rb)
++        rb = self.artifact("rollback-plan"); rb["method"] = "   "; self.rewrite("rollback-plan", rb)
+         self.refused("rollback must be executable")
+ 
+     def test_no_stop_conditions_is_refused(self):
+-        rb = self.artifact("rollback-plan"); rb["stop_conditions"] = []; self.rewrite("rollback-plan", rb)
++        rb = self.artifact("rollback-plan"); rb["stop_conditions"] = ["   "]; self.rewrite("rollback-plan", rb)
+         self.refused("a rollback plan states when to stop")
+ 
+ 
+diff --git a/tests/test_badf_release_validation_binding.py b/tests/test_badf_release_validation_binding.py
+index 19c9ee1..1bb4f51 100644
+--- a/tests/test_badf_release_validation_binding.py
++++ b/tests/test_badf_release_validation_binding.py
+@@ -16,6 +16,14 @@ one class's payload in another's slot structurally.
+ Vacuity discipline (#234): every sweep below iterates a literal tuple, and every filtered
+ lookup is followed by an assertion that the filter matched.
+ """
++
++# Rung A (#265, WP-2026-0138): the four EMPTY-LIST probes below are SHADOWED -- their
++# controls are bare list-truthiness, so `minItems: 1` is EXACTLY equivalent and refuses
++# first. Nothing stronger exists to re-point them at, so the assertion moves to the
++# schema message; the controls are RETAINED (criterion 5) and are now unreachable on
++# this path. Recorded per SARCHI C2, not silently re-worded. The neighbouring probes
++# (non-executable abort, threshold bound after the run) are untouched: they are not
++# emptiness tests and their controls still fire with their own VAL-I* messages.
+ import copy
+ import json
+ import sys
+@@ -236,7 +244,7 @@ class PerClassControlTests(unittest.TestCase):
+     def test_security_with_empty_obligations_is_refused(self):  # V9
+         e = typed("security-validation")
+         e["binding"]["security_obligations"] = []
+-        with self.assertRaisesRegex(gate.ValidationError, "routing decision"):
++        with self.assertRaisesRegex(gate.ValidationError, "security_obligations has 0 items"):
+             run(e)
+ 
+     def test_security_self_accepted_risk_is_unrepresentable(self):  # V9 / VAL-I09 via schema enum
+@@ -249,7 +257,7 @@ class PerClassControlTests(unittest.TestCase):
+     def test_performance_with_no_measurements_is_refused(self):  # V10 / VAL-I10
+         e = typed("performance-test")
+         e["binding"]["measurements"] = []
+-        with self.assertRaisesRegex(gate.ValidationError, "VAL-I10"):
++        with self.assertRaisesRegex(gate.ValidationError, "measurements has 0 items"):
+             run(e)
+ 
+     def test_performance_threshold_bound_after_the_run_is_refused(self):  # V10 / VAL-I06
+@@ -273,7 +281,7 @@ class PerClassControlTests(unittest.TestCase):
+     def test_resilience_without_abort_conditions_is_refused(self):  # V11 / VAL-I11
+         e = typed("resilience-test")
+         e["binding"]["fault"]["abort_conditions"] = []
+-        with self.assertRaisesRegex(gate.ValidationError, "VAL-I11"):
++        with self.assertRaisesRegex(gate.ValidationError, "abort_conditions has 0 items"):
+             run(e)
+ 
+     def test_resilience_nonexecutable_abort_is_refused(self):  # V11 / VAL-I11
+@@ -322,7 +330,7 @@ class PerClassControlTests(unittest.TestCase):
+     def test_quality_with_no_dimensions_is_refused(self):  # V12
+         e = typed("quality-validation")
+         e["binding"]["quality_dimensions"] = []
+-        with self.assertRaisesRegex(gate.ValidationError, "validated nothing"):
++        with self.assertRaisesRegex(gate.ValidationError, "quality_dimensions has 0 items"):
+             run(e)
+ 
+ 
+diff --git a/tests/test_badf_research.py b/tests/test_badf_research.py
+index 4968b94..58e3397 100644
+--- a/tests/test_badf_research.py
++++ b/tests/test_badf_research.py
+@@ -8,6 +8,10 @@ and an OBSERVED claim on a primary source. Research grants no implementation
+ authority. Later work packages add challenge, state and traceability
+ controls. Every test mutates a copy of the shipped example and runs the CLI.
+ """
++
++# Rung A (#265, WP-2026-0138): probe moved from the empty form to the whitespace form.
++# `minLength`/`minItems` are LENGTH bounds and admit "   "; this control uses .strip()
++# and is STRICTLY STRONGER, so the re-pointed probe still exercises the control itself.
+ import copy
+ import json
+ import subprocess
+@@ -397,11 +401,11 @@ class ScopeContractTests(ResearchRecordTests):
+         self.refused(rec, "stop_conditions")
+ 
+     def test_an_empty_assumption_is_refused(self):
+-        rec = copy.deepcopy(EXAMPLE); rec["assumptions"] = ["a real assumption", ""]
++        rec = copy.deepcopy(EXAMPLE); rec["assumptions"] = ["a real assumption", "   "]
+         self.refused(rec, "empty assumption")
+ 
+     def test_an_empty_decision_question_is_refused(self):
+-        rec = copy.deepcopy(EXAMPLE); rec["decision_context"] = {"decision_question": ""}
++        rec = copy.deepcopy(EXAMPLE); rec["decision_context"] = {"decision_question": "   "}
+         self.refused(rec, "decision_context.decision_question is empty")
+ 
+     def test_changing_only_framing_leaves_the_evidence_digest_valid(self):
+diff --git a/tests/test_badf_schema_length_bounds.py b/tests/test_badf_schema_length_bounds.py
+new file mode 100644
+index 0000000..23c8cdb
+--- /dev/null
++++ b/tests/test_badf_schema_length_bounds.py
+@@ -0,0 +1,209 @@
++"""Rung A (#265, WP-2026-0138): check_schema enforces `minLength` and `minItems`, red-first.
++
++Before this change the walker implemented exactly seven keywords -- `type`, `properties`,
++`required`, `additionalProperties`, `enum`, `pattern`, `items` -- established by AST
++enumeration over `check_schema`, not by testing a guessed candidate list. `minLength` (377
++declarations across 49 files) and `minItems` (48 across 32) were declared everywhere and
++enforced nowhere: a `minLength: 1` on a governance field read as a guarantee that the field
++was non-empty and was not one.
++
++Two things this battery is careful about, because both were measured on this issue:
++
++1.  **`minLength: 1` is a LENGTH check, not a non-emptiness check.** It refuses `""` and
++    admits `"   "` and `" GHOST"`. The compensating code controls use `.strip()` and are
++    therefore STRICTLY STRONGER than the declarations they compensate for. Nothing here
++    may be read as closing the degenerate-content class (#293); it closes the exact-empty
++    instance of it. `test_the_class_is_not_closed_only_its_empty_half` pins that.
++
++2.  **Three of the 425 declaration sites are buried in `anyOf`**, which the walker still has
++    no branch for, so this change reaches 422 and not 425.
++    `test_the_anyof_buried_sites_are_still_unenforced` pins that too, so a later reader does
++    not infer full coverage from a green suite.
++
++The fixture is `badf/seats.json` against `seats.schema.json` -- a REAL landed record, and
++the one schema `validate_repo()` actually hands to `check_schema` (measured: instrumenting
++the function and running `validate_repo()` yields exactly `['seats']`). It carries both
++required depths: a root-level array bound and a bound nested inside array items.
++"""
++import copy
++import importlib.util
++import json
++import shutil
++import sys
++import tempfile
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++ROOT = Path(__file__).resolve().parents[1]
++GATE_PY = ROOT / "scripts" / "badf_gate.py"
++ROSTER = ROOT / "badf" / "seats.json"
++
++# The exact source block this rung adds. The mutation battery removes it verbatim, so a
++# drift between this string and the gate fails loudly rather than silently disarming the
++# discrimination (an instrument the fix can silence is the defect one level up).
++RUNG_A_BRANCH = '''        if "minLength" in spec and isinstance(val, str) and len(val) < spec["minLength"]:
++            raise ValidationError(f"{name}: {label}={val!r} is shorter than minLength {spec['minLength']}")
++        if "minItems" in spec and isinstance(val, list) and len(val) < spec["minItems"]:
++            raise ValidationError(f"{name}: {label} has {len(val)} items, fewer than minItems {spec['minItems']}")
++'''
++
++
++def roster():
++    return json.loads(ROSTER.read_text(encoding="utf-8"))
++
++
++class RungADeclaredSitesTests(unittest.TestCase):
++    """The three sites this fixture exercises are declared, at two different depths."""
++
++    def test_the_fixture_carries_both_required_depths(self):
++        sch = json.loads((ROOT / "schemas" / "seats.schema.json").read_text(encoding="utf-8"))
++        seats = sch["properties"]["seats"]
++        self.assertEqual(seats.get("minItems"), 1, "root-level array bound absent")
++        item = seats["items"]["properties"]
++        self.assertEqual(item["id"].get("minLength"), 1, "nested string bound absent")
++        self.assertEqual(item["charter_refs"].get("minItems"), 1, "nested array bound absent")
++
++
++class RungAEnforcementTests(unittest.TestCase):
++
++    def test_the_real_landed_roster_is_still_admitted(self):
++        """NEGATIVE CONTROL (criterion 3). The rule must not refuse conforming records."""
++        gate.check_schema("seats", roster())
++
++    def test_minitems_refuses_an_empty_root_level_array(self):
++        """DEPTH 1 -- root-level array."""
++        r = roster()
++        r["seats"] = []
++        with self.assertRaises(gate.ValidationError) as cm:
++            gate.check_schema("seats", r)
++        self.assertIn("minItems", str(cm.exception))
++
++    def test_minlength_refuses_an_empty_string_nested_in_array_items(self):
++        """DEPTH 2 -- a string inside array items. A root-only implementation passes the
++        depth-1 test above and fails this one, which is the whole reason both exist."""
++        r = roster()
++        r["seats"][0]["id"] = ""
++        with self.assertRaises(gate.ValidationError) as cm:
++            gate.check_schema("seats", r)
++        self.assertIn("minLength", str(cm.exception))
++
++    def test_minitems_refuses_an_empty_array_nested_in_array_items(self):
++        """DEPTH 2 -- an array inside array items."""
++        r = roster()
++        r["seats"][0]["charter_refs"] = []
++        with self.assertRaises(gate.ValidationError) as cm:
++            gate.check_schema("seats", r)
++        self.assertIn("minItems", str(cm.exception))
++
++    def test_the_refusal_names_path_declared_bound_and_received_value(self):
++        """Criterion 1. A refusal that does not say WHERE and WHAT is a puzzle, and
++        message-level attribution is what lets a later battery prove the right control
++        fired rather than a neighbour."""
++        r = roster()
++        r["seats"][0]["id"] = ""
++        with self.assertRaises(gate.ValidationError) as cm:
++            gate.check_schema("seats", r)
++        msg = str(cm.exception)
++        self.assertIn("seats[0].id", msg, "path absent")
++        self.assertIn("''", msg, "received value absent")
++        self.assertIn("1", msg, "declared bound absent")
++
++    def test_conforming_values_at_each_bounded_site_are_admitted(self):
++        """NEGATIVE CONTROL at each site individually -- a rule that refused these would
++        pass every refusal test above while being wrong."""
++        for field, good in (("id", "SEAT-OK"), ("charter_refs", ["docs/03-x.md"])):
++            with self.subTest(field=field):
++                r = roster()
++                r["seats"][0][field] = good
++                gate.check_schema("seats", r)
++
++
++class DegenerateContentBoundaryTests(unittest.TestCase):
++    """What this rung does NOT close, pinned so nobody infers it from a green suite."""
++
++    def test_the_class_is_not_closed_only_its_empty_half(self):
++        """`minLength: 1` is a LENGTH check. Whitespace-only and padded content still pass
++        the schema; the `.strip()` code controls are what refuse them, which is why
++        criterion 5 forbids removing a code control in this change (#290, #293)."""
++        for probe in ("   ", " GHOST"):
++            with self.subTest(probe=probe):
++                r = roster()
++                r["seats"][0]["id"] = probe
++                gate.check_schema("seats", r)   # ADMITTED by the schema layer, by design
++
++    def test_the_anyof_buried_sites_are_still_unenforced(self):
++        """Three of the 425 declaration sites sit inside `anyOf`, which the walker still has
++        no branch for. This rung reaches 422. Pinned as BEHAVIOUR rather than as a source
++        grep, so it fails the day `anyOf` is implemented -- with an instruction, not a
++        puzzle."""
++        sch = json.loads((ROOT / "schemas" / "work-package.schema.json").read_text(encoding="utf-8"))
++        self.assertIn("anyOf", sch["properties"]["objective"],
++                      "objective is no longer an anyOf; re-count the buried sites")
++        wp = json.loads((ROOT / "work" / "WP-2026-0022" / "work-package.json").read_text(encoding="utf-8"))
++        wp["objective"] = ""
++        try:
++            gate.check_schema("work-package", wp)
++        except gate.ValidationError:
++            self.fail("check_schema now refuses an empty `objective`, so the anyOf-buried "
++                      "bound is reached. `anyOf` has been implemented: update this test and "
++                      "the 422-of-425 figure in the PR body and in #265, which are now stale.")
++
++
++class MutationDiscriminationTests(unittest.TestCase):
++    """SARCHI C1. Neutering the rung's own branch must redden the battery above. Without
++    this, every assertion here could be passing on a neighbouring control -- which is the
++    exact defect #265 is about, one level up: a check that appears to guard and does not."""
++
++    @staticmethod
++    def _gate_without_rung_a(tmp: Path):
++        src = GATE_PY.read_text(encoding="utf-8")
++        if src.count(RUNG_A_BRANCH) != 1:
++            raise AssertionError(
++                f"the rung's source block appears {src.count(RUNG_A_BRANCH)} times, expected 1 -- "
++                "this battery can no longer neuter what it claims to test")
++        (tmp / "scripts").mkdir(parents=True, exist_ok=True)
++        (tmp / "scripts" / "badf_gate.py").write_text(src.replace(RUNG_A_BRANCH, ""), encoding="utf-8")
++        shutil.copytree(ROOT / "schemas", tmp / "schemas")
++        spec = importlib.util.spec_from_file_location(
++            "badf_gate_rung_a_mutant", tmp / "scripts" / "badf_gate.py")
++        mod = importlib.util.module_from_spec(spec)
++        prior = sys.dont_write_bytecode
++        sys.dont_write_bytecode = True
++        try:
++            spec.loader.exec_module(mod)
++        finally:
++            sys.dont_write_bytecode = prior
++        return mod
++
++    def test_neutering_the_branch_admits_every_probe_this_battery_refuses(self):
++        with tempfile.TemporaryDirectory() as td:
++            mutant = self._gate_without_rung_a(Path(td))
++            base = roster()
++            # POSITIVE CONTROL on the mutant: it must still be a working walker, or its
++            # silence on the probes below would mean nothing.
++            mutant.check_schema("seats", base)
++            broken = copy.deepcopy(base)
++            broken["seats"][0]["id"] = 12345          # a type violation the mutant still catches
++            with self.assertRaises(mutant.ValidationError):
++                mutant.check_schema("seats", broken)
++
++            probes = {
++                "empty root array": lambda r: r.__setitem__("seats", []),
++                "empty nested string": lambda r: r["seats"][0].__setitem__("id", ""),
++                "empty nested array": lambda r: r["seats"][0].__setitem__("charter_refs", []),
++            }
++            for name, mutate in probes.items():
++                with self.subTest(probe=name):
++                    r = copy.deepcopy(base)
++                    mutate(r)
++                    with self.assertRaises(gate.ValidationError):
++                        gate.check_schema("seats", r)        # the shipped gate REFUSES
++                    mutant.check_schema("seats", r)          # the neutered gate ADMITS
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/tests/test_badf_security_composition.py b/tests/test_badf_security_composition.py
+index 8e561fa..fa7fef9 100644
+--- a/tests/test_badf_security_composition.py
++++ b/tests/test_badf_security_composition.py
+@@ -9,6 +9,11 @@ residual risk (SEC-I12). The cross-artifact SEAM controls (SEC-I04 bidirectional
+ SEC-I01 baseline binding, semantic ref resolution) are WP-SEC-C. Every test mutates a copy
+ of the shipped example and runs the CLI.
+ """
++
++# Rung A (#265, WP-2026-0138): SHADOWED, nothing stronger to re-point at. The control is
++# bare list-truthiness, so `minItems: 1` is EXACTLY equivalent and now refuses first.
++# The control is RETAINED (criterion 5) and is now unreachable on this path; recorded
++# rather than silently re-worded, per SARCHI C2. Disposition deferred, not decided.
+ import copy
+ import json
+ import subprocess
+@@ -51,7 +56,7 @@ class StructuralControlTests(SecurityCompositionBase):
+     def test_an_empty_matrix_is_refused(self):
+         rec = copy.deepcopy(EXAMPLE)
+         rec["threats"] = []
+-        self.refused(rec, "no threats")
++        self.refused(rec, "threats has 0 items")
+ 
+     def test_a_duplicate_security_id_is_refused(self):  # SEC-C01
+         rec = copy.deepcopy(EXAMPLE)
+diff --git a/work/WP-2026-0134/work-package.json b/work/WP-2026-0134/work-package.json
+index 7f78e07..bbd84c0 100644
+--- a/work/WP-2026-0134/work-package.json
++++ b/work/WP-2026-0134/work-package.json
+@@ -56,11 +56,14 @@
+     "EVIDENCE_CORRUPTION",
+     "BUDGET_EXHAUSTED"
+   ],
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "272e6036a6f288c191b9afc208de06740846898a"
++    "base_revision": "272e6036a6f288c191b9afc208de06740846898a",
++    "landed_content_tree": "406c20122132ca15497343ec916e40d24c567ae7",
++    "composition_verified": true,
++    "landed_as": "310a660259752260142458f1e7f51976b218a79d"
+   },
+   "expected_surfaces": {
+     "files": [

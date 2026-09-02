@@ -1,0 +1,94 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0138",
+  "title": "Rung A: check_schema enforces minLength and minItems over 422 already-declared sites",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0125",
+  "objective": "Switch on the walker over declarations that already exist. `minLength` (377 declarations across 49 schema files) and `minItems` (48 across 32) are declared throughout the corpus and enforced nowhere: check_schema implements exactly seven keywords, established by AST enumeration over the function rather than by testing a candidate list. This rung adds two branches and re-points the tests that were compensating for their absence.",
+  "business_value": "A `minLength: 1` on a governance field reads as a guarantee that the field is non-empty and is not one, so authors have been paying for the gap three times over -- a declaration that does nothing, a code control that does the work, and a comment explaining the difference. It has also produced incorrect governance analysis: #293 scoped itself with \"12 of 13 are closed by schema minLength: 1\" and those closures do not execute.",
+  "in_scope": [
+    "scripts/badf_gate.py: two branches in check_schema's walker (minLength on strings, minItems on arrays) and the docstring that lists what it enforces",
+    "tests/test_badf_schema_length_bounds.py: the enforcement battery -- two depths, negative controls, and a mutation battery that neuters the rung's own branch",
+    "re-pointing the 19 tests whose probes were shadowed by the new refusal, across 7 existing test modules",
+    "CHANGELOG.md entry recording that a NEW record can now be refused where it was not before"
+  ],
+  "out_of_scope": [
+    "every other unimplemented keyword: const (27, Rung B), format (61), $ref (44, dangling -- #313), anyOf (7), minimum/maximum (5)",
+    "the 3 minLength/minItems sites buried inside anyOf -- unreachable without an anyOf branch, so this rung reaches 422 of 425",
+    "removing any compensating code control, even one now exactly shadowed -- criterion 5 forbids it here; disposition is deferred to its own issue",
+    "the degenerate-content class (#293): minLength is a LENGTH bound and admits '   ', so this closes the exact-empty instance and not the class",
+    "check_schema's docstring as a positive list (#315) -- the list is made accurate here, the negative enumeration is that issue's deliverable"
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "check_schema refuses a string shorter than its declared minLength and an array with fewer items than its declared minItems, naming path, declared bound and received value",
+    "enforcement is asserted at two depths -- a root-level array bound and a bound nested inside array items -- because a root-only implementation passes a depth-1 test",
+    "a conforming record is still admitted, asserted per bounded site, so a rule that over-refuses cannot pass the refusal tests",
+    "each new assertion is shown RED before the walker change, and neutering the rung's own source block re-admits every probe the battery refuses (SARCHI C1)",
+    "all 19 shadowed tests are re-pointed at the degenerate form only their code control catches; where no such form exists the test is recorded as SHADOWED with its control retained, never silently dropped (SARCHI C2)",
+    "no compensating code control is removed",
+    "the replay is re-run on the COMMITTED tree with the SHA cited, and the suite is reported as a diff against baseline on the same tree",
+    "the anyOf-buried sites are pinned as still-unenforced by a behavioural test, so a green suite cannot be read as full coverage"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_schema_length_bounds.py",
+    "tests/test_badf_g03.py",
+    "tests/test_badf_g04.py",
+    "tests/test_badf_g05.py",
+    "tests/test_badf_g06.py",
+    "tests/test_badf_release_validation_binding.py",
+    "tests/test_badf_research.py",
+    "tests/test_badf_security_composition.py"
+  ],
+  "evidence": [
+    "red-first run of the new battery before the walker change: 5 of 10 assertions RED, negative controls correctly green on both sides",
+    "mutation battery: the rung's source block removed verbatim from a copy, every probe re-admitted, with a positive control proving the neutered walker still works",
+    "record replay at main@310a660 with a baseline: 694 records, 292 refused with and without the rule, 0 newly refused",
+    "full suite as a diff against a green baseline on the same tree"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "BASELINE_STALE",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "310a660259752260142458f1e7f51976b218a79d"
+  },
+  "expected_surfaces": {
+    "files": [
+      "scripts/badf_gate.py",
+      "tests/test_badf_schema_length_bounds.py",
+      "tests/test_badf_g03.py",
+      "tests/test_badf_g04.py",
+      "tests/test_badf_g05.py",
+      "tests/test_badf_g06.py",
+      "tests/test_badf_release_validation_binding.py",
+      "tests/test_badf_research.py",
+      "tests/test_badf_security_composition.py",
+      "CHANGELOG.md",
+      "badf/demands/BADF-DEM-0125.json"
+    ]
+  },
+  "note": "Touches ZERO paths under schemas/ -- the declarations already exist; this switches on the walker. Confirmed to SARCHI by measurement including untracked files, so #313 (which adds a $defs block and an unscoped schemas/ sweep) is disjoint and proceeds in parallel. expected_surfaces omits badf/lockfile.json deliberately: the lockfile and the record's own work/ dir are excluded from the governed diff by construction, so declaring either is refused as C7 authority attached to nothing (GOV-0108)."
+}

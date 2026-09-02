@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "id": "DOS-WP-2026-0138-G07-v1",
+  "work_package_id": "WP-2026-0138",
+  "gate": "G07",
+  "policy_epoch": "BADF-2026-08-25",
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "change_class": "C2",
+  "author": "badf-self-dossier",
+  "author_type": "controller",
+  "evidence": [
+    {
+      "type": "source-change",
+      "path": "work/WP-2026-0138/evidence/G07/source-change.json"
+    },
+    {
+      "type": "build",
+      "path": "work/WP-2026-0138/evidence/G07/build.json"
+    },
+    {
+      "type": "unit-test",
+      "path": "work/WP-2026-0138/evidence/G07/unit-test.json"
+    },
+    {
+      "type": "documentation",
+      "path": "work/WP-2026-0138/evidence/G07/documentation.json"
+    }
+  ],
+  "approvals": [],
+  "conditions": [
+    {
+      "condition_id": "C-1",
+      "statement": "An independent reviewer distinct from the author has not recorded an approval; BADF runs under a single collaborator (recorded, not hidden -- see GITHUB_CONTROL_PLANE.md).",
+      "status": "OPEN",
+      "severity": "Major",
+      "blocking_scope": "G09",
+      "owner": "engineering_owner",
+      "closure_predicate": "a distinct human independent_reviewer records an approval, or the deviation is accepted in a decision record",
+      "closure_authority": "quality_authority"
+    },
+    {
+      "condition_id": "C-2",
+      "statement": "BLD-I04 scope containment: 1 changed path(s) fall outside the declared expected_surfaces: work/WP-2026-0134/work-package.json",
+      "status": "OPEN",
+      "severity": "Major",
+      "blocking_scope": "G07",
+      "owner": "engineering_owner",
+      "closure_predicate": "planning amends expected_surfaces to admit the paths, or the change is reverted to the declared surface",
+      "closure_authority": "quality_authority"
+    }
+  ],
+  "non_coverage": [
+    {
+      "evidence_type": "documentation",
+      "reason": "no documentation changed in this work package",
+      "declared_by": "badf-self-dossier"
+    }
+  ],
+  "exceptions": [],
+  "risks": [],
+  "council": null,
+  "disposition": "HUMAN_REQUIRED",
+  "created_at": "2026-09-02T06:19:51Z",
+  "held_because": "BADF's own work package WP-2026-0138 at G07: evidence prepared and digest-bound; the independent-reviewer condition C-1 is open under a single collaborator; a human merges. The tool binds evidence, it does not approve. Unexpected paths outside expected_surfaces: work/WP-2026-0134/work-package.json (BLD-I04) -- refused or re-authorized, never absorbed."
+}

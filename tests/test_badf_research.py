@@ -8,6 +8,10 @@ and an OBSERVED claim on a primary source. Research grants no implementation
 authority. Later work packages add challenge, state and traceability
 controls. Every test mutates a copy of the shipped example and runs the CLI.
 """
+
+# Rung A (#265, WP-2026-0138): probe moved from the empty form to the whitespace form.
+# `minLength`/`minItems` are LENGTH bounds and admit "   "; this control uses .strip()
+# and is STRICTLY STRONGER, so the re-pointed probe still exercises the control itself.
 import copy
 import json
 import subprocess
@@ -397,11 +401,11 @@ class ScopeContractTests(ResearchRecordTests):
         self.refused(rec, "stop_conditions")
 
     def test_an_empty_assumption_is_refused(self):
-        rec = copy.deepcopy(EXAMPLE); rec["assumptions"] = ["a real assumption", ""]
+        rec = copy.deepcopy(EXAMPLE); rec["assumptions"] = ["a real assumption", "   "]
         self.refused(rec, "empty assumption")
 
     def test_an_empty_decision_question_is_refused(self):
-        rec = copy.deepcopy(EXAMPLE); rec["decision_context"] = {"decision_question": ""}
+        rec = copy.deepcopy(EXAMPLE); rec["decision_context"] = {"decision_question": "   "}
         self.refused(rec, "decision_context.decision_question is empty")
 
     def test_changing_only_framing_leaves_the_evidence_digest_valid(self):

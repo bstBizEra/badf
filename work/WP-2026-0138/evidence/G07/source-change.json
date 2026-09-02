@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0138-G07-source-change",
+  "work_package_id": "WP-2026-0138",
+  "gate": "G07",
+  "claim": "the change WP-2026-0138 makes to this repository, outside its own directory and the lockfile",
+  "evidence_type": "source-change",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-09-02T06:19:51Z",
+  "completed_at": "2026-09-02T06:19:51Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0138/evidence/G07/source-change.diff",
+  "digest": "sha256:b8a76778f8f4eb02f01c9acf12bd7782d9e3edc27c3f1aa8eee2c45f5821a8f0",
+  "binding": {
+    "base_sha": "310a660259752260142458f1e7f51976b218a79d",
+    "head_sha": "6b813ebaad16a0624330cbc34bd2d9ac9f087245",
+    "content_tree": "f608fb6685f5e681fc2f9bc3f22572b0e075c4ef",
+    "changed_paths": [
+      "CHANGELOG.md",
+      "badf/demands/BADF-DEM-0125.json",
+      "scripts/badf_gate.py",
+      "tests/test_badf_g03.py",
+      "tests/test_badf_g04.py",
+      "tests/test_badf_g05.py",
+      "tests/test_badf_g06.py",
+      "tests/test_badf_release_validation_binding.py",
+      "tests/test_badf_research.py",
+      "tests/test_badf_schema_length_bounds.py",
+      "tests/test_badf_security_composition.py",
+      "work/WP-2026-0134/work-package.json"
+    ],
+    "expected_surfaces": {
+      "declared": true,
+      "files": [
+        "scripts/badf_gate.py",
+        "tests/test_badf_schema_length_bounds.py",
+        "tests/test_badf_g03.py",
+        "tests/test_badf_g04.py",
+        "tests/test_badf_g05.py",
+        "tests/test_badf_g06.py",
+        "tests/test_badf_release_validation_binding.py",
+        "tests/test_badf_research.py",
+        "tests/test_badf_security_composition.py",
+        "CHANGELOG.md",
+        "badf/demands/BADF-DEM-0125.json"
+      ]
+    },
+    "unexpected_paths": [
+      "work/WP-2026-0134/work-package.json"
+    ],
+    "change_digest": "sha256:b8a76778f8f4eb02f01c9acf12bd7782d9e3edc27c3f1aa8eee2c45f5821a8f0"
+  }
+}

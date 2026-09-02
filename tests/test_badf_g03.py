@@ -8,6 +8,14 @@ each met or justified not-applicable; and a human user-validation with real
 participants and every major finding resolved. Every test runs the real CLI on
 the shipped G03 example, mutated in a scratch clone -- the faithful-runner shape.
 """
+
+# Rung A (#265, WP-2026-0138): SHADOWED, nothing stronger to re-point at. The control is
+# bare list-truthiness, so `minItems: 1` is EXACTLY equivalent and now refuses first.
+# The control is RETAINED (criterion 5) and is now unreachable on this path; recorded
+# rather than silently re-worded, per SARCHI C2. Disposition deferred, not decided.
+# Rung A (#265, WP-2026-0138): probe moved from the empty form to the whitespace form.
+# `minLength`/`minItems` are LENGTH bounds and admit "   "; this control uses .strip()
+# and is STRICTLY STRONGER, so the re-pointed probe still exercises the control itself.
 import hashlib
 import json
 import os
@@ -80,7 +88,7 @@ class JourneysRuleTests(G03Scratch):
 
     def test_a_journey_with_no_steps_is_refused(self):
         j = self.artifact("journeys"); j["journeys"][0]["steps"] = []; self.rewrite("journeys", j)
-        self.refused("has no steps")
+        self.refused("steps has 0 items")
 
     def test_a_duplicate_journey_id_is_refused(self):
         j = self.artifact("journeys"); j["journeys"][1]["id"] = j["journeys"][0]["id"]; self.rewrite("journeys", j)
@@ -113,7 +121,7 @@ class AccessibilityRuleTests(G03Scratch):
         self.refused("not_applicable without a rationale")
 
     def test_no_declared_standard_is_refused(self):
-        a = self.artifact("accessibility"); a["standard"] = ""; self.rewrite("accessibility", a)
+        a = self.artifact("accessibility"); a["standard"] = "   "; self.rewrite("accessibility", a)
         self.refused("no standard declared")
 
 
