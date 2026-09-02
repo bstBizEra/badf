@@ -129,6 +129,7 @@
     "badf/demands/BADF-DEM-0119.json": "sha256:39bd10bca1225d9163a889b9dc6123ce0ba92bede9859d942485c06f3fdecbe3",
     "badf/demands/BADF-DEM-0120.json": "sha256:0743127e9ab24fbf80097cde4f9a9b079c332c42abac3a4d283caededefddfc4",
     "badf/demands/BADF-DEM-0121.json": "sha256:44e50f68999322c33278d6586c18e17f23843893f55f71b46cecfd58654b9f35",
+    "badf/demands/BADF-DEM-0129.json": "sha256:97d52c329e03ad3bc39f6332dcf7429b61352118c0a97b36985c6cba03dbab5a",
     "badf/lifecycle.json": "sha256:9f5218c5ca7e94feafd62acec4d90b55ea39f52c21d7639b1984dc3676cb55f3",
     "badf/mcp-registry.json": "sha256:cf93976e41ccd3bc8f8e918da96e42ffac10bce601d0c859f2639aedbb3fc85e",
     "badf/releases/BADF-BASELINE-1.0.0.json": "sha256:3b3b69e1df01592d99f65e95f2e4a9375bfec277d3ab9198b18af373795a7667",
@@ -336,7 +337,7 @@
     "skills/badf-build/references/g07-contract.md": "sha256:60ec672a63120c53485c3cbc2f9d33627e25032c14495a6415c8c62f1cb91ca8",
     "skills/badf-build/references/handoff-to-g08.md": "sha256:057a0f4c9423975e852e6d05da3601b353ba2f98106bea22d5bc34c59b79da26",
     "skills/badf-build/references/preflight.md": "sha256:b4068d75c44ce6c35de78013a18fcb760965c2ada058475d42fdc53e79a807f9",
-    "skills/badf-build/references/retry-and-budget.md": "sha256:192e2c297f6a97956f130e28de25e32f6d53f011da48305f9896f1195acc8a44",
+    "skills/badf-build/references/retry-and-budget.md": "sha256:1e50e39faaa897749dbf93bfc63c63dbe81a457beb5670a128d96f2a2b59e8c6",
     "skills/badf-build/references/scope-containment.md": "sha256:072bbafb0739f75df569c7332081369b06e78dfc24582b903a5d5760511d60a3",
     "skills/badf-build/references/self-review.md": "sha256:c0a6c68b330f39e22f25018d2e103a17bae22d976946d5ed0cac6a41eefdf0ac",
     "skills/badf-build/references/stop-conditions.md": "sha256:06941a9505c6b4f7a1ac3bb3b7608af1dbcf556fc21050f5c1f2c221ad459549",
@@ -1796,7 +1797,8 @@
     "work/WP-2026-0134/evidence/G07/unit-test.json": "sha256:e32c8e71883e0131cef2960915410cc0ac7e45013993d9160af3bdaf7c8b8d1b",
     "work/WP-2026-0134/evidence/G07/unit-test.txt": "sha256:3ebfe5e512dfeda144788ffffd16868b94226c8875f266fe231350792fa89fbc",
     "work/WP-2026-0134/gate-dossier.G07.json": "sha256:2f4fbe6353eba3c4c10b5b607b06d5972dd34aedd0306a03400219c0bfccca34",
-    "work/WP-2026-0134/work-package.json": "sha256:18088dbf2879219380c0053cf89323dc674edf8e559b0ab7db747c2a6be0ae3f"
+    "work/WP-2026-0134/work-package.json": "sha256:c5dc8394b7e440c8b168cc345c4a1ef799abe5f3bba70c3b039253efddc1ec9d",
+    "work/WP-2026-0143/work-package.json": "sha256:9f69da8226f8801edb94f99d2aadb4d349117825f6c1a79e2b64d7297ac2fe6e"
   },
   "schema_version": "1.0.0"
 }

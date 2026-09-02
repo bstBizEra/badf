@@ -17,6 +17,19 @@ attempt 3
 BLOCKED HANDOFF
 ```
 
+> **The `1 / 2 / 3` above is an ILLUSTRATION, not a threshold.** It shows the *shape* — each attempt
+> changes a hypothesis, a materially similar failure enters `ROOT_CAUSE_MODE`, exhaustion hands off
+> `BLOCKED` — using three attempts because a diagram needs a number. **Three is not the limit.**
+>
+> **The normative value is the Work Package's `execution_budget.max_attempts`**, which the schema
+> requires (`schemas/work-package.schema.json`, `execution_budget.required: ["max_attempts"]`) and the
+> gate enforces: a build whose retries exceed it is refused, and *a recorded `STOP` dominates the
+> count* (`badf_gate.py:1794-1803`). The parallel control for work-breakdown tasks refuses a budget
+> that is not a positive integer — IMP-C3 / IMP-I11, `badf_gate.py:1653-1658`.
+>
+> So a Work Package declaring `max_attempts: 5` gets five, and one declaring `2` gets two. **Reading
+> `3` off this diagram would under-run the first and over-run the second.**
+
 BADF doctrine, preserved:
 
 ```text
