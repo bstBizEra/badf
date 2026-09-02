@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0.0",
+  "id": "EVD-WP-2026-0136-G07-source-change",
+  "work_package_id": "WP-2026-0136",
+  "gate": "G07",
+  "claim": "the change WP-2026-0136 makes to this repository, outside its own directory and the lockfile",
+  "evidence_type": "source-change",
+  "producer": {
+    "id": "badf-self-dossier",
+    "type": "controller"
+  },
+  "source_revision": "HEAD",
+  "target": "bstBizEra/badf:main",
+  "toolchain": {
+    "name": "git diff",
+    "version": "1"
+  },
+  "operation": "git diff",
+  "started_at": "2026-09-02T04:13:21Z",
+  "completed_at": "2026-09-02T04:13:21Z",
+  "outcome": "PASS",
+  "artifact": "work/WP-2026-0136/evidence/G07/source-change.diff",
+  "digest": "sha256:080c3d75ddbbf1a3a7d9f9944936c565feb8dd5c209c7066f457cffd6a28d203",
+  "binding": {
+    "base_sha": "310a660259752260142458f1e7f51976b218a79d",
+    "head_sha": "3a68733f338ed60f888377027fec8be94049731a",
+    "content_tree": "493453fd1f3876fa89e12873afea8a995317a967",
+    "changed_paths": [
+      "badf/demands/BADF-DEM-0123.json",
+      "badf/skill-registry.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "skills/badf-uat/references/acceptance.md",
+      "tests/test_badf_uat_contract.py",
+      "work/WP-2026-0134/work-package.json"
+    ],
+    "expected_surfaces": {
+      "declared": true,
+      "files": [
+        "badf/demands/BADF-DEM-0123.json",
+        "badf/skill-registry.json",
+        "docs/governance/GITHUB_CONTROL_PLANE.md",
+        "skills/badf-uat/references/acceptance.md",
+        "tests/test_badf_uat_contract.py",
+        "work/WP-2026-0134/work-package.json"
+      ]
+    },
+    "unexpected_paths": [],
+    "change_digest": "sha256:080c3d75ddbbf1a3a7d9f9944936c565feb8dd5c209c7066f457cffd6a28d203"
+  }
+}

@@ -1,0 +1,199 @@
+diff --git a/badf/demands/BADF-DEM-0123.json b/badf/demands/BADF-DEM-0123.json
+new file mode 100644
+index 0000000..c0d3498
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0123.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0123",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 310,
++    "url": "https://github.com/bstBizEra/badf/issues/310",
++    "exported_at": "2026-09-02T03:10:00Z",
++    "body_digest": "sha256:c88c213b211feedc42f062efa553f19c71de5390f9895efca40060d89c72dbbf"
++  },
++  "title": "GOV-0136: WP-UAT-E — operator admission of badf-uat (SHADOWED → ACTIVE) on WP-UAT-D's evidence, with #289 and #293 open against the admitted controls",
++  "problem": "🧠 **ARCHI (BARCHI-3)** — rung **E** of `badf-uat`'s A→E ladder: **the operator's admission decision**, taken on WP-UAT-D's evidence and recorded here as the ladder requires.\n\n**Operator ruled: admit now, with the open defects on the record.** The alternative offered was to land #289 first; the operator chose admission with the defects recorded, which is the disposition this issue implements.\n\n## Ids\n\n`WP-2026-0136` / `BADF-DEM-0123` / `GOV-0136` — swept across six surfaces at `main@310a66025`, positive control PASS, **0 hits** on all three. *(The tool's next-free reads `WP-2026-0135`/`BADF-DEM-0122`; those carry my published claim for #289 and are deliberately skipped rather than reused.)*\n\n## The evidence this admission rests on — WP-UAT-D, landed `272e6036a`\n\n```\neleven G10 controls   each observed RED against its OWN message fragment\nten defect classes    injected, enum read from the schema not written down\nrejecting run         critical FAIL + classified defect + RECOMMEND_REJECT -> ADMITTED\n                      (the gate refuses malformed evidence, never an unfavourable result)\ntwo tripwires         both verified able to FIRE, not merely present\nanti-vacuity          case count asserted against ValidationError sites read by AST\n```\n\n## Precedent\n\nBoth comparable families reached `ACTIVE` on **representative** shadows with the caveat stated and a real re-shadow reserved:\n\n```\nbadf-solution-design   ACTIVE   (#145 re-shadow deferred)\nbadf-security-design   ACTIVE   (#166 re-shadow deferred)\nbadf-uat               -> this issue, with #291 as its deferred re-shadow\n```\n\n## What is being admitted WITH — recorded, not minimised\n\n**Two OPEN defects in `badf-uat`'s own control path.** These are bugs, not declared coverage gaps, and the distinction matters:\n\n| | |\n| :--- | :--- |\n| **#289** | C7/C9 match a scenario id by **substring**, so a critical failure named only by a *longer* id passes as acknowledged. Filed by me; plan approved; ids claimed; ready to engineer. |\n| **#293** | C8 admits `[\"\"]` — an empty-conditions **shape** hole a matcher fix does not touch. |\n\n**Four adversarial cases no control catches**, declared in the shadow evidence rather than fixed — led by `coverage-contradicts-observation`: *a criterion marked `covered_pass` while its own scenario's observation is `FAIL` is admitted today, and nothing in eleven controls notices.*\n\n**And the detection-quality half of the frozen D is deferred** to #291's trigger — true findings, false positives, missed criteria and criticality-flattening false negatives are not measured, because `badf-uat` is a thin router with `allowed_tools: []` and has no runtime to make that judgement.\n\n## What ACTIVE does NOT grant\n\n**`UAT-I14`/`UAT-I15` hold at every rung, including `ACTIVE`.** The capability never issues product acceptance; the recommendation vocabulary cannot express one, and the Layer-2 acceptance object requires `principal_type: human`. `ACTIVE` is a registry status, not authority.\n\n## Deliverables\n\n1. Registry `SHADOWED` → `ACTIVE`, digest unchanged.\n2. The **one exact status pin** (`tests/test_badf_uat_contract.py`) updated in the same change — the ladder's standing rung-status co-edit rule, added at D.\n3. `acceptance.md` E-rung entry recording the admission, its evidence, and the defects admitted with it — **extend-only**.\n4. `GITHUB_CONTROL_PLANE.md` per-rung section, in the established form.\n5. Demand exported from this issue.\n\n## Acceptance criteria\n\n- Registry reads `ACTIVE`; digest byte-identical to the current one (a status flip must not move the digest).\n- The exact pin asserts `ACTIVE` and is updated in the **same PR** as the registry.\n- The ladder and the control-plane section both name **#289 and #293 as open against the admitted controls**, so a later reader cannot mistake admission for a clean control path.\n- `UAT-I14`/`UAT-I15` non-grant asserted, not merely stated.\n- No change to any control's behaviour — this rung flips a status and records; it fixes nothing.\n\n**Version tier:** patch (status flip + docs + pin; no behaviour change).\n**Stage-gate:** DEV Glossary stage 10 (UAT), maturity 5.\n\n<!-- agent: architect -->\n\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-09-02T03:10:00Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Operator ruled admit-now-with-defects-recorded when offered admission after #289 lands; the choice is recorded on the issue and in the ladder rather than smoothed."
++}
+diff --git a/badf/skill-registry.json b/badf/skill-registry.json
+index 15af844..7055c8a 100644
+--- a/badf/skill-registry.json
++++ b/badf/skill-registry.json
+@@ -336,7 +336,7 @@
+       "version": "0.1.0",
+       "risk_class": "C1",
+       "allowed_tools": [],
+-      "status": "SHADOWED",
++      "status": "ACTIVE",
+       "digest": "sha256:832325d9fb624961b632ec4517240633e457210e693edbcb5efbe8f93d7fb67c"
+     },
+     {
+diff --git a/docs/governance/GITHUB_CONTROL_PLANE.md b/docs/governance/GITHUB_CONTROL_PLANE.md
+index 21db581..743f61f 100644
+--- a/docs/governance/GITHUB_CONTROL_PLANE.md
++++ b/docs/governance/GITHUB_CONTROL_PLANE.md
+@@ -2179,6 +2179,39 @@ untouched, and the amendment records what D delivers and what defers to #291 (de
+ property of a judgment a thin router with `allowed_tools: []` has no runtime to make).
+ `APPROVED`/`ACTIVE` remain the operator's admission decision at **WP-UAT-E**.
+ 
++## badf-uat → ACTIVE — operator admission on a representative shadow, with two defects named (`BADF-WP-0136` / WP-UAT-E, Issue #310 / GOV-0136)
++
++`ACTIVE` means the operator accepted WP-UAT-D's evidence. It does **not** mean the control path is
++clean, and this section exists so a later reader cannot infer that it does.
++
++**The evidence**: eleven G10 controls each observed **red against its own message fragment** — never a
++bare exit code, because passing on the wrong raise is how a control acquires a test that does not test
++it; ten `defect_class` values injected with the enum **read from the schema** rather than written down;
++a **rejecting** run (critical `FAIL`, classified defect, `RECOMMEND_REJECT`) **admitted**, since the gate
++refuses malformed evidence and never an unfavourable result; and two tripwires **verified able to fire**
++rather than merely present. Precedent is `badf-solution-design` (#145) and `badf-security-design` (#166),
++both admitted `ACTIVE` on representative corpora with the caveat stated and the real re-shadow deferred.
++
++**Admitted with two OPEN defects in its own controls** — bugs, not declared coverage gaps, and the
++distinction is the point: **#289** (C7/C9 match a scenario id by substring, so a critical failure named
++only by a longer id passes as acknowledged) and **#293** (C8 admits `[""]`, a shape hole a matcher fix
++does not touch). The operator was offered admission after #289 lands and chose admission with the
++defects on the record; that choice is recorded rather than smoothed.
++
++**Four adversarial cases no control catches** remain declared in `shadow-evidence.md`, led by
++`coverage-contradicts-observation` — a criterion marked `covered_pass` while its own scenario's
++observation is `FAIL` **is admitted today and nothing in eleven controls notices**. The
++detection-quality half of the frozen D is deferred to **#291**, whose trigger is a live scan rather
++than prose.
++
++**What `ACTIVE` does not grant.** `UAT-I14`/`UAT-I15` hold at every rung including this one, and the
++three facts that make that true — `allowed_tools == []`, a recommendation vocabulary that cannot
++express an acceptance, and a Layer-2 acceptance pinned to `principal_type: human` — are now asserted
++**together, as a property of the admitted state**, in
++`test_active_grants_no_acceptance_authority`. Verified red-first in both directions: adding an
++acceptance verb to the enum fails it, and granting a tool fails it. Registry status flip only;
++**digest unchanged**, asserted.
++
+ ## The enforcement-input ratchet — an optional input becomes loud, then mandatory (`BADF-WP-0126`, Issue #246 / GOV-0108)
+ 
+ The class, in BARCHI-3's sentence this WP exists to falsify: *a control whose input is optional is a
+diff --git a/skills/badf-uat/references/acceptance.md b/skills/badf-uat/references/acceptance.md
+index cc47287..8a89918 100644
+--- a/skills/badf-uat/references/acceptance.md
++++ b/skills/badf-uat/references/acceptance.md
+@@ -66,3 +66,33 @@ unlike #145/#166, whose prose triggers wait on a human noticing.
+ 
+ **Rung target:** `WP-UAT-D` advances the registry to **`SHADOWED`**; the exact status pin in
+ `tests/test_badf_uat_contract.py` follows this ladder.
++
++## ADMISSION — `WP-UAT-E`, operator decision (#310)
++
++**Extend-only: the `APPROVED`/`ACTIVE` bullet above is unchanged rung-A text.** This records the
++decision taken under it.
++
++`badf-uat` is admitted **`SHADOWED` → `ACTIVE`** on WP-UAT-D's evidence (landed `272e6036a`):
++eleven G10 controls each observed red against its own message fragment, ten defect classes
++injected from the schema enum, a rejecting run admitted, two tripwires verified able to fire.
++Precedent: `badf-solution-design` (#145) and `badf-security-design` (#166) both reached `ACTIVE`
++on **representative** shadows with the caveat stated and a real re-shadow deferred.
++
++**Admitted WITH two open defects in this capability's own control path** — recorded here because
++admission must not be mistaken for a clean control path:
++
++| | |
++| :--- | :--- |
++| **#289** | C7/C9 match a scenario id by **substring**: a critical failure named only by a *longer* id passes as acknowledged. Plan approved, not yet landed. |
++| **#293** | C8 admits `[""]` — an empty-conditions **shape** hole a matcher fix does not touch. |
++
++Plus four adversarial cases no control catches, declared in `shadow-evidence.md` — led by
++`coverage-contradicts-observation`, where a criterion marked `covered_pass` while its own
++scenario's observation is `FAIL` is **admitted today and nothing notices**. And the
++detection-quality half of D, deferred to **#291**'s trigger.
++
++**`ACTIVE` grants no authority.** `UAT-I14`/`UAT-I15` hold at every rung including this one:
++`allowed_tools` stays `[]`, the recommendation vocabulary cannot express an acceptance, and the
++Layer-2 acceptance pins `principal_type: human`. Those three are asserted together as a property
++of the admitted state in `tests/test_badf_uat_contract.py::test_active_grants_no_acceptance_authority`
++— **mechanical, not stated**, because admission is exactly when the non-grant starts mattering.
+diff --git a/tests/test_badf_uat_contract.py b/tests/test_badf_uat_contract.py
+index 1f91a99..b48bcb4 100644
+--- a/tests/test_badf_uat_contract.py
++++ b/tests/test_badf_uat_contract.py
+@@ -161,15 +161,48 @@ class UatContractTests(unittest.TestCase):
+         # #218: the two issues are in tension, and fixing one naively causes the other.
+         #
+         # The exact pin lives HERE, and it MOVES with the ladder rather than being relaxed away.
+-        # WP-UAT-D advances the registry to SHADOWED, declaring BOTH earned steps: VALIDATED was
++        # WP-UAT-E is the operator's admission: SHADOWED -> ACTIVE on D's evidence (#310).
++        # ACTIVE is a registry status, NOT authority -- UAT-I14/I15 hold at every rung, and the
++        # allowed_tools == [] assertion below is what makes that mechanical rather than stated.
++        # WP-UAT-D advanced the registry to SHADOWED, declaring BOTH earned steps: VALIDATED was
+         # earned at rung C and the advance was OMITTED (#268's class -- named in shadow-evidence.md
+         # rather than repaired silently), and SHADOWED is earned by D. The co-edit this comment
+         # demanded is being honoured in that PR, which is the point of writing it down.
+-        self.assertEqual("SHADOWED", entry["status"],
++        self.assertEqual("ACTIVE", entry["status"],
+                          "the ONE exact status pin for badf-uat (#218). If a rung advanced the "
+                          "registry, update this line and references/acceptance.md together; do "
+                          "not relax it to a floor -- a floor alone pins nothing.")
+         self.assertEqual(entry["allowed_tools"], [])
++
++    def test_active_grants_no_acceptance_authority(self):
++        """WP-UAT-E (#310). ACTIVE is a registry STATUS, not authority -- UAT-I14/I15 hold at
++        every rung including this one. The three facts that make that true are enforced in
++        different places (registry, schema enum, Layer-2 const), so nothing asserted them
++        TOGETHER as a property of the admitted state. This does.
++
++        It exists because admission is exactly when the non-grant starts mattering: before
++        ACTIVE nobody could mistake the capability for an acceptor; after it, someone might.
++        """
++        registry = json.loads((ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))
++        entry = next(e for e in registry["skills"] if e["name"] == "badf-uat")
++        self.assertEqual("ACTIVE", entry["status"], "this test is about the ADMITTED state")
++
++        # 1. no tools -- the capability executes nothing
++        self.assertEqual([], entry["allowed_tools"])
++
++        # 2. the recommendation vocabulary cannot EXPRESS an acceptance. Every value is a
++        #    recommendation; none is a verdict. A future edit adding "ACCEPTED" here would
++        #    grant acceptance authority by vocabulary without touching any control.
++        schema = json.loads((ROOT / "schemas" / "uat.schema.json").read_text(encoding="utf-8"))
++        rec = schema["properties"]["binding"]["properties"]["recommendation"]["enum"]
++        self.assertTrue(all(v.startswith("RECOMMEND_") for v in rec),
++                        f"a non-RECOMMEND_ value in {rec} would let the capability issue a verdict")
++        for forbidden in ("ACCEPTED", "ACCEPTED_WITH_CONDITIONS", "REJECTED"):
++            self.assertNotIn(forbidden, rec, "acceptance verbs belong to Layer 2 only")
++
++        # 3. Layer 2 -- the only place an acceptance exists -- pins a HUMAN principal.
++        acc = schema["properties"]["binding"]["properties"]["acceptance"]["properties"]
++        self.assertEqual("human", acc["accepted_by"]["properties"]["principal_type"]["const"])
+         self.assertEqual(entry["risk_class"], "C1")
+         expected = "sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest()
+         self.assertEqual(entry["digest"], expected, "registry digest must equal sha256(SKILL.md)")
+diff --git a/work/WP-2026-0134/work-package.json b/work/WP-2026-0134/work-package.json
+index 7f78e07..bbd84c0 100644
+--- a/work/WP-2026-0134/work-package.json
++++ b/work/WP-2026-0134/work-package.json
+@@ -56,11 +56,14 @@
+     "EVIDENCE_CORRUPTION",
+     "BUDGET_EXHAUSTED"
+   ],
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "272e6036a6f288c191b9afc208de06740846898a"
++    "base_revision": "272e6036a6f288c191b9afc208de06740846898a",
++    "landed_content_tree": "406c20122132ca15497343ec916e40d24c567ae7",
++    "composition_verified": true,
++    "landed_as": "310a660259752260142458f1e7f51976b218a79d"
+   },
+   "expected_surfaces": {
+     "files": [
