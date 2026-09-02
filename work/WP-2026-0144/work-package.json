@@ -1,0 +1,78 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0144",
+  "title": "An absence claim fails green: normalize the two 5+-word absence assertions, and record the direction asymmetry",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0130",
+  "objective": "Close #305 without building the instrument it asked for. The checkable population is two absence assertions carrying a 5+-word literal; both are whitespace-normalized here. The issue's durable output is the direction asymmetry, which goes to doctrine: a PRESENCE claim defeated by line-wrap fails RED and self-corrects, while an ABSENCE claim fails GREEN.",
+  "business_value": "Four seats hit this defect in one session, each after the lesson was written down. The measurement that matters is direction, not the 250 match targets the issue is titled for: only absence claims can be silently wrong, and that property is not confined to assertIn -- a status report is an absence claim too.",
+  "in_scope": [
+    "tests/test_badf_build_controls.py and tests/test_badf_instance.py: whitespace-normalize the two absence assertions carrying a 5+-word literal",
+    "docs/governance/GITHUB_CONTROL_PLANE.md: the direction asymmetry, the measurement behind it, and the declared non-coverage",
+    "carrying the WP-2026-0134 reconcile, which validate_repo requires before a new work package record"
+  ],
+  "out_of_scope": [
+    "the normalizing helper and enumeration guard #305 proposed -- the checkable population is 2, and a guard over two is what the Lean gate refuses",
+    "the 250 multi-word match targets as a population: 36 of the 38 five-plus-word targets are PRESENCE claims, which fail red and need nothing",
+    "the four originating incidents -- all ad-hoc shell searches, which no repository-side control reaches; declared, not closed",
+    "any change to what the assertions assert; only the whitespace handling of the haystack moves"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "both absence assertions normalize whitespace on the haystack before matching, and the reason is stated in-line at each site",
+    "the conversion is shown to change behaviour: a reflowed haystack that the literal form MISSES is caught by the normalized form",
+    "a negative control shows a genuinely absent phrase stays absent under normalization, so no false refusal is introduced",
+    "both affected test modules pass unchanged otherwise",
+    "the doctrine section states the asymmetry, the measurement, and the non-coverage of ad-hoc searches in the same section",
+    "no instrument, helper, or guard is added -- the population does not warrant one"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_build_controls.py",
+    "tests/test_badf_instance.py"
+  ],
+  "evidence": [
+    "direction split measured by AST over 82 discoverable test_*.py at main@310a660: presence 36 at 5+ words, absence 2",
+    "the 220 non-literal match targets classified: 0 can hold a 5+-word phrase; 13 excluded structurally because a runtime-built needle never appears in source as a phrase",
+    "behaviour-change demonstration: flat haystack both forms match; reflowed haystack the literal form misses and the normalized form catches; absent phrase stays absent under both",
+    "tests/test_badf_build_controls.py 15 tests OK; tests/test_badf_instance.py 15 tests OK"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "BASELINE_STALE",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "310a660259752260142458f1e7f51976b218a79d"
+  },
+  "expected_surfaces": {
+    "files": [
+      "tests/test_badf_build_controls.py",
+      "tests/test_badf_instance.py",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "badf/demands/BADF-DEM-0130.json",
+      "work/WP-2026-0134/work-package.json"
+    ]
+  },
+  "note": "The demand BADF-DEM-0130 is kind=discovery / status=OPEN with NO authorized_by, which is the honest state rather than an omission: authorized_by is required for every kind except discovery, because a demand is where authority enters and agents discover rather than authorize. NO SELF-DOSSIER IS ASSEMBLED -- self_dossier calls _require_authorized_demand and would correctly refuse at status != AUTHORIZED. This PR therefore stops at CI green with the missing authorization visible in the artifact. expected_surfaces omits badf/lockfile.json and this record's own work/ dir: both are excluded from the governed diff by construction, so declaring either is refused as authority attached to nothing (GOV-0108)."
+}

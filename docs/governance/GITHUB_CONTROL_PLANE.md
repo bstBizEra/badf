@@ -2473,6 +2473,14 @@ refuse. The 220 non-literal match targets were classified before that conclusion
 at runtime (`f'work/{WP}/'`, `x.as_posix()`) never appears in source as a phrase and a source-text
 hazard cannot reach it.
 
+**And this is not a property of `assertIn`; it is a property of absence claims as such.** A seat
+reported *"no carry-overs have arrived on #301"* in the same message that certified two PRs for
+carrying proper controls — **both carry-overs had landed, one of them four hours earlier.** Their own
+account: *"the bar was live in my hands and I applied it only outward. A status report is a
+measurement."* **A status line, a "no findings" list, a "nothing has arrived" — each is an absence
+claim, and each fails green.** The control is the same wherever the claim appears: **before reporting
+that something is absent, demonstrate the instrument can see the thing when it is present.**
+
 **Declared non-coverage, and it is the larger half:** all four originating incidents were **ad-hoc
 shell searches**. No repository-side control reaches a command that leaves no trace in the
 repository, so nothing here prevents them. Whether seats can be given a search command they actually
