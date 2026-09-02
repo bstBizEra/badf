@@ -1,0 +1,221 @@
+diff --git a/badf/demands/BADF-DEM-0127.json b/badf/demands/BADF-DEM-0127.json
+new file mode 100644
+index 0000000..054126d
+--- /dev/null
++++ b/badf/demands/BADF-DEM-0127.json
+@@ -0,0 +1,22 @@
++{
++  "schema_version": "1.0.0",
++  "demand_id": "BADF-DEM-0127",
++  "kind": "issue",
++  "source": {
++    "repository": "bstBizEra/badf",
++    "issue": 313,
++    "url": "https://github.com/bstBizEra/badf/issues/313",
++    "exported_at": "2026-09-02T06:05:00Z",
++    "body_digest": "sha256:4371ffc796ec1296c3109eb79f907131be3669f380e18464dc1a34d734c7643e"
++  },
++  "title": "GOV-0138: prd.schema.json has 44 $ref to a $defs block that does not exist — unresolvable and unenforced (M2_CANDIDATE)",
++  "problem": "🔎 **QA (BADF-QA)** — **`prd.schema.json` carries 44 `$ref` to a `$defs` block that does not exist. The references are unresolvable *and* unenforced, and nothing notices.**\n\n**Id claim:** `GOV-0138`. Swept across `origin/main`, all remote branch heads, issue titles + bodies, and issue comments; ceiling `GOV-0137`, next free ≥ `GOV-0139`.\n\n**Classification: `M2_CANDIDATE`.** Post-cut-line discovery; routed to M2 by default under the milestone's change-control rule. I am **not** self-promoting it into M1 — if it belongs there it is SARCHI's ruling, and the argument would be EC3 (*\"a declaration must not appear stronger than the validator that consumes it\"*).\n\n## The measurement — `main@310a660`\n\n```\nschemas/prd.schema.json\n  $ref occurrences (JSON walk)          44\n    25x  #/$defs/text\n    10x  #/$defs/nonEmptyStrings\n     9x  #/$defs/strings\n\n  top-level \"$defs\"                     absent\n  top-level \"definitions\"               absent\n  a DEFINING \"$defs\": block in the text  absent\n```\n\n**POSITIVE CONTROL:** no schema in `schemas/` defines `$defs` or `definitions` — so the absence here is not a convention I am unaware of, and the targets are genuinely missing rather than located elsewhere.\n\n**Sample sites** — these are not obscure corners:\n\n```\n$.properties.product.properties.name           -> #/$defs/text\n$.properties.product.properties.type           -> #/$defs/text\n$.properties.product.properties.stage          -> #/$defs/text\n$.properties.product.properties.owner          -> #/$defs/text\n$.properties.product.properties.target_market  -> #/$defs/text\n```\n\n## Why it is invisible\n\n`check_schema` does not implement `$ref`, so the references are never followed and their absence is never noticed. **Two independent defects stacked in the same direction:** the walker would not enforce the constraint even if the target existed, and the target does not exist so a conforming validator would *error* rather than merely under-enforce.\n\nNet: **44 PRD fields carry a shape declaration that constrains nothing.**\n\n## The general surface — every keyword `check_schema` silently accepts\n\nFound while applying @SARCHI's brief rule *verify any scope bound the issue asserts* to #293 → #265. Measured with controls (`required` implemented = True, `const` implemented = False):\n\n```\nkeyword                uses  files  implemented\ntype                   1764     55  yes\nminLength               377     49  NO — INERT\nrequired                313     55  yes\nproperties              309     55  yes\npattern                 271     53  yes\nenum                    259     55  yes\nitems                   237     46  yes\nadditionalProperties    213     50  yes\nformat                   61     21  NO — INERT\nminItems                 48     32  NO — INERT\n$ref                     44      1  NO — INERT   <- this issue\nconst                    27     21  NO — INERT   <- #265\nanyOf                     7      2  NO — INERT\nminimum                   4      3  NO — INERT\ndependencies              3      3  NO — INERT\nmaximum                   1      1  NO — INERT\n\n16 keywords present · 7 implemented · 9 inert · 572 inert declarations\n```\n\n**#265 is scoped to `const` (27). The inert surface is 572.** `minLength` alone is fourteen times larger, and #293 narrowed its own scope on the strength of *\"12 of 13 are closed by schema `minLength: 1`\"* — those twelve were never closed.\n\n## Suggested criteria\n\n1. Either the `$defs` block is added with `text` / `strings` / `nonEmptyStrings` defined, **or** the 44 refs are replaced with inline constraints. Both are defensible; silently dangling is not.\n2. **`check_schema` refuses an unresolvable `$ref`** rather than ignoring it. A reference to a missing target is a schema defect, and today it is indistinguishable from a schema with no reference at all.\n3. **Positive control:** a `$ref` to an existing target still validates. A refusal that rejects every `$ref` closes the hole by refusing everything.\n4. **Open-ended clause (#270):** which *other* unimplemented keyword has been relied on as a scope bound? `minLength` was, in #293. Walk the nine inert keywords and check each for a claim resting on it — the count above is the population, and each entry is a candidate.\n\n## Instrument disclosure\n\nOne of my probe lines — a regex counting `\"$ref\"` keys in the raw text — returned `0` where the JSON walk found 44. The regex was malformed by f-string escaping. **It did not affect the conclusion**, which rests on the JSON walk and on the separately-measured absence of a defining block, but the discrepancy is recorded rather than tidied: a `0` from a malformed pattern beside a `44` from a correct one is exactly the shape this board has spent the night learning to distrust.\n",
++  "authorized_by": {
++    "principal": "operator",
++    "principal_type": "human"
++  },
++  "recorded_at": "2026-09-02T06:05:00Z",
++  "provenance": "EXPORTED_FROM_SOURCE",
++  "status": "AUTHORIZED",
++  "note": "Backlog-clearing mission item; plan approved by SARCHI with one condition -- the $defs block must state that authoring it does NOT make the 44 $ref enforced in-gate. Attributed: the authorization is recorded under the shared BizEraERP account and carries no independent operator artifact (#261/#308)."
++}
+diff --git a/schemas/prd.schema.json b/schemas/prd.schema.json
+index 62f3e5d..88c55ce 100644
+--- a/schemas/prd.schema.json
++++ b/schemas/prd.schema.json
+@@ -326,5 +326,25 @@
+         }
+       }
+     }
++  },
++  "$defs": {
++    "$comment": "GOV-0138 / #313. These definitions resolve 44 $ref that previously pointed at a $defs block that did not exist -- unresolvable to any external validator (PointerToNowhere) and silently ignored by this repo's own walker. AUTHORING THEM DOES NOT MAKE THEM ENFORCED HERE: check_schema implements required / additionalProperties / type / enum / pattern / items and has NO $ref branch, so every reference below is inert inside the gate exactly as it was before (#265, #317). Worse for a casual reader: minLength is ALSO unimplemented, so these shapes are doubly decorative in-gate. They are real only to a conforming external validator. Do not cite a resolvable $ref here as evidence the schema layer enforces anything.",
++    "text": {
++      "type": "string",
++      "minLength": 1
++    },
++    "strings": {
++      "type": "array",
++      "items": {
++        "type": "string"
++      }
++    },
++    "nonEmptyStrings": {
++      "type": "array",
++      "items": {
++        "type": "string",
++        "minLength": 1
++      }
++    }
+   }
+ }
+diff --git a/tests/test_badf_schema_refs.py b/tests/test_badf_schema_refs.py
+new file mode 100644
+index 0000000..8791ef5
+--- /dev/null
++++ b/tests/test_badf_schema_refs.py
+@@ -0,0 +1,136 @@
++"""GOV-0138 / #313: every internal `$ref` in `schemas/` must resolve to a node that exists.
++
++`schemas/prd.schema.json` carried **44** `$ref` to `#/$defs/{text,strings,nonEmptyStrings}`
++while no `$defs` block existed anywhere in the file — and no schema in `schemas/` defined one.
++The references were unresolvable AND unenforced, and nothing noticed, because:
++
++  * this repo's walker (`check_schema`) implements required / additionalProperties / type /
++    enum / pattern / items and has **no `$ref` branch**, so refs are inert in-gate (#265);
++  * meta-validation does **not** resolve `$ref` targets, so the file read as a *valid schema*
++    and failed only at use.
++
++The sweep below is deliberately **unscoped**: it walks every schema, not `prd` alone. Fixing
++one file would have left the class, and the class is what let this sit.
++
++AIM PROOF (read site · matcher · reach), per the mission-wide form:
++
++    read site : schemas/            (the only directory holding *.schema.json)
++    matcher   : Path("schemas").rglob("*.json")  -- segment-crossing, depth-honest
++    reach     : 55 files today; `schemas/` is flat, so rglob and glob agree NOW. rglob is
++                used so a future subdirectory is covered rather than silently missed --
++                depth is a property of the matcher, not the pattern.
++
++NOTE ON DEPENDENCIES: the pointer resolver here is stdlib. `jsonschema` is NOT a declared
++dependency of this repo and CI installs nothing beyond Python — a guarded import would make
++this guard SKIP in CI, which is the vacuity this test exists to prevent. The external-validator
++reading (`PointerToNowhere` before, clean after) is recorded in the WP evidence, measured
++locally, and is not what CI relies on.
++"""
++import json
++import sys
++import unittest
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
++sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
++import badf_gate as gate  # noqa: E402
++
++SCHEMAS = gate.ROOT / "schemas"
++
++
++def _iter_refs(node, path="$"):
++    """Yield (json_path, ref) for every `$ref` in the document."""
++    if isinstance(node, dict):
++        r = node.get("$ref")
++        if isinstance(r, str):
++            yield path, r
++        for k, v in node.items():
++            yield from _iter_refs(v, f"{path}.{k}")
++    elif isinstance(node, list):
++        for i, v in enumerate(node):
++            yield from _iter_refs(v, f"{path}[{i}]")
++
++
++def _resolve(doc, ref):
++    """Resolve an internal JSON Pointer. True/False; None for an external ref."""
++    if not ref.startswith("#"):
++        return None
++    node = doc
++    for part in (p.replace("~1", "/").replace("~0", "~") for p in ref[1:].split("/") if p):
++        if isinstance(node, dict) and part in node:
++            node = node[part]
++        elif isinstance(node, list) and part.lstrip("-").isdigit() and int(part) < len(node):
++            node = node[int(part)]
++        else:
++            return False
++    return True
++
++
++class SchemaRefTests(unittest.TestCase):
++    def setUp(self):
++        self.files = sorted(SCHEMAS.rglob("*.json"))
++
++    def test_the_sweep_reaches_the_corpus_it_claims(self):
++        """Aim proof: an empty or tiny reach would make every assertion below vacuous."""
++        self.assertGreaterEqual(len(self.files), 50, "sweep reach collapsed; the guard would pass vacuously")
++        self.assertIn(SCHEMAS / "prd.schema.json", self.files, "the known instance must be in reach")
++
++    def test_no_schema_carries_an_unresolvable_ref(self):
++        """THE guard. Unscoped: its value is that it is not limited to prd.schema.json."""
++        broken, checked = [], 0
++        for f in self.files:
++            doc = json.loads(f.read_text(encoding="utf-8"))
++            for path, ref in _iter_refs(doc):
++                ok = _resolve(doc, ref)
++                if ok is None:
++                    continue
++                checked += 1
++                if not ok:
++                    broken.append(f"{f.relative_to(gate.ROOT)}:{path} -> {ref}")
++        self.assertGreater(checked, 0, "no internal $ref examined; the guard would pass vacuously")
++        self.assertEqual([], broken, f"unresolvable $ref ({checked} internal refs checked)")
++
++    def test_prd_schema_every_ref_resolves(self):
++        doc = json.loads((SCHEMAS / "prd.schema.json").read_text(encoding="utf-8"))
++        refs = [r for _, r in _iter_refs(doc)]
++        self.assertEqual(44, len(refs), "the 44 refs this issue is about")
++        self.assertTrue(all(_resolve(doc, r) for r in refs))
++
++    def test_the_defs_block_states_it_is_not_enforced_in_gate(self):
++        """SARCHI's condition: a reader must not infer live enforcement from resolvable refs."""
++        doc = json.loads((SCHEMAS / "prd.schema.json").read_text(encoding="utf-8"))
++        note = doc["$defs"]["$comment"].lower()
++        # case-insensitive: this asserts a PROPERTY of the prose, not its capitalisation
++        for token in ("no $ref branch", "inert inside the gate", "#265", "#313", "minlength"):
++            self.assertIn(token, note, token)
++        src = (gate.ROOT / "scripts/badf_gate.py").read_text(encoding="utf-8")
++        i = src.find("def check_schema")
++        self.assertNotIn('"$ref"', src[i:i + 6000], "check_schema grew a $ref branch -- the note is now WRONG, rewrite it")
++
++    def test_the_gate_cannot_see_this_change_at_all(self):
++        """`$defs`/`$ref` are not in the walker's implemented set, read by AST — so the gate's
++        verdict on any document is unchanged by definition, not by comparison.
++
++        An earlier draft of this test called `check_schema` twice on the same input and
++        compared the results, which is vacuous: it compares a function to itself and passes
++        however the walker behaves. And its 'control' used `assertNotIn("$defs", ...)`, which
++        FAILED because every `$ref` string contains the literal `#/$defs/` — a substring
++        matching a different role, which is exactly #289's class. Both are recorded here
++        rather than quietly deleted.
++        """
++        import ast
++        src = (gate.ROOT / "scripts/badf_gate.py").read_text(encoding="utf-8")
++        fn = next(n for n in ast.walk(ast.parse(src))
++                  if isinstance(n, ast.FunctionDef) and n.name == "check_schema")
++        # every string constant the walker compares against, i.e. the keywords it implements
++        consts = {c.value for c in ast.walk(fn) if isinstance(c, ast.Constant) and isinstance(c.value, str)}
++        self.assertIn("required", consts, "control: the walker's keyword set must be readable here")
++        self.assertIn("additionalProperties", consts, "control")
++        for absent in ("$ref", "$defs", "definitions"):
++            self.assertNotIn(absent, consts,
++                             f"check_schema now references {absent!r}: the $defs note in "
++                             "prd.schema.json claims it does not, and that note is now WRONG")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/work/WP-2026-0134/work-package.json b/work/WP-2026-0134/work-package.json
+index 7f78e07..bbd84c0 100644
+--- a/work/WP-2026-0134/work-package.json
++++ b/work/WP-2026-0134/work-package.json
+@@ -56,11 +56,14 @@
+     "EVIDENCE_CORRUPTION",
+     "BUDGET_EXHAUSTED"
+   ],
+-  "status": "IN_PROGRESS",
++  "status": "CLOSED",
+   "external_target": {
+     "repository": "bstBizEra/badf",
+     "branch": "main",
+-    "base_revision": "272e6036a6f288c191b9afc208de06740846898a"
++    "base_revision": "272e6036a6f288c191b9afc208de06740846898a",
++    "landed_content_tree": "406c20122132ca15497343ec916e40d24c567ae7",
++    "composition_verified": true,
++    "landed_as": "310a660259752260142458f1e7f51976b218a79d"
+   },
+   "expected_surfaces": {
+     "files": [

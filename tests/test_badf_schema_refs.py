@@ -1,0 +1,136 @@
+"""GOV-0138 / #313: every internal `$ref` in `schemas/` must resolve to a node that exists.
+
+`schemas/prd.schema.json` carried **44** `$ref` to `#/$defs/{text,strings,nonEmptyStrings}`
+while no `$defs` block existed anywhere in the file — and no schema in `schemas/` defined one.
+The references were unresolvable AND unenforced, and nothing noticed, because:
+
+  * this repo's walker (`check_schema`) implements required / additionalProperties / type /
+    enum / pattern / items and has **no `$ref` branch**, so refs are inert in-gate (#265);
+  * meta-validation does **not** resolve `$ref` targets, so the file read as a *valid schema*
+    and failed only at use.
+
+The sweep below is deliberately **unscoped**: it walks every schema, not `prd` alone. Fixing
+one file would have left the class, and the class is what let this sit.
+
+AIM PROOF (read site · matcher · reach), per the mission-wide form:
+
+    read site : schemas/            (the only directory holding *.schema.json)
+    matcher   : Path("schemas").rglob("*.json")  -- segment-crossing, depth-honest
+    reach     : 55 files today; `schemas/` is flat, so rglob and glob agree NOW. rglob is
+                used so a future subdirectory is covered rather than silently missed --
+                depth is a property of the matcher, not the pattern.
+
+NOTE ON DEPENDENCIES: the pointer resolver here is stdlib. `jsonschema` is NOT a declared
+dependency of this repo and CI installs nothing beyond Python — a guarded import would make
+this guard SKIP in CI, which is the vacuity this test exists to prevent. The external-validator
+reading (`PointerToNowhere` before, clean after) is recorded in the WP evidence, measured
+locally, and is not what CI relies on.
+"""
+import json
+import sys
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+import badf_gate as gate  # noqa: E402
+
+SCHEMAS = gate.ROOT / "schemas"
+
+
+def _iter_refs(node, path="$"):
+    """Yield (json_path, ref) for every `$ref` in the document."""
+    if isinstance(node, dict):
+        r = node.get("$ref")
+        if isinstance(r, str):
+            yield path, r
+        for k, v in node.items():
+            yield from _iter_refs(v, f"{path}.{k}")
+    elif isinstance(node, list):
+        for i, v in enumerate(node):
+            yield from _iter_refs(v, f"{path}[{i}]")
+
+
+def _resolve(doc, ref):
+    """Resolve an internal JSON Pointer. True/False; None for an external ref."""
+    if not ref.startswith("#"):
+        return None
+    node = doc
+    for part in (p.replace("~1", "/").replace("~0", "~") for p in ref[1:].split("/") if p):
+        if isinstance(node, dict) and part in node:
+            node = node[part]
+        elif isinstance(node, list) and part.lstrip("-").isdigit() and int(part) < len(node):
+            node = node[int(part)]
+        else:
+            return False
+    return True
+
+
+class SchemaRefTests(unittest.TestCase):
+    def setUp(self):
+        self.files = sorted(SCHEMAS.rglob("*.json"))
+
+    def test_the_sweep_reaches_the_corpus_it_claims(self):
+        """Aim proof: an empty or tiny reach would make every assertion below vacuous."""
+        self.assertGreaterEqual(len(self.files), 50, "sweep reach collapsed; the guard would pass vacuously")
+        self.assertIn(SCHEMAS / "prd.schema.json", self.files, "the known instance must be in reach")
+
+    def test_no_schema_carries_an_unresolvable_ref(self):
+        """THE guard. Unscoped: its value is that it is not limited to prd.schema.json."""
+        broken, checked = [], 0
+        for f in self.files:
+            doc = json.loads(f.read_text(encoding="utf-8"))
+            for path, ref in _iter_refs(doc):
+                ok = _resolve(doc, ref)
+                if ok is None:
+                    continue
+                checked += 1
+                if not ok:
+                    broken.append(f"{f.relative_to(gate.ROOT)}:{path} -> {ref}")
+        self.assertGreater(checked, 0, "no internal $ref examined; the guard would pass vacuously")
+        self.assertEqual([], broken, f"unresolvable $ref ({checked} internal refs checked)")
+
+    def test_prd_schema_every_ref_resolves(self):
+        doc = json.loads((SCHEMAS / "prd.schema.json").read_text(encoding="utf-8"))
+        refs = [r for _, r in _iter_refs(doc)]
+        self.assertEqual(44, len(refs), "the 44 refs this issue is about")
+        self.assertTrue(all(_resolve(doc, r) for r in refs))
+
+    def test_the_defs_block_states_it_is_not_enforced_in_gate(self):
+        """SARCHI's condition: a reader must not infer live enforcement from resolvable refs."""
+        doc = json.loads((SCHEMAS / "prd.schema.json").read_text(encoding="utf-8"))
+        note = doc["$defs"]["$comment"].lower()
+        # case-insensitive: this asserts a PROPERTY of the prose, not its capitalisation
+        for token in ("no $ref branch", "inert inside the gate", "#265", "#313", "minlength"):
+            self.assertIn(token, note, token)
+        src = (gate.ROOT / "scripts/badf_gate.py").read_text(encoding="utf-8")
+        i = src.find("def check_schema")
+        self.assertNotIn('"$ref"', src[i:i + 6000], "check_schema grew a $ref branch -- the note is now WRONG, rewrite it")
+
+    def test_the_gate_cannot_see_this_change_at_all(self):
+        """`$defs`/`$ref` are not in the walker's implemented set, read by AST — so the gate's
+        verdict on any document is unchanged by definition, not by comparison.
+
+        An earlier draft of this test called `check_schema` twice on the same input and
+        compared the results, which is vacuous: it compares a function to itself and passes
+        however the walker behaves. And its 'control' used `assertNotIn("$defs", ...)`, which
+        FAILED because every `$ref` string contains the literal `#/$defs/` — a substring
+        matching a different role, which is exactly #289's class. Both are recorded here
+        rather than quietly deleted.
+        """
+        import ast
+        src = (gate.ROOT / "scripts/badf_gate.py").read_text(encoding="utf-8")
+        fn = next(n for n in ast.walk(ast.parse(src))
+                  if isinstance(n, ast.FunctionDef) and n.name == "check_schema")
+        # every string constant the walker compares against, i.e. the keywords it implements
+        consts = {c.value for c in ast.walk(fn) if isinstance(c, ast.Constant) and isinstance(c.value, str)}
+        self.assertIn("required", consts, "control: the walker's keyword set must be readable here")
+        self.assertIn("additionalProperties", consts, "control")
+        for absent in ("$ref", "$defs", "definitions"):
+            self.assertNotIn(absent, consts,
+                             f"check_schema now references {absent!r}: the $defs note in "
+                             "prd.schema.json claims it does not, and that note is now WRONG")
+
+
+if __name__ == "__main__":
+    unittest.main()
