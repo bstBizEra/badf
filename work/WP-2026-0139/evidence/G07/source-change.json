@@ -16,22 +16,23 @@
     "version": "1"
   },
   "operation": "git diff",
-  "started_at": "2026-09-02T05:58:07Z",
-  "completed_at": "2026-09-02T05:58:07Z",
+  "started_at": "2026-09-02T14:43:27Z",
+  "completed_at": "2026-09-02T14:43:27Z",
   "outcome": "PASS",
   "artifact": "work/WP-2026-0139/evidence/G07/source-change.diff",
-  "digest": "sha256:a4879cc636a43f2b8b6dd7cdd28844f443e3b788fe60ad4b417c04e8632ef990",
+  "digest": "sha256:12d8ae8777a1bf18a4d28e1eb8e42cc41b76bc97049d52796af6817012573af4",
   "binding": {
     "base_sha": "310a660259752260142458f1e7f51976b218a79d",
-    "head_sha": "cee400bbf4b1e43db606ddeca735ff1a1a778d82",
-    "content_tree": "af6f13507a0b8841265c1755a0b71a554bc697dd",
+    "head_sha": "b679f9d8e45430c6922271d3078bcacee4bbbefc",
+    "content_tree": "04d5865e71fac898f1f20b8c2a411977a7e79c2f",
     "changed_paths": [
       "badf/demands/BADF-DEM-0126.json",
       "docs/governance/GITHUB_CONTROL_PLANE.md",
       "tests/_doctrine.py",
       "tests/test_badf_build_activation.py",
       "tests/test_badf_doctrine_sections.py",
-      "tests/test_badf_git_activation.py"
+      "tests/test_badf_git_activation.py",
+      "work/WP-2026-0134/work-package.json"
     ],
     "expected_surfaces": {
       "declared": true,
@@ -41,10 +42,11 @@
         "tests/_doctrine.py",
         "tests/test_badf_build_activation.py",
         "tests/test_badf_doctrine_sections.py",
-        "tests/test_badf_git_activation.py"
+        "tests/test_badf_git_activation.py",
+        "work/WP-2026-0134/work-package.json"
       ]
     },
     "unexpected_paths": [],
-    "change_digest": "sha256:a4879cc636a43f2b8b6dd7cdd28844f443e3b788fe60ad4b417c04e8632ef990"
+    "change_digest": "sha256:12d8ae8777a1bf18a4d28e1eb8e42cc41b76bc97049d52796af6817012573af4"
   }
 }
