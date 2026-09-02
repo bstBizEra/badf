@@ -1,0 +1,81 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0139",
+  "title": "GOV-0121: delimit the doctrine's guarded sections with explicit sentinels instead of inferring them from heading depth",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0124",
+  "objective": "Re-anchor the two admission-section slices in the activation tests onto explicit end sentinels, so that inserting a '## ' heading inside a guarded section can no longer truncate it, and so that a deleted sentinel raises rather than silently widening the slice.",
+  "business_value": "32 token assertions were scoped by heading depth in a file with 104 headings, and nothing told an editor which two were load-bearing. The failure surfaced as a missing citation, sending the editor to re-add prose already present -- so the cost was misdirected debugging, not a red test.",
+  "in_scope": [
+    "docs/governance/GITHUB_CONTROL_PLANE.md: one end sentinel per guarded admission section",
+    "tests/_doctrine.py: section()/end_marker() helper that raises on a missing, duplicated or misplaced sentinel",
+    "tests/test_badf_git_activation.py and tests/test_badf_build_activation.py: slices re-anchored, 32 assertions unchanged",
+    "tests/test_badf_doctrine_sections.py: the guard, incl. a positive control planting a heading inside each section"
+  ],
+  "out_of_scope": [
+    "Any change to the 32 token assertions themselves -- this is a re-anchoring, not a rewrite",
+    "The other 102 '## ' headings in the doctrine file",
+    "#313's unresolvable $ref work (held by SARCHI pending a file-list check)",
+    "#306's frozen-payload divergence and #304's enumeration vacuity -- queued, explicitly not folded in"
+  ],
+  "expected_surfaces": {
+    "declared": true,
+    "files": [
+      "badf/demands/BADF-DEM-0124.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "tests/_doctrine.py",
+      "tests/test_badf_build_activation.py",
+      "tests/test_badf_doctrine_sections.py",
+      "tests/test_badf_git_activation.py"
+    ]
+  },
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "Both admission sections are delimited by explicit start/end markers; neither slice consults '\\n## '",
+    "Inserting a '## ' heading inside a guarded section no longer truncates it -- proven by a positive control that asserts the OLD slice loses the token while the new slice keeps it",
+    "A missing, duplicated or misplaced sentinel RAISES DoctrineSectionError naming the marker, what is scoped by it, and the record (#279) -- never degrading to the rest of the file",
+    "All 32 existing token assertions continue to pass unchanged"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_doctrine_sections.py (5)",
+    "tests/test_badf_git_activation.py (4)",
+    "tests/test_badf_build_activation.py (4)"
+  ],
+  "test_obligations": [
+    {
+      "id": "TEST-0139-1",
+      "claim": "an inserted '## ' heading does not truncate a guarded section, and the old slice demonstrably did",
+      "level": "unit"
+    },
+    {
+      "id": "TEST-0139-2",
+      "claim": "a missing sentinel raises and names the coupling rather than widening the slice to the rest of the file",
+      "level": "unit"
+    }
+  ],
+  "evidence": [
+    "failing-first red set",
+    "green after",
+    "compose output incl. composition record",
+    "typed G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "wp/WP-2026-0139-doctrine-section-sentinels",
+    "base_revision": "310a660",
+    "composition_verified": false
+  },
+  "note": "Lean ADVISORY. Ladder stop at 6 (minimum change to existing code) plus one small helper module, following the tests/_scratch.py precedent; a markdown-parser dependency was rejected at rung 4."
+}
