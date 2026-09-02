@@ -1,0 +1,111 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0137",
+  "title": "BADF Decision Governance / Board Authority v0.1 contract freeze",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0124",
+  "objective": "Freeze one non-activating decision-governance contract that separates constitutional authority, evidence, hard rules, risk appetite, calibrated independent council judgment, deterministic aggregation, and execution permission before any Agent Council authority expansion.",
+  "business_value": "Move BST human attention from routine operational approvals toward constitutional ownership while establishing the controls, evidence and shadow thresholds required before bounded multi-agent board authority can be considered safely.",
+  "in_scope": [
+    "normative Decision Governance / Board Authority v0.1 architecture at DESIGNED / ADVISORY_ONLY",
+    "decision-policy, risk-appetite and council-registry machine-readable contracts",
+    "ballot, decision-dossier, calibration-ledger, decision-policy, risk-appetite and council-registry schemas",
+    "deterministic integer weighted-aggregation semantics and separate risk evaluation",
+    "C3A/C3R routing, board-authority evidence, autonomous-merge predicate fixed false in v0.1",
+    "historical shadow protocol, activation ladder and contract-drift tests",
+    "extend the canonical gate's required/integrity surfaces only; no second validator"
+  ],
+  "out_of_scope": [
+    "any edit to badf/authority-matrix.json, human-reserved roles or reserved actions",
+    "enabling auto-merge, merging this PR, changing GitHub rulesets, deploying a controller or issuing credentials",
+    "active council membership or structural identities not already present in badf/seats.json",
+    "claiming calibration or decision-quality improvement before historical shadow evidence exists",
+    "allowing a chair, builder, model count, confidence or weighted majority to create authority"
+  ],
+  "target_gate": "G07",
+  "change_class": "C3",
+  "change_class_rationale": "This unit defines future authority-policy semantics and autonomous-merge preconditions. It is C3 even though every v0.1 output is advisory and the current authority matrix remains unchanged.",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "all named artifacts have one owner, version/epoch, explicit DESIGNED or ADVISORY_ONLY status, and no duplicate authority source",
+    "ballot and dossier schemas bind question/options, exact GitHub remote workspace commit/tree identity, policy digests, evidence, member/run identity and expiry",
+    "aggregation is integer, reproducible and fully specified; criterion weight and evaluator weight remain separate; self-confidence, price and brand never contribute",
+    "hard rules execute before weighting and verified blockers, conditions, stale evidence, missing quorum and C3R are non-compensable",
+    "C3A and C3R are disjoint; ambiguity routes to C3R; both remain HUMAN_REQUIRED in v0.1",
+    "autonomous_merge.eligible and policy_active are schema-fixed false; BOARD_AUTHORIZED is absent from v0.1 dossier dispositions",
+    "shadow protocol controls outcome leakage and measures false-authorize, false-block, missed blocker, quorum inflation, determinism, calibration, evidence cost and latency",
+    "ADVERSARIAL: the contract refuses weighted support over a blocker, same-family quorum inflation, stale digests and approval-with-open-conditions",
+    "the new policy and schema surfaces are required and integrity-locked through scripts/badf_gate.py; no second gate or decision engine is introduced",
+    "completion remains HUMAN_REQUIRED; later IMPLEMENTED, VALIDATED, SHADOWED, RATIFIED and ACTIVE rungs each require a separate work package"
+  ],
+  "permissions": [
+    "read: bstBizEra/badf repository, issues, PRs and attached Git-flow reference",
+    "write: GitHub issue #312 and wp/WP-2026-0137-decision-governance-contract via PR only"
+  ],
+  "tests": [
+    "python3 -m unittest tests.test_badf_decision_governance_contract",
+    "python3 scripts/badf_gate.py repo",
+    "python3 -m unittest discover -s tests -p 'test_*.py'",
+    "GitHub composed-tree governance workflow"
+  ],
+  "evidence": [
+    "ID collision sweep at main 310a660259752260142458f1e7f51976b218a79d",
+    "contract cross-file tests and JSON/schema loading",
+    "repository and full-suite CI",
+    "independent governance, security, architecture, quality, operations and evidence-auditor review",
+    "G07 self-dossier with HUMAN_REQUIRED disposition"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit through an independently authorized PR; v0.1 creates no external authority or merge effect"
+  },
+  "execution_budget": {"max_attempts": 3},
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "STALE_EVIDENCE",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "310a660259752260142458f1e7f51976b218a79d"
+  },
+  "authority_requirement": {
+    "derived_from": "C3",
+    "required_roles": ["human_sponsor", "security_authority", "release_authority", "service_owner"]
+  },
+  "risk_factors": [
+    "authority-policy ambiguity",
+    "correlated-model quorum inflation",
+    "weighted-score masking of mandatory blockers",
+    "stale digest authorization",
+    "self-approval or chair sovereignty",
+    "premature autonomous merge activation"
+  ],
+  "expected_surfaces": {
+    "files": [
+      "docs/governance/DECISION_GOVERNANCE_BOARD_AUTHORITY.md",
+      "badf/decision-policy.json",
+      "badf/risk-appetite.json",
+      "badf/council-registry.json",
+      "schemas/decision-policy.schema.json",
+      "schemas/risk-appetite.schema.json",
+      "schemas/council-registry.schema.json",
+      "schemas/ballot.schema.json",
+      "schemas/decision-dossier.schema.json",
+      "schemas/calibration-ledger.schema.json",
+      "scripts/badf_gate.py",
+      "tests/test_badf_decision_governance_contract.py",
+      "badf/demands/BADF-DEM-0124.json",
+      "badf/lockfile.json"
+    ]
+  },
+  "note": "Contract-freeze rung only. v0.1 cannot emit BOARD_AUTHORIZED, cannot alter current authority, and cannot merge itself."
+}

@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bizera.la/badf/schemas/decision-dossier.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "dossier_id", "decision_id", "work_package_id",
+    "question", "options", "decision_class", "authorization_mode",
+    "artifact_binding", "policy_bindings", "evidence_manifest", "ballots",
+    "exclusions", "hard_rule_result", "risk_result", "aggregation_result",
+    "authority_envelope", "conditions", "autonomous_merge", "disposition",
+    "created_at", "expires_at", "dossier_digest"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.1.0"},
+    "dossier_id": {"pattern": "^BADF-DOS-[0-9]{4,}$"},
+    "decision_id": {"pattern": "^BADF-DGD-[0-9]{4,}$"},
+    "work_package_id": {"pattern": "^WP-[A-Za-z0-9._-]+$"},
+    "question": {"type": "string"},
+    "options": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["option_id", "statement"],
+        "properties": {
+          "option_id": {"type": "string"},
+          "statement": {"type": "string"}
+        }
+      }
+    },
+    "decision_class": {"enum": ["C0", "C1", "C2", "C3A", "C3R"]},
+    "authorization_mode": {"const": "ADVISORY_ONLY"},
+    "artifact_binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository", "target_ref", "target_base_sha", "source_ref",
+        "source_head_sha", "source_tree_sha", "merge_base_sha",
+        "expected_result_tree", "pr_number"
+      ],
+      "properties": {
+        "repository": {"type": "string"},
+        "target_ref": {"type": "string"},
+        "target_base_sha": {"pattern": "^[0-9a-f]{40}$"},
+        "source_ref": {"type": "string"},
+        "source_head_sha": {"pattern": "^[0-9a-f]{40}$"},
+        "source_tree_sha": {"pattern": "^[0-9a-f]{40}$"},
+        "merge_base_sha": {"pattern": "^[0-9a-f]{40}$"},
+        "expected_result_tree": {"pattern": "^[0-9a-f]{40}$"},
+        "pr_number": {"type": "integer"}
+      }
+    },
+    "policy_bindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision_policy_digest", "risk_appetite_digest",
+        "council_registry_digest", "authority_matrix_digest",
+        "calibration_ledger_digest"
+      ],
+      "properties": {
+        "decision_policy_digest": {"pattern": "^sha256:[0-9a-f]{64}$"},
+        "risk_appetite_digest": {"pattern": "^sha256:[0-9a-f]{64}$"},
+        "council_registry_digest": {"pattern": "^sha256:[0-9a-f]{64}$"},
+        "authority_matrix_digest": {"pattern": "^sha256:[0-9a-f]{64}$"},
+        "calibration_ledger_digest": {"pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    },
+    "evidence_manifest": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence_id", "digest", "observed_at"],
+        "properties": {
+          "evidence_id": {"type": "string"},
+          "digest": {"pattern": "^sha256:[0-9a-f]{64}$"},
+          "observed_at": {"type": "string", "format": "date-time"}
+        }
+      }
+    },
+    "ballots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ballot_id", "digest", "round"],
+        "properties": {
+          "ballot_id": {"type": "string"},
+          "digest": {"pattern": "^sha256:[0-9a-f]{64}$"},
+          "round": {"enum": [1, 5]}
+        }
+      }
+    },
+    "exclusions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ballot_id", "reason"],
+        "properties": {
+          "ballot_id": {"type": "string"},
+          "reason": {"type": "string"}
+        }
+      }
+    },
+    "hard_rule_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evaluated_before_aggregation", "passed", "failures", "verified_blockers"],
+      "properties": {
+        "evaluated_before_aggregation": {"const": true},
+        "passed": {"type": "boolean"},
+        "failures": {"type": "array", "items": {"type": "string"}},
+        "verified_blockers": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "risk_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["within_appetite", "dimensions", "reserved_risk_present"],
+      "properties": {
+        "within_appetite": {"type": "boolean"},
+        "dimensions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["dimension_id", "residual_risk_bp", "threshold_bp", "passed"],
+            "properties": {
+              "dimension_id": {"type": "string"},
+              "residual_risk_bp": {"type": "integer"},
+              "threshold_bp": {"type": ["integer", "null"]},
+              "passed": {"type": "boolean"}
+            }
+          }
+        },
+        "reserved_risk_present": {"type": "boolean"}
+      }
+    },
+    "aggregation_result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eligible_ballots", "distinct_independence_clusters",
+        "criterion_support", "overall_support", "selected_option",
+        "threshold_bp", "tie", "intermediate_values_recorded"
+      ],
+      "properties": {
+        "eligible_ballots": {"type": "integer"},
+        "distinct_independence_clusters": {"type": "integer"},
+        "criterion_support": {"type": "array", "items": {"type": "object"}},
+        "overall_support": {"type": "array", "items": {"type": "object"}},
+        "selected_option": {"type": ["string", "null"]},
+        "threshold_bp": {"type": ["integer", "null"]},
+        "tie": {"type": "boolean"},
+        "intermediate_values_recorded": {"const": true}
+      }
+    },
+    "authority_envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "current", "delegation_class", "delegation_receipt", "actor", "role",
+        "action", "target", "environment", "valid_from", "valid_until", "conditions"
+      ],
+      "properties": {
+        "current": {"type": "boolean"},
+        "delegation_class": {"enum": ["C0", "C1", "C2", "C3A", "C3R"]},
+        "delegation_receipt": {"type": ["string", "null"]},
+        "actor": {"type": "string"},
+        "role": {"type": "string"},
+        "action": {"type": "string"},
+        "target": {"type": "string"},
+        "environment": {"type": "string"},
+        "valid_from": {"type": "string"},
+        "valid_until": {"type": "string"},
+        "conditions": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "conditions": {"type": "array", "items": {"type": "string"}},
+    "autonomous_merge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eligible", "policy_active", "decision_class_delegated",
+        "board_authorized", "current_composed_tree_verified",
+        "required_ci_passed", "quorum_passed", "mandatory_lenses_passed",
+        "support_passed", "risk_passed", "conditions_closed",
+        "no_verified_blocker", "rollback_executable", "no_self_approval",
+        "authority_current", "executor_identity_current", "ruleset_permits"
+      ],
+      "properties": {
+        "eligible": {"const": false},
+        "policy_active": {"const": false},
+        "decision_class_delegated": {"type": "boolean"},
+        "board_authorized": {"const": false},
+        "current_composed_tree_verified": {"type": "boolean"},
+        "required_ci_passed": {"type": "boolean"},
+        "quorum_passed": {"type": "boolean"},
+        "mandatory_lenses_passed": {"type": "boolean"},
+        "support_passed": {"type": "boolean"},
+        "risk_passed": {"type": "boolean"},
+        "conditions_closed": {"type": "boolean"},
+        "no_verified_blocker": {"type": "boolean"},
+        "rollback_executable": {"type": "boolean"},
+        "no_self_approval": {"type": "boolean"},
+        "authority_current": {"type": "boolean"},
+        "executor_identity_current": {"type": "boolean"},
+        "ruleset_permits": {"type": "boolean"}
+      }
+    },
+    "disposition": {
+      "enum": ["RECOMMEND_AUTHORIZE", "HOLD", "REJECT", "ESCALATE", "HUMAN_REQUIRED"]
+    },
+    "created_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "dossier_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "Digest of canonical dossier bytes with dossier_digest omitted."
+    }
+  }
+}

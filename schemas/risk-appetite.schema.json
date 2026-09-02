@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bizera.la/badf/schemas/risk-appetite.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schema_version", "policy_id", "policy_epoch", "owner_role", "status", "authorization_mode", "authority_source", "uncertainty_behavior", "dimensions", "risk_calculation", "verified_blockers", "reserved_risks", "controls_by_class", "risk_acceptance_authority", "performance_or_vote_may_waive_blocker"],
+  "properties": {
+    "$schema": {"const": "../schemas/risk-appetite.schema.json"},
+    "schema_version": {"const": "0.1.0"}, "policy_id": {"pattern": "^BADF-RISK-[0-9]{4,}$"}, "policy_epoch": {"type": "string"},
+    "owner_role": {"const": "human_sponsor"}, "status": {"const": "DESIGNED"}, "authorization_mode": {"const": "ADVISORY_ONLY"},
+    "authority_source": {"const": "badf/authority-matrix.json"}, "uncertainty_behavior": {"const": "HOLD_OR_C3R"},
+    "dimensions": {
+      "type": "array", "minItems": 1,
+      "items": {"type": "object", "additionalProperties": false, "required": ["id", "c0_max_residual_bp", "c1_max_residual_bp", "c2_max_residual_bp", "c3a_max_residual_bp"], "properties": {"id": {"type": "string"}, "c0_max_residual_bp": {"type": "integer"}, "c1_max_residual_bp": {"type": "integer"}, "c2_max_residual_bp": {"type": "integer"}, "c3a_max_residual_bp": {"type": "integer"}}}
+    },
+    "risk_calculation": {
+      "type": "object", "additionalProperties": false, "required": ["probability_unit", "impact_factors_bp", "exposure_unit", "formula", "dimension_aggregation", "cross_dimension_aggregation"],
+      "properties": {"probability_unit": {"const": "basis_points"}, "impact_factors_bp": {"type": "object"}, "exposure_unit": {"const": "basis_points"}, "formula": {"type": "string"}, "dimension_aggregation": {"const": "MAX_RESIDUAL_RISK_WITHIN_DIMENSION"}, "cross_dimension_aggregation": {"const": "PROHIBITED"}}
+    },
+    "verified_blockers": {"type": "array", "items": {"type": "string"}}, "reserved_risks": {"type": "array", "items": {"type": "string"}},
+    "controls_by_class": {"type": "object"}, "risk_acceptance_authority": {"type": "object"},
+    "performance_or_vote_may_waive_blocker": {"const": false}
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "../schemas/council-registry.schema.json",
+  "schema_version": "0.1.0",
+  "registry_id": "BADF-COUNCIL-0001",
+  "registry_epoch": "BADF-COUNCIL-2026-09-02",
+  "owner_role": "human_sponsor",
+  "status": "DESIGNED",
+  "authorization_mode": "ADVISORY_ONLY",
+  "identity_source": "badf/seats.json",
+  "authority_source": "badf/authority-matrix.json",
+  "chair": {
+    "profile_id": "chair",
+    "seat_role": "coordinator",
+    "voting": false,
+    "weight_bp": 0,
+    "may": ["freeze_inputs", "normalize_ballots", "request_missing_analysis", "summarize", "explain_disposition"],
+    "may_not": ["change_ballot", "waive_blocker", "change_threshold", "suppress_minority_risk", "invent_authority", "break_tie"]
+  },
+  "profiles": [
+    {"id": "product_value", "lens": "business_value", "eligible_status": "DESIGNED", "seat_ref": null, "domain_relevance_bp": 10000},
+    {"id": "principal_engineering", "lens": "correctness", "eligible_status": "DESIGNED", "seat_ref": null, "domain_relevance_bp": 10000},
+    {"id": "architecture", "lens": "architecture_maintainability", "eligible_status": "DESIGNED", "seat_ref": null, "domain_relevance_bp": 10000},
+    {"id": "security_privacy", "lens": "security_privacy", "eligible_status": "DESIGNED", "seat_ref": null, "domain_relevance_bp": 10000},
+    {"id": "quality_verification", "lens": "quality_verification", "eligible_status": "DESIGNED", "seat_ref": "BADF-QA", "domain_relevance_bp": 10000},
+    {"id": "operations_resilience", "lens": "operations_resilience", "eligible_status": "DESIGNED", "seat_ref": null, "domain_relevance_bp": 10000},
+    {"id": "data_integration", "lens": "data_integration", "eligible_status": "DESIGNED", "seat_ref": null, "domain_relevance_bp": 10000},
+    {"id": "contrarian_red_team", "lens": "adversarial_challenge", "eligible_status": "DESIGNED", "seat_ref": "BADF-REV", "domain_relevance_bp": 10000},
+    {"id": "evidence_auditor", "lens": "evidence_audit", "eligible_status": "DESIGNED", "seat_ref": null, "domain_relevance_bp": 10000}
+  ],
+  "runtime_identity_required": [
+    "principal",
+    "principal_type",
+    "seat_id",
+    "model_provider",
+    "model_family",
+    "model_version",
+    "run_id",
+    "context_digest"
+  ],
+  "independence_cluster_key": [
+    "model_provider",
+    "model_family",
+    "context_lineage",
+    "toolchain_lineage"
+  ],
+  "conflicts": {
+    "author_or_authoring_run": "INELIGIBLE",
+    "same_run_duplicate": "INELIGIBLE",
+    "undeclared_material_conflict": "INELIGIBLE",
+    "same_model_family": "CORRELATED_NOT_INDEPENDENT",
+    "same_context_lineage": "CORRELATED_NOT_INDEPENDENT"
+  },
+  "sealed_rounds": [1, 5],
+  "anonymous_cross_review_round": 3,
+  "minority_risk_preservation": true,
+  "active_members": 0,
+  "grants_authority": false
+}
