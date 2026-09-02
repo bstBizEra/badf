@@ -13,7 +13,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 import badf_gate as gate  # noqa: E402
+import _doctrine  # noqa: E402
 
 DOCTRINE = gate.ROOT / "docs/governance/GITHUB_CONTROL_PLANE.md"
 
@@ -49,8 +51,7 @@ class ActivationTests(unittest.TestCase):
 
     def test_admission_doctrine_cites_authorization_landings_and_non_coverage(self):
         text = DOCTRINE.read_text(encoding="utf-8")
-        start = text.find("## badf-build → ACTIVE"); self.assertGreater(start, 0, "no BLD-E admission section")
-        end = text.find("\n## ", start + 1); section = text[start:end if end > 0 else None]
+        section = _doctrine.section(text, "## badf-build → ACTIVE")
         for token in ("#203", "#188", "5469168780", "cf431fa", "6814a24", "8f3d805", "07c23f7", "C3", "C4", "C6", "C7", "scratch", "no build controller",
                       "allowed_tools: []", "BUILD ≠ INTEGRATION", "BADF-MAIN-001", "does not erase"):
             self.assertIn(token, section, token)

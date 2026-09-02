@@ -13,7 +13,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 import badf_gate as gate  # noqa: E402
+import _doctrine  # noqa: E402
 
 FREEZE_DIGEST = "sha256:17ea1e412a1c5b35cf87b66797a82872cb2e414cb26be573a8f5ee66fba61778"
 SUBSKILLS = ("repository-state", "commit-integrity", "composition-verification",
@@ -52,10 +54,7 @@ class ActivationTests(unittest.TestCase):
 
     def test_admission_doctrine_cites_authorization_and_non_coverage(self):
         text = DOCTRINE.read_text(encoding="utf-8")
-        start = text.find("## badf-git → ACTIVE")
-        self.assertGreater(start, 0, "no GIT-J admission section")
-        end = text.find("\n## ", start + 1)
-        section = text[start:end if end > 0 else None]
+        section = _doctrine.section(text, "## badf-git → ACTIVE")
         for token in ("#169", "5467417478", "78eab75", "17ea1e41", "allowed_tools: []",
                       "GIT_CAPABILITY != GIT_AUTHORITY", "BADF-MAIN-001", "STALE_EVIDENCE", "synthetic",
                       "dirty state", "signed tag", "#160", "605f97f", "re-shadow", "IMPLEMENTED"):

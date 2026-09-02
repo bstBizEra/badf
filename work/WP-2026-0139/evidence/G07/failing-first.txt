@@ -1,0 +1,23 @@
+FAILING-FIRST — WP-2026-0139 (GOV-0121 / #279)
+captured 2026-09-02T05:27:16Z  branch wp/WP-2026-0139-doctrine-section-sentinels  base 310a660
+
+== NEGATIVE CONTROL: fixed tree, sentinels present ==
+13 passed in 1.32s
+
+== MUTATION: remove both end sentinels from the doctrine file ==
+   (this is exactly the deletion SARCHI's condition names: a sentinel is as
+    deletable as a heading is insertable)
+
+-- TEST-0139-2: a deleted sentinel must RAISE, not widen the slice --
+tests/_doctrine.py:46: DoctrineSectionError
+=========================== short test summary info ============================
+FAILED tests/test_badf_doctrine_sections.py::DoctrineSentinelTests::test_admission_sections_carry_explicit_end_markers
+FAILED tests/test_badf_doctrine_sections.py::DoctrineSentinelTests::test_duplicate_end_marker_raises
+FAILED tests/test_badf_doctrine_sections.py::DoctrineSentinelTests::test_inserted_heading_does_not_truncate_the_section
+3 failed, 2 passed in 0.71s
+
+-- and the 32 pre-existing token assertions, now coupling-enforced --
+=========================== short test summary info ============================
+FAILED tests/test_badf_git_activation.py::ActivationTests::test_admission_doctrine_cites_authorization_and_non_coverage
+FAILED tests/test_badf_build_activation.py::ActivationTests::test_admission_doctrine_cites_authorization_landings_and_non_coverage
+2 failed, 6 passed in 1.12s
