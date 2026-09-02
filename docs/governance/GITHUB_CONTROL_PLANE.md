@@ -2448,6 +2448,60 @@ Work on `BADF-WP-A` that finds problem B opens an Issue for B (`status: DISCOVER
 `discovered-by: BADF-WP-A`) and does **not** fix B in A's branch. This is `AGENTS.md`'s
 "no silent scope expansion", given a mechanism.
 
+## A contract test may pin only surfaces its own capability owns (Issue #268 / GOV-0117)
+
+**Another rung's absence is never a floor.**
+
+A rung-floor assertion that pins the **absence** of something reads as a contract and behaves as a
+freeze. It fails the moment the ladder it describes advances — and it fails *correctly*, which is
+what makes it expensive: the test is right about the snapshot and wrong about the world.
+
+```text
+INVARIANT   a property true at EVERY rung   -> belongs in a contract test
+SNAPSHOT    a property true at ONE rung     -> is a freeze wearing a contract's clothes
+```
+
+Three instances landed in one session:
+
+| assertion | correct at | wrong from |
+| :--- | :--- | :--- |
+| `assertFalse(schemas/uat.schema.json exists)` | WP-UAT-A | WP-UAT-B |
+| `assertEqual(entry["status"], "DESIGNED")` | WP-UAT-A | WP-UAT-B |
+| all four G10 types absent from `EVIDENCE_RULES` | WP-PRDY-A | any G10 B rung |
+
+The first pinned the absence of **the next rung's own deliverable** — WP-UAT-B ships
+`schemas/uat.schema.json` by rung A's own frozen ladder, so rung A asserted that its own successor
+must not happen. **The third is the severe shape:** it pinned four evidence types, two of which
+`badf-production-readiness` does not own, so a `badf-production-readiness` floor **blocked a
+`badf-uat` rung** — a deadlock between two capabilities, discoverable only when both advanced. *A
+floor that pins another capability's absence is not a floor; it is a claim on work that is not its
+own.*
+
+**What this does NOT condemn.** A capability pinning **its own** type's absence before **its own** B
+rung is correct and must stay — `test_badf_production_readiness_contract.py` asserting that
+`release-packet` and `operational-readiness` are unregistered is the rule being *followed*, not
+broken, because that skill owns both. The defect is never "an absence is asserted"; it is "an
+absence **belonging to someone else** is asserted". Read as a ban on absence-assertions, this
+section would delete the correct half along with the wrong one.
+
+**Why this is doctrine and not a guard.** `assertNotIn(own_type, EVIDENCE_RULES)` and
+`assertNotIn(other_type, EVIDENCE_RULES)` are **structurally identical, and only one is wrong** —
+distinguishing an intentional absence-assertion from an accidental freeze needs intent, not
+structure. A mechanical detector would have to read ownership, and BADF-QA already abandoned
+"assert against a derived collection" as a detector for the same reason. So the remedy is a rule
+plus a review question, and this section is that rule.
+
+**Distinct from its neighbours:** #250 is *a correct guard nothing watches*; #234 is *a guard
+vacuous over an empty set*. This is a guard that is **correct, watched, non-vacuous — and asserts
+the wrong thing.** None of the three is caught by a mutation battery: neuter the assertion and the
+suite goes green *because the assertion was the only thing failing*.
+
+The lesson is already recorded at both instance sites — a test docstring in
+`tests/test_badf_uat_contract.py`, an in-line comment in
+`tests/test_badf_production_readiness_contract.py`, the latter already stating *"a floor that pins
+another capability's absence is not a floor."* It lives **here** because a reader writing a **new**
+contract test opens neither of those files.
+
 ## Not adopted
 
 No permanent `develop` branch. Trunk-oriented: `main` ← PR ← short-lived authorized branch.

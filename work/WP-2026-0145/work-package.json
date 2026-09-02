@@ -1,0 +1,69 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0145",
+  "title": "Doctrine: a contract test may pin only surfaces its own capability owns (another rung's absence is never a floor)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0131",
+  "objective": "Close GOV-0117 (#268). Three rung-floor assertions in one session pinned the ABSENCE of something, read as contracts and behaved as freezes; the third pinned two evidence types badf-production-readiness does not own and deadlocked a badf-uat rung. The class is recorded at both instance sites -- a docstring in test_badf_uat_contract.py, an in-line comment in test_badf_production_readiness_contract.py -- but a reader writing a NEW contract test opens neither.",
+  "business_value": "A freeze wearing a contract's clothes fails correctly, which is what makes it expensive: the test is right about the snapshot and wrong about the world, and none of the three is caught by a mutation battery because neutering the assertion turns the suite green. Doctrine in the ledger a reader consults is the only place this reaches the next author.",
+  "in_scope": [
+    "docs/governance/GITHUB_CONTROL_PLANE.md: one appended section stating the rule, the INVARIANT-vs-SNAPSHOT distinction, the three instances, why it is doctrine rather than a guard, and how it differs from #250 and #234",
+    "carry the WP-2026-0134 reconcile (byte-identical to the copies in #316/#321/#326/#327; NOT #314's, which asserts a different tree)"
+  ],
+  "out_of_scope": [
+    "a mechanical guard: assertNotIn(own_type, ...) and assertNotIn(other_type, ...) are structurally identical and only one is wrong, so a detector needs intent rather than structure -- stated in the section rather than deferred silently",
+    "editing the two instance sites: both already carry the lesson and both are correct",
+    "the G07 self-dossier: BADF-DEM-0131 is kind=discovery / status=OPEN, so self_dossier (:4007) refuses it until a human authorizes. Declared, not worked around."
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "the rule appears as the section's first line in the compressed form 'another rung's absence is never a floor', so a skimming reader gets the rule before the argument",
+    "the section states WHY it is doctrine and not a guard, naming the structural-identity problem that defeats a detector",
+    "it distinguishes the class from #250 (a correct guard nothing watches) and #234 (a guard vacuous over an empty set) as correct, watched, non-vacuous, and asserting the wrong thing",
+    "it names where each instance-site record lives PRECISELY -- a docstring in one file, an in-line comment in the other -- because a doctrine line that mis-describes where its own evidence lives sends the next reader to the wrong place",
+    "ADVERSARIAL (#270): the proposition is 'a reader takes this section as licence to delete an absence-assertion'. Enumerate the absence-assertions the rule does NOT condemn -- a capability pinning its OWN type's absence before its own B rung is correct and must stay -- and confirm the section cannot be read as forbidding them."
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [],
+  "evidence": [
+    "doc/contract/governance suite green",
+    "the 3 tests referencing this file green",
+    "full suite green",
+    "repo PASS"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "310a660259752260142458f1e7f51976b218a79d"
+  },
+  "expected_surfaces": {
+    "files": [
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "badf/demands/BADF-DEM-0131.json",
+      "work/WP-2026-0134/work-package.json"
+    ]
+  },
+  "note": "Docs-only (C1): no enforcement control is introduced or strengthened -- and the section says why one cannot be, which is the finding. Authority chain openly incomplete: demand is kind=discovery with no authorized_by, legible as such in the record."
+}
