@@ -1,0 +1,74 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0141",
+  "title": "GOV-0138: author prd.schema.json's missing $defs and sweep the unresolvable-$ref class across schemas/",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0127",
+  "objective": "Resolve the 44 $ref in schemas/prd.schema.json by authoring the $defs block they point at, state in-file that doing so does not make them enforced in-gate, and add the unscoped guard whose absence let the defect sit.",
+  "business_value": "The file read as a VALID schema and failed only at use, because meta-validation does not resolve $ref targets. The guard closes the class rather than the instance; the in-file note stops a later reader citing a resolvable $ref as evidence the schema layer enforces anything.",
+  "in_scope": [
+    "schemas/prd.schema.json: author $defs {text, strings, nonEmptyStrings} with a $comment stating in-gate non-enforcement",
+    "tests/test_badf_schema_refs.py: unscoped sweep across schemas/ plus aim proof, resolver in stdlib"
+  ],
+  "out_of_scope": [
+    "Any change to check_schema -- the walker gains no $ref branch here; #265 owns that decision",
+    "Widening the sweep beyond schemas/ (templates/ is also governed; a later scope call)",
+    "#279's doctrine sentinels (WP-2026-0139, separate PR, sequenced)",
+    "#306 and #304 -- queued, explicitly not folded in"
+  ],
+  "expected_surfaces": {
+    "declared": true,
+    "files": [
+      "badf/demands/BADF-DEM-0127.json",
+      "schemas/prd.schema.json",
+      "tests/test_badf_schema_refs.py"
+    ]
+  },
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "Every $ref in schemas/prd.schema.json resolves; the 44-ref count is asserted, not assumed",
+    "No schema in schemas/ carries an unresolvable $ref -- the sweep is UNSCOPED and its reach is asserted so it cannot pass vacuously",
+    "The $defs block states that check_schema has no $ref branch and that minLength is unimplemented too, so the definitions are inert in-gate; a test fails if check_schema ever grows a $ref branch, because the note would then be wrong",
+    "Gate behaviour is unchanged, established by reading check_schema's implemented keyword set by AST rather than by comparing the function to itself"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_schema_refs.py (5)"
+  ],
+  "test_obligations": [
+    {
+      "id": "TEST-0141-1",
+      "claim": "no schema in schemas/ carries an unresolvable $ref, over a reach that is asserted",
+      "level": "unit"
+    },
+    {
+      "id": "TEST-0141-2",
+      "claim": "the $defs block declares its own in-gate non-enforcement, and the claim is falsified if check_schema grows a $ref branch",
+      "level": "unit"
+    }
+  ],
+  "evidence": [
+    "failing-first red set",
+    "green after",
+    "compose output incl. composition record",
+    "typed G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "wp/WP-2026-0141-prd-schema-defs",
+    "base_revision": "310a660",
+    "composition_verified": false
+  },
+  "note": "Lean ADVISORY. Ladder stop at 3 (stdlib): jsonschema is NOT a declared dependency and CI installs nothing, so a guarded import would make the guard SKIP in CI -- the vacuity it exists to prevent. Shapes derived from repo convention (376/89/33 occurrences), not invented."
+}
