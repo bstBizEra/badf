@@ -1803,6 +1803,7 @@
     "work/WP-2026-0138/build/session.json": "sha256:f48d7ff221de772877f1c98708a583d03891bd6906ca70386d76da6c788b0c99",
     "work/WP-2026-0138/evidence/G07/build.json": "sha256:9e14e1f050770e3d7d6f499c8afd52d94abeaf0416e37343e1a2608dd93f215b",
     "work/WP-2026-0138/evidence/G07/build.txt": "sha256:72b8c609edaf2f1bb7f9d4fdefee6a3aa089239b7dc6dac61b5a144e8cf39a57",
+    "work/WP-2026-0138/evidence/G07/composition-record.json": "sha256:708ffca0b7f63b8b1d76eec34870f787232c2ed4f8d59fd2437c1c17cf120c70",
     "work/WP-2026-0138/evidence/G07/documentation.diff": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "work/WP-2026-0138/evidence/G07/documentation.json": "sha256:730d47de45b975d1f939a338e74cb6000bb9db28dc27b4b85c7bdc3dd27c5379",
     "work/WP-2026-0138/evidence/G07/source-change.diff": "sha256:b8a76778f8f4eb02f01c9acf12bd7782d9e3edc27c3f1aa8eee2c45f5821a8f0",
