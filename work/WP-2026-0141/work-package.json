@@ -23,7 +23,8 @@
     "files": [
       "badf/demands/BADF-DEM-0127.json",
       "schemas/prd.schema.json",
-      "tests/test_badf_schema_refs.py"
+      "tests/test_badf_schema_refs.py",
+      "work/WP-2026-0134/work-package.json"
     ]
   },
   "target_gate": "G07",
@@ -70,5 +71,5 @@
     "base_revision": "310a660",
     "composition_verified": false
   },
-  "note": "Lean ADVISORY. Ladder stop at 3 (stdlib): jsonschema is NOT a declared dependency and CI installs nothing, so a guarded import would make the guard SKIP in CI -- the vacuity it exists to prevent. Shapes derived from repo convention (376/89/33 occurrences), not invented."
+  "note": "Lean ADVISORY. Ladder stop at 3 (stdlib): jsonschema is NOT a declared dependency and CI installs nothing, so a guarded import would make the guard SKIP in CI -- the vacuity it exists to prevent. Shapes derived from repo convention (376/89/33 occurrences), not invented. Carries the WP-2026-0134 reconcile: #307's landing sits unreconciled on main, and the gate refuses successors until it is closed out, so every open PR carries it (SARCHI ruling). Derived independently by running `badf_gate.py reconcile WP-2026-0134` at 310a660 rather than copied from a carrier -- landed_content_tree 406c2012, byte-identical to #316's copy at 5341 bytes. Note #314 carries 129183c1 on the same path, which is wrong."
 }
