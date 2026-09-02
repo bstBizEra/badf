@@ -1118,6 +1118,8 @@ limitation #160 (GOV-0064) — the composition fixtures judge a candidate with t
 shadow record is measured at `605f97f`; landings after it (WP-0082 itself, WP-0083…0086) are not in it —
 a re-shadow is a later work package, not a condition of this admission.
 
+<!-- end: badf-git → ACTIVE -->
+
 ## badf-git re-shadow — the record re-measured on the `main` that includes its admission (`BADF-WP-0090`, Issue #175 / GOV-0072)
 
 The GIT-I record was measured at `605f97f`. The program then landed GIT-I, the #160 harness fix and
@@ -1498,6 +1500,8 @@ a `RETRY`/`STOP` or a delegation — and are proven on scratch fixtures only; **
 executed a Work Package through the workflow. `ACTIVE` therefore means "admitted on the program's own
 builds, with four controls proven only on scratch", and not more; the first real project — or the first
 build executed under the contract — is the deferred re-shadow's trigger.
+
+<!-- end: badf-build → ACTIVE -->
 
 ## badf-engineering-verification → SHADOWED — the G08 controls on the material BADF has (`BADF-WP-0106` / WP-VER-D, Issue #207 / GOV-0089)
 
