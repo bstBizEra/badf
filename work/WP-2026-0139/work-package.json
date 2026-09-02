@@ -28,7 +28,8 @@
       "tests/_doctrine.py",
       "tests/test_badf_build_activation.py",
       "tests/test_badf_doctrine_sections.py",
-      "tests/test_badf_git_activation.py"
+      "tests/test_badf_git_activation.py",
+      "work/WP-2026-0134/work-package.json"
     ]
   },
   "target_gate": "G07",
@@ -77,5 +78,5 @@
     "base_revision": "310a660",
     "composition_verified": false
   },
-  "note": "Lean ADVISORY. Ladder stop at 6 (minimum change to existing code) plus one small helper module, following the tests/_scratch.py precedent; a markdown-parser dependency was rejected at rung 4."
+  "note": "Lean ADVISORY. Ladder stop at 6 (minimum change to existing code) plus one small helper module, following the tests/_scratch.py precedent; a markdown-parser dependency was rejected at rung 4. Carries the WP-2026-0134 reconcile: #307's landing sits unreconciled on main, and the gate refuses successors until it is closed out, so every open PR carries it (SARCHI ruling). Derived independently by running `badf_gate.py reconcile WP-2026-0134` at 310a660 rather than copied from a carrier -- landed_content_tree 406c2012, byte-identical to #316's copy at 5341 bytes. Note #314 carries 129183c1 on the same path, which is wrong."
 }
