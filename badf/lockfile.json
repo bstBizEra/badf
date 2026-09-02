@@ -526,6 +526,7 @@
     "tests/test_badf_conditions.py": "sha256:9ad65f81d3e06fe0b54d4e57d3a81020aa2268229a91d6997d39e85a32e08248",
     "tests/test_badf_council_disposition.py": "sha256:94935394329fa429c12af33b5d55bcc2088a63476d5574bfd40d185db01dd3b3",
     "tests/test_badf_decisions.py": "sha256:580ac8ecd7bdce799899a5389cdc4d3158ef49cc2c6965a899698a7a5b65a961",
+    "tests/test_badf_deferred_tripwires.py": "sha256:b23d3ebc85499ded970faa054abe0e581cbe0e41288082deafb81c306d86bc37",
     "tests/test_badf_demand.py": "sha256:316cf8cc9867184683b8b8b4fcc4afe65263721b02fc622f6925a88deaf37236",
     "tests/test_badf_durable_effect.py": "sha256:64ce917da730be8ffd60febd16ba76c459cd62d7d883d2bb5505eec6301a9aa2",
     "tests/test_badf_engineering_verification_contract.py": "sha256:3c651ad6e1a4143feaf4984bdd7900ecfdcfe47a28a519113c53c038677125c8",
