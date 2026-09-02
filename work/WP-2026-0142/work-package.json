@@ -1,0 +1,70 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0142",
+  "title": "Install and prove five tripwires for four deferred re-shadows, plus the path convention they rest on",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0128",
+  "objective": "Close #319. Six issues were deferred with the trigger written as PROSE; only badf-uat had a mechanical watch. #166's own docstring says its trigger 'is prose and has waited on a human noticing'. Adds one watch per deferral for #251, #217, #166 and #185, plus a fifth asserting the examples/-vs-work/ path convention the other four use to decide 'is it real?'.",
+  "business_value": "A caveat that depends on someone remembering is the silence C11 refuses. Five capabilities are ACTIVE carrying undischarged caveats parked on triggers nobody watches; after this, each trigger is a fact a test reads rather than a sentence someone must re-read.",
+  "in_scope": [
+    "tests/test_badf_deferred_tripwires.py: five watches (#251, #217, #166, #185, and the path convention), each carrying an aim proof of read site, matcher and reach",
+    "carry the WP-2026-0134 reconcile (derived at base 310a660, byte-identical to #316/#321/#326/#327; NOT #314's, which asserts 129183c1 at 5400 bytes)"
+  ],
+  "out_of_scope": [
+    "#212: its four control inputs are PRESENT in 22, 25, 1 and 0 records, so its caveat cannot be watched by a presence scan, and its trigger names a controller marker build/session.json does not carry. Split into four arms by SARCHI; a reading, not a scan.",
+    "closing the four child issues: an author proving their own control is the shape being corrected. REV verifies independently, covering aim as well as firing, and the children close on their verdict.",
+    "the G07 self-dossier: BADF-DEM-0128 is kind=discovery / status=OPEN, so self_dossier (:4007) refuses it until a human authorizes. Declared, not worked around."
+  ],
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "each of the four deferral watches is GREEN today and observed RED under a mutation that makes its own trigger true, with the unmutated negative control green before and after",
+    "the path-convention watch is asserted rather than documented, because four watches depend on it and if it breaks they stay green while scanning the wrong tree",
+    "every watch carries an aim proof naming READ SITE, MATCHER and REACH -- a positive control cannot detect a mis-aimed watch, since the mutation manufactures the very condition the aim gets wrong",
+    "no watch uses a depth-fixed glob: the tree contains a doubled work/WP-2026-0010/evidence/G07/G07/ holding eight tracked files, so a fixed-depth pattern is provably blind one level down",
+    "ADVERSARIAL (#270): the proposition is 'a watch is green for a reason unrelated to its trigger'. For #217, whose four named types ALREADY exist, show the discriminator is the binding and that all four pre-existing objects lack it -- green because the thing is absent, not because the watch looks where it never appears."
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_deferred_tripwires.py"
+  ],
+  "evidence": [
+    "seven-arm mutation battery, each observed RED then restored",
+    "full suite green",
+    "repo PASS"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "310a660259752260142458f1e7f51976b218a79d"
+  },
+  "expected_surfaces": {
+    "files": [
+      "tests/test_badf_deferred_tripwires.py",
+      "badf/demands/BADF-DEM-0128.json",
+      "work/WP-2026-0134/work-package.json"
+    ]
+  },
+  "note": "C2: adds tests only, no enforcement surface changed. The first draft carried a fifth watch for #212 scanning build.json for fields that never appear there; it was green AND its positive control PASSED, because injecting a field into the wrong file lights that file up. Removed, and the aim-proof requirement is the remedy. Authority chain openly incomplete: demand is kind=discovery with no authorized_by."
+}
