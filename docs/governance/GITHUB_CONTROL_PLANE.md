@@ -2179,6 +2179,41 @@ untouched, and the amendment records what D delivers and what defers to #291 (de
 property of a judgment a thin router with `allowed_tools: []` has no runtime to make).
 `APPROVED`/`ACTIVE` remain the operator's admission decision at **WP-UAT-E**.
 
+## badf-uat → ACTIVE — operator admission on a representative shadow, with two defects named (`BADF-WP-0136` / WP-UAT-E, Issue #310 / GOV-0136)
+
+`ACTIVE` means the operator is **attributed** as having accepted WP-UAT-D's evidence — attributed
+and not independently verifiable, since all three agents share the `BizEraERP` account and no
+structural actor field discriminates authorship (#261 / #308). It does **not** mean the control path is
+clean, and this section exists so a later reader cannot infer that it does.
+
+**The evidence**: eleven G10 controls each observed **red against its own message fragment** — never a
+bare exit code, because passing on the wrong raise is how a control acquires a test that does not test
+it; ten `defect_class` values injected with the enum **read from the schema** rather than written down;
+a **rejecting** run (critical `FAIL`, classified defect, `RECOMMEND_REJECT`) **admitted**, since the gate
+refuses malformed evidence and never an unfavourable result; and two tripwires **verified able to fire**
+rather than merely present. Precedent is `badf-solution-design` (#145) and `badf-security-design` (#166),
+both admitted `ACTIVE` on representative corpora with the caveat stated and the real re-shadow deferred.
+
+**Admitted with two OPEN defects in its own controls** — bugs, not declared coverage gaps, and the
+distinction is the point: **#289** (C7/C9 match a scenario id by substring, so a critical failure named
+only by a longer id passes as acknowledged) and **#293** (C8 admits `[""]`, a shape hole a matcher fix
+does not touch). The operator was offered admission after #289 lands and chose admission with the
+defects on the record; that choice is recorded rather than smoothed.
+
+**Four adversarial cases no control catches** remain declared in `shadow-evidence.md`, led by
+`coverage-contradicts-observation` — a criterion marked `covered_pass` while its own scenario's
+observation is `FAIL` **is admitted today and nothing in eleven controls notices**. The
+detection-quality half of the frozen D is deferred to **#291**, whose trigger is a live scan rather
+than prose.
+
+**What `ACTIVE` does not grant.** `UAT-I14`/`UAT-I15` hold at every rung including this one, and the
+three facts that make that true — `allowed_tools == []`, a recommendation vocabulary that cannot
+express an acceptance, and a Layer-2 acceptance pinned to `principal_type: human` — are now asserted
+**together, as a property of the admitted state**, in
+`test_active_grants_no_acceptance_authority`. Verified red-first in both directions: adding an
+acceptance verb to the enum fails it, and granting a tool fails it. Registry status flip only;
+**digest unchanged**, asserted.
+
 ## The enforcement-input ratchet — an optional input becomes loud, then mandatory (`BADF-WP-0126`, Issue #246 / GOV-0108)
 
 The class, in BARCHI-3's sentence this WP exists to falsify: *a control whose input is optional is a

@@ -66,3 +66,40 @@ unlike #145/#166, whose prose triggers wait on a human noticing.
 
 **Rung target:** `WP-UAT-D` advances the registry to **`SHADOWED`**; the exact status pin in
 `tests/test_badf_uat_contract.py` follows this ladder.
+
+## ADMISSION — `WP-UAT-E`, operator decision as attributed (#310)
+
+**Extend-only: the `APPROVED`/`ACTIVE` bullet above is unchanged rung-A text.** This records the
+decision taken under it.
+
+**The decision is ATTRIBUTED, not independently verifiable.** All three agents act under the
+shared `BizEraERP` account and no structural actor field discriminates authorship (#261 / #308),
+so a reader cannot distinguish *"the operator ruled this"* from *"an agent recorded that the
+operator ruled this."* Nothing here disputes the attribution; it is simply not checkable, and
+this ladder is what a later reader consults. The qualifier comes out when `merged_by`
+discriminates.
+
+`badf-uat` is admitted **`SHADOWED` → `ACTIVE`** on WP-UAT-D's evidence (landed `272e6036a`):
+eleven G10 controls each observed red against its own message fragment, ten defect classes
+injected from the schema enum, a rejecting run admitted, two tripwires verified able to fire.
+Precedent: `badf-solution-design` (#145) and `badf-security-design` (#166) both reached `ACTIVE`
+on **representative** shadows with the caveat stated and a real re-shadow deferred.
+
+**Admitted WITH two open defects in this capability's own control path** — recorded here because
+admission must not be mistaken for a clean control path:
+
+| | |
+| :--- | :--- |
+| **#289** | C7/C9 match a scenario id by **substring**: a critical failure named only by a *longer* id passes as acknowledged. Plan approved, not yet landed. |
+| **#293** | C8 admits `[""]` — an empty-conditions **shape** hole a matcher fix does not touch. |
+
+Plus four adversarial cases no control catches, declared in `shadow-evidence.md` — led by
+`coverage-contradicts-observation`, where a criterion marked `covered_pass` while its own
+scenario's observation is `FAIL` is **admitted today and nothing notices**. And the
+detection-quality half of D, deferred to **#291**'s trigger.
+
+**`ACTIVE` grants no authority.** `UAT-I14`/`UAT-I15` hold at every rung including this one:
+`allowed_tools` stays `[]`, the recommendation vocabulary cannot express an acceptance, and the
+Layer-2 acceptance pins `principal_type: human`. Those three are asserted together as a property
+of the admitted state in `tests/test_badf_uat_contract.py::test_active_grants_no_acceptance_authority`
+— **mechanical, not stated**, because admission is exactly when the non-grant starts mattering.

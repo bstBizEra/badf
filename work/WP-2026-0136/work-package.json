@@ -1,0 +1,74 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0136",
+  "title": "WP-UAT-E: operator admission of badf-uat (SHADOWED -> ACTIVE) with #289 and #293 recorded open",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0123",
+  "objective": "Record the operator's admission of badf-uat on WP-UAT-D's evidence, flip the registry status, and make the non-grant (UAT-I14/I15) a mechanical property of the admitted state.",
+  "business_value": "A capability admitted without its open control defects on the record invites a later reader to mistake ACTIVE for a clean control path. This rung admits and records together, so the admission cannot be cited as evidence the controls are sound.",
+  "in_scope": [
+    "badf/skill-registry.json: badf-uat SHADOWED -> ACTIVE, digest unchanged",
+    "tests/test_badf_uat_contract.py: the one exact pin moves with the ladder, plus a new test asserting ACTIVE grants no acceptance authority",
+    "skills/badf-uat/references/acceptance.md: E entry, extend-only",
+    "docs/governance/GITHUB_CONTROL_PLANE.md: per-rung section"
+  ],
+  "out_of_scope": [
+    "Any control behaviour change -- this rung flips a status and records; it fixes nothing",
+    "#289's substring fix (approved plan, separate WP, ids already claimed)",
+    "#293's shape hole",
+    "The deferred detection-quality re-shadow (#291, trigger-gated)"
+  ],
+  "expected_surfaces": {
+    "declared": true,
+    "files": [
+      "badf/demands/BADF-DEM-0123.json",
+      "badf/skill-registry.json",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "skills/badf-uat/references/acceptance.md",
+      "tests/test_badf_uat_contract.py",
+      "work/WP-2026-0134/work-package.json"
+    ]
+  },
+  "target_gate": "G07",
+  "change_class": "C2",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "Registry reads ACTIVE and the digest is byte-identical to the pre-flip value, asserted",
+    "The exact status pin asserts ACTIVE and moves in the SAME change as the registry",
+    "UAT-I14/I15 non-grant asserted as a property of the ADMITTED state -- allowed_tools empty, the recommendation enum unable to express an acceptance, Layer-2 pinned to principal_type human -- verified red-first by widening the enum and by granting a tool",
+    "The ladder and the control-plane section both name #289 and #293 as open against the admitted controls"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_uat_contract.py (13)"
+  ],
+  "test_obligations": [
+    {
+      "id": "TEST-UATE-1",
+      "claim": "ACTIVE grants no acceptance authority; the three facts hold together at the admitted status",
+      "level": "unit"
+    }
+  ],
+  "evidence": [
+    "failing-first red set",
+    "green after",
+    "compose output incl. composition record",
+    "typed G07 self-dossier"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert"
+  },
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "wp/WP-2026-0136-uat-admission",
+    "base_revision": "310a660",
+    "composition_verified": false
+  },
+  "note": "Lean ADVISORY. Status flip and records only; no control behaviour changes."
+}

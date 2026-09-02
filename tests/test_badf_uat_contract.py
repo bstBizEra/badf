@@ -161,15 +161,48 @@ class UatContractTests(unittest.TestCase):
         # #218: the two issues are in tension, and fixing one naively causes the other.
         #
         # The exact pin lives HERE, and it MOVES with the ladder rather than being relaxed away.
-        # WP-UAT-D advances the registry to SHADOWED, declaring BOTH earned steps: VALIDATED was
+        # WP-UAT-E is the operator's admission: SHADOWED -> ACTIVE on D's evidence (#310).
+        # ACTIVE is a registry status, NOT authority -- UAT-I14/I15 hold at every rung, and the
+        # allowed_tools == [] assertion below is what makes that mechanical rather than stated.
+        # WP-UAT-D advanced the registry to SHADOWED, declaring BOTH earned steps: VALIDATED was
         # earned at rung C and the advance was OMITTED (#268's class -- named in shadow-evidence.md
         # rather than repaired silently), and SHADOWED is earned by D. The co-edit this comment
         # demanded is being honoured in that PR, which is the point of writing it down.
-        self.assertEqual("SHADOWED", entry["status"],
+        self.assertEqual("ACTIVE", entry["status"],
                          "the ONE exact status pin for badf-uat (#218). If a rung advanced the "
                          "registry, update this line and references/acceptance.md together; do "
                          "not relax it to a floor -- a floor alone pins nothing.")
         self.assertEqual(entry["allowed_tools"], [])
+
+    def test_active_grants_no_acceptance_authority(self):
+        """WP-UAT-E (#310). ACTIVE is a registry STATUS, not authority -- UAT-I14/I15 hold at
+        every rung including this one. The three facts that make that true are enforced in
+        different places (registry, schema enum, Layer-2 const), so nothing asserted them
+        TOGETHER as a property of the admitted state. This does.
+
+        It exists because admission is exactly when the non-grant starts mattering: before
+        ACTIVE nobody could mistake the capability for an acceptor; after it, someone might.
+        """
+        registry = json.loads((ROOT / "badf" / "skill-registry.json").read_text(encoding="utf-8"))
+        entry = next(e for e in registry["skills"] if e["name"] == "badf-uat")
+        self.assertEqual("ACTIVE", entry["status"], "this test is about the ADMITTED state")
+
+        # 1. no tools -- the capability executes nothing
+        self.assertEqual([], entry["allowed_tools"])
+
+        # 2. the recommendation vocabulary cannot EXPRESS an acceptance. Every value is a
+        #    recommendation; none is a verdict. A future edit adding "ACCEPTED" here would
+        #    grant acceptance authority by vocabulary without touching any control.
+        schema = json.loads((ROOT / "schemas" / "uat.schema.json").read_text(encoding="utf-8"))
+        rec = schema["properties"]["binding"]["properties"]["recommendation"]["enum"]
+        self.assertTrue(all(v.startswith("RECOMMEND_") for v in rec),
+                        f"a non-RECOMMEND_ value in {rec} would let the capability issue a verdict")
+        for forbidden in ("ACCEPTED", "ACCEPTED_WITH_CONDITIONS", "REJECTED"):
+            self.assertNotIn(forbidden, rec, "acceptance verbs belong to Layer 2 only")
+
+        # 3. Layer 2 -- the only place an acceptance exists -- pins a HUMAN principal.
+        acc = schema["properties"]["binding"]["properties"]["acceptance"]["properties"]
+        self.assertEqual("human", acc["accepted_by"]["properties"]["principal_type"]["const"])
         self.assertEqual(entry["risk_class"], "C1")
         expected = "sha256:" + hashlib.sha256(SKILL.read_bytes()).hexdigest()
         self.assertEqual(entry["digest"], expected, "registry digest must equal sha256(SKILL.md)")
