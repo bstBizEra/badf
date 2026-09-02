@@ -15,7 +15,8 @@
     "deterministic integer weighted-aggregation semantics and separate risk evaluation",
     "C3A/C3R routing, board-authority evidence, autonomous-merge predicate fixed false in v0.1",
     "historical shadow protocol, activation ladder and contract-drift tests",
-    "extend the canonical gate's required/integrity surfaces only; no second validator"
+    "extend the canonical gate's required/integrity surfaces only; no second validator",
+    "reconciliation of the immediately preceding landed Work Package against its exact main commit and tree"
   ],
   "out_of_scope": [
     "any edit to badf/authority-matrix.json, human-reserved roles or reserved actions",
@@ -55,13 +56,16 @@
     "contract cross-file tests and JSON/schema loading",
     "repository and full-suite CI",
     "independent governance, security, architecture, quality, operations and evidence-auditor review",
-    "G07 self-dossier with HUMAN_REQUIRED disposition"
+    "G07 self-dossier with HUMAN_REQUIRED disposition",
+    "WP-2026-0134 reconciled as CLOSED against main commit 310a660259752260142458f1e7f51976b218a79d and landed tree 129183c1bfb9ec494c13893a26addcc465151abc"
   ],
   "rollback": {
     "reversible": true,
     "method": "revert the squash commit through an independently authorized PR; v0.1 creates no external authority or merge effect"
   },
-  "execution_budget": {"max_attempts": 3},
+  "execution_budget": {
+    "max_attempts": 3
+  },
   "stop_conditions": [
     "AUTHORITY_CONFLICT",
     "UNEXPECTED_DESTRUCTIVE_SCOPE",
@@ -79,7 +83,12 @@
   },
   "authority_requirement": {
     "derived_from": "C3",
-    "required_roles": ["human_sponsor", "security_authority", "release_authority", "service_owner"]
+    "required_roles": [
+      "human_sponsor",
+      "security_authority",
+      "release_authority",
+      "service_owner"
+    ]
   },
   "risk_factors": [
     "authority-policy ambiguity",
@@ -91,20 +100,20 @@
   ],
   "expected_surfaces": {
     "files": [
-      "docs/governance/DECISION_GOVERNANCE_BOARD_AUTHORITY.md",
-      "badf/decision-policy.json",
-      "badf/risk-appetite.json",
       "badf/council-registry.json",
+      "badf/decision-policy.json",
+      "badf/demands/BADF-DEM-0124.json",
+      "badf/risk-appetite.json",
+      "docs/governance/DECISION_GOVERNANCE_BOARD_AUTHORITY.md",
+      "schemas/ballot.schema.json",
+      "schemas/calibration-ledger.schema.json",
+      "schemas/council-registry.schema.json",
+      "schemas/decision-dossier.schema.json",
       "schemas/decision-policy.schema.json",
       "schemas/risk-appetite.schema.json",
-      "schemas/council-registry.schema.json",
-      "schemas/ballot.schema.json",
-      "schemas/decision-dossier.schema.json",
-      "schemas/calibration-ledger.schema.json",
       "scripts/badf_gate.py",
       "tests/test_badf_decision_governance_contract.py",
-      "badf/demands/BADF-DEM-0124.json",
-      "badf/lockfile.json"
+      "work/WP-2026-0134/work-package.json"
     ]
   },
   "note": "Contract-freeze rung only. v0.1 cannot emit BOARD_AUTHORIZED, cannot alter current authority, and cannot merge itself."

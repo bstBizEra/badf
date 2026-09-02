@@ -56,11 +56,14 @@
     "EVIDENCE_CORRUPTION",
     "BUDGET_EXHAUSTED"
   ],
-  "status": "IN_PROGRESS",
+  "status": "CLOSED",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "272e6036a6f288c191b9afc208de06740846898a"
+    "base_revision": "272e6036a6f288c191b9afc208de06740846898a",
+    "composition_verified": true,
+    "landed_content_tree": "129183c1bfb9ec494c13893a26addcc465151abc",
+    "landed_as": "310a660259752260142458f1e7f51976b218a79d"
   },
   "expected_surfaces": {
     "files": [
@@ -70,5 +73,6 @@
       "work/WP-2026-0131/work-package.json"
     ]
   },
-  "note": "Docs-only by construction, following #297's C1 shape: no enforcement control is introduced, so no unit obligations and no TDD gate -- stated rather than exempted. EC7 applies to changes that introduce or strengthen an enforcement control; this one deliberately does not, and says so."
+  "note": "Docs-only by construction, following #297's C1 shape: no enforcement control is introduced, so no unit obligations and no TDD gate -- stated rather than exempted. EC7 applies to changes that introduce or strengthen an enforcement control; this one deliberately does not, and says so.",
+  "landed_as": "310a660259752260142458f1e7f51976b218a79d"
 }
