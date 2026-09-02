@@ -326,5 +326,25 @@
         }
       }
     }
+  },
+  "$defs": {
+    "$comment": "GOV-0138 / #313. These definitions resolve 44 $ref that previously pointed at a $defs block that did not exist -- unresolvable to any external validator (PointerToNowhere) and silently ignored by this repo's own walker. AUTHORING THEM DOES NOT MAKE THEM ENFORCED HERE: check_schema implements required / additionalProperties / type / enum / pattern / items and has NO $ref branch, so every reference below is inert inside the gate exactly as it was before (#265, #317). Worse for a casual reader: minLength is ALSO unimplemented, so these shapes are doubly decorative in-gate. They are real only to a conforming external validator. Do not cite a resolvable $ref here as evidence the schema layer enforces anything.",
+    "text": {
+      "type": "string",
+      "minLength": 1
+    },
+    "strings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "nonEmptyStrings": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
   }
 }
