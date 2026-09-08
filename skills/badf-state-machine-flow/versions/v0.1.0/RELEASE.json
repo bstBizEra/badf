@@ -1,0 +1,6 @@
+{
+  "version": "0.1.0",
+  "status": "HISTORICAL_SOURCE_SNAPSHOT",
+  "distribution_sha256": "8bf76608552f8f3dd418746dcd27ce6e29150bd7d19f11547080881ff8dfbec1",
+  "note": "Source snapshot retained in Git. The measured checksum identifies the original distribution ZIP; binary transport is intentionally not used by this connector-backed import."
+}
