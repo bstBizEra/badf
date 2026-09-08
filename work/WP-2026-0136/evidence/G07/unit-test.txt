@@ -1,0 +1,1 @@
+Unit tests are executed by the composed-tree gate (scripts/badf_compose.py) on the tree that would land. This dossier is a REQUEST; its test evidence is the PR's BADF COMPOSE PASS transcript, not a run by this tool.
