@@ -1,3 +1,9 @@
+> [!IMPORTANT]
+> **This repository is frozen as of 2026-09-19.** Runtime development has moved to
+> [bstBizEra/BADF-Core](https://github.com/bstBizEra/BADF-Core).
+> This repo is kept as the BADF governance reference (ADRs, SDLC 00–12 structure, gate definitions).
+> Only critical fixes are accepted. New work → badf-core. Extraction status: `BADF-Core/docs/migration/EXTRACTION_REGISTER.md`.
+
 # BizEra Agent Delivery Framework (BADF)
 
 BADF is a repository-native governance and delivery framework that moves an authorized product idea from PRD to production, then through production verification, operations, assurance closure, and reusable learning.
