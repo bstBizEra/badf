@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0132",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 338,
+    "url": "https://github.com/bstBizEra/badf/issues/338",
+    "exported_at": "2026-09-27T19:37:35Z",
+    "body_digest": "sha256:ba76fb99df12fb97eea072efa24896c7c83bebfe0f4be7e990c802b6e3843132"
+  },
+  "title": "WP-2026-0147: badf-git CLEAN has no measured command for deleting landed local branches",
+  "problem": "## Problem\n\n`skills/badf-git/references/git-cycle.md` section 13 (CLEAN) permits deleting only local state that is proven landed, not the only copy, not holding unknown work and not needed for open review. Nothing measures that. Deleting a local branch today means hand-running `git branch -d/-D`. That cannot see squash merges, which are this repository's approved merge method (GIT-I09), so `git branch --merged` reports squash-landed branches as unmerged. It also records no before-state, no recovery ref and no authorising work package.\n\n## Requested outcome\n\nAdd a `badf_gate.py git-clean` subcommand, consistent with GIT-I12 (enforcement lives in the canonical control, not a second tool):\n\n- **Dry run by default (GIT-O0).** Classify every local branch against `origin/<default>` as PROTECTED (the default branch or checked out in any worktree), MERGED (ancestor), SQUASHED (net-diff patch-id already on the target) or UNMERGED. Write no ref and no object.\n- **`--apply --wp <WP>` (GIT-O1).** Preserve each landed tip at `refs/recovery/<WP>/clean/<branch>` and never overwrite an existing one. Delete with `update-ref -d <ref> <observed sha>`, so a branch that moved is kept (HELD).\n- **Out of scope.** No fetch, no push, no remote branch deletion (GIT-O3).\n\nAuthorised by the operator in a Claude Code session on 2026-09-27.",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-09-27T19:37:35Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "ATTRIBUTED, not independently verifiable. The operator authorised WP-2026-0147 in a Claude Code session chat ('add it to the repo under WP-2026-0147'), after reviewing a scratch prototype and its test results. #338 was opened by the agent under the shared bstBizEra account, so no structural actor field distinguishes the operator's authorisation from an agent's record of it (#261 / #308). The merge is the checkable human gate."
+}

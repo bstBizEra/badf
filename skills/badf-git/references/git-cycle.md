@@ -239,6 +239,15 @@ Safe cleanup requires proof that the state is:
 - not holding unknown/uncommitted user work;
 - not needed for an open review, incident or audit.
 
+For **local branches** this is measured, not typed (WP-2026-0147):
+
+```text
+python3 scripts/badf_gate.py git-clean [<path>]                  # GIT-O0: classify, write nothing
+python3 scripts/badf_gate.py git-clean --apply --wp <WP> [<path>]  # GIT-O1: preserve, then delete
+```
+
+Each local branch is `PROTECTED` (the default branch, or checked out in any worktree), `MERGED` (an ancestor of `origin/<default>`), `SQUASHED` (its net diff carries the patch-id of a commit already on `origin/<default>`) or `UNMERGED`. Only `MERGED` and `SQUASHED` are deleted, and only after each tip is preserved at `refs/recovery/<WP>/clean/<branch>`; each deletion is guarded on the observed SHA, so a branch that moved is kept (`HELD`). Remote topic branches are `GIT-O3` and outside this command. Fetch first: a stale target keeps landed branches, which fails safe.
+
 **Exit condition:** local/topic state is intentionally reconciled without evidence loss.
 
 ### 14. LEARN

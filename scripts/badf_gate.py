@@ -5169,6 +5169,107 @@ def git_recovery(root: Path, *, preserve: str | None = None, wp: str | None = No
     }
 
 
+# ---- badf-git CLEAN: landed local branches, removed with a way back (WP-2026-0147) -------
+def _patch_id(root: Path, diff: str | None) -> str | None:
+    """`git patch-id --stable` of one diff; None when the diff is empty."""
+    if not diff:
+        return None
+    out = subprocess.run(["git", "-C", str(root), "patch-id", "--stable"], input=diff + "\n",
+                         capture_output=True, text=True).stdout.split()
+    return out[0] if out else None
+
+
+def _landed_patch_ids(root: Path, base: str, target: str) -> set[str]:
+    out = subprocess.run(["git", "-C", str(root), "log", "-p", "--no-merges", "--format=commit %H", f"{base}..{target}"],
+                         capture_output=True, text=True).stdout
+    ids = subprocess.run(["git", "-C", str(root), "patch-id", "--stable"], input=out,
+                         capture_output=True, text=True).stdout
+    return {line.split()[0] for line in ids.splitlines() if line.strip()}
+
+
+def git_clean(root: Path, *, apply: bool = False, wp: str | None = None) -> dict[str, Any]:
+    """`badf_gate.py git-clean [<path>] [--apply --wp <WP>]`: badf-git's CLEAN stage
+    (references/git-cycle.md section 13) for LOCAL branches. Classifies every refs/heads/*
+    against origin/<default> as known locally:
+
+      PROTECTED  the default branch, or checked out in any worktree -- kept;
+      MERGED     the tip is an ancestor of the target -- deletable;
+      SQUASHED   the branch's net diff against its merge base carries the patch-id of a
+                 commit already on the target (the approved merge method) -- deletable;
+      UNMERGED   anything else, including a net diff that is empty or only partly landed --
+                 kept. Unknown work is preserved, never guessed at.
+
+    Without --apply it writes nothing (GIT-O0): patch-ids are computed from diffs, no
+    object is created. With --apply --wp <WP> (GIT-O1) it first creates
+    refs/recovery/<WP>/clean/<branch> at each deletable tip -- refusing before any change
+    if one already exists -- then deletes each branch with `update-ref -d <ref> <observed
+    sha>`, so a branch that moved after observation is kept (SKIPPED_MOVED, HELD). It
+    never fetches, pushes, touches a remote ref, the worktree, the index or the stash.
+    """
+    from datetime import datetime, timezone
+    if apply and (not wp or not WP_ID_FORMS.match(wp)):
+        raise ValidationError("BLOCKED: --apply requires --wp <work package id> to namespace refs/recovery/<WP>/clean/")
+    baseline = git_baseline(root)
+    root = Path(baseline["worktree"]["path"])
+    target = baseline["target_ref"].replace("refs/heads/", "refs/remotes/origin/", 1)
+    target_sha = baseline["remote_freshness"]["sha"]
+    protected = {f"refs/heads/{DEFAULT_BRANCH}"}
+    for line in (_git_at(root, "worktree", "list", "--porcelain") or "").splitlines():
+        key, _, value = line.partition(" ")
+        if key == "branch":
+            protected.add(value)
+    branches = []
+    for line in (_git_at(root, "for-each-ref", "--format=%(refname) %(objectname)", "refs/heads") or "").splitlines():
+        ref, sha = line.split()
+        row: dict[str, Any] = {"branch": ref.removeprefix("refs/heads/"), "ref": ref, "sha": sha}
+        base = _git_at(root, "merge-base", sha, target)
+        if ref in protected:
+            row["class"] = "PROTECTED"
+        elif _git_at(root, "merge-base", "--is-ancestor", sha, target) is not None:
+            row["class"] = "MERGED"
+        elif base and (pid := _patch_id(root, _git_at(root, "diff", "--binary", base, sha))) and pid in _landed_patch_ids(root, base, target):
+            row["class"] = "SQUASHED"
+        else:
+            row["class"] = "UNMERGED"
+            row["ahead"] = int(_git_at(root, "rev-list", "--count", f"{target}..{sha}") or 0)
+        row["outcome"] = ("PLANNED" if row["class"] in ("MERGED", "SQUASHED") else "KEPT")
+        branches.append(row)
+    deletable = [r for r in branches if r["outcome"] == "PLANNED"]
+    wp_id = None
+    if apply:
+        wp_id = f"{WP_NAMESPACE}{WP_ID_FORMS.match(wp).group(1)}"
+        for row in deletable:
+            row["recovery_ref"] = f"refs/recovery/{wp_id}/clean/{row['branch']}"
+            if _git_at(root, "rev-parse", "--verify", "-q", row["recovery_ref"]) is not None:
+                raise ValidationError(f"BLOCKED: {row['recovery_ref']} already exists; a recovery ref is never overwritten -- nothing was deleted")
+        for row in deletable:
+            r = subprocess.run(["git", "-C", str(root), "update-ref", row["recovery_ref"], row["sha"]], capture_output=True, text=True)
+            if r.returncode:
+                raise ValidationError(f"BLOCKED: cannot create {row['recovery_ref']}: {r.stderr.strip()}")
+        for row in deletable:
+            r = subprocess.run(["git", "-C", str(root), "update-ref", "-d", row["ref"], row["sha"]], capture_output=True, text=True)
+            row["outcome"] = "DELETED" if r.returncode == 0 else "SKIPPED_MOVED"
+            row["restore"] = f"git branch {row['branch']} {row['recovery_ref']}"
+    moved = [r for r in branches if r["outcome"] == "SKIPPED_MOVED"]
+    return {
+        "record": "git-clean",
+        "schema_version": "1.0.0",
+        "observed_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "mode": "APPLY" if apply else "DRY_RUN",
+        "work_package": wp_id,
+        "operation_class": "GIT-O1 LOCAL_REVERSIBLE" if apply else "GIT-O0 OBSERVE",
+        "baseline": baseline,
+        "target": target,
+        "target_sha": target_sha,
+        "branches": branches,
+        "disposition": "HELD" if moved else ("CLEANED" if apply else "PLANNED"),
+        "non_coverage": ["remote branches: deleting one is GIT-O3 REMOTE_TOPIC_MUTATION, outside this command",
+                         "the target is origin/<default> as last fetched; a stale target keeps landed branches (fails safe)",
+                         "a squash whose landed commit also carries other edits has a different patch-id and is kept as UNMERGED",
+                         *baseline.get("non_coverage", [])],
+    }
+
+
 # ---- badf-git GIT-H: release refs are checked bindings (BADF-WP-0081) ------------------
 RELEASE_VERSION = re.compile(r"^(v[0-9]+\.[0-9]+\.[0-9]+|BADF-BASELINE-[0-9]+\.[0-9]+\.[0-9]+)$")
 RELEASE_REQUIRED = ("schema_version", "observed_at", "version", "tag_ref", "source_ref", "source_revision",
@@ -5333,6 +5434,10 @@ def main() -> int:
     gr_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
     gr_parser.add_argument("--preserve", metavar="LABEL", help="create refs/recovery/<WP>/<LABEL> at HEAD (+ -worktree snapshot of a dirty tree)")
     gr_parser.add_argument("--wp", help="work package id that namespaces the recovery refs (required with --preserve)")
+    gc_parser = subparsers.add_parser("git-clean", help="classify local branches against origin/<default> (read-only); --apply --wp <WP> deletes MERGED/SQUASHED ones after preserving each tip under refs/recovery/<WP>/clean/ (badf-git CLEAN)")
+    gc_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
+    gc_parser.add_argument("--apply", action="store_true", help="delete the landed branches; without it nothing is written")
+    gc_parser.add_argument("--wp", help="work package id that namespaces the recovery refs (required with --apply)")
     rc_parser = subparsers.add_parser("git-release-check", help="verify a release ref: annotated, on main first-parent, record-bound, unmoved (badf-git GIT-H; read-only)")
     rc_parser.add_argument("tag"); rc_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
     rr_parser = subparsers.add_parser("git-release-record", help="write badf/releases/<version>.json as a HUMAN_REQUIRED release binding; binds an existing tag or HEAD; never creates a tag")
@@ -5409,6 +5514,19 @@ def main() -> int:
                 return 0
             print(f"BADF GATE HELD: {summary}; preserve before any destructive step")
             return 3
+        elif args.command == "git-clean":
+            if args.apply and not args.wp:
+                parser.error("--apply requires --wp <work package id>")
+            rec = git_clean(args.path, apply=args.apply, wp=args.wp)
+            print(json.dumps(rec, indent=2))
+            count = lambda *o: sum(r["outcome"] in o for r in rec["branches"])  # noqa: E731
+            summary = (f"git-clean -- {rec['disposition']}: planned {count('PLANNED')}, deleted {count('DELETED')}, "
+                       f"kept {count('KEPT')}, moved {count('SKIPPED_MOVED')} against {rec['target_sha'][:7]}")
+            if rec["disposition"] == "HELD":
+                print(f"BADF GATE HELD: {summary}; a moved branch is re-observed, never deleted blind")
+                return 3
+            print(f"BADF GATE PASS: {summary}")
+            return 0
         elif args.command == "git-release-check":
             rec = git_release_check(args.path, args.tag)
             print(json.dumps(rec, indent=2))
