@@ -1,0 +1,76 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0149",
+  "title": "git-clean: CONTENT_LANDED deletes a branch whose every changed path is byte-identical on main",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0134",
+  "objective": "Close #343: git-clean keeps a branch whose work landed inside a larger squash (a cherry-pick into a work-package PR) because neither ancestry nor patch-id matches. Add CONTENT_LANDED: every path the branch changed since its merge base is byte-identical on origin/main, with LOCKFILE excluded as a regenerated file. Carry the WP-2026-0148 reconcile.",
+  "business_value": "Removes the one manual cleanup step this repository's own workflow produces -- carrying a reconcile by cherry-pick -- without weakening the rule that unknown work is kept: the comparison is exact per path, a lockfile-only branch is never landed, and a path main has since changed keeps the branch.",
+  "in_scope": [
+    "scripts/badf_gate.py: _content_landed() and the CONTENT_LANDED class in git_clean(); deletable like MERGED/SQUASHED, with the same preserve-then-guarded-delete",
+    "tests/test_badf_git_clean.py: ContentLandedTests -- cherry-pick inside a larger squash with a re-signed lockfile, a deletion landed inside a larger commit, a path main changed again, a lockfile-only branch, dry run writes nothing, apply deletes only the landed ones and preserves each tip",
+    "skills/badf-git/references/git-cycle.md section 13: the new class and the lockfile exclusion",
+    "carry the WP-2026-0148 reconcile, written by `badf_gate.py reconcile WP-2026-0148` (CLOSED, landed_as e2d545a)"
+  ],
+  "out_of_scope": [
+    "any other regenerated file -- LOCKFILE is the only file `badf_gate.py lock` derives from the others; widening the exclusion is a separate decision",
+    "remote branches (GIT-O3) and skills/badf-git/SKILL.md (ACTIVE, digest-pinned)",
+    "the G07 self-dossier -- assembly is HUMAN_REQUIRED; declared, not worked around"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "a branch whose every changed path except LOCKFILE is byte-identical (content, mode, deletion) on origin/main is CONTENT_LANDED and PLANNED",
+    "a branch that changed only LOCKFILE is UNMERGED; a branch with a path main has since changed is UNMERGED",
+    "the dry run writes no ref and no object; --apply preserves each CONTENT_LANDED tip at refs/recovery/<WP>/clean/<branch> and deletes it guarded on the observed SHA",
+    "failing-first: the new tests fail against the pre-change gate",
+    "ADVERSARIAL: seeded defects -- lockfile compared, branch compared with itself, empty comparison counted as landed, CONTENT_LANDED not deletable -- each turn tests/test_badf_git_clean.py red"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_git_clean.py"
+  ],
+  "evidence": [
+    "failing-first run",
+    "mutation: 4/4 killed",
+    "full suite green",
+    "repo PASS",
+    "compose output on the PR body"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR; recovery refs created by --apply restore any deleted branch"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "e2d545ac04736ebd1a50d68e65b1da8d0642df94"
+  },
+  "expected_surfaces": {
+    "files": [
+      "scripts/badf_gate.py",
+      "tests/test_badf_git_clean.py",
+      "skills/badf-git/references/git-cycle.md",
+      "badf/demands/BADF-DEM-0134.json",
+      "work/WP-2026-0148/work-package.json"
+    ]
+  },
+  "note": "C1: widens what git-clean may delete by one exactly-defined class; the deletion path, preservation and guard are unchanged. The LOCKFILE exclusion follows the existing precedent at badf_gate.py (the surface check that already ignores it) and is the reason the motivating branch qualifies; it is called out for review rather than buried."
+}

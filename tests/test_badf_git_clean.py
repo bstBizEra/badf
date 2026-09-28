@@ -163,5 +163,62 @@ class ApplyTests(_Scratch):
         self.assertEqual(g(self.repo, "rev-parse", "refs/heads/merged"), moved["sha"])
 
 
+class ContentLandedTests(unittest.TestCase):
+    """WP-2026-0149: a branch whose work landed inside a larger squash -- the reconcile
+    cherry-picked into #342 -- has no matching patch-id, yet every path it changed is
+    byte-identical on the target. `picked` changes a file and the lockfile, and main lands
+    that file inside a bigger commit with a different lockfile; `deleted` removes a file
+    main also removes; `superseded` changed a file main has since changed again;
+    `lockonly` changed nothing but the lockfile."""
+
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp(prefix="badf-git-clean-cl-"))
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+        self.repo = r = self.tmp / "badf"
+        seed_clone(r)
+        commit_file(r, "cl-gone.txt", "doomed\n", "seed a file to delete")
+        g(r, "update-ref", TARGET, g(r, "rev-parse", gate.DEFAULT_BRANCH))
+        lock = r / gate.LOCKFILE
+        g(r, "checkout", "-q", "-b", "picked")
+        (r / "cl-picked.txt").write_text("reconcile\n", encoding="utf-8")
+        lock.write_text(lock.read_text(encoding="utf-8") + " \n", encoding="utf-8")
+        g(r, "add", "cl-picked.txt", gate.LOCKFILE); g(r, "commit", "-q", "-m", "picked")
+        g(r, "checkout", "-q", "-b", "deleted", gate.DEFAULT_BRANCH); g(r, "rm", "-q", "cl-gone.txt"); g(r, "commit", "-q", "-m", "deleted")
+        g(r, "checkout", "-q", "-b", "superseded", gate.DEFAULT_BRANCH); commit_file(r, "cl-sup.txt", "first\n", "superseded")
+        g(r, "checkout", "-q", "-b", "lockonly", gate.DEFAULT_BRANCH)
+        lock.write_text(lock.read_text(encoding="utf-8") + "\t\n", encoding="utf-8"); g(r, "commit", "-q", "-am", "lockonly")
+        g(r, "checkout", "-q", gate.DEFAULT_BRANCH)
+        g(r, "checkout", "picked", "--", "cl-picked.txt"); g(r, "checkout", "superseded", "--", "cl-sup.txt")
+        g(r, "rm", "-q", "cl-gone.txt")
+        (r / "cl-other.txt").write_text("more of the larger squash\n", encoding="utf-8")
+        lock.write_text(lock.read_text(encoding="utf-8") + "  \n", encoding="utf-8")
+        g(r, "add", "-A"); g(r, "commit", "-q", "-m", "larger squash carrying picked, deleted and superseded")
+        commit_file(r, "cl-sup.txt", "first\nthen changed again\n", "main moves superseded's file on")
+        g(r, "update-ref", TARGET, g(r, "rev-parse", gate.DEFAULT_BRANCH))
+
+    def classes(self, rec: dict) -> dict:
+        return {b["branch"]: b["class"] for b in rec["branches"]}
+
+    def test_landed_inside_a_larger_squash_is_CONTENT_LANDED(self):
+        rec = record_of(cli(str(self.repo)))
+        self.assertEqual(self.classes(rec), {gate.DEFAULT_BRANCH: "PROTECTED", "picked": "CONTENT_LANDED",
+                                             "deleted": "CONTENT_LANDED", "superseded": "UNMERGED", "lockonly": "UNMERGED"})
+        picked = next(b for b in rec["branches"] if b["branch"] == "picked")
+        self.assertEqual((picked["outcome"], picked["compared_paths"]), ("PLANNED", 1))   # the lockfile is not compared
+
+    def test_dry_run_still_writes_nothing(self):
+        before = (g(self.repo, "for-each-ref"), g(self.repo, "count-objects", "-v"))
+        self.assertEqual(cli(str(self.repo)).returncode, 0)
+        self.assertEqual((g(self.repo, "for-each-ref"), g(self.repo, "count-objects", "-v")), before)
+
+    def test_apply_deletes_content_landed_and_keeps_the_rest(self):
+        tips = {b: g(self.repo, "rev-parse", f"refs/heads/{b}") for b in ("picked", "deleted", "superseded", "lockonly")}
+        r = cli(str(self.repo), "--apply", "--wp", WP); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        heads = g(self.repo, "for-each-ref", "--format=%(refname:short)", "refs/heads").split()
+        self.assertEqual(sorted(heads), sorted([gate.DEFAULT_BRANCH, "superseded", "lockonly"]))
+        for name in ("picked", "deleted"):
+            self.assertEqual(g(self.repo, "rev-parse", f"refs/recovery/{WP}/clean/{name}"), tips[name])
+
+
 if __name__ == "__main__":
     unittest.main()
