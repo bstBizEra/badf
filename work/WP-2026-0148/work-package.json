@@ -1,0 +1,68 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0148",
+  "title": "Land the WP-2026-0147 reconcile (CLOSED, landed_as 9b4f29d) so new work packages are unblocked",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0133",
+  "objective": "Close #341: WP-2026-0147 landed as 9b4f29d (#339) but its record on main is IN_PROGRESS, and `badf_gate.py repo` refuses a new work package until it is reconciled. Land the reconcile written by `badf_gate.py reconcile WP-2026-0147` (commit 11617f3, cherry-picked) and nothing else.",
+  "business_value": "Unblocks every subsequent work package, and puts WP-2026-0147's landing on the ledger with the accurate composition_verified value rather than leaving it parked on a session branch that a container reclaim would lose.",
+  "in_scope": [
+    "work/WP-2026-0147/work-package.json: the tool-written reconcile -- status CLOSED, landed_as 9b4f29d, composition_verified false",
+    "badf/lockfile.json: re-signed by `badf_gate.py reconcile` and `badf_gate.py lock`",
+    "this work package's own demand and record"
+  ],
+  "out_of_scope": [
+    "changing composition_verified to true -- the landed tree carries no G07 composition-record.json and one cannot be added after landing; false is the accurate value",
+    "any code, schema, doc, test or control change",
+    "the G07 self-dossier -- assembly is HUMAN_REQUIRED; declared, not worked around"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "work/WP-2026-0147/work-package.json on main reads status CLOSED with external_target.landed_as 9b4f29d92296a1e79c0b5bf88a798f02409776d9 and composition_verified false",
+    "the reconcile content is byte-identical to what `badf_gate.py reconcile WP-2026-0147` writes at 9b4f29d (re-derived, not hand-edited)",
+    "`badf_gate.py repo` passes with WP-2026-0148 open on the composed ledger",
+    "no file outside expected_surfaces, badf/lockfile.json and this record changes"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [],
+  "evidence": [
+    "reconcile re-derived at 9b4f29d and byte-compared",
+    "repo PASS",
+    "full suite green",
+    "compose output on the PR body"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "9b4f29d92296a1e79c0b5bf88a798f02409776d9"
+  },
+  "expected_surfaces": {
+    "files": [
+      "work/WP-2026-0147/work-package.json",
+      "badf/demands/BADF-DEM-0133.json"
+    ]
+  },
+  "note": "Reconcile-only (C1): no enforcement control is introduced or changed, so no unit obligations -- stated rather than exempted. The reconcile commit 11617f3 was parked on a session branch and carried by #340, closed unmerged because a reconcile ships inside a work package; this is that work package."
+}
