@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0133",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 341,
+    "url": "https://github.com/bstBizEra/badf/issues/341",
+    "exported_at": "2026-09-28T01:34:37Z",
+    "body_digest": "sha256:0b70ef564d3f92396b225407d4c445efe3b4f3d4d66f2ea3bd4f4cab6b05ba43"
+  },
+  "title": "WP-2026-0148: land the WP-2026-0147 reconcile so new work packages are unblocked",
+  "problem": "## Problem\n\nWP-2026-0147 landed as 9b4f29d (#339), but its record on `main` still says `IN_PROGRESS`. `badf_gate.py repo` refuses any new work package until the landed one is reconciled. The reconcile already exists as commit 11617f3, written by `badf_gate.py reconcile WP-2026-0147`. It was parked on a session branch, and its carrier PR #340 was closed unmerged because a reconcile ships inside a work package.\n\n## Requested outcome\n\nA minimal work package that lands the reconcile and nothing else:\n\n- `work/WP-2026-0147/work-package.json`: `status` CLOSED, `landed_as` 9b4f29d, `composition_verified` false. The value is false because the landed tree carries no G07 composition-record.json; the landed tree d947757 does match the pre-merge verified tree.\n- `badf/lockfile.json` re-signed by the same command.\n- No code, schema, doc or control changes.\n\nAuthorised by the operator in a Claude Code session on 2026-09-28.",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-09-28T01:34:37Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "ATTRIBUTED, not independently verifiable. The operator started WP-2026-0148 in a Claude Code session chat ('start WP-2026-0148 and carry the reconcile') and chose the reconcile-only scope when offered alternatives. #341 was opened by the agent under the shared bstBizEra account, so no structural actor field distinguishes the operator's authorisation from an agent's record of it (#261 / #308). The merge is the checkable human gate."
+}
