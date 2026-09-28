@@ -5187,6 +5187,20 @@ def _landed_patch_ids(root: Path, base: str, target: str) -> set[str]:
     return {line.split()[0] for line in ids.splitlines() if line.strip()}
 
 
+def _content_landed(root: Path, base: str, sha: str, target: str) -> list[str] | None:
+    """The paths the branch changed since its merge base, when every one of them is
+    byte-identical (content and mode, deletions included) on the target; None otherwise.
+    LOCKFILE is left out of the comparison: `badf_gate.py lock` regenerates it from every
+    other governed file, so a superseded copy carries nothing unique. A branch that
+    changed nothing but LOCKFILE has nothing to compare and is not landed (WP-2026-0149)."""
+    changed = (_git_at(root, "--literal-pathspecs", "diff", "--name-only", "--no-renames", base, sha) or "").splitlines()
+    compared = [p for p in changed if p and p != LOCKFILE]
+    if not compared:
+        return None
+    same = _git_at(root, "--literal-pathspecs", "diff", "--quiet", "--no-renames", target, sha, "--", *compared)
+    return compared if same is not None else None
+
+
 def git_clean(root: Path, *, apply: bool = False, wp: str | None = None) -> dict[str, Any]:
     """`badf_gate.py git-clean [<path>] [--apply --wp <WP>]`: badf-git's CLEAN stage
     (references/git-cycle.md section 13) for LOCAL branches. Classifies every refs/heads/*
@@ -5196,8 +5210,12 @@ def git_clean(root: Path, *, apply: bool = False, wp: str | None = None) -> dict
       MERGED     the tip is an ancestor of the target -- deletable;
       SQUASHED   the branch's net diff against its merge base carries the patch-id of a
                  commit already on the target (the approved merge method) -- deletable;
-      UNMERGED   anything else, including a net diff that is empty or only partly landed --
-                 kept. Unknown work is preserved, never guessed at.
+      CONTENT_LANDED  every path the branch changed since its merge base is byte-identical
+                 on the target (LOCKFILE aside, see _content_landed): its work landed
+                 inside a larger squash, as a cherry-pick does -- deletable;
+      UNMERGED   anything else, including a net diff that is empty, only partly landed or
+                 since changed again on the target -- kept. Unknown work is preserved,
+                 never guessed at.
 
     Without --apply it writes nothing (GIT-O0): patch-ids are computed from diffs, no
     object is created. With --apply --wp <WP> (GIT-O1) it first creates
@@ -5229,10 +5247,13 @@ def git_clean(root: Path, *, apply: bool = False, wp: str | None = None) -> dict
             row["class"] = "MERGED"
         elif base and (pid := _patch_id(root, _git_at(root, "diff", "--binary", base, sha))) and pid in _landed_patch_ids(root, base, target):
             row["class"] = "SQUASHED"
+        elif base and (paths := _content_landed(root, base, sha, target)):
+            row["class"] = "CONTENT_LANDED"
+            row["compared_paths"] = len(paths)
         else:
             row["class"] = "UNMERGED"
             row["ahead"] = int(_git_at(root, "rev-list", "--count", f"{target}..{sha}") or 0)
-        row["outcome"] = ("PLANNED" if row["class"] in ("MERGED", "SQUASHED") else "KEPT")
+        row["outcome"] = ("PLANNED" if row["class"] in ("MERGED", "SQUASHED", "CONTENT_LANDED") else "KEPT")
         branches.append(row)
     deletable = [r for r in branches if r["outcome"] == "PLANNED"]
     wp_id = None
@@ -5434,7 +5455,7 @@ def main() -> int:
     gr_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
     gr_parser.add_argument("--preserve", metavar="LABEL", help="create refs/recovery/<WP>/<LABEL> at HEAD (+ -worktree snapshot of a dirty tree)")
     gr_parser.add_argument("--wp", help="work package id that namespaces the recovery refs (required with --preserve)")
-    gc_parser = subparsers.add_parser("git-clean", help="classify local branches against origin/<default> (read-only); --apply --wp <WP> deletes MERGED/SQUASHED ones after preserving each tip under refs/recovery/<WP>/clean/ (badf-git CLEAN)")
+    gc_parser = subparsers.add_parser("git-clean", help="classify local branches against origin/<default> (read-only); --apply --wp <WP> deletes MERGED/SQUASHED/CONTENT_LANDED ones after preserving each tip under refs/recovery/<WP>/clean/ (badf-git CLEAN)")
     gc_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
     gc_parser.add_argument("--apply", action="store_true", help="delete the landed branches; without it nothing is written")
     gc_parser.add_argument("--wp", help="work package id that namespaces the recovery refs (required with --apply)")

@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0134",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 343,
+    "url": "https://github.com/bstBizEra/badf/issues/343",
+    "exported_at": "2026-09-28T22:08:53Z",
+    "body_digest": "sha256:8a20f4c348a61d643703b2ea3d5d0c797d4d21166d4d6f3b120b213a5eaf6f40"
+  },
+  "title": "WP-2026-0149: git-clean keeps a branch whose work landed inside a larger squash",
+  "problem": "## Problem\n\n`badf_gate.py git-clean` (WP-2026-0147) deletes a local branch only when it is MERGED (an ancestor) or SQUASHED (its net-diff patch-id matches a commit on `main`). A branch whose change landed *inside a larger squash* matches neither, so it is kept as UNMERGED even though its work is on `main`. A cherry-pick into a work-package PR is exactly this case.\n\nObserved on `bst/adoring-bell-l8y5oy`. Its one commit (the WP-2026-0147 reconcile) was cherry-picked into #342 alongside other files. `work/WP-2026-0147/work-package.json` is byte-identical on `main`. Its other file, `badf/lockfile.json`, was re-signed again on `main`. git-clean kept the branch, and it had to be removed by hand.\n\n## Requested outcome\n\nAdd a `CONTENT_LANDED` class to git-clean: every path the branch changed since its merge base is byte-identical on `origin/main`.\n\n- Content and mode must match, and deletions are included.\n- `badf/lockfile.json` is left out of the comparison. `badf_gate.py lock` regenerates it from every other governed file, so a superseded copy carries nothing unique.\n- A branch that changed only the lockfile is never landed.\n- A path that `main` changed again afterwards keeps the branch UNMERGED.\n- The dry run still writes nothing, and `--apply` still preserves each tip before a guarded delete.\n\nThis work package also carries the WP-2026-0148 reconcile.\n\nAuthorised by the operator in a Claude Code session on 2026-09-28.",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-09-28T22:08:53Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "ATTRIBUTED, not independently verifiable. The operator started WP-2026-0149 in a Claude Code session chat and chose this scope ('git-clean: content-landed') from offered options, with merge-when-green authorised. #343 was opened by the agent under the shared bstBizEra account, so no structural actor field distinguishes the operator's authorisation from an agent's record of it (#261 / #308)."
+}
