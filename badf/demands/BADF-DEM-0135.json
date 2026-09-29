@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0135",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 345,
+    "url": "https://github.com/bstBizEra/badf/issues/345",
+    "exported_at": "2026-09-29T15:25:14Z",
+    "body_digest": "sha256:69ce6a6ce680a461717810bfdb1f90caa1d1b29a8b098aac167d7d0df4a53278"
+  },
+  "title": "WP-2026-0150: git-cycle RECONCILE does not explain composition_verified, so work packages land with false",
+  "problem": "## Problem\n\n`badf_gate.py reconcile` records `composition_verified: false` when the landed commit carries no `work/<WP>/evidence/G07/composition-record.json`. WP-2026-0147, WP-2026-0148 and WP-2026-0149 all landed that way. For each, the landed tree was separately observed to equal the pre-merge verified tree, but that observation is not what reconcile reads, and the value cannot be corrected after the merge.\n\nThe procedure that produces `true` already exists in the `composition-verification` subskill (\"The author's order of operations\"). But `skills/badf-git/references/git-cycle.md` section 11 (RECONCILE), where an author meets the outcome, says nothing about the field. It does not say what each value means, that `false` is final, or where the procedure lives.\n\n## Requested outcome\n\nDocs only:\n\n- In git-cycle.md section 11, state what `reconcile` reads (the record on the landed commit's tree) and what each outcome means: `true`, `BLOCKED` on a content mismatch, and `false` with no record.\n- State that `false` cannot be corrected after the merge.\n- Point to the subskill procedure.\n- Carry the WP-2026-0149 reconcile.\n- Follow the procedure in this work package itself, committing its own composition record so that its reconcile can record `true`.\n\nAuthorised by the operator in a Claude Code session on 2026-09-29.",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-09-29T15:25:14Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "ATTRIBUTED, not independently verifiable. The operator started WP-2026-0150 in a Claude Code session chat and chose this scope ('Doc: composition record') from offered options, with merge-when-green authorised. #345 was opened by the agent under the shared bstBizEra account, so no structural actor field distinguishes the operator's authorisation from an agent's record of it (#261 / #308)."
+}
