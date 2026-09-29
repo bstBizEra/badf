@@ -218,6 +218,16 @@ Reconcile:
 
 `MERGED` is not synonymous with `VERIFIED` or `RELEASED`.
 
+`python3 scripts/badf_gate.py reconcile <WP>` measures this, and its `composition_verified` field records which kind of landing it was. It reads `work/<WP>/evidence/G07/composition-record.json` from the **landed commit's tree**, never from the checkout:
+
+| Landed tree | Reconcile writes | Meaning |
+| --- | --- | --- |
+| carries the record, and its `expected_content_tree` equals the landed content tree | `composition_verified: true`, `landed_content_tree` | the content that landed is the content that was verified before the merge |
+| carries the record, content tree differs | refuses (`BLOCKED`) | `main` moved between verification and merge; open recovery as a forward change |
+| carries no record | `composition_verified: false` | the landing is real but was never bound to a verified composition |
+
+`false` is final for that work package: reconcile reads the record from the landed commit and computes the field itself, so a record committed after the merge is never seen and a hand-edited value is not evidence. A matching tree observed by hand (as WP-2026-0147 and WP-2026-0148 did) is not a substitute. To land with `true`, commit the record *inside the pull request*, after the last content change: see `../subskills/composition-verification/SKILL.md` ("The author's order of operations").
+
 **Exit condition:** integration outcome is known and consistent, or a recovery/incident path is opened.
 
 ### 12. RELEASE (optional)

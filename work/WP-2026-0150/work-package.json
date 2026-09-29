@@ -1,0 +1,70 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0150",
+  "title": "git-cycle RECONCILE: explain composition_verified and point to the record procedure; land this WP with its own record",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0135",
+  "objective": "Close #345: WP-2026-0147, 0148 and 0149 landed with composition_verified false because no composition record was committed before the merge. git-cycle.md section 11 says nothing about the field. State what reconcile reads, what each outcome means, that false is final, and where the procedure lives; follow that procedure here so this WP can reconcile true. Carry the WP-2026-0149 reconcile.",
+  "business_value": "Turns composition_verified from an accident of process into a known choice at the point an author meets it, and demonstrates the path on this work package so the next reconcile shows it working rather than asserting it.",
+  "in_scope": [
+    "skills/badf-git/references/git-cycle.md section 11: what `badf_gate.py reconcile` reads, the three outcomes (true / BLOCKED / false), that false is final, and a pointer to the composition-verification subskill's order of operations",
+    "work/WP-2026-0150/evidence/G07/composition-record.json written by `badf_compose.py --record` after the last content change",
+    "carry the WP-2026-0149 reconcile, written by `badf_gate.py reconcile WP-2026-0149` (CLOSED, landed_as cf4c271)"
+  ],
+  "out_of_scope": [
+    "making the record mandatory -- the composition-verification subskill names that 'a later policy decision'; this WP documents, it does not enforce",
+    "changing reconcile, badf_compose or any control; correcting 0147/0148/0149, whose false values are accurate and final",
+    "the composition-verification subskill SKILL.md (registry digest-pinned) and badf-git SKILL.md (ACTIVE, digest-pinned)",
+    "the G07 self-dossier -- assembly is HUMAN_REQUIRED; declared, not worked around"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "every statement in the new section 11 text matches badf_gate.py reconcile (the landed-tree read, the true/BLOCKED/false outcomes) and badf_compose.py (the record path and content-tree binding) as they stand at the base",
+    "the cross-reference resolves: ../subskills/composition-verification/SKILL.md exists and carries 'The author's order of operations'",
+    "this WP's composition record is committed after the last content change, and CI's compose reports composition: CURRENT on it",
+    "the badf-git contract tests and repo PASS; no control or schema changes"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [],
+  "evidence": [
+    "composition record + CI compose composition: CURRENT",
+    "full suite green (run by badf_compose --record)",
+    "repo PASS",
+    "badf-git contract tests green"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "cf4c271dbe178de45a9111c7da00940aee6ebda4"
+  },
+  "expected_surfaces": {
+    "files": [
+      "skills/badf-git/references/git-cycle.md",
+      "badf/demands/BADF-DEM-0135.json",
+      "work/WP-2026-0149/work-package.json"
+    ]
+  },
+  "note": "Docs-only (C1): no enforcement control is introduced or strengthened, so no unit obligations -- stated rather than exempted. The composition record binds a content tree that excludes work/WP-2026-0150/ and the lockfile, so it is written after the doc and the demand are committed and does not move what it binds; if main moves before the merge, CI's compose refuses the stale record and it is recomputed, never edited."
+}
