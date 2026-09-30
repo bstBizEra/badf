@@ -1,0 +1,77 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0151",
+  "title": "GOV-0147: remove the committed conflict markers from GITHUB_CONTROL_PLANE.md, keep every section, and guard the whole tree against the class",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0136",
+  "objective": "Close #331: docs/governance/GITHUB_CONTROL_PLANE.md carries a live conflict block committed by #276, and repo, the suite and diff-filter=U are all blind to it. Delete the three marker lines keeping every section the block accumulated, and add a fence-aware guard over every tracked file that is shown RED on the unfixed tree and GREEN after. Carry the WP-2026-0150 reconcile.",
+  "business_value": "Removes a defect from the governance doctrine that grew with every landing into it (four sections by the time of the fix), and closes the instrument gap that let it sit for a month: a committed conflict is now a test failure, not ordinary text.",
+  "in_scope": [
+    "docs/governance/GITHUB_CONTROL_PLANE.md: delete `<<<<<<< HEAD` (2086) and `>>>>>>> 1150843 \u2026` (2244), replace the `=======` separator (2136) with a blank line -- all four sections (badf-uat rungs C, D, E and the enforcement-input ratchet) retained",
+    "tests/test_badf_no_committed_conflict_markers.py: every tracked file; markers <<<<<<< / >>>>>>> / ||||||| (space or end of line) and a bare seven-= separator, at non-fenced lines; CommonMark fences; unreadable text counted and asserted zero; a vacuity floor; a scan() positive control on a scratch repo; matcher controls",
+    "carry the WP-2026-0150 reconcile, written by `badf_gate.py reconcile WP-2026-0150` (CLOSED, landed_as aa94984, composition_verified true)"
+  ],
+  "out_of_scope": [
+    "semantically mis-resolved merges -- a conflict resolved by silently dropping one side leaves no marker and is out of reach of any textual guard (#331 AC-6)",
+    "an errata file for the earlier false provenance claim -- that claim lives in #331's comments and was corrected there (issue body amended 2026-09-04); the unpushed first fix it rode in never landed",
+    "moving the guard into badf_gate.py repo -- #331 asks for a test; CI runs the suite on the composed tree",
+    "the G07 self-dossier -- assembly is HUMAN_REQUIRED; declared, not worked around"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "AC-1: the three marker lines are removed; every non-blank line of the document other than the markers is identical to the base; the 104 `## ` headings are identical to the base; badf-uat headings read A (1758) -> B (1947) -> C -> D -> E in document order",
+    "AC-2: the separator is replaced by a blank line, so the preceding prose line is no longer read as a setext heading",
+    "AC-3 (as amended in #331's comments): the guard matches <<<<<<<, >>>>>>> and ||||||| followed by a space or end of line, and a line that is exactly seven '=', only outside CommonMark fenced code blocks",
+    "AC-4: the guard is RED on the unfixed tree naming GITHUB_CONTROL_PLANE.md:2086, 2136 and 2244, and GREEN after",
+    "AC-5: the sweep reads every tracked file (1849 at base aa94984, all UTF-8 text): exactly three unfenced markers, all in this block, zero fenced",
+    "ADVERSARIAL: seven seeded guard defects -- base marker dropped, separator dropped, fences ignored, a shorter run closing a fence, indented carets opening a fence, scan never reporting, non-UTF-8 skipped silently -- each turn the guard file red"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_no_committed_conflict_markers.py"
+  ],
+  "evidence": [
+    "failing-first run naming the three lines",
+    "mutation: 7/7 killed",
+    "content-identity check vs base",
+    "full suite green on the composed tree (badf_compose --record)",
+    "repo PASS",
+    "composition record + CI compose composition: CURRENT"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "aa949849087a8a9407dc489da029ce54858a327b"
+  },
+  "expected_surfaces": {
+    "files": [
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "tests/test_badf_no_committed_conflict_markers.py",
+      "badf/demands/BADF-DEM-0136.json",
+      "work/WP-2026-0150/work-package.json"
+    ]
+  },
+  "note": "C1: a document repair and a new test; no gate, schema or control code changes. The guard's matching of a bare seven-= line follows the fail-open finding recorded on #331: excluding it let a partly resolved block pass. The tracked tree carries no other such line. A composition record is committed after the last content change so this WP's reconcile can record composition_verified true."
+}
