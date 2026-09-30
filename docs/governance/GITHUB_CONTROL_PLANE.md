@@ -2083,7 +2083,6 @@ remedy when a declaration is over-broad and the **wrong** one when the declarati
 went missing — both emit a byte-identical condition. That gap is filed as **#257 / GOV-0113** and is not fixed
 here: this rung's subject is family names, and editing the same file is not sharing the subject.
 
-<<<<<<< HEAD
 ## badf-uat → deterministic G10 controls — a defence that names a field must require the field (`BADF-WP-0125` / WP-UAT-C, Issue #273 / GOV-0120)
 
 **Lean mode DISABLED.** These are HARD INVARIANTS, the same tier as the G08 controls at VER-C.
@@ -2133,7 +2132,7 @@ unwatched-controls finding against correct code. **The negative control's own pr
 it**, which is why the battery now asserts that its parsed count equals the module-declared count
 and exits before measuring on a mismatch — *every stage of a measurement chain needs its own
 liveness witness, including the stage that reads the others.*
-=======
+
 ## badf-uat → SHADOWED — representative calibration, and the gaps it declares (`BADF-WP-0131` / WP-UAT-D, Issue #277 / GOV-0124)
 
 `SHADOWED` means the controls were run against cases and behaved. `badf-uat` has **no real G10 evidence
@@ -2241,7 +2240,6 @@ or removal is #240-lane work under the replay-first doctrine, not this WP's.
 
 Five control branches, each red-observed by mutation; the sub-key × consumer matrix (measured on
 #272 pre-build) re-verified post-change: no pair of consumers disagrees about any key.
->>>>>>> 1150843 (feat(gate): the enforcement-input ratchet -- expected_surfaces mandatory from WP-2026-0126, coverage counted, unmatchable refused, may-touch unified (WP-2026-0126))
 
 ## An optional governed route is not a route
 
