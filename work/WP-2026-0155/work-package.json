@@ -1,0 +1,77 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0155",
+  "title": "AET learning plane: governed intake of EvoSkill and SkillOpt (PROPOSED, nothing executed)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0140",
+  "objective": "Close #353. Pin EvoSkill (36f6f04) and SkillOpt (fa4ca18) by commit and tree, review each read-only, and re-measure every relied-on finding at path:line. Write docs/governance/LEARNING_PLANE_TOOL_INTAKE.md (findings, a reading against BADF rules, run conditions tied to findings, excluded components, non-coverage) and register both tools in badf/tool-registry.json as PROPOSED, with no operations and no credentials. Carry the WP-2026-0153 reconcile (byte-identical to #352's; this WP runs in parallel at the operator's direction).",
+  "business_value": "Lets the Engineer Team consider two skill-optimisation tools without admitting what the review found in them: bypassed permissions, branch rewrites, secret propagation, unredacted transcript harvesting, an internal-endpoint fallback, and self-judging acceptance gates. Any later run needs a scoped WP and security approval against stated conditions.",
+  "in_scope": [
+    "docs/governance/LEARNING_PLANE_TOOL_INTAKE.md",
+    "badf/tool-registry.json: evoskill and skillopt entries, status PROPOSED",
+    "carry the WP-2026-0153 reconcile (CLOSED, landed_as 4c9284a, composition_verified true)"
+  ],
+  "out_of_scope": [
+    "installing, importing or running either tool; any API key",
+    "moving either tool beyond PROPOSED (new WP + security_authority approval)",
+    "AET-B runtime (#351 / #352)",
+    "the G07 self-dossier -- assembly is HUMAN_REQUIRED; declared, not worked around"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "AC-1: each tool pinned by commit and tree, licence recorded",
+    "AC-2: every relied-on finding cites path:line at the pinned commit and was re-measured (E1-E6, K1-K6)",
+    "AC-3: both registry entries PROPOSED with no operations and credential_source none",
+    "AC-4: run conditions stated, each tied to a finding",
+    "AC-5: badf_gate.py repo PASS; composed suite green in CI"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR",
+    "read: public clones of sentient-agi/EvoSkill and microsoft/SkillOpt (no execution)"
+  ],
+  "tests": [
+    "tests/test_badf_integrity.py",
+    "tests/test_badf_schema_drift.py",
+    "tests/test_badf_no_committed_conflict_markers.py"
+  ],
+  "evidence": [
+    "pinned commits and trees",
+    "twelve re-measured findings cited by path:line",
+    "repo PASS",
+    "composition record + CI compose composition: CURRENT and suite OK"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "4c9284a1480056dd6c4473743d0ba1310fcc509e"
+  },
+  "expected_surfaces": {
+    "files": [
+      "docs/governance/LEARNING_PLANE_TOOL_INTAKE.md",
+      "badf/tool-registry.json",
+      "badf/demands/BADF-DEM-0140.json",
+      "work/WP-2026-0153/work-package.json"
+    ]
+  },
+  "note": "C1: a governance record and two non-executable registry entries. No gate, schema or authority change, and nothing third-party is executed. Runs in parallel with #352 at the operator's direction; whichever lands second merges main (the shared WP-2026-0153 reconcile is byte-identical; the lockfile is regenerated with badf_gate.py lock)."
+}

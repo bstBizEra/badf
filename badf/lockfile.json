@@ -137,12 +137,13 @@
     "badf/demands/BADF-DEM-0136.json": "sha256:7b1cb8bdd71283dfdee43e3ce456a1be456254cf28a7b029637101a8aaaca2a9",
     "badf/demands/BADF-DEM-0137.json": "sha256:6f4c7c4513f09ce6e7a60df28c5858e5323f058abc5831231794c8365cfe4ada",
     "badf/demands/BADF-DEM-0138.json": "sha256:8f29a0fb9a2e5681b6620b2749ae28a988757cc14c49773a0116845d3fe70d0d",
+    "badf/demands/BADF-DEM-0140.json": "sha256:5ae1d7f150c75bfb07a7a4afce6381b4e20c2051ab35473857aebac925b650ef",
     "badf/lifecycle.json": "sha256:9f5218c5ca7e94feafd62acec4d90b55ea39f52c21d7639b1984dc3676cb55f3",
     "badf/mcp-registry.json": "sha256:cf93976e41ccd3bc8f8e918da96e42ffac10bce601d0c859f2639aedbb3fc85e",
     "badf/releases/BADF-BASELINE-1.0.0.json": "sha256:3b3b69e1df01592d99f65e95f2e4a9375bfec277d3ab9198b18af373795a7667",
     "badf/repositories.json": "sha256:9fb7b51cc9ad822a7034794ace47b3702ad7c2aed6b66419b9228b99883bd3e8",
     "badf/skill-registry.json": "sha256:fa5577b265b7912fd5ab058ac76f6eacb76ca2a3cd992d4e84ada61025e9c112",
-    "badf/tool-registry.json": "sha256:7a5e7c6e39dcf2eb40f166d128e91adead9c90ee51c72b6837890500d133a852",
+    "badf/tool-registry.json": "sha256:195a28b80d128effac4fc72da52a1c7cf8d9f7a1b089077c1ca158cb2eeb075f",
     "docs/00-operating-model.md": "sha256:d3c63dc1b770cf26767fcf5ce11bfa449579fd4795554cd2711e4f8cbcc6bac6",
     "docs/01-lifecycle-gates.md": "sha256:e88c949ad24fa86ee5140f46c76843e210cfb9784a78e6b01f00504602d98b73",
     "docs/02-engineering-loop.md": "sha256:8c4256b222f8290f5dce026ae63782b824b2d8ec2dec3f192fe01e1df270a570",
@@ -161,6 +162,7 @@
     "docs/errata/2026-08-28-wp-0015-commit-message.md": "sha256:c6e5151de9ec81bc459abd52b4109fdb91dc8a5b4eabe0dc60cac373e9f522d4",
     "docs/governance/GITHUB_CONTROL_PLANE.md": "sha256:c935996a53bd5bc5a539e68e7f0ae5c9e686a86cbeb7714028c549d89cd6f911",
     "docs/governance/IDENTITY_ATTRIBUTION.md": "sha256:19028f496cfae8735f5a2311ee036355c115d25443e612349586214f88569134",
+    "docs/governance/LEARNING_PLANE_TOOL_INTAKE.md": "sha256:7ce4d1612ad2a6369cf67ce12d0623283ac7031d94049f3bd070d85c7adfaa3f",
     "docs/governance/PROJECT_INSTANCE.md": "sha256:6191d54c015f24d37dd3a9aa48c49a9be805fb3fb9c26dd4a7c04cf233a9535d",
     "docs/governance/SELF_DEVELOPMENT_RULE.md": "sha256:1902557f1a59aa3104cca646e14b264b38facc3c74454985295a574c4e934f4c",
     "docs/governance/TWO_PLANE_VERDICT.md": "sha256:bf45f9b398b15a3c2b295a0403e608f9752082ed023b515f98a67a96c00c2bca",
@@ -1832,7 +1834,8 @@
     "work/WP-2026-0152/evidence/G07/composition-record.json": "sha256:88db8ea6d1e0ee94734c9302fd0138ae0a53edfd1a739fccb32ce18cc2037df1",
     "work/WP-2026-0152/work-package.json": "sha256:e577f5b126e6626ab09070be17aa8ea0de602f7ed0c509ad4601cb37dc05eff3",
     "work/WP-2026-0153/evidence/G07/composition-record.json": "sha256:1aacd9d1062f1eb463968a6621690a81187fe102c7c71981b78262005d0f3e40",
-    "work/WP-2026-0153/work-package.json": "sha256:29f41fb226f341487a9c625a37e5c3fe1b5f929bd8148333297087625629a85b"
+    "work/WP-2026-0153/work-package.json": "sha256:29f41fb226f341487a9c625a37e5c3fe1b5f929bd8148333297087625629a85b",
+    "work/WP-2026-0155/work-package.json": "sha256:055ddf8d5d8fd5aa6c2712c242020230beb3584233b531585667b603299eb805"
   },
   "schema_version": "1.0.0"
 }
