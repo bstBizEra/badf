@@ -18,5 +18,5 @@
   "recorded_at": "2026-10-03T00:00:00Z",
   "provenance": "EXPORTED_FROM_SOURCE",
   "status": "AUTHORIZED",
-  "note": "ATTRIBUTED, not independently verifiable. The operator asked, in a Claude Code session on 2026-10-03, to build the Engineer Agentic Team by learning from biztrust, biztrust_ib, bERP and badf-flow-control. Asked to choose a first deliverable, they selected 'learnings + AET-B design' over building the runtime, with merge-when-green authorised. That selection is the authorisation recorded here; it authorises a design, not AET-B. No structural actor field distinguishes the operator from an agent under the shared bstBizEra account (#261 / #308)."
+  "note": "ATTRIBUTED, not independently verifiable. The operator asked, in a Claude Code session on 2026-10-03, to build the Engineer Agentic Team by learning from biztrust, biztrust_ib, bERP and badf-flow-control. Asked to choose a first deliverable, they selected 'learnings + AET-B design' over building the runtime. Merge authority for this WP was NOT given in that exchange (an earlier merge-when-green approval covered WP-2026-0153 only). That selection is the authorisation recorded here; it authorises a design, not AET-B. No structural actor field distinguishes the operator from an agent under the shared bstBizEra account (#261 / #308)."
 }
