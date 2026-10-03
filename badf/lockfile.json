@@ -144,7 +144,7 @@
     "badf/releases/BADF-BASELINE-1.0.0.json": "sha256:3b3b69e1df01592d99f65e95f2e4a9375bfec277d3ab9198b18af373795a7667",
     "badf/repositories.json": "sha256:9fb7b51cc9ad822a7034794ace47b3702ad7c2aed6b66419b9228b99883bd3e8",
     "badf/skill-registry.json": "sha256:fa5577b265b7912fd5ab058ac76f6eacb76ca2a3cd992d4e84ada61025e9c112",
-    "badf/tool-registry.json": "sha256:195a28b80d128effac4fc72da52a1c7cf8d9f7a1b089077c1ca158cb2eeb075f",
+    "badf/tool-registry.json": "sha256:c3e40a4e7b63c5cf8c1ea58c6e75e541fbd7bed5759d755f1bf7dfdbfd13c5fc",
     "docs/00-operating-model.md": "sha256:d3c63dc1b770cf26767fcf5ce11bfa449579fd4795554cd2711e4f8cbcc6bac6",
     "docs/01-lifecycle-gates.md": "sha256:e88c949ad24fa86ee5140f46c76843e210cfb9784a78e6b01f00504602d98b73",
     "docs/02-engineering-loop.md": "sha256:8c4256b222f8290f5dce026ae63782b824b2d8ec2dec3f192fe01e1df270a570",
@@ -1839,9 +1839,9 @@
     "work/WP-2026-0153/evidence/G07/composition-record.json": "sha256:1aacd9d1062f1eb463968a6621690a81187fe102c7c71981b78262005d0f3e40",
     "work/WP-2026-0153/work-package.json": "sha256:29f41fb226f341487a9c625a37e5c3fe1b5f929bd8148333297087625629a85b",
     "work/WP-2026-0154/evidence/G07/composition-record.json": "sha256:bf12b2bafe9c543816aef10b368cdfaa64f32f1e6f45f94547866eec56f9f8f5",
-    "work/WP-2026-0154/work-package.json": "sha256:30fda2895a4ccaf57c0f1677bf5866e04ae2526d143a66d74fa02e3332e2f202",
+    "work/WP-2026-0154/work-package.json": "sha256:6884775dc15300c6513c7c04288e43087162e77bcfb07b119d18c41f8d2d9a1f",
     "work/WP-2026-0155/evidence/G07/composition-record.json": "sha256:635bda968e1a7fab92b901c74f099f4ebf788248092f9c73f4527123d400ae67",
-    "work/WP-2026-0155/work-package.json": "sha256:055ddf8d5d8fd5aa6c2712c242020230beb3584233b531585667b603299eb805"
+    "work/WP-2026-0155/work-package.json": "sha256:57b5bba54677b6d1b2379fe8094b00327f6c300045a98e971060cb0aa310edf6"
   },
   "schema_version": "1.0.0"
 }

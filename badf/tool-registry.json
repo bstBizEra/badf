@@ -6,41 +6,22 @@
       "id": "local-filesystem",
       "owner": "engineering_owner",
       "purpose": "Read and modify work-package-scoped repository files",
-      "operations": [
-        "READ",
-        "WRITE"
-      ],
-      "environments": [
-        "development"
-      ],
+      "operations": ["READ", "WRITE"],
+      "environments": ["development"],
       "approval_mode": "work-package",
       "credential_source": "none",
-      "evidence": [
-        "path",
-        "diff",
-        "validation-result"
-      ],
+      "evidence": ["path", "diff", "validation-result"],
       "status": "ACTIVE"
     },
     {
       "id": "local-shell",
       "owner": "engineering_owner",
       "purpose": "Run bounded development and verification commands",
-      "operations": [
-        "READ",
-        "WRITE"
-      ],
-      "environments": [
-        "development",
-        "ci"
-      ],
+      "operations": ["READ", "WRITE"],
+      "environments": ["development", "ci"],
       "approval_mode": "sandbox-and-work-package",
       "credential_source": "approved-environment-only",
-      "evidence": [
-        "command",
-        "exit-code",
-        "sanitized-output"
-      ],
+      "evidence": ["command", "exit-code", "sanitized-output"],
       "status": "ACTIVE"
     },
     {
@@ -135,3 +116,4 @@
     }
   ]
 }
+
