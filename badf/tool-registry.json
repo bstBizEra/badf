@@ -23,6 +23,96 @@
       "credential_source": "approved-environment-only",
       "evidence": ["command", "exit-code", "sanitized-output"],
       "status": "ACTIVE"
+    },
+    {
+      "id": "evoskill",
+      "owner": "engineering_owner",
+      "purpose": "Skill and prompt evolution against a benchmark (learning plane): proposes candidate skills",
+      "plane": "learning",
+      "operations": [],
+      "environments": [],
+      "approval_mode": "not-executable-while-proposed",
+      "credential_source": "none",
+      "provenance": {
+        "repository": "https://github.com/sentient-agi/EvoSkill",
+        "commit": "36f6f04952293d7054145550c2b9f0b0411bff1c",
+        "tree": "59c7976baf767a23b1ba2ac7f141694e91beaacb",
+        "license": "Apache-2.0",
+        "intake": "docs/governance/LEARNING_PLANE_TOOL_INTAKE.md",
+        "work_package": "WP-2026-0155"
+      },
+      "findings": [
+        "E1",
+        "E2",
+        "E3",
+        "E4",
+        "E5",
+        "E6"
+      ],
+      "forbidden": [
+        "run against a BADF checkout or any agent home directory",
+        "harvest agent session histories",
+        "auto-adopt or write live skills, CLAUDE.md or memory",
+        "install schedules (cron, schtasks) or MCP adopt/schedule tools",
+        "receive any credential other than one scoped per-run model key"
+      ],
+      "excluded_components": [
+        "install.sh",
+        "Dockerfile npm -g installs",
+        ".claude/skills/brainstorming"
+      ],
+      "outputs": "candidate skills only, entering skills/ as PROPOSED through a pull request (docs/07); the tool's own score is never admission evidence",
+      "evidence": [
+        "intake record",
+        "pinned commit and tree"
+      ],
+      "status": "PROPOSED"
+    },
+    {
+      "id": "skillopt",
+      "owner": "engineering_owner",
+      "purpose": "Skill-document optimisation with validation-gated edits (learning plane): proposes candidate skills",
+      "plane": "learning",
+      "operations": [],
+      "environments": [],
+      "approval_mode": "not-executable-while-proposed",
+      "credential_source": "none",
+      "provenance": {
+        "repository": "https://github.com/microsoft/SkillOpt",
+        "commit": "fa4ca184573e42ec11472959dd57422381418096",
+        "tree": "e0df22e8340c5255eb128a3663bcb3a6e8dba567",
+        "license": "MIT",
+        "intake": "docs/governance/LEARNING_PLANE_TOOL_INTAKE.md",
+        "work_package": "WP-2026-0155"
+      },
+      "findings": [
+        "K1",
+        "K2",
+        "K3",
+        "K4",
+        "K5",
+        "K6"
+      ],
+      "forbidden": [
+        "run against a BADF checkout or any agent home directory",
+        "harvest agent session histories",
+        "auto-adopt or write live skills, CLAUDE.md or memory",
+        "install schedules (cron, schtasks) or MCP adopt/schedule tools",
+        "receive any credential other than one scoped per-run model key"
+      ],
+      "excluded_components": [
+        "skillopt_sleep harvesters",
+        "skillopt_webui",
+        "plugins/openclaw",
+        "plugins/*/marketplace entries pinned to main",
+        "MCP sleep_adopt/sleep_schedule"
+      ],
+      "outputs": "candidate skills only, entering skills/ as PROPOSED through a pull request (docs/07); the tool's own score is never admission evidence",
+      "evidence": [
+        "intake record",
+        "pinned commit and tree"
+      ],
+      "status": "PROPOSED"
     }
   ]
 }

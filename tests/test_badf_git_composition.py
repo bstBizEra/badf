@@ -117,7 +117,12 @@ class CompositionRecordTests(_Candidate):
     def test_moved_target_makes_the_record_stale_and_compose_refuses(self):
         self.make_record(); lock_and_commit(self.repo, "record")
         g(self.repo, "checkout", "-q", "-b", "upstream", self.base)
-        (self.repo / "docs/00-operating-model.md").write_text("upstream moved\n", encoding="utf-8")
+        # The upstream move touches an UNLOCKED path, as test_badf_git_baseline's does. Moving a
+        # locked file (docs/00 was used) re-signs its lockfile line, and a candidate whose own
+        # lockfile edit sits on an ADJACENT line -- any WP that changes badf/tool-registry.json,
+        # which sorts directly above docs/00 -- then fails to merge at all, so this test reported
+        # a merge conflict instead of the staleness it exists to prove (#354's CI, 2026-10-03).
+        (self.repo / "upstream.txt").write_text("upstream moved\n", encoding="utf-8")
         moved = lock_and_commit(self.repo, "upstream moved"); g(self.repo, "update-ref", TARGET, moved)
         g(self.repo, "checkout", "-q", f"wp/{WP}-composition")
         r = self.run_compose()
