@@ -915,7 +915,7 @@ def verify_enforcement_routing() -> None:
         if any(_surface_match(s, p) for s in ENFORCEMENT_SURFACES for p in files):
             routed += 1
     print(f"BADF ENFORCEMENT ROUTING: {len(ENFORCEMENT_SURFACES)} pinned surface(s); {applies} record(s) under the rule "
-          f"(threshold WP-2026-{ENFORCEMENT_ROUTING_THRESHOLD:04d}), {routed} touching an enforcement surface, all {ENFORCEMENT_CLASS} (AET-B S1)")
+          f"(threshold {WP_NAMESPACE}{ENFORCEMENT_ROUTING_THRESHOLD:04d}), {routed} touching an enforcement surface, all {ENFORCEMENT_CLASS} (AET-B S1)")
 
 
 # ---- AET-B-1 (#287, WP-2026-0130): the seat roster ----

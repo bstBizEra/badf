@@ -241,7 +241,7 @@ def compose(args: argparse.Namespace) -> int:
             last = ((r.stdout + r.stderr).strip().splitlines() or ["(no output)"])[-1]
             print(f"  repo: FAIL -- {last}")
             return fail("the composed tree fails the repository contract")
-        # AET-B S1 (WP-2026-0157): the actual-diff side of enforcement routing. `repo` judged what the
+        # AET-B S1 (BADF-WP-0157): the actual-diff side of enforcement routing. `repo` judged what the
         # record DECLARES; this judges what the candidate CHANGES, on the tree that would land.
         problems = enforcement_problems(work, base, composed, wp)
         if problems:
