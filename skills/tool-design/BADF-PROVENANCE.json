@@ -1,0 +1,21 @@
+{
+  "upstream": {
+    "repository": "https://github.com/muratcankoylan/Agent-Skills-for-Context-Engineering",
+    "commit": "58b55a8921758d13453b440704fb1b5b208c0b0e",
+    "path": "skills/tool-design",
+    "license": "MIT"
+  },
+  "vendored_by": "WP-2026-0156",
+  "verdict": "ADOPT-WITH-NOTES",
+  "overlay": "BADF-OVERLAY.md",
+  "upstream_files": {
+    "SKILL.md": "sha256:14f5a12b69113bc6450da69c5b4d408fe91601832ab1055ae25311339c84a06b",
+    "references/architectural_reduction.md": "sha256:0d27e7991ccaac97f0db37c151837d5cc795075ba7b44a82560aeb45bb35b1c7",
+    "references/best_practices.md": "sha256:3dc82e05ba5f9e5d5e8b0f48e05241e5850130b9b0f365e032bf0635fd3380b6",
+    "scripts/description_generator.py": "sha256:ad20d1550dc41b6cbedba6c09f927765d54d1267bbe4bc8bfdf930b8987697ce"
+  },
+  "third_party_dependencies": [],
+  "scripts_executable": false,
+  "scripts_note": "Bundled scripts are reviewed (stdlib or declared deps; no network, subprocess, eval/exec) but are not executable under BADF until the skill reaches VALIDATED with deterministic tests (docs/07).",
+  "rule": "Upstream files are byte-identical to the pinned commit; BADF changes live only in BADF-OVERLAY.md. Re-vendoring is a new work package."
+}

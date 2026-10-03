@@ -1,0 +1,19 @@
+{
+  "upstream": {
+    "repository": "https://github.com/muratcankoylan/Agent-Skills-for-Context-Engineering",
+    "commit": "58b55a8921758d13453b440704fb1b5b208c0b0e",
+    "path": "skills/latent-briefing",
+    "license": "MIT"
+  },
+  "vendored_by": "WP-2026-0156",
+  "verdict": "ADOPT-AS-IS",
+  "overlay": null,
+  "upstream_files": {
+    "SKILL.md": "sha256:d84e7abe51f037a353dc3ccf18498498099fc633373a0d223bd6cc45277fd0bd",
+    "references/attention-matching-formulation.md": "sha256:b5051c5da597bfacdfceb76119b661fce965843f1dd4510f0f6bac1593327983"
+  },
+  "third_party_dependencies": [],
+  "scripts_executable": false,
+  "scripts_note": "Bundled scripts are reviewed (stdlib or declared deps; no network, subprocess, eval/exec) but are not executable under BADF until the skill reaches VALIDATED with deterministic tests (docs/07).",
+  "rule": "Upstream files are byte-identical to the pinned commit; BADF changes live only in BADF-OVERLAY.md. Re-vendoring is a new work package."
+}

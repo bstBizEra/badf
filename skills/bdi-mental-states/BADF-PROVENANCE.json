@@ -1,0 +1,22 @@
+{
+  "upstream": {
+    "repository": "https://github.com/muratcankoylan/Agent-Skills-for-Context-Engineering",
+    "commit": "58b55a8921758d13453b440704fb1b5b208c0b0e",
+    "path": "skills/bdi-mental-states",
+    "license": "MIT"
+  },
+  "vendored_by": "WP-2026-0156",
+  "verdict": "ADOPT-AS-IS",
+  "overlay": null,
+  "upstream_files": {
+    "SKILL.md": "sha256:2a68bf11815b166a508141c6ecb24a2007808e6d46557c0b111bb9b10b87cbe6",
+    "references/bdi-ontology-core.md": "sha256:bfbd9ae465cb718eb931415b9f3a27a5e6d3886b4ee691b8d1be485891927b2a",
+    "references/framework-integration.md": "sha256:57076065f3ae2047d90ff879183ff9b86a3428abe8a1d154c0652df062205b18",
+    "references/rdf-examples.md": "sha256:d9de470b53f38d4f21f13f67ca5f12c3a2f13e33faf128e778ced063b28a4dc4",
+    "references/sparql-competency.md": "sha256:9e84de61bd0c9a7c37c185e12fa8c5713479be3ef6810b4cc02ee35c90f62527"
+  },
+  "third_party_dependencies": [],
+  "scripts_executable": false,
+  "scripts_note": "Bundled scripts are reviewed (stdlib or declared deps; no network, subprocess, eval/exec) but are not executable under BADF until the skill reaches VALIDATED with deterministic tests (docs/07).",
+  "rule": "Upstream files are byte-identical to the pinned commit; BADF changes live only in BADF-OVERLAY.md. Re-vendoring is a new work package."
+}
