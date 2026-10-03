@@ -1828,6 +1828,7 @@
     "work/WP-2026-0150/work-package.json": "sha256:8790e2aacb1443d72a4135d1b9fad458e99b34c234814d8ce2de92593aa631b4",
     "work/WP-2026-0151/evidence/G07/composition-record.json": "sha256:487698b57fb8813b7575a8c221f774a967df096e6f34e6798c708fa5bba5abc5",
     "work/WP-2026-0151/work-package.json": "sha256:0d0a15413ecf062970ed969fe7ca59bd11b56ddb142d692325e2e2b6609d2e9d",
+    "work/WP-2026-0152/evidence/G07/composition-record.json": "sha256:88db8ea6d1e0ee94734c9302fd0138ae0a53edfd1a739fccb32ce18cc2037df1",
     "work/WP-2026-0152/work-package.json": "sha256:ef0463bf9431e7586f589a29c198950b3a53c359bc9467e010509a70f64e70f0"
   },
   "schema_version": "1.0.0"
