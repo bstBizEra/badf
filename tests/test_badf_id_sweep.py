@@ -35,7 +35,9 @@ class _SweepFixture(unittest.TestCase):
         # Default surfaces: anchors visible, one landed WP, nothing exotic.
         self.write("ledger.txt", "work/WP-2026-0110\nbadf/demands/BADF-DEM-0097.json\n")
         self.write("branches.txt", "0" * 40 + "\trefs/heads/main\n")
-        self.write("pr_files.txt", "")
+        # An honest empty gather, DECLARED (#323): a 0-byte dump is refused because it is
+        # indistinguishable from a gather that failed after `>` truncated the file.
+        self.write("pr_files.txt", "# gathered OK: no open PRs\n")
         self.write("bodies.txt", "GOV-0097 governs the double-claim episode.\n")
 
     def write(self, name, text):
@@ -163,3 +165,106 @@ class CommentSurfaceTests(_SweepFixture):
         self.assertTrue(any("CLAIMED" in l and "BADF-DEM-0107" in l for l in r.stdout.splitlines()))
         warn = [l for l in r.stdout.splitlines() if "WARNING" in l and "BADF-DEM-0112" in l]
         self.assertTrue(warn, r.stdout)
+
+
+class DegenerateSurfaceTests(_SweepFixture):
+    """#323 (WP-2026-0152): a required surface that is PRESENT but carries nothing usable
+    was read as clean -- exit 0, `READ (0 id occurrence(s))`, next-free wrong by twenty
+    -- because the positive-control anchors live only in `ledger`. Absent produces a
+    refusal; present-and-empty produced a confident wrong answer. `branches` claims
+    WP-2026-0140 here, so a sweep that really read it reports WP-2026-0141.
+
+    Ruling on #323 (criterion 6): content cannot separate a gather that failed after
+    `>` truncated the file from one that succeeded and found nothing -- both are 0
+    bytes. A 0-byte or whitespace-only required dump is therefore refused, with the
+    remedy named; a non-empty dump with no ids is an honest zero and stays READ. The
+    legitimately-empty gather written as 0 bytes is the declared non-covered case."""
+
+    REQUIRED = ("ledger", "branches", "pr_files", "bodies")
+
+    def setUp(self):
+        super().setUp()
+        self.append("branches.txt", "1" * 40 + "\trefs/heads/wp/WP-2026-0140-x\n")
+
+    def surfaces_header(self, out):
+        lines = out.splitlines()
+        start = lines.index("SURFACES:")
+        return {l.split(":", 1)[0].strip(): l.split(":", 1)[1].strip() for l in lines[start + 1:start + 6]}
+
+    def test_control_reads_the_claim_and_reports_the_true_next_free(self):
+        r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertIn("NEXT FREE (claim-shaped surfaces only): WP-2026-0141", r.stdout)
+
+    def test_empty_required_surface_is_refused_not_read(self):
+        self.write("branches.txt", "")
+        r = self.sweep()
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("branches.txt is PRESENT BUT UNUSABLE (empty: 0 bytes)", r.stderr)
+        self.assertNotIn("missing surface dump", r.stderr, "must be distinguishable from the missing-dump refusal")
+        self.assertNotIn("NEXT FREE", r.stdout)
+
+    def test_whitespace_only_required_surface_is_refused_not_read(self):
+        self.write("branches.txt", " \n\t\n")
+        r = self.sweep()
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("branches.txt is PRESENT BUT UNUSABLE (whitespace only)", r.stderr)
+
+    def test_undecodable_required_surface_is_not_silently_replaced(self):
+        (self.dir / "branches.txt").write_bytes("refs/heads/wp/WP-2026-0140-x\n".encode("utf-16"))
+        r = self.sweep()
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("branches.txt is PRESENT BUT UNUSABLE (not UTF-8", r.stderr)
+
+    def test_unreadable_required_surface_is_a_refusal_not_a_traceback(self):
+        # chmod 000 does not deny under a root-run harness, so the OSError is injected.
+        sys.path.insert(0, str(TOOL.parent))
+        import badf_id_sweep as tool
+        real = Path.read_bytes
+
+        def denied(path):
+            if path.name == "branches.txt":
+                raise PermissionError(13, "Permission denied", str(path))
+            return real(path)
+        Path.read_bytes = denied
+        self.addCleanup(setattr, Path, "read_bytes", real)
+        import contextlib
+        import io
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err), contextlib.redirect_stdout(io.StringIO()):
+            code = tool.main(["--from-dir", str(self.dir)])
+        self.assertEqual(code, 1)
+        self.assertIn("branches.txt is PRESENT BUT UNUSABLE (unreadable: PermissionError", err.getvalue())
+
+    def test_each_required_surface_is_checked_not_just_the_anchor_one(self):
+        sys.path.insert(0, str(TOOL.parent))
+        import badf_id_sweep as tool
+        self.assertEqual(tool.CLAIM_SURFACES + tool.PROSE_SURFACES, self.REQUIRED)
+        for name in tool.CLAIM_SURFACES + tool.PROSE_SURFACES:
+            with self.subTest(surface=name):
+                saved = (self.dir / f"{name}.txt").read_bytes()
+                self.write(f"{name}.txt", "")
+                r = self.sweep()
+                (self.dir / f"{name}.txt").write_bytes(saved)
+                self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+                self.assertIn(f"{name}.txt is PRESENT BUT UNUSABLE", r.stderr)
+
+    def test_read_is_not_printed_for_a_degenerate_optional_surface(self):
+        self.write("comments.txt", "")
+        r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        header = self.surfaces_header(r.stdout)
+        self.assertFalse(header["comments"].startswith("READ"), header)
+        self.assertIn("PRESENT BUT UNUSABLE (empty: 0 bytes)", header["comments"])
+        for name in self.REQUIRED:
+            self.assertTrue(header[name].startswith("READ ("), header)
+
+    def test_a_legitimately_empty_surface_is_still_distinguishable(self):
+        """Criterion 6: a declared honest zero (non-empty, no ids) is READ, not refused."""
+        self.write("pr_files.txt", "# gathered OK: no open PRs\n")
+        r = self.sweep(); self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertEqual(self.surfaces_header(r.stdout)["pr_files"], "READ (0 id occurrence(s))")
+
+    def test_refusal_names_the_remedy_for_an_honest_empty_gather(self):
+        self.write("pr_files.txt", "")
+        r = self.sweep()
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("declare it in the dump", r.stderr)
