@@ -1,0 +1,74 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0153",
+  "title": "Documented id-sweep gather: make the loop gathers (pr_files, comments) fail closed",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0138",
+  "objective": "Close #349, the follow-up #348 declared. The documented pr_files loop wrote 0 bytes both for an honest empty result (now refused by #323's fix) and for a failed `gh pr list`, and a part-way failure left a non-empty partial dump the sweep READ with exit 0. Make each loop gather build a temp file, propagate every failure with an explicit `|| exit 1`, end with a declared line and move into place only on success: a failure leaves the dump MISSING (refused), an honest empty gather a non-empty declared dump (READ 0). Carry the WP-2026-0152 reconcile.",
+  "business_value": "The documented procedure stops being refused on every run with no open PRs, and the one remaining path to a confidently wrong next-free -- a partial gather READ as complete -- is closed, in a repository that has had three id collisions in one session.",
+  "in_scope": [
+    "docs/governance/GITHUB_CONTROL_PLANE.md: the pr_files and comments gathers in the id-allocation block fail closed (temp file, explicit `|| exit 1`, declared line, mv on success), with a paragraph naming the two shortcuts that reintroduce #323 (unconditional declaration; `( set -e; ... ) && mv`, where bash ignores set -e)",
+    "tests/test_badf_id_sweep.py: DocumentedGatherTests runs the documented block unedited against stub gh/git and the real sweep",
+    "carry the WP-2026-0152 reconcile, written by `badf_gate.py reconcile WP-2026-0152` (CLOSED, landed_as bb1c581, composition_verified true)"
+  ],
+  "out_of_scope": [
+    "scripts/badf_id_sweep.py behaviour, including requiring a declaration trailer in every dump (#349 out of scope)",
+    "the single-command gathers (ledger, branches, bodies): a failure leaves 0 bytes, which #323's refusal already catches",
+    "the G07 self-dossier -- assembly is HUMAN_REQUIRED; declared, not worked around"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "AC-1: no open PRs -> the documented gather + sweep exits 0 and pr_files is READ (0 id occurrence(s))",
+    "AC-2: a failed `gh pr list` -> refused as 'missing surface dump pr_files.txt'",
+    "AC-3: a per-PR files call failing part-way -> refused as missing, never READ",
+    "AC-4: comments -- no open issues is READ (0); a failed `gh issue list` is NOT PROVIDED",
+    "AC-5: the test runs the block extracted from the document, failing-first on the pre-change block; ADVERSARIAL: seven seeded shortcuts (set -e, each dropped `|| exit 1`, no temp+mv, no declaration, unconditional declaration) each turn it red"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_id_sweep.py"
+  ],
+  "evidence": [
+    "failing-first run: 3 failures + 1 error on the pre-change block, control green",
+    "mutation: 7/7 killed",
+    "id-sweep + family-names + conflict-marker tests green",
+    "repo PASS",
+    "composition record + CI compose composition: CURRENT and suite OK"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "bb1c58144fc058400fdad6fc902b962b185c6eec"
+  },
+  "expected_surfaces": {
+    "files": [
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "tests/test_badf_id_sweep.py",
+      "badf/demands/BADF-DEM-0138.json",
+      "work/WP-2026-0152/work-package.json"
+    ]
+  },
+  "note": "C1: a documented operator procedure and a test; no gate, schema, control or tool code changes. The test needs bash and a POSIX shell (skipped otherwise -- declared). The full suite runs in CI on the composed tree; this session's background limit is shorter than the suite."
+}
