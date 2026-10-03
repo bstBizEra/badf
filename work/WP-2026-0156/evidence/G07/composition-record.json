@@ -1,0 +1,22 @@
+{
+  "record": "git-composition",
+  "schema_version": "1.0.0",
+  "observed_at": "2026-10-03T18:13:25Z",
+  "repository": "bstBizEra/badf",
+  "work_package_id": "WP-2026-0156",
+  "target_ref": "refs/heads/main",
+  "target_base_sha": "80fa739a67e6cf5496e6ac400bfa1135ee1b8892",
+  "source_ref": null,
+  "source_head_sha": "786d38dab32762ce5df602da0b225355ee8ec446",
+  "merge_base_sha": "80fa739a67e6cf5496e6ac400bfa1135ee1b8892",
+  "merge_method": "squash",
+  "expected_result_tree": "1bb9620b3fefbed8e4866bb06c3dcdc18f5b21af",
+  "expected_content_tree": "2720d8d222f6d094dff687b777f9a398bbc91f04",
+  "policy_epoch": "BADF-2026-08-25",
+  "test_set_epoch": null,
+  "suite_pattern": "test_badf_vendored_asce.py",
+  "non_coverage": [
+    "test_set_epoch: BADF defines no test-set/toolchain epoch; not recorded rather than invented",
+    "source_head_sha and expected_result_tree are informational: committing this record moves both; the binding is expected_content_tree (work/<WP>/ and the lockfile excluded)"
+  ]
+}
