@@ -1,0 +1,84 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0157",
+  "title": "AET-B S1: enforcement-surface routing (edits to BADF's enforcement surfaces are C3, declared and actual) + BADF-DEC-0008 opens AET-B",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0142",
+  "objective": "Close #357. Record BADF-DEC-0008: #220 is PARKED (owned, deferred), so the docs/14 section 8 AET-B gate is met and AET-B opens. Build S1 of the AET-B design. A pinned list in badf_gate.py names the files whose edit changes what BADF enforces or who may authorize it. A work package touching one must be C3, the class carrying the human-reserved roles. badf_gate.py repo checks declared expected_surfaces; badf_compose.py checks the composed diff. The rule binds from this work package. Carry the WP-2026-0155 reconcile.",
+  "business_value": "Closes, in BADF, the failure the cross-repo study found worst in biztrust: an enforcer editable by the enforced. Every later AET component and every future agent seat is bounded by controls an agent cannot edit without human-reserved approval.",
+  "in_scope": [
+    "badf/decisions/BADF-DEC-0008.json",
+    "scripts/badf_gate.py: ENFORCEMENT_SURFACES, check_enforcement_routing, verify_enforcement_routing (wired into validate_repo)",
+    "scripts/badf_compose.py: enforcement_problems on the composed diff",
+    "tests/test_badf_enforcement_routing.py",
+    "docs/governance/AET_B_SUBSTRATE_DESIGN.md: a dated update to section 7 recording the gate decision and S1",
+    "carry the WP-2026-0155 reconcile (CLOSED, landed_as cc381c7, composition_verified true)"
+  ],
+  "out_of_scope": [
+    "S2-S5 (separate work packages)",
+    "fixing #220 (parked by BADF-DEC-0008)",
+    "any change to C3's required roles, the authority matrix, docs/14 or AGENTS.md",
+    "AET-C/D/E and any scheduled or autonomous operation",
+    "the G07 self-dossier -- assembly is HUMAN_REQUIRED; declared, not worked around"
+  ],
+  "target_gate": "G07",
+  "change_class": "C3",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "AC-1: BADF-DEC-0008 records the #220 disposition and AET-B opening, attributed to the operator, with options considered",
+    "AC-2: the pinned list is in code and its exact contents are asserted by a test",
+    "AC-3: a sub-C3 record declaring an enforcement surface (or a covering glob) is refused by repo; an undeclared edit is refused by compose on the real diff",
+    "AC-4: grandfathered and sentinel ids exempt; WP-2026-0157 itself is bound and is C3",
+    "AC-5: every control mutation-tested (8/8 killed)",
+    "AC-6: badf_gate.py repo PASS; composed suite green in CI"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_enforcement_routing.py",
+    "tests/test_badf_git_composition.py",
+    "tests/test_badf_integrity.py"
+  ],
+  "evidence": [
+    "18 new tests",
+    "8/8 seeded mutations killed",
+    "repo PASS with the rule live on this record",
+    "composition record + CI compose composition: CURRENT and suite OK"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "cc381c73bc7a3c2033bba9ed343798b1204e1bf6"
+  },
+  "expected_surfaces": {
+    "files": [
+      "scripts/badf_gate.py",
+      "scripts/badf_compose.py",
+      "tests/test_badf_enforcement_routing.py",
+      "badf/decisions/BADF-DEC-0008.json",
+      "badf/demands/BADF-DEM-0142.json",
+      "docs/governance/AET_B_SUBSTRATE_DESIGN.md",
+      "work/WP-2026-0155/work-package.json"
+    ]
+  },
+  "note": "C3, because this work package edits two enforcement surfaces (scripts/badf_gate.py, scripts/badf_compose.py) and is the first record its own rule binds. Merge authority: the operator authorised merge-when-green for this first AET-B work package in the session channel; the C3 human-reserved approvals at G07 are a separate gate and are not claimed here."
+}

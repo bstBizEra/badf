@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0.0",
+  "decision_id": "BADF-DEC-0008",
+  "title": "AET-B opens: #220 is dispositioned as PARKED (owned, deferred) and the AET-B gate of docs/14 section 8 is met",
+  "status": "DECIDED",
+  "decided_at": "2026-10-03T21:00:00Z",
+  "decided_at_provenance": "RECORDED AT DECISION TIME in the Claude Code session where it was made. The operator said 'Start Engineer Team'. Asked to choose among three ways to clear the AET-B gate, they selected 'Park #220, open AET-B (Recommended)'. Content drafted by the agent from the options presented; the authority is the operator's selection in their own channel (AET-I13). DELEGATED drafting, labelled so.",
+  "decision_authority": {
+    "role": "human_sponsor",
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "work_package_id": "WP-2026-0157",
+  "change_class": "C3",
+  "ballot": "AGREE",
+  "options_considered": {
+    "A": "Park #220 with an owner and open AET-B -- SELECTED. #220 is a demand-learning bookkeeping defect (finished demands sit AUTHORIZED, so the learning guard is unreachable). It is independent of the runtime substrate. A recorded disposition is what docs/14 section 8 asks for.",
+    "B": "Fix #220 first, then open AET-B -- NOT SELECTED: slower; gates the runtime on an unrelated bookkeeping fix.",
+    "C": "Remove #220 from AET-B's prerequisites by amending docs/14 section 8 -- NOT SELECTED: edits doctrine to clear a gate the doctrine already lets a disposition clear."
+  },
+  "authorizes": {
+    "summary": "#220 is PARKED: owned by the human_sponsor and deferred to a future work package. It is neither closed nor resolved, its binding conditions stand, and its demands stay as measured. With #234/#211/#218/#246 already closed, the docs/14 section 8 AET-B gate is met. AET-B opens with S1 (enforcement-surface routing) in WP-2026-0157. Later AET-B components (S2-S5) are separate work packages.",
+    "scope": [
+      "badf/decisions/BADF-DEC-0008.json",
+      "WP-2026-0157 (AET-B S1)",
+      "a comment on #220 recording the disposition"
+    ],
+    "excluded": [
+      "#220 is not closed and its fix is not waived",
+      "AET-C, AET-D and AET-E remain gated as docs/14 section 8 states",
+      "no scheduled or autonomous operation is authorized",
+      "no change to docs/14, the authority matrix or any reserved role"
+    ]
+  },
+  "proven_defect": "Measured 2026-10-03 (docs/governance/AET_B_SUBSTRATE_DESIGN.md section 7): the AET-B gate read HUMAN_REQUIRED because #220 was open with no recorded disposition. Every other prerequisite was closed.",
+  "residual_risk": "#220's defect persists while parked: finished demands remain AUTHORIZED, so the demand-learning guard stays unreachable for them. AET-B work does not depend on that guard. If a later AET-B component comes to depend on demand terminality, this decision must be revisited first.",
+  "authority_downgrade": {
+    "permits_downgrade": false,
+    "note": "Strengthening only: S1 adds a C3 requirement for enforcement-surface edits; nothing is relaxed."
+  },
+  "binding": {
+    "authority_matrix_digest_before": "sha256:75d3e0216212ea7611c36b69bbea8d3835d32841e102561ea2ca4e1383208b43",
+    "policy_epoch": "BADF-2026-08-25",
+    "enacting_commit": null,
+    "enacting_pr": null,
+    "binding_note": "filled by reconciliation when WP-2026-0157 lands."
+  },
+  "evidence": [
+    "operator: 'Start Engineer Team' (Claude Code session, 2026-10-03)",
+    "operator selection: 'Park #220, open AET-B (Recommended)'",
+    "docs/governance/AET_B_SUBSTRATE_DESIGN.md section 7 gate table",
+    "#234, #211, #218, #246 closed (completed); #220 open, last activity 2026-09-02"
+  ],
+  "supersedes": null,
+  "superseded_by": null,
+  "invalidation": "Closing #220 as fixed without the fix, treating this parking as a waiver of #220's binding conditions, or citing it to open AET-C/D/E invalidates this decision."
+}

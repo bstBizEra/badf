@@ -39,7 +39,7 @@ FULL_PATTERN = "test_*.py"
 # The Work-Package line and the machine-id namespace are defined once, in
 # badf_gate.py (BADF-WP-0070 / GIT-B); this script must not repeat the literal.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from badf_gate import WP_LINE, WP_NAMESPACE, ValidationError, content_tree, load_composition_record  # noqa: E402
+from badf_gate import WP_LINE, WP_NAMESPACE, ValidationError, check_enforcement_routing, content_tree, load_composition_record  # noqa: E402
 # content_tree and load_composition_record live in badf_gate.py (GIT-F moved them there:
 # reconcile needs the same, object-store-only computation); this script only imports them.
 
@@ -125,6 +125,14 @@ def sh(cmd: list[str], cwd: Path, env: dict | None = None, input: str | None = N
 def fail(reason: str) -> int:
     print(f"BADF COMPOSE FAIL: {reason}")
     return 1
+
+
+def enforcement_problems(work: Path, base: str, head: str, wp: str) -> list[str]:
+    """AET-B S1: enforcement-surface routing judged on the paths `base..head` actually changes, against the
+    work package record as it stands in `head`. The rule itself lives in badf_gate (AET-I12)."""
+    changed = sh(["git", "-C", str(work), "diff", "--name-only", base, head], work).stdout.split()
+    record = json.loads((work / "work" / wp / "work-package.json").read_text(encoding="utf-8"))
+    return check_enforcement_routing(wp, record, changed)
 
 
 def compose(args: argparse.Namespace) -> int:
@@ -233,6 +241,11 @@ def compose(args: argparse.Namespace) -> int:
             last = ((r.stdout + r.stderr).strip().splitlines() or ["(no output)"])[-1]
             print(f"  repo: FAIL -- {last}")
             return fail("the composed tree fails the repository contract")
+        # AET-B S1 (WP-2026-0157): the actual-diff side of enforcement routing. `repo` judged what the
+        # record DECLARES; this judges what the candidate CHANGES, on the tree that would land.
+        problems = enforcement_problems(work, base, composed, wp)
+        if problems:
+            return fail("enforcement routing: " + "; ".join(problems))
         debt = any(f"{wp} LANDED_UNRECONCILED" in line for line in r.stdout.splitlines())
         print(f"  repo: PASS -- {wp} " + ("LANDED_UNRECONCILED on the composed ledger (reconciled by the next work package)"
                                          if debt else "record present and already reconciled (a follow-up under a closed work package)"))
