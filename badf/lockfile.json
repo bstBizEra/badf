@@ -135,6 +135,7 @@
     "badf/demands/BADF-DEM-0134.json": "sha256:215c5785632edfabf6707743dced9a60ebf54c14c13b0c6844b4ffc10f377a98",
     "badf/demands/BADF-DEM-0135.json": "sha256:cf70609e77c6913612c323d7168dadbb2a85d6d98d75799beb593ffcd2104966",
     "badf/demands/BADF-DEM-0136.json": "sha256:7b1cb8bdd71283dfdee43e3ce456a1be456254cf28a7b029637101a8aaaca2a9",
+    "badf/demands/BADF-DEM-0137.json": "sha256:6f4c7c4513f09ce6e7a60df28c5858e5323f058abc5831231794c8365cfe4ada",
     "badf/lifecycle.json": "sha256:9f5218c5ca7e94feafd62acec4d90b55ea39f52c21d7639b1984dc3676cb55f3",
     "badf/mcp-registry.json": "sha256:cf93976e41ccd3bc8f8e918da96e42ffac10bce601d0c859f2639aedbb3fc85e",
     "badf/releases/BADF-BASELINE-1.0.0.json": "sha256:3b3b69e1df01592d99f65e95f2e4a9375bfec277d3ab9198b18af373795a7667",
@@ -319,7 +320,7 @@
     "schemas/work-package.schema.json": "sha256:f1818645f4660a09d9f66663dc646625027991e2a6cd8db2396959ab4138f04c",
     "scripts/badf_compose.py": "sha256:0ca8e2d56872959372edd3c1e1205de69aba850cbefa5e34602733d0b15587f6",
     "scripts/badf_gate.py": "sha256:5b7773b980af159e12954014dba7cdd9fe0f45e6d4c60e28d86dae6b6e63a177",
-    "scripts/badf_id_sweep.py": "sha256:7e216cd6981b2c29f167cde44f714f55eb8d9e210406ca457a4b188a25b3fcd5",
+    "scripts/badf_id_sweep.py": "sha256:b4ee07b99e1624a6b673bf275b3840e928643d7f2052094d9ee99f31b78ab59d",
     "scripts/check_pr_traceability.py": "sha256:24eba13975b79167a5e5a2928e547fdb06b3ad82fdda1874fa30eb9e363ee028",
     "skills/badf-architecture/SKILL.md": "sha256:431b963d62ccca32c861652981606321952374daf09e1a96d23d614eb46300dc",
     "skills/badf-architecture/references/acceptance.md": "sha256:00aebac57946c3ef50f5b70a1368d27cf2b206874385a34adf62ff776b86f873",
@@ -557,7 +558,7 @@
     "tests/test_badf_git_release.py": "sha256:76f37ac7e772a3575699a403699aafdf48576817f9d48b455ed860e5fab1d6db",
     "tests/test_badf_git_shadow.py": "sha256:bbc260170fa3af429ef2edf2daef90db2cb61b95ebb6fcc7f2f75f48b31cb748",
     "tests/test_badf_git_staleness.py": "sha256:02bc37c321666842fd6fd54c1c7ebaaf47e04c98a36ab102db5d4899d67478f4",
-    "tests/test_badf_id_sweep.py": "sha256:0d5e882ccfd8ba452fa0eeff10a4687aa3a957709c5c397c4cc97704d2effee2",
+    "tests/test_badf_id_sweep.py": "sha256:bc8ce3df1cda2011546bbbac793af9f7f9f792f28e758d8143e8ef598dbcde01",
     "tests/test_badf_implementation_plan_contract.py": "sha256:dbe7693ec7fce63411a250cbdbca1de65371a10547311771f2bd1d898ae452b3",
     "tests/test_badf_init.py": "sha256:4ec14819a4e4ddf33b277cefe021717b114f73be1d85654e63901c282412f742",
     "tests/test_badf_instance.py": "sha256:faa97f9d16bcd641caee6a91f394e74298373f3f57a5da13b3eb945bfaf61024",
@@ -1826,7 +1827,9 @@
     "work/WP-2026-0150/evidence/G07/composition-record.json": "sha256:eade7887051a7a33f503a393132f9e371cc531fc27d47c04fe017abeaecdd23c",
     "work/WP-2026-0150/work-package.json": "sha256:8790e2aacb1443d72a4135d1b9fad458e99b34c234814d8ce2de92593aa631b4",
     "work/WP-2026-0151/evidence/G07/composition-record.json": "sha256:487698b57fb8813b7575a8c221f774a967df096e6f34e6798c708fa5bba5abc5",
-    "work/WP-2026-0151/work-package.json": "sha256:db94f9885f5f190f1e69b49492a6e3fd8a05cdfde9c45466acc2c4b7b5859d08"
+    "work/WP-2026-0151/work-package.json": "sha256:0d0a15413ecf062970ed969fe7ca59bd11b56ddb142d692325e2e2b6609d2e9d",
+    "work/WP-2026-0152/evidence/G07/composition-record.json": "sha256:88db8ea6d1e0ee94734c9302fd0138ae0a53edfd1a739fccb32ce18cc2037df1",
+    "work/WP-2026-0152/work-package.json": "sha256:ef0463bf9431e7586f589a29c198950b3a53c359bc9467e010509a70f64e70f0"
   },
   "schema_version": "1.0.0"
 }

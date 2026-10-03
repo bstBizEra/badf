@@ -1,0 +1,77 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0152",
+  "title": "badf_id_sweep: refuse a required surface that is present but unusable, and print READ only for a surface actually read",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0137",
+  "objective": "Close #323: badf_id_sweep read a present-but-empty, whitespace-only or wrong-encoding required dump as clean -- exit 0, READ (0 id occurrence(s)), next-free wrong by twenty -- because the positive-control anchors live only in ledger and the read used errors='replace'. Refuse such a required surface with a message distinct from the missing-dump refusal, make READ falsifiable, turn an unreadable dump into a refusal instead of a traceback, and follow SARCHI's criterion-6 ruling. Carry the WP-2026-0151 reconcile.",
+  "business_value": "Removes the one path by which the id-allocation tool gives a confident wrong answer instead of a refusal -- the realistic failure being a gather that failed after shell redirection truncated its dump -- in a repository that has had three id collisions in one session.",
+  "in_scope": [
+    "scripts/badf_id_sweep.py: read_surface() -- strict UTF-8, refuse 0 bytes / whitespace only / undecodable / OSError as PRESENT BUT UNUSABLE; required surfaces exit 1 naming the remedy for an honest empty gather; an unusable optional comments dump is reported PRESENT BUT UNUSABLE, never READ",
+    "tests/test_badf_id_sweep.py: DegenerateSurfaceTests per #323's test list, every required surface checked via the module's own tuples; the default fixture's 0-byte pr_files.txt becomes a declared honest empty",
+    "carry the WP-2026-0151 reconcile, written by `badf_gate.py reconcile WP-2026-0151` (CLOSED, landed_as 9f1b42b, composition_verified true)"
+  ],
+  "out_of_scope": [
+    "the documented gather one-liners in GITHUB_CONTROL_PLANE.md -- #323 puts the gather procedure out of scope. The pr_files loop writes 0 bytes when no PRs are open, so it is now refused until the operator declares the empty result; recording each gather's exit status is SARCHI's preferred follow-up",
+    "CLAIM_SURFACES / PROSE_SURFACES and id matching (#323 out of scope)",
+    "#284's characterization test -- it never landed (no test in the tree references #323 or #284), so there is nothing to invert; #284 stays open",
+    "the G07 self-dossier -- assembly is HUMAN_REQUIRED; declared, not worked around"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "AC-1: an empty or whitespace-only required dump exits 1 with 'PRESENT BUT UNUSABLE', distinguishable from 'missing surface dump'",
+    "AC-2: a dump that does not decode as strict UTF-8 is refused, never errors='replace'd",
+    "AC-3: READ is printed only for a surface that decoded and is not blank; an unusable optional surface is reported PRESENT BUT UNUSABLE",
+    "AC-4: every required surface (ledger, branches, pr_files, bodies, from the module's own tuples) is refused when degenerate -- not only ledger",
+    "AC-5: an OSError on read (PermissionError injected, since chmod 000 does not deny under a root harness) is a refusal, not a traceback",
+    "AC-6 (SARCHI's ruling): a non-empty dump with no ids is READ (0) as an honest zero; a legitimately empty gather left at 0 bytes is refused with the remedy named -- the declared non-covered case; no predicate keys on 'no ids found'",
+    "failing-first: the new tests fail on the pre-change tool; ADVERSARIAL: seven seeded defects each turn the file red"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_id_sweep.py"
+  ],
+  "evidence": [
+    "failing-first run",
+    "mutation: 7/7 killed",
+    "id-sweep + family-names tests green",
+    "repo PASS",
+    "composition record + CI compose composition: CURRENT and suite OK"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "9f1b42b43a8270ccdf966f696492df7b3364964c"
+  },
+  "expected_surfaces": {
+    "files": [
+      "scripts/badf_id_sweep.py",
+      "tests/test_badf_id_sweep.py",
+      "badf/demands/BADF-DEM-0137.json",
+      "work/WP-2026-0151/work-package.json"
+    ]
+  },
+  "note": "C1: a refusal added to an operator tool; no gate, schema or control code changes. The SURFACES header gains a PRESENT BUT UNUSABLE state for the optional surface; nothing in the tree parses that header but the tool's own tests. The full suite runs in CI on the composed tree; this session's background limit is shorter than the suite."
+}

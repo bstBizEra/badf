@@ -25,7 +25,12 @@ Properties held as structure, not convention (#227 + #282 field spec):
   a named WARNING ("read it; the published claim is binding") instead of silently
   vanishing (four allocation incidents in one session) or polluting max() (#199).
 - The SURFACES header reports every surface as READ (with id count) or NOT PROVIDED,
-  every run: an unread surface stated is a caution; omitted, a false clean.
+  every run: an unread surface stated is a caution; omitted, a false clean. READ is
+  printed only for a dump that decoded as UTF-8 and is not blank (#323): a required dump
+  that is present but empty, whitespace-only, undecodable or unreadable is refused; an
+  optional one is reported PRESENT BUT UNUSABLE. A gather that found nothing must say so
+  in the dump (a non-empty line with no ids, read as an honest zero) -- a 0-byte dump is
+  indistinguishable from a gather that failed after `>` truncated the file.
 - Sentinels are excluded from next-free and warnings, and DECLARED in the output.
 - POSITIVE CONTROL before any negative: the sweep refuses to report unless it can see
   ids known to be present on main forever.
@@ -133,6 +138,29 @@ def render(report: dict[str, dict[str, object]], readability: dict[str, str]) ->
     return "\n".join(lines)
 
 
+def read_surface(p: Path) -> tuple[str | None, str]:
+    """(text, "") for a dump that decodes as UTF-8 and is not blank; (None, reason) for one
+    that is PRESENT BUT UNUSABLE (#323). Strict decoding: errors="replace" turned a
+    wrong-encoding dump into a silently clean scan. A 0-byte dump is unusable because
+    content cannot tell a gather that failed after `>` truncated the file from one that
+    found nothing; an honest zero must be declared in the dump (a non-empty line with no
+    ids), and is then READ. A legitimately empty gather left at 0 bytes is the declared
+    non-covered case: it is refused, not misread."""
+    try:
+        data = p.read_bytes()
+    except OSError as exc:
+        return None, f"unreadable: {type(exc).__name__}: {exc.strerror or exc}"
+    if not data:
+        return None, "empty: 0 bytes"
+    try:
+        text = data.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        return None, f"not UTF-8 at byte {exc.start}"
+    if not text.strip():
+        return None, "whitespace only"
+    return text, ""
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--from-dir", required=True, type=Path,
@@ -147,12 +175,26 @@ def main(argv: list[str] | None = None) -> int:
             print(f"BADF ID SWEEP FAIL: missing surface dump {p.name}; a sweep that skips a "
                   f"surface silently is the class this tool exists to close", file=sys.stderr)
             return 1
-        surfaces[name] = p.read_text(encoding="utf-8", errors="replace")
+        text, unusable = read_surface(p)
+        if text is None:
+            print(f"BADF ID SWEEP FAIL: surface dump {p.name} is PRESENT BUT UNUSABLE ({unusable}) -- "
+                  f"not a missing dump: it was provided but carries nothing readable, and next-free "
+                  f"from it would be advice from a surface never read. A gather that failed after `>` "
+                  f"truncated the file leaves exactly this. If the gather succeeded and found nothing, "
+                  f"declare it in the dump (e.g. `echo '# gathered OK: none found' > {p.name}`)",
+                  file=sys.stderr)
+            return 1
+        surfaces[name] = text
     for name in OPTIONAL_SURFACES:
         p = args.from_dir / f"{name}.txt"
         if p.is_file():
-            surfaces[name] = p.read_text(encoding="utf-8", errors="replace")
-            readability[name] = "PENDING"
+            text, unusable = read_surface(p)
+            if text is None:
+                surfaces[name] = ""
+                readability[name] = f"PRESENT BUT UNUSABLE ({unusable}) -- not scanned; treated as not provided"
+            else:
+                surfaces[name] = text
+                readability[name] = "PENDING"
         else:
             surfaces[name] = ""
             readability[name] = "NOT PROVIDED (the claim mechanism lives here -- provide it or ask the seats)"
