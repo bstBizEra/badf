@@ -56,7 +56,7 @@
     "EVIDENCE_CORRUPTION",
     "BUDGET_EXHAUSTED"
   ],
-  "status": "ACTIVE",
+  "status": "IN_PROGRESS",
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",

@@ -1832,7 +1832,7 @@
     "work/WP-2026-0152/evidence/G07/composition-record.json": "sha256:88db8ea6d1e0ee94734c9302fd0138ae0a53edfd1a739fccb32ce18cc2037df1",
     "work/WP-2026-0152/work-package.json": "sha256:e577f5b126e6626ab09070be17aa8ea0de602f7ed0c509ad4601cb37dc05eff3",
     "work/WP-2026-0153/evidence/G07/composition-record.json": "sha256:1aacd9d1062f1eb463968a6621690a81187fe102c7c71981b78262005d0f3e40",
-    "work/WP-2026-0153/work-package.json": "sha256:1c5c72af8c6606ba1a592be139ee207f4548e78efefa4f5bc6463175b1a9ff1c"
+    "work/WP-2026-0153/work-package.json": "sha256:e27770d170e612d426f2668ef4011ec2463517a5b061e7481fc8610e70c41646"
   },
   "schema_version": "1.0.0"
 }
