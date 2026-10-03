@@ -1874,13 +1874,28 @@ ends with the non-coverage trailer naming surfaces ⑤ and ⑥. Producing the du
 D=$(mktemp -d)
 { ls work/; ls badf/demands/; } > $D/ledger.txt
 git ls-remote --heads origin > $D/branches.txt
-for pr in $(gh pr list --state open --json number --jq '.[].number'); do
-  gh api repos/bstBizEra/badf/pulls/$pr/files --jq '.[].filename'; done > $D/pr_files.txt
+( prs=$(gh pr list --state open --json number --jq '.[].number') || exit 1
+  for pr in $prs; do gh api repos/bstBizEra/badf/pulls/$pr/files --jq '.[].filename' || exit 1; done
+  echo "# gathered OK: $(echo $prs | wc -w) open PR(s)" ) > $D/pr_files.tmp && mv $D/pr_files.tmp $D/pr_files.txt
 gh api -X GET search/issues -f q='repo:bstBizEra/badf "WP-2026"' --jq '.items[].body' > $D/bodies.txt
-for n in $(gh issue list --state open --json number --jq '.[].number'); do
-  gh api repos/bstBizEra/badf/issues/$n/comments --jq '.[].body'; done > $D/comments.txt
+( issues=$(gh issue list --state open --json number --jq '.[].number') || exit 1
+  for n in $issues; do gh api repos/bstBizEra/badf/issues/$n/comments --jq '.[].body' || exit 1; done
+  echo "# gathered OK: $(echo $issues | wc -w) open issue(s)" ) > $D/comments.tmp && mv $D/comments.tmp $D/comments.txt
 python3 scripts/badf_id_sweep.py --from-dir $D
 ```
+
+**The loop gathers fail closed** (#349, `BADF-WP-0153`). Each one is built in a temp file and ends with a
+declared line. It is moved into place only if every command in it succeeded. So a failure leaves the dump
+**missing**, which the sweep refuses, and a successful gather that found nothing leaves a non-empty
+declared dump, which the sweep reads as an honest zero. Before this, both cases wrote 0 bytes, and a
+part-way failure wrote a partial dump that the sweep READ. Two shortcuts reintroduce #323:
+- **An unconditional `echo '# gathered OK'`** makes a failed gather read as an honest zero.
+- **`( set -e; … ) && mv`** fails open: bash ignores `set -e` inside a subshell that is the left operand
+  of `&&`, so the subshell runs to the end and `&&` sees success.
+
+Each failure is propagated by an explicit `|| exit 1` instead. `tests/test_badf_id_sweep.py` runs this
+block unedited against stub `gh`/`git`. The single-command gathers (`ledger`, `branches`, `bodies`) are
+unchanged: if one fails, it leaves 0 bytes, which the sweep already refuses.
 
 **The comment surface is where the binding claims actually live** (#282, after four allocation
 incidents in one session): provide `comments.txt` and the sweep warns by name on any comment id at or

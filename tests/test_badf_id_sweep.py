@@ -15,6 +15,9 @@ output; a report is refused unless the sweep can see its known-present anchors (
 empty scan and a clean scan are otherwise identical); and every report ends by naming
 the blind half -- unpushed worktrees and independent clones -- out loud.
 """
+import os
+import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -268,3 +271,104 @@ class DegenerateSurfaceTests(_SweepFixture):
         r = self.sweep()
         self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
         self.assertIn("declare it in the dump", r.stderr)
+
+
+DOC = ROOT / "docs" / "governance" / "GITHUB_CONTROL_PLANE.md"
+
+GH_STUB = r'''
+import os, re, sys
+a = sys.argv[1:]; fail = os.environ.get("GH_FAIL", "").split()
+def out(*lines):
+    for l in lines: print(l)
+if a[:2] == ["pr", "list"]:
+    if "pr-list" in fail: sys.exit("gh: HTTP 502")
+    out(*os.environ.get("GH_PRS", "").split())
+elif a[:2] == ["issue", "list"]:
+    if "issue-list" in fail: sys.exit("gh: HTTP 502")
+    out(*os.environ.get("GH_ISSUES", "").split())
+elif a[0] == "api" and "search/issues" in a:
+    out("GOV-0097 governs the double-claim episode.")
+elif a[0] == "api" and (m := re.search(r"/pulls/(\d+)/files$", a[1])):
+    if f"pr-files-{m[1]}" in fail: sys.exit("gh: HTTP 403 rate limited")
+    out(f"work/WP-2026-{548 + int(m[1]):04d}/work-package.json")
+elif a[0] == "api" and (m := re.search(r"/issues/(\d+)/comments$", a[1])):
+    out(f"claiming WP-2026-0600 on #{m[1]}")
+else:
+    sys.exit(f"gh stub: unexpected {a}")
+'''
+
+
+@unittest.skipUnless(shutil.which("bash") and os.name == "posix", "runs the documented bash gather")
+class DocumentedGatherTests(unittest.TestCase):
+    """#349 (WP-2026-0153): runs THE BLOCK FROM GITHUB_CONTROL_PLANE.md, unedited, against stub
+    `gh`/`git`, then the real sweep -- so the doctrine cannot drift from what is tested.
+
+    #323 made the sweep refuse a 0-byte dump; the documented loop gathers produced one for an honest
+    empty result AND for a failed `gh pr list`, and a part-way failure left a non-empty, partial dump
+    the sweep READ. A loop gather must fail closed: a failure leaves the dump MISSING, a successful
+    empty gather leaves a non-empty DECLARED one. Not covered: the single-command gathers (ledger,
+    branches, bodies) -- their failure leaves 0 bytes, which #323's refusal already catches."""
+
+    def setUp(self):
+        blocks = [b for b in re.findall(r"^```bash\n(.*?)^```", DOC.read_text(encoding="utf-8"), re.S | re.M)
+                  if "badf_id_sweep.py --from-dir" in b]
+        self.assertEqual(len(blocks), 1, "exactly one documented gather block")
+        self.block = blocks[0]
+        self.root = Path(tempfile.mkdtemp(prefix="badf-gather-"))
+        self.addCleanup(shutil.rmtree, self.root, True)
+        (self.root / "work" / "WP-2026-0110").mkdir(parents=True)
+        (self.root / "badf" / "demands").mkdir(parents=True)
+        (self.root / "badf" / "demands" / "BADF-DEM-0097.json").write_text("{}")
+        (self.root / "scripts").mkdir()
+        shutil.copy(TOOL, self.root / "scripts" / TOOL.name)
+        self.bin = self.root / "bin"; self.bin.mkdir()
+        (self.root / "tmp").mkdir()
+        self.stub("gh", f"#!{sys.executable}\n{GH_STUB}")
+        self.stub("git", "#!/bin/sh\n[ \"$1\" = ls-remote ] || exit 2\n"
+                         "printf '%s\\trefs/heads/main\\n' 0000000000000000000000000000000000000000\n")
+        self.stub("python3", f"#!/bin/sh\nexec {sys.executable} \"$@\"\n")
+
+    def stub(self, name, text):
+        p = self.bin / name; p.write_text(text); p.chmod(0o755)
+
+    def gather(self, prs="", issues="", fail=""):
+        env = dict(os.environ, PATH=f"{self.bin}{os.pathsep}{os.environ['PATH']}", TMPDIR=str(self.root / "tmp"),
+                   GH_PRS=prs, GH_ISSUES=issues, GH_FAIL=fail)
+        return subprocess.run(["bash", "-c", self.block], cwd=self.root, env=env, capture_output=True, text=True)
+
+    def header(self, r):
+        lines = r.stdout.splitlines()
+        start = lines.index("SURFACES:")
+        return {l.split(":", 1)[0].strip(): l.split(":", 1)[1].strip() for l in lines[start + 1:start + 6]}
+
+    def test_control_open_prs_and_comments_are_read_and_claimed(self):
+        r = self.gather(prs="7 8", issues="12")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertEqual(self.header(r)["pr_files"], "READ (2 id occurrence(s))")
+        self.assertIn("NEXT FREE (claim-shaped surfaces only): WP-2026-0557", r.stdout)
+        self.assertIn("WARNING: comment surface shows WP-2026-0600", r.stdout)
+
+    def test_no_open_prs_is_an_honest_zero_not_a_refusal(self):
+        r = self.gather()
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertEqual(self.header(r)["pr_files"], "READ (0 id occurrence(s))")
+
+    def test_failed_pr_list_leaves_the_dump_missing(self):
+        r = self.gather(prs="7", fail="pr-list")
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("missing surface dump pr_files.txt", r.stderr)
+
+    def test_partial_gather_is_refused_never_read(self):
+        """PR 7's files arrive, PR 8's call fails: the loop used to carry on and the sweep READ a
+        dump missing PR 8's claims. `set -e` cannot fix this left of `&&` -- bash ignores it there."""
+        r = self.gather(prs="7 8", fail="pr-files-8")
+        self.assertEqual(r.returncode, 1, r.stdout + r.stderr)
+        self.assertIn("missing surface dump pr_files.txt", r.stderr)
+        self.assertNotIn("READ", r.stdout)
+
+    def test_comments_no_open_issues_is_read_and_a_failed_list_is_not_provided(self):
+        r = self.gather()
+        self.assertEqual(self.header(r)["comments"], "READ (0 id occurrence(s))")
+        r = self.gather(fail="issue-list")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertTrue(self.header(r)["comments"].startswith("NOT PROVIDED"), self.header(r))
