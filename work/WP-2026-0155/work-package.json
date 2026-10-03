@@ -11,7 +11,8 @@
   "in_scope": [
     "docs/governance/LEARNING_PLANE_TOOL_INTAKE.md",
     "badf/tool-registry.json: evoskill and skillopt entries, status PROPOSED",
-    "carry the WP-2026-0154 reconcile (CLOSED, landed_as 80fa739, composition_verified true); the WP-2026-0153 reconcile this branch first carried landed with #352"
+    "carry the WP-2026-0154 reconcile (CLOSED, landed_as 80fa739, composition_verified true); the WP-2026-0153 reconcile this branch first carried landed with #352",
+    "tests/test_badf_git_composition.py: the stale-record test moves upstream through an unlocked path (upstream.txt), as test_badf_git_baseline does -- a fix forced by this WP: changing badf/tool-registry.json edits the lockfile line directly above docs/00, so the test hit a merge conflict instead of staleness"
   ],
   "out_of_scope": [
     "installing, importing or running either tool; any API key",
@@ -36,7 +37,8 @@
   "tests": [
     "tests/test_badf_integrity.py",
     "tests/test_badf_schema_drift.py",
-    "tests/test_badf_no_committed_conflict_markers.py"
+    "tests/test_badf_no_committed_conflict_markers.py",
+    "tests/test_badf_git_composition.py"
   ],
   "evidence": [
     "pinned commits and trees",
@@ -70,7 +72,8 @@
       "docs/governance/LEARNING_PLANE_TOOL_INTAKE.md",
       "badf/tool-registry.json",
       "badf/demands/BADF-DEM-0140.json",
-      "work/WP-2026-0154/work-package.json"
+      "work/WP-2026-0154/work-package.json",
+      "tests/test_badf_git_composition.py"
     ]
   },
   "note": "C1: a governance record and two non-executable registry entries. No gate, schema or authority change, and nothing third-party is executed. Runs in parallel with #352 at the operator's direction; whichever lands second merges main (the shared WP-2026-0153 reconcile is byte-identical; the lockfile is regenerated with badf_gate.py lock)."

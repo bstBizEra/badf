@@ -557,7 +557,7 @@
     "tests/test_badf_git_activation.py": "sha256:01b8e97e4fad7baa67d7d35e5c603d8e696c7151d12bbbc01f808d0eae4908ce",
     "tests/test_badf_git_baseline.py": "sha256:cc73f279f91651555265df0d9b27353c4bd336ee51f1c79bec600b4892ac85ef",
     "tests/test_badf_git_clean.py": "sha256:ba488b3582d3d1647a369e016be7e79fb0f6676b1bd9cb41178e3c848aed2485",
-    "tests/test_badf_git_composition.py": "sha256:e66f2f1bbde11309ea10a8f170ed1923ebe5bdf599111d628799822554cd2a67",
+    "tests/test_badf_git_composition.py": "sha256:068a6edf21d4fb0051c7b02e84ef7f131cb359e79b0da6d5179415f9ff53e7be",
     "tests/test_badf_git_contract.py": "sha256:d6a3f81fd6d5d613030efe90bb9ebb9fe72d6ab26746237e998fc9a25135cc59",
     "tests/test_badf_git_integration.py": "sha256:3c17920e731f34cb1d51fb90393da39d2d5a0f1c79e8117766470154f4c2f586",
     "tests/test_badf_git_recovery.py": "sha256:2ed6f01dbcd6b708dee7c9ae5de6686066e90b6c1fddfaf9905960602cdecd38",
@@ -1841,7 +1841,7 @@
     "work/WP-2026-0154/evidence/G07/composition-record.json": "sha256:bf12b2bafe9c543816aef10b368cdfaa64f32f1e6f45f94547866eec56f9f8f5",
     "work/WP-2026-0154/work-package.json": "sha256:6884775dc15300c6513c7c04288e43087162e77bcfb07b119d18c41f8d2d9a1f",
     "work/WP-2026-0155/evidence/G07/composition-record.json": "sha256:f1f1642a1b7e1b6ff79a873f031fc73860b7363da918a1fc471fd26e236b3e3f",
-    "work/WP-2026-0155/work-package.json": "sha256:57b5bba54677b6d1b2379fe8094b00327f6c300045a98e971060cb0aa310edf6"
+    "work/WP-2026-0155/work-package.json": "sha256:eefc24b2e1b12e4278c3ffdf93cdff1a96e84fe987f6864ce0804956530848ba"
   },
   "schema_version": "1.0.0"
 }
