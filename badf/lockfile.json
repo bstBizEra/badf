@@ -138,6 +138,7 @@
     "badf/demands/BADF-DEM-0137.json": "sha256:6f4c7c4513f09ce6e7a60df28c5858e5323f058abc5831231794c8365cfe4ada",
     "badf/demands/BADF-DEM-0138.json": "sha256:8f29a0fb9a2e5681b6620b2749ae28a988757cc14c49773a0116845d3fe70d0d",
     "badf/demands/BADF-DEM-0139.json": "sha256:dba7db7948f52f1c734b62cdba3c9ff93e1c40c91f7a68b0a90552c339fbe162",
+    "badf/demands/BADF-DEM-0141.json": "sha256:dfa040e2a23c6423e7c6b27dbaeecbda09161782ef3a648f40828a2822b666be",
     "badf/lifecycle.json": "sha256:9f5218c5ca7e94feafd62acec4d90b55ea39f52c21d7639b1984dc3676cb55f3",
     "badf/mcp-registry.json": "sha256:cf93976e41ccd3bc8f8e918da96e42ffac10bce601d0c859f2639aedbb3fc85e",
     "badf/releases/BADF-BASELINE-1.0.0.json": "sha256:3b3b69e1df01592d99f65e95f2e4a9375bfec277d3ab9198b18af373795a7667",
@@ -1928,7 +1929,8 @@
     "work/WP-2026-0153/evidence/G07/composition-record.json": "sha256:1aacd9d1062f1eb463968a6621690a81187fe102c7c71981b78262005d0f3e40",
     "work/WP-2026-0153/work-package.json": "sha256:29f41fb226f341487a9c625a37e5c3fe1b5f929bd8148333297087625629a85b",
     "work/WP-2026-0154/evidence/G07/composition-record.json": "sha256:bf12b2bafe9c543816aef10b368cdfaa64f32f1e6f45f94547866eec56f9f8f5",
-    "work/WP-2026-0154/work-package.json": "sha256:30fda2895a4ccaf57c0f1677bf5866e04ae2526d143a66d74fa02e3332e2f202"
+    "work/WP-2026-0154/work-package.json": "sha256:6884775dc15300c6513c7c04288e43087162e77bcfb07b119d18c41f8d2d9a1f",
+    "work/WP-2026-0156/work-package.json": "sha256:80c59b17ffdd8a7d276165b683dc8eae26a8e3f030032622183b92f7f9ffee89"
   },
   "schema_version": "1.0.0"
 }
