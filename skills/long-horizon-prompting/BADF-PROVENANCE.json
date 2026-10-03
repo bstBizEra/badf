@@ -1,0 +1,22 @@
+{
+  "upstream": {
+    "repository": "https://github.com/muratcankoylan/Agent-Skills-for-Context-Engineering",
+    "commit": "58b55a8921758d13453b440704fb1b5b208c0b0e",
+    "path": "skills/long-horizon-prompting",
+    "license": "MIT"
+  },
+  "vendored_by": "WP-2026-0156",
+  "verdict": "ADOPT-WITH-NOTES",
+  "overlay": "BADF-OVERLAY.md",
+  "upstream_files": {
+    "SKILL.md": "sha256:75f8c53453fb526a4b4dc6f3c7d8870af87d68aeba12a7c3e77f19c44f27ad82",
+    "references/cdc-prompt-annotated.md": "sha256:8bf5b451baa0b7cc971f305f9e3351f38cc2bc5429412770c89346129f8a0cb8",
+    "references/research-evidence.md": "sha256:e1aa8ebb26982048c32f637f7af218642af9920d273d69be5b6dd33f935ed560",
+    "references/task-brief-template.md": "sha256:ee5fe2bf1a2c9936a60e80d96970cd4170f66838f13410b108be656c5a3fa8d6",
+    "references/vendor-guidance.md": "sha256:6f24080ad7be4ab64bcbd59d07096ee43a5826f5ac6934a48be84f70ffe2eaa6"
+  },
+  "third_party_dependencies": [],
+  "scripts_executable": false,
+  "scripts_note": "Bundled scripts are reviewed (stdlib or declared deps; no network, subprocess, eval/exec) but are not executable under BADF until the skill reaches VALIDATED with deterministic tests (docs/07).",
+  "rule": "Upstream files are byte-identical to the pinned commit; BADF changes live only in BADF-OVERLAY.md. Re-vendoring is a new work package."
+}

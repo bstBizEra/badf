@@ -1,0 +1,112 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0156",
+  "title": "Skills: vendor the BADF-compatible subset of Agent-Skills-for-Context-Engineering at IMPLEMENTED",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0141",
+  "objective": "Close #355. Review all 18 skills of muratcankoylan/Agent-Skills-for-Context-Engineering (58b55a8, MIT) read-only, and vendor the 15 rated ADOPT-AS-IS (7) or ADOPT-WITH-NOTES (8) into skills/<name>/, byte-identical, each with BADF-PROVENANCE.json (per-file sha256) and UPSTREAM-LICENSE. The 8 noted skills get a BADF-OVERLAY.md that takes precedence over upstream where they conflict. Register all 15 at IMPLEMENTED (not routed: the registry is approved-only). Pin status, byte-identity, overlays, exclusions and non-executable scripts in tests/test_badf_vendored_asce.py. Exclude hosted-agents, self-improvement-loops and self-managed-context. Carry the WP-2026-0154 reconcile.",
+  "business_value": "Brings fifteen reviewed context-engineering skills into BADF's governed skill lifecycle with pinned provenance, without letting their conflicting guidance (self-written instruction files, swarm preference, silent memory conflict resolution, effort floors over stops, arbitrary-shell reduction) override BADF invariants, and without routing anything before approval.",
+  "in_scope": [
+    "skills/context-fundamentals/",
+    "skills/context-degradation/",
+    "skills/context-compression/",
+    "skills/context-optimization/",
+    "skills/project-development/",
+    "skills/bdi-mental-states/",
+    "skills/latent-briefing/",
+    "skills/advanced-evaluation/",
+    "skills/evaluation/",
+    "skills/filesystem-context/",
+    "skills/harness-engineering/",
+    "skills/long-horizon-prompting/",
+    "skills/memory-systems/",
+    "skills/multi-agent-patterns/",
+    "skills/tool-design/",
+    "badf/skill-registry.json: 15 entries at IMPLEMENTED",
+    "tests/test_badf_vendored_asce.py",
+    "carry the WP-2026-0154 reconcile (CLOSED, landed_as 80fa739, composition_verified true)"
+  ],
+  "out_of_scope": [
+    "routing or promoting any vendored skill beyond IMPLEMENTED (VALIDATED, SHADOWED, APPROVED and ACTIVE are later WPs with owner and security approval)",
+    "executing any bundled script",
+    "hosted-agents, self-improvement-loops, self-managed-context (EXCLUDED; reasons in the PR and the review)",
+    "the upstream root SKILL.md, AGENTS.md, CLAUDE.md, plugin manifests, governance/ and researcher/",
+    "the G07 self-dossier -- assembly is HUMAN_REQUIRED; declared, not worked around"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "AC-1: every vendored file matches its pinned upstream digest; the test fails when a byte changes",
+    "AC-2: all 15 at IMPLEMENTED with an EXACT status pin; the #218 coverage guard is green",
+    "AC-3: each ADOPT-WITH-NOTES skill has an overlay citing the upstream line and the BADF rule",
+    "AC-4: the three excluded skills are absent from disk and registry",
+    "AC-5: badf_gate.py repo PASS; composed suite green in CI"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR",
+    "read: public clone of muratcankoylan/Agent-Skills-for-Context-Engineering (no execution)"
+  ],
+  "tests": [
+    "tests/test_badf_vendored_asce.py",
+    "tests/test_badf_registry_status_pins.py",
+    "tests/test_badf_registry_digest.py",
+    "tests/test_badf_family_names.py"
+  ],
+  "evidence": [
+    "read-only review of 18 skills with path:line citations",
+    "conflicting lines re-measured",
+    "7/7 mutations killed on the vendoring guard",
+    "#218 coverage guard red before the pins, green after",
+    "40 registry/skills-reading test modules: 648 tests OK",
+    "repo PASS",
+    "composition record + CI compose composition: CURRENT and suite OK"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "80fa739a67e6cf5496e6ac400bfa1135ee1b8892"
+  },
+  "expected_surfaces": {
+    "files": [
+      "skills/context-fundamentals/**",
+      "skills/context-degradation/**",
+      "skills/context-compression/**",
+      "skills/context-optimization/**",
+      "skills/project-development/**",
+      "skills/bdi-mental-states/**",
+      "skills/latent-briefing/**",
+      "skills/advanced-evaluation/**",
+      "skills/evaluation/**",
+      "skills/filesystem-context/**",
+      "skills/harness-engineering/**",
+      "skills/long-horizon-prompting/**",
+      "skills/memory-systems/**",
+      "skills/multi-agent-patterns/**",
+      "skills/tool-design/**",
+      "badf/skill-registry.json",
+      "tests/test_badf_vendored_asce.py",
+      "badf/demands/BADF-DEM-0141.json",
+      "work/WP-2026-0154/work-package.json"
+    ]
+  },
+  "note": "C1: vendored guidance skills at IMPLEMENTED plus a guard test. No gate, schema or authority change, and nothing routed or executed. Upstream text is unmodified; BADF changes live only in overlays."
+}
