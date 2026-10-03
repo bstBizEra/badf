@@ -1,0 +1,77 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0154",
+  "title": "AET: cross-repo learnings and an AET-B substrate design (no build)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0139",
+  "objective": "Close #351. Study four sibling agent teams (biztrust, biztrust_ib, bERP, badf-flow-control) read-only, re-measure each load-bearing claim, and write docs/governance/AET_B_SUBSTRATE_DESIGN.md plus one learning. The design covers convergent practice, self-measured failure modes, what is not adopted, components S1-S5 mapped to the AET invariants, a sequencing proposal and the AET-B gate as measured. It grants no authority and opens no rung. Carry the WP-2026-0153 reconcile.",
+  "business_value": "Turns four teams' independent experience, including the defects they found in their own controls, into a sequenced, invariant-mapped plan for the AET runtime substrate. The operator's next decision (open AET-B or not) can then rest on a measured gate reading instead of convention.",
+  "in_scope": [
+    "docs/governance/AET_B_SUBSTRATE_DESIGN.md (PROPOSED design)",
+    "docs/learnings/an-agent-team-is-bounded-by-tools-and-records-not-personas.md",
+    "carry the WP-2026-0153 reconcile, written by `badf_gate.py reconcile WP-2026-0153` (CLOSED, landed_as 4c9284a, composition_verified true)"
+  ],
+  "out_of_scope": [
+    "building any substrate component (S1-S5 are each a future WP)",
+    "docs/14, badf/seats.json, badf/authority-matrix.json, schemas, badf_gate.py -- unchanged",
+    "deciding whether #220 is dispositioned, or opening AET-B -- HUMAN_REQUIRED, operator's own channel (AET-I13)",
+    "the G07 self-dossier -- assembly is HUMAN_REQUIRED; declared, not worked around"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "AC-1: every design claim is re-measured (file:line in section 1.1) or labelled reported",
+    "AC-2: each component S1-S5 names its AET invariants and its source",
+    "AC-3: the AET-B gate is reported per prerequisite with its measured state; #220 (open, undispositioned) is reported HUMAN_REQUIRED, not met",
+    "AC-4: the design states it grants no authority and opens no rung",
+    "AC-5: badf_gate.py repo PASS; composed suite green in CI"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR",
+    "read: bstBizEra/biztrust, biztrust_ib, bERP, badf-flow-control (read-only clones)"
+  ],
+  "tests": [
+    "tests/test_badf_no_committed_conflict_markers.py",
+    "tests/test_badf_schema_drift.py",
+    "tests/test_badf_work_package_schema_extension.py"
+  ],
+  "evidence": [
+    "ten re-measured claims cited by file and line in the design (section 1.1)",
+    "AET-B prerequisites measured from the issue tracker on 2026-10-03",
+    "repo PASS",
+    "composition record + CI compose composition: CURRENT and suite OK"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "4c9284a1480056dd6c4473743d0ba1310fcc509e"
+  },
+  "expected_surfaces": {
+    "files": [
+      "docs/governance/AET_B_SUBSTRATE_DESIGN.md",
+      "docs/learnings/an-agent-team-is-bounded-by-tools-and-records-not-personas.md",
+      "badf/demands/BADF-DEM-0139.json",
+      "work/WP-2026-0153/work-package.json"
+    ]
+  },
+  "note": "C1: documentation and records only. No gate, schema, authority, seat or tool change, and no component is built. The design is PROPOSED; acceptance of it by review does not open AET-B (docs/14 section 8, AET-I13)."
+}
