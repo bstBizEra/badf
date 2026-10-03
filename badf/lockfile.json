@@ -137,6 +137,7 @@
     "badf/demands/BADF-DEM-0136.json": "sha256:7b1cb8bdd71283dfdee43e3ce456a1be456254cf28a7b029637101a8aaaca2a9",
     "badf/demands/BADF-DEM-0137.json": "sha256:6f4c7c4513f09ce6e7a60df28c5858e5323f058abc5831231794c8365cfe4ada",
     "badf/demands/BADF-DEM-0138.json": "sha256:8f29a0fb9a2e5681b6620b2749ae28a988757cc14c49773a0116845d3fe70d0d",
+    "badf/demands/BADF-DEM-0139.json": "sha256:bafe2f964b95f374f1029d2e31e93e1dd5978ee1fec8f28ebc820b2e37f7e141",
     "badf/lifecycle.json": "sha256:9f5218c5ca7e94feafd62acec4d90b55ea39f52c21d7639b1984dc3676cb55f3",
     "badf/mcp-registry.json": "sha256:cf93976e41ccd3bc8f8e918da96e42ffac10bce601d0c859f2639aedbb3fc85e",
     "badf/releases/BADF-BASELINE-1.0.0.json": "sha256:3b3b69e1df01592d99f65e95f2e4a9375bfec277d3ab9198b18af373795a7667",
@@ -159,6 +160,7 @@
     "docs/13-artifact-model.md": "sha256:5ded546597e70b6cd16d92b0adbe16de3faf0976ce82720374927634457169ff",
     "docs/14-agentic-engineer-team.md": "sha256:4bc8d8b5d5c988979c4dc1e52a2ba97750957a28dff3ee789e19a9a514997a7b",
     "docs/errata/2026-08-28-wp-0015-commit-message.md": "sha256:c6e5151de9ec81bc459abd52b4109fdb91dc8a5b4eabe0dc60cac373e9f522d4",
+    "docs/governance/AET_B_SUBSTRATE_DESIGN.md": "sha256:872aee5c8d5d222ec0eb005f36e3dd6fb215debe9941feb74bd749b866dd920e",
     "docs/governance/GITHUB_CONTROL_PLANE.md": "sha256:c935996a53bd5bc5a539e68e7f0ae5c9e686a86cbeb7714028c549d89cd6f911",
     "docs/governance/IDENTITY_ATTRIBUTION.md": "sha256:19028f496cfae8735f5a2311ee036355c115d25443e612349586214f88569134",
     "docs/governance/PROJECT_INSTANCE.md": "sha256:6191d54c015f24d37dd3a9aa48c49a9be805fb3fb9c26dd4a7c04cf233a9535d",
@@ -167,6 +169,7 @@
     "docs/learnings/README.md": "sha256:2df8179b20a9aadcd80a3cb54bb13c2980fd20abf02e0157f6cade1cd842292f",
     "docs/learnings/a-foreign-revision-must-verify-the-diff.md": "sha256:324b5598dd5524aa16f1196dd435619c8da3ac893828d328d1dde65e07137e7e",
     "docs/learnings/a-guard-that-cannot-fail-is-not-a-guard.md": "sha256:0b608af9f4ad784d1772c2247c41edf983349f4e92136f72d3189168c08d4038",
+    "docs/learnings/an-agent-team-is-bounded-by-tools-and-records-not-personas.md": "sha256:afa638bf647fef7a3ce5fef97b55ded3035691378ba18f12c1baae5f2c68ddac",
     "docs/learnings/evidence-must-be-measured.md": "sha256:75f0c00abfea4c9b9e14ac06d565aaceab179f234cdfe722bd4ff268b3b80bfa",
     "docs/learnings/main-is-pr-only-by-rule-not-by-accident.md": "sha256:187e93e362b1d8c093424314c93a1aefa04210bf853d6452c367e1592ff6697a",
     "examples/architecture-assurance-shadow-indeterminate.json": "sha256:2de9c3c1f16f6d904283641fa3beb0f54517bb338deebf87ff1efc79be512443",
@@ -1832,7 +1835,8 @@
     "work/WP-2026-0152/evidence/G07/composition-record.json": "sha256:88db8ea6d1e0ee94734c9302fd0138ae0a53edfd1a739fccb32ce18cc2037df1",
     "work/WP-2026-0152/work-package.json": "sha256:e577f5b126e6626ab09070be17aa8ea0de602f7ed0c509ad4601cb37dc05eff3",
     "work/WP-2026-0153/evidence/G07/composition-record.json": "sha256:1aacd9d1062f1eb463968a6621690a81187fe102c7c71981b78262005d0f3e40",
-    "work/WP-2026-0153/work-package.json": "sha256:29f41fb226f341487a9c625a37e5c3fe1b5f929bd8148333297087625629a85b"
+    "work/WP-2026-0153/work-package.json": "sha256:29f41fb226f341487a9c625a37e5c3fe1b5f929bd8148333297087625629a85b",
+    "work/WP-2026-0154/work-package.json": "sha256:30fda2895a4ccaf57c0f1677bf5866e04ae2526d143a66d74fa02e3332e2f202"
   },
   "schema_version": "1.0.0"
 }
