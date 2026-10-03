@@ -348,6 +348,186 @@
       "allowed_tools": [],
       "status": "DESIGNED",
       "digest": "sha256:a7cc5a1dc85e1a4bd644d56081d2971dca336ea14fbd5f1cf39260f7129835d0"
+    },
+    {
+      "name": "context-fundamentals",
+      "source": "skills/context-fundamentals/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "asce-58b55a8",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:03b56e1c40edc6314b1f204498c3ba40163a32e63bdbceaeba93513ccddcaba6"
+    },
+    {
+      "name": "context-degradation",
+      "source": "skills/context-degradation/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "asce-58b55a8",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:4e1896f641ddc99cc9cb14322606c6133b9fd520c84d3af0541e64f553c7f928"
+    },
+    {
+      "name": "context-compression",
+      "source": "skills/context-compression/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "asce-58b55a8",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:ab4fd1e1046db339d83ead5089d4cb9d9c487232945d4ff6be90e08a03f6cfea"
+    },
+    {
+      "name": "context-optimization",
+      "source": "skills/context-optimization/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "asce-58b55a8",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:96fbd47c16d163857b92d477ba5c7ec3ae947127772e327b8236d05d64d5b123"
+    },
+    {
+      "name": "project-development",
+      "source": "skills/project-development/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "asce-58b55a8",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:acfeda3048cf6213be2d0c4699c1884914a1a044ca2707094483ca6423d17a11"
+    },
+    {
+      "name": "bdi-mental-states",
+      "source": "skills/bdi-mental-states/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "asce-58b55a8",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:2a68bf11815b166a508141c6ecb24a2007808e6d46557c0b111bb9b10b87cbe6"
+    },
+    {
+      "name": "latent-briefing",
+      "source": "skills/latent-briefing/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "asce-58b55a8",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:d84e7abe51f037a353dc3ccf18498498099fc633373a0d223bd6cc45277fd0bd"
+    },
+    {
+      "name": "advanced-evaluation",
+      "source": "skills/advanced-evaluation/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "asce-58b55a8",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:8b9e3d9de07a0505ae2b42df2e15dd75bab5f2486e336194481c558e0648ded0"
+    },
+    {
+      "name": "evaluation",
+      "source": "skills/evaluation/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "asce-58b55a8",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:1f31cda0910dfd48d928e1485b303b739608ceeb0babca0e9a6f821cbf4320ff"
+    },
+    {
+      "name": "filesystem-context",
+      "source": "skills/filesystem-context/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "asce-58b55a8",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:91cd7f071e38dbeee15dbebd9dd549c9116affae939702f05409ed1952355f50"
+    },
+    {
+      "name": "harness-engineering",
+      "source": "skills/harness-engineering/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "asce-58b55a8",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:dde3d8f46d4d09dbab41358baa3e8310d7fdfcd2fbefa127153ac4f6b5ef7b16"
+    },
+    {
+      "name": "long-horizon-prompting",
+      "source": "skills/long-horizon-prompting/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "asce-58b55a8",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:75f8c53453fb526a4b4dc6f3c7d8870af87d68aeba12a7c3e77f19c44f27ad82"
+    },
+    {
+      "name": "memory-systems",
+      "source": "skills/memory-systems/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "asce-58b55a8",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:9e2b38ffe9474ba19c93b3d75c80e683705d82e8a4b59af16d603d133bab8d2f"
+    },
+    {
+      "name": "multi-agent-patterns",
+      "source": "skills/multi-agent-patterns/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "asce-58b55a8",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:786ff9345eb49f1d8e1bc5183e437a6d882f15b50bdb2ce0055a9d54390a3ce2"
+    },
+    {
+      "name": "tool-design",
+      "source": "skills/tool-design/SKILL.md",
+      "owner": "BADF Governance Authority",
+      "version": "asce-58b55a8",
+      "risk_class": "C1",
+      "allowed_tools": [
+        "local-filesystem"
+      ],
+      "status": "IMPLEMENTED",
+      "digest": "sha256:14f5a12b69113bc6450da69c5b4d408fe91601832ab1055ae25311339c84a06b"
     }
   ]
 }

@@ -1,0 +1,23 @@
+{
+  "upstream": {
+    "repository": "https://github.com/muratcankoylan/Agent-Skills-for-Context-Engineering",
+    "commit": "58b55a8921758d13453b440704fb1b5b208c0b0e",
+    "path": "skills/advanced-evaluation",
+    "license": "MIT"
+  },
+  "vendored_by": "WP-2026-0156",
+  "verdict": "ADOPT-WITH-NOTES",
+  "overlay": "BADF-OVERLAY.md",
+  "upstream_files": {
+    "SKILL.md": "sha256:8b9e3d9de07a0505ae2b42df2e15dd75bab5f2486e336194481c558e0648ded0",
+    "references/bias-mitigation.md": "sha256:bf43f18e5cc20f803546fece9e90fe032a2d54f6d4280dfd5cd2af3b0707fc17",
+    "references/evaluation-pipeline.md": "sha256:72e95259a14db1da9ddb3b979c71e821e75aa80d729da956eaaedc94a8e9b3d2",
+    "references/implementation-patterns.md": "sha256:73711fad51abf1bcc20a12491968baea65d6e16fde1a397be4f0648bd44fbec4",
+    "references/metrics-guide.md": "sha256:3882bf84692a82f33e3a2ffecdc94b475a4bd84545b0015cf38810c734a7bef8",
+    "scripts/evaluation_example.py": "sha256:4965a42dfbf0ba54e184d654e3c6a781ebf3915b8da5e6f3ee1b5819a23125f1"
+  },
+  "third_party_dependencies": [],
+  "scripts_executable": false,
+  "scripts_note": "Bundled scripts are reviewed (stdlib or declared deps; no network, subprocess, eval/exec) but are not executable under BADF until the skill reaches VALIDATED with deterministic tests (docs/07).",
+  "rule": "Upstream files are byte-identical to the pinned commit; BADF changes live only in BADF-OVERLAY.md. Re-vendoring is a new work package."
+}
