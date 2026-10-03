@@ -842,6 +842,82 @@ def verify_surface_ratchet() -> None:
     print(f"BADF SURFACE RATCHET: declared {declared}/{total}; grandfathered undeclared {grandfathered} (threshold WP-2026-0126; sentinels exempt; {ratcheted} record(s) under the ratchet); over-reach and over-declaration judged separately at assembly/binding (GOV-0108)")
 
 
+# ---- AET-B S1 (WP-2026-0157): enforcement-surface routing ----
+# docs/governance/AET_B_SUBSTRATE_DESIGN.md S1 / F1. biztrust's validator could be edited by a seat an
+# agent may hold, so every pin it carried could be edited away. These are the files whose edit changes
+# what BADF enforces or who may authorize it. A work package that touches one is governance work and
+# must be C3: the class whose required roles are human-reserved (badf/authority-matrix.json), so the
+# gate's AUTHORITY_SATISFIED check routes it to a human. The list is PINNED HERE, in code, not read from
+# a data file the surfaces could themselves edit (biztrust DEC-025), and its exact contents are asserted
+# by tests/test_badf_enforcement_routing.py: shrinking it is itself an edit to this file, which is C3.
+ENFORCEMENT_SURFACES = (
+    ".github/workflows/badf-gates.yml",
+    "AGENTS.md",
+    "badf/authority-matrix.json",
+    "badf/lifecycle.json",
+    "badf/seats.json",
+    "docs/14-agentic-engineer-team.md",
+    "scripts/badf_compose.py",
+    "scripts/badf_gate.py",
+    "scripts/check_pr_traceability.py",
+)
+ENFORCEMENT_CLASS = "C3"
+ENFORCEMENT_ROUTING_THRESHOLD = 157
+
+
+def _enforcement_routing_applies(wp_id: str) -> bool:
+    """Binding from WP-2026-0157, the work package that ships it (the surface/seat/authority ratchets'
+    shape); earlier records are grandfathered, sentinel ids exempt by declaration."""
+    m = WP_ID_FORMS.match(str(wp_id))
+    if not m:
+        return False
+    n = int(m.group(1))
+    return n >= ENFORCEMENT_ROUTING_THRESHOLD and n not in SURFACE_RATCHET_SENTINELS
+
+
+def check_enforcement_routing(wp_id: str, record: dict[str, Any], changed_paths: list[str] | None = None) -> list[str]:
+    """Problems with a work package's routing for the enforcement surfaces.
+
+    Declared: an `expected_surfaces.files` pattern covering an enforcement surface (a glob such as
+    `scripts/**` covers `scripts/badf_gate.py`) requires change_class C3.
+    Actual (changed_paths given -- badf_compose passes the composed diff): touching an enforcement
+    surface requires C3 AND a declaration, so an undeclared edit is refused rather than passing
+    because the record never mentioned it."""
+    if not _enforcement_routing_applies(wp_id):
+        return []
+    patterns = [str(x) for x in ((record.get("expected_surfaces") or {}).get("files") or [])]
+    declared = {s for s in ENFORCEMENT_SURFACES if any(_surface_match(s, p) for p in patterns)}
+    touched = {p for p in (changed_paths or []) if p in ENFORCEMENT_SURFACES}
+    problems = []
+    hit = sorted(declared | touched)
+    if hit and record.get("change_class") != ENFORCEMENT_CLASS:
+        problems.append(f"{wp_id} is {record.get('change_class')!r} but touches enforcement surface(s) {hit}: an edit to what BADF "
+                        f"enforces or who may authorize it is {ENFORCEMENT_CLASS}, whose required roles are human-reserved (AET-B S1)")
+    undeclared = sorted(touched - declared)
+    if undeclared:
+        problems.append(f"{wp_id} changes enforcement surface(s) {undeclared} without declaring them in expected_surfaces.files: "
+                        "an undeclared edit to an enforcement surface is refused, never inferred (AET-B S1)")
+    return problems
+
+
+def verify_enforcement_routing() -> None:
+    """Declared-side check on every record under the threshold; the actual-diff side runs in badf_compose."""
+    routed = applies = 0
+    for path, rec in self_work_packages():
+        wp = rec.get("id") or path.parent.name
+        if not _enforcement_routing_applies(wp):
+            continue
+        applies += 1
+        problems = check_enforcement_routing(wp, rec)
+        if problems:
+            raise ValidationError("; ".join(problems))
+        files = [str(x) for x in ((rec.get("expected_surfaces") or {}).get("files") or [])]
+        if any(_surface_match(s, p) for s in ENFORCEMENT_SURFACES for p in files):
+            routed += 1
+    print(f"BADF ENFORCEMENT ROUTING: {len(ENFORCEMENT_SURFACES)} pinned surface(s); {applies} record(s) under the rule "
+          f"(threshold {WP_NAMESPACE}{ENFORCEMENT_ROUTING_THRESHOLD:04d}), {routed} touching an enforcement surface, all {ENFORCEMENT_CLASS} (AET-B S1)")
+
+
 # ---- AET-B-1 (#287, WP-2026-0130): the seat roster ----
 SEAT_RATCHET_THRESHOLD = 130
 _SEAT_FORBIDDEN_PERMISSION_KEYS = ("allowed_paths", "allowed_tools", "actions", "permissions", "prohibited")
@@ -1108,6 +1184,7 @@ def validate_repo() -> None:
     verify_monotonic_authority()
     verify_work_ledger()
     verify_surface_ratchet()
+    verify_enforcement_routing()
     verify_seat_roster()
 
 def check_non_coverage(dossier: dict[str, Any], evidence_type: str, outcome: str) -> None:

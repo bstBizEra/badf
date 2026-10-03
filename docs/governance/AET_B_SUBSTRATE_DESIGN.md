@@ -136,6 +136,12 @@ document does not make. AET-B opens by a recorded decision — dispositioning #2
 re-sequencing the gate — in the operator's own channel (AET-I13). The decision is not
 inferred from this design existing or being accepted.
 
+**Update, 2026-10-03 (`BADF-WP-0157`).** The operator recorded the decision this section called
+for. `BADF-DEC-0008` dispositions #220 as **parked** (owned, deferred; neither closed nor waived), so
+the gate is met and **AET-B is open**. S1 is the first component built. A work package that touches a
+pinned enforcement surface must be C3, checked on its declared surfaces by `repo` and on its actual
+diff by compose. S2–S5 remain separate work packages. AET-C/D/E remain gated as docs/14 §8 states.
+
 ## 8. Non-coverage, stated
 
 - **The readers' reports were not re-measured in full.** Rows marked *reported* rest on one
