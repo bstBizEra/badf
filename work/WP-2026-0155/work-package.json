@@ -6,12 +6,12 @@
   "owner": "human_sponsor",
   "repository": "bstBizEra/badf",
   "demand": "BADF-DEM-0140",
-  "objective": "Close #353. Pin EvoSkill (36f6f04) and SkillOpt (fa4ca18) by commit and tree, review each read-only, and re-measure every relied-on finding at path:line. Write docs/governance/LEARNING_PLANE_TOOL_INTAKE.md (findings, a reading against BADF rules, run conditions tied to findings, excluded components, non-coverage) and register both tools in badf/tool-registry.json as PROPOSED, with no operations and no credentials. Carry the WP-2026-0154 reconcile (#352 landed first; this WP ran in parallel at the operator's direction and was refreshed onto 80fa739).",
+  "objective": "Close #353. Pin EvoSkill (36f6f04) and SkillOpt (fa4ca18) by commit and tree, review each read-only, and re-measure every relied-on finding at path:line. Write docs/governance/LEARNING_PLANE_TOOL_INTAKE.md (findings, a reading against BADF rules, run conditions tied to findings, excluded components, non-coverage) and register both tools in badf/tool-registry.json as PROPOSED, with no operations and no credentials. Carry the WP-2026-0156 reconcile (#352 and #356 landed first; this WP ran in parallel at the operator's direction and was refreshed onto da068bf).",
   "business_value": "Lets the Engineer Team consider two skill-optimisation tools without admitting what the review found in them: bypassed permissions, branch rewrites, secret propagation, unredacted transcript harvesting, an internal-endpoint fallback, and self-judging acceptance gates. Any later run needs a scoped WP and security approval against stated conditions.",
   "in_scope": [
     "docs/governance/LEARNING_PLANE_TOOL_INTAKE.md",
     "badf/tool-registry.json: evoskill and skillopt entries, status PROPOSED",
-    "carry the WP-2026-0154 reconcile (CLOSED, landed_as 80fa739, composition_verified true); the WP-2026-0153 reconcile this branch first carried landed with #352",
+    "carry the WP-2026-0156 reconcile (CLOSED, landed_as da068bf, composition_verified true); the WP-2026-0153 and WP-2026-0154 reconciles this branch carried earlier landed with #352 and #356",
     "tests/test_badf_git_composition.py: the stale-record test moves upstream through an unlocked path (upstream.txt), as test_badf_git_baseline does -- a fix forced by this WP: changing badf/tool-registry.json edits the lockfile line directly above docs/00, so the test hit a merge conflict instead of staleness"
   ],
   "out_of_scope": [
@@ -65,14 +65,14 @@
   "external_target": {
     "repository": "bstBizEra/badf",
     "branch": "main",
-    "base_revision": "80fa739a67e6cf5496e6ac400bfa1135ee1b8892"
+    "base_revision": "da068bf7bb5963be4080f0b3d10c4da16c95d790"
   },
   "expected_surfaces": {
     "files": [
       "docs/governance/LEARNING_PLANE_TOOL_INTAKE.md",
       "badf/tool-registry.json",
       "badf/demands/BADF-DEM-0140.json",
-      "work/WP-2026-0154/work-package.json",
+      "work/WP-2026-0156/work-package.json",
       "tests/test_badf_git_composition.py"
     ]
   },
