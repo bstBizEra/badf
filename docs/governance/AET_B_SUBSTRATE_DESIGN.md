@@ -159,6 +159,25 @@ diff by compose. S2–S5 remain separate work packages. AET-C/D/E remain gated a
 - **What S3 does not do.** It records who reviewed what and permits nothing. No gate yet
   requires a verdict. A run id distinguishes sessions, not people (#261).
 
+**Update, 2026-10-04 (`BADF-WP-0159`).** S2 is built, third per §6.
+- **Envelope.** A dispatch hands one bounded piece of a work package to one seat. It is recorded
+  at `work/<WP>/dispatch/DSP-NN.json` (`schemas/dispatch-envelope.schema.json`) with its brief
+  beside it. `repo` validates every envelope, and an envelope may only narrow its work package:
+  - the seat is rostered and HELD;
+  - each allowed path is one of `expected_surfaces.files` or a literal path one covers, and a new
+    glob is refused;
+  - each tool is ACTIVE in `badf/tool-registry.json`;
+  - the budget is within the work package's;
+  - the stop conditions include the work package's;
+  - the required evidence is non-empty;
+  - a required review names a held reviewer seat other than the dispatched one;
+  - the brief is bound by its digest.
+- **Read-back.** `badf_gate.py dispatch-check <WP> <DSP>` reads the dispatched diff through S3's
+  review package. A change outside `allowed_paths` is refused. A required review holds the work
+  until the latest verdict is CURRENT, APPROVE, and by the named reviewer seat.
+- **What S2 does not do.** It records and reads back; it dispatches nothing. No scheduler or
+  coordinator is built, and MCP servers are refused by default because none is registered.
+
 ## 8. Non-coverage, stated
 
 - **The readers' reports were not re-measured in full.** Rows marked *reported* rest on one
@@ -167,4 +186,4 @@ diff by compose. S2–S5 remain separate work packages. AET-C/D/E remain gated a
   quoted beyond the cited lines.
 - **Identity is not addressed.** The design does not solve operator/agent identity (#261, F6).
   A run id distinguishes sessions, not people.
-- **S1 and S3 are built (§7 updates); S2, S4 and S5 are not.** Every claim about those three is a design claim.
+- **S1, S3 and S2 are built (§7 updates); S4 and S5 are not.** Every claim about those two is a design claim.
