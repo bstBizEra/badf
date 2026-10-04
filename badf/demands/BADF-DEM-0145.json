@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0.0",
+  "demand_id": "BADF-DEM-0145",
+  "kind": "issue",
+  "source": {
+    "repository": "bstBizEra/badf",
+    "issue": 363,
+    "url": "https://github.com/bstBizEra/badf/issues/363",
+    "exported_at": "2026-10-04T00:00:00Z",
+    "body_digest": "sha256:08a222efe86f209ac4aa9a9e5eaa357e7cbaa09e06568e01d95aa19104a6c41e"
+  },
+  "title": "AET: MAS-STD gap analysis of the Agentic Engineer Team -- research record (PROPOSED, no build)",
+  "problem": "Operator instructions, 2026-10-04, in a Claude Code research session:\n- **\"Not build now in this session, create new session as research to upgrade existing Engineer Team\"**;\n- after the research was delivered: **\"Proceed like Professional Engineer Team\"**.\n\n## What this asks for\n\nLand the research as a governed record. The research assesses BADF's Agentic Engineer Team (AET) against MAS-STD, the operator-supplied Production Standard for Agentic & Multi-Agent Systems.\n\n- **Clause mapping.** It covers all 10 pillars, the handoff contract and its 3 rules, and the 8 checklist items. Each clause is rated MET, PARTIAL, ABSENT, CONFLICTS or N/A, with file and function cited.\n- **Doctrine conflicts.** It covers consensus and votes, LLM-as-a-judge, personas, Tier 1 autonomy, the 85% benchmark and mesh topologies. Each gets an adopt, adapt or reject recommendation.\n- **Mapping.** It maps the standard onto AET-B S4/S5 and the AET-C/D/E rungs, including a field-by-field diff of the S2 dispatch envelope against MAS-STD's handoff contract.\n- **Roadmap.** A sequenced roadmap of **candidate** work packages, with placeholder ids that are never claimed, and a \"do not build\" list.\n- **External verification.** The state of the OTel GenAI semconv, MCP 2026-07-28, A2A 1.0.0 and OPA.\n\nThe report is `docs/governance/MAS_STD_GAP_ANALYSIS.md`. It is PROPOSED: it builds nothing, opens no rung and grants no authority (AET-I03).\n\n**Findings it records (OBSERVED, not fixed here):**\n1. **The ledger schema contradicts the code.** `schemas/run-ledger-event.schema.json` omits `AUTHORITY_CHECKED`, which `badf_gate.py` `LEDGER_OUTCOMES` makes mandatory from WP-0132. `check_schema` refuses a valid event.\n2. **Two budgets are never enforced.** `execution_budget.max_elapsed_minutes` and `max_cost` are declared, but nothing reads them.\n3. **The tool registry does not meet docs/08.** Its entries carry no timeout or rate limit. No read-only capability is registered, so a read-only dispatch cannot be expressed.\n\n**Not in scope:**\n- fixing any of the findings: each becomes its own work package, which needs its own authorization;\n- any change to the gate, schemas, registries, seats, authority matrix or docs/14;\n- merging (no merge authority is given).\n\n## Acceptance criteria\n\n1. Every clause in the report carries a rating, and every repository claim is labelled OBSERVED, INFERRED or UNVERIFIED.\n2. Every check the research ran is reported as PASS, FAIL, BLOCKED or NOT_RUN, together with its cause.\n3. The report states that it grants no authority and opens no rung.\n4. The WP-2026-0159 reconcile is carried; `badf_gate.py repo` passes; the composed suite is green in CI.",
+  "authorized_by": {
+    "principal": "operator",
+    "principal_type": "human"
+  },
+  "recorded_at": "2026-10-04T00:00:00Z",
+  "provenance": "EXPORTED_FROM_SOURCE",
+  "status": "AUTHORIZED",
+  "note": "ATTRIBUTED, not independently verifiable. In a Claude Code session on 2026-10-04 the operator asked for read-only research to upgrade the existing Engineer Team ('Not build now in this session, create new session as research to upgrade existing Engineer Team'), and after the report was delivered said 'Proceed like Professional Engineer Team'. Given in this session's channel (AET-I13). No merge-when-green authority was given. No structural actor field distinguishes the operator from an agent under the shared bstBizEra account (#261 / #308)."
+}

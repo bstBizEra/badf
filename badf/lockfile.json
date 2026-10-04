@@ -144,6 +144,7 @@
     "badf/demands/BADF-DEM-0142.json": "sha256:78c7ec5f1e488b425676ebb76b2f7cd4ae7affc4d6e8a7a2996cc0fef113d3f2",
     "badf/demands/BADF-DEM-0143.json": "sha256:2c71ac5c001c73497207bd9680c16f6fb6cceae4c49923f614fdda3100c80e52",
     "badf/demands/BADF-DEM-0144.json": "sha256:126cfdfb419f3371dabd8fd0143fcb8adfff88b80da32d2ea0431ef2a4014abf",
+    "badf/demands/BADF-DEM-0145.json": "sha256:b5ca9746abcab7bd11f69ae2671e55e269b03d116398a0f6aeb7f7b5ad86eae4",
     "badf/lifecycle.json": "sha256:9f5218c5ca7e94feafd62acec4d90b55ea39f52c21d7639b1984dc3676cb55f3",
     "badf/mcp-registry.json": "sha256:cf93976e41ccd3bc8f8e918da96e42ffac10bce601d0c859f2639aedbb3fc85e",
     "badf/releases/BADF-BASELINE-1.0.0.json": "sha256:3b3b69e1df01592d99f65e95f2e4a9375bfec277d3ab9198b18af373795a7667",
@@ -170,6 +171,7 @@
     "docs/governance/GITHUB_CONTROL_PLANE.md": "sha256:c935996a53bd5bc5a539e68e7f0ae5c9e686a86cbeb7714028c549d89cd6f911",
     "docs/governance/IDENTITY_ATTRIBUTION.md": "sha256:19028f496cfae8735f5a2311ee036355c115d25443e612349586214f88569134",
     "docs/governance/LEARNING_PLANE_TOOL_INTAKE.md": "sha256:7ce4d1612ad2a6369cf67ce12d0623283ac7031d94049f3bd070d85c7adfaa3f",
+    "docs/governance/MAS_STD_GAP_ANALYSIS.md": "sha256:bf43287e936adece9cf30962b21f5106f6ef2eff576f88085855fd5bd891ba41",
     "docs/governance/PROJECT_INSTANCE.md": "sha256:6191d54c015f24d37dd3a9aa48c49a9be805fb3fb9c26dd4a7c04cf233a9535d",
     "docs/governance/SELF_DEVELOPMENT_RULE.md": "sha256:1902557f1a59aa3104cca646e14b264b38facc3c74454985295a574c4e934f4c",
     "docs/governance/TWO_PLANE_VERDICT.md": "sha256:bf45f9b398b15a3c2b295a0403e608f9752082ed023b515f98a67a96c00c2bca",
@@ -1950,7 +1952,8 @@
     "work/WP-2026-0158/evidence/G07/composition-record.json": "sha256:9456d72d2d0d72635da1af3c127c8c76e8683e1041df0c3bbc8fd8903fe32fc3",
     "work/WP-2026-0158/work-package.json": "sha256:c93bb16e8d24bf9ae6cc9f7f4c1ff5922dce2e49bb33b4aa8d57d4bce1e9cd27",
     "work/WP-2026-0159/evidence/G07/composition-record.json": "sha256:d8dff08ee57567d521686d908371d14dd5a996b60c3c60dd226c38753f39f1b2",
-    "work/WP-2026-0159/work-package.json": "sha256:46be58e23ed4930ef71ccba632146a52630070c3a40408237ef8ca10bb8c945f"
+    "work/WP-2026-0159/work-package.json": "sha256:bf10494f5d74f59543e99533615d5d7e03c1b7cfaf945b0499ca41bfbf615a5b",
+    "work/WP-2026-0160/work-package.json": "sha256:8024697d54dad18f3dfd12ea936f1fdea62faadef26c16c8c90662c179f3168d"
   },
   "schema_version": "1.0.0"
 }
