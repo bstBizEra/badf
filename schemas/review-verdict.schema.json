@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "review-verdict.schema.json",
+  "title": "BADF review verdict (AET-B S3, BADF-WP-0158)",
+  "description": "One review of one work package's candidate, recorded at work/<WP>/reviews/<id>.json. The candidate is the output of `badf_gate.py review-package`; the authoring and reviewing run ids must differ; a re-review dispositions every finding its prior review left OPEN. Code-side enforcement is check_review_verdict in scripts/badf_gate.py; this schema is its structural backstop.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "id",
+    "work_package_id",
+    "candidate",
+    "author_run_id",
+    "reviewer",
+    "verdict",
+    "findings",
+    "non_coverage",
+    "recorded_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "enum": [
+        "1.0.0"
+      ]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^REV-[0-9]{2,}$"
+    },
+    "work_package_id": {
+      "type": "string",
+      "pattern": "^WP-[0-9]{4}-[0-9]{4}$"
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "work_package_id",
+        "base_sha",
+        "head_sha",
+        "content_tree",
+        "changed_files",
+        "diff_digest",
+        "package_digest"
+      ],
+      "properties": {
+        "work_package_id": {
+          "type": "string",
+          "pattern": "^WP-[0-9]{4}-[0-9]{4}$"
+        },
+        "base_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "head_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "content_tree": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "changed_files": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^\\S(.*\\S)?$"
+          }
+        },
+        "diff_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "package_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        }
+      }
+    },
+    "author_run_id": {
+      "type": "string",
+      "pattern": "^\\S(.*\\S)?$"
+    },
+    "reviewer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "identity",
+        "reviewer_run_id",
+        "principal_type"
+      ],
+      "properties": {
+        "identity": {
+          "type": "string",
+          "pattern": "^\\S(.*\\S)?$"
+        },
+        "reviewer_run_id": {
+          "type": "string",
+          "pattern": "^\\S(.*\\S)?$"
+        },
+        "principal_type": {
+          "enum": [
+            "human",
+            "agent"
+          ]
+        },
+        "model": {
+          "type": "string"
+        }
+      }
+    },
+    "verdict": {
+      "enum": [
+        "APPROVE",
+        "REQUEST_CHANGES",
+        "BLOCK"
+      ]
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "finding_id",
+          "severity",
+          "status",
+          "summary",
+          "location"
+        ],
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "pattern": "^VF-[0-9]{3,}$"
+          },
+          "severity": {
+            "enum": [
+              "INFO",
+              "MINOR",
+              "MAJOR",
+              "CRITICAL"
+            ]
+          },
+          "status": {
+            "enum": [
+              "OPEN",
+              "RESOLVED",
+              "ACCEPTED_BY_AUTHORITY",
+              "WITHDRAWN"
+            ]
+          },
+          "summary": {
+            "type": "string",
+            "pattern": "^\\S(.*\\S)?$"
+          },
+          "location": {
+            "type": "string",
+            "pattern": "^\\S(.*\\S)?$"
+          }
+        }
+      }
+    },
+    "non_coverage": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^\\S(.*\\S)?$"
+      }
+    },
+    "prior_review": {
+      "type": "string",
+      "pattern": "^REV-[0-9]{2,}$"
+    },
+    "prior_findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "finding_id",
+          "disposition",
+          "note"
+        ],
+        "properties": {
+          "finding_id": {
+            "type": "string",
+            "pattern": "^VF-[0-9]{3,}$"
+          },
+          "disposition": {
+            "enum": [
+              "ADDRESSED",
+              "NOT_ADDRESSED"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "pattern": "^\\S(.*\\S)?$"
+          }
+        }
+      }
+    },
+    "recorded_at": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    }
+  }
+}

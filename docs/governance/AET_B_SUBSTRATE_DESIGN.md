@@ -142,6 +142,23 @@ the gate is met and **AET-B is open**. S1 is the first component built. A work p
 pinned enforcement surface must be C3, checked on its declared surfaces by `repo` and on its actual
 diff by compose. S2–S5 remain separate work packages. AET-C/D/E remain gated as docs/14 §8 states.
 
+**Update, 2026-10-04 (`BADF-WP-0158`).** S3 is built, second per §6.
+- **Review package.** `badf_gate.py review-package <WP>` builds the candidate from `base..head`,
+  excluding `work/<WP>/` and the lockfile exactly as the content tree does. It refuses a
+  non-ancestor, empty or unknown range.
+- **Verdict record.** A verdict lives at `work/<WP>/reviews/REV-NN.json`
+  (`schemas/review-verdict.schema.json`), and `repo` validates every verdict. Each one must be:
+  - bound to its package digest;
+  - written by a reviewing run that is not the authoring run, with no deviation path;
+  - explicit about findings or non-coverage;
+  - consistent: APPROVE never stands beside a blocking finding.
+
+  A re-review must disposition every prior OPEN finding exactly once.
+- **Staleness.** `badf_gate.py review-check <WP>` reads the latest verdict against the head now
+  and reports `CURRENT`, `STALE` or `NONE`.
+- **What S3 does not do.** It records who reviewed what and permits nothing. No gate yet
+  requires a verdict. A run id distinguishes sessions, not people (#261).
+
 ## 8. Non-coverage, stated
 
 - **The readers' reports were not re-measured in full.** Rows marked *reported* rest on one
@@ -150,4 +167,4 @@ diff by compose. S2–S5 remain separate work packages. AET-C/D/E remain gated a
   quoted beyond the cited lines.
 - **Identity is not addressed.** The design does not solve operator/agent identity (#261, F6).
   A run id distinguishes sessions, not people.
-- **No component has been built or shadowed.** Every claim about S1–S5 is a design claim.
+- **S1 and S3 are built (§7 updates); S2, S4 and S5 are not.** Every claim about those three is a design claim.

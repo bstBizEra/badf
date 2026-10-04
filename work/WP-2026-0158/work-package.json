@@ -1,0 +1,84 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0158",
+  "title": "AET-B S3: the review package and verdict record (a review bound to the exact candidate, by a run that is not the author's, with complete re-review and staleness)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0143",
+  "objective": "Close #359. Build S3 of the AET-B design. badf_gate.py review-package builds the candidate from base..head (work/<WP>/ and the lockfile excluded) and refuses a non-ancestor, empty or unknown range. A verdict at work/<WP>/reviews/REV-NN.json, against schemas/review-verdict.schema.json, is validated by repo: bound to its package digest, authoring and reviewing runs distinct, findings or non-coverage stated, APPROVE never beside a blocking finding, and a re-review dispositions every prior OPEN finding exactly once. badf_gate.py review-check reads the latest verdict against the candidate now: CURRENT, STALE or NONE. Carry the WP-2026-0157 reconcile.",
+  "business_value": "Independent review becomes a record bound to what was reviewed and by whom, rather than a claim. A review by the author's own run, a stale review of a moved candidate, and a re-review that silently drops a finding all become refusals. S2's dispatch envelope can cite this record.",
+  "in_scope": [
+    "scripts/badf_gate.py: build_review_package, check_review_verdict, verify_review_verdicts (wired into validate_repo), review_check, and the review-package / review-check subcommands",
+    "schemas/review-verdict.schema.json",
+    "tests/test_badf_review_verdict.py",
+    "docs/governance/AET_B_SUBSTRATE_DESIGN.md: a dated update recording S3",
+    "carry the WP-2026-0157 reconcile (CLOSED, landed_as 39bd569, composition_verified true)"
+  ],
+  "out_of_scope": [
+    "S2, S4 and S5 (separate work packages)",
+    "any change to G08 dossier validation or the independent-review evidence binding",
+    "any gate that requires a verdict before merge",
+    "identity: a run id distinguishes sessions, not people (#261)",
+    "any change to C3's required roles, the authority matrix, docs/14 or AGENTS.md",
+    "the G07 self-dossier -- assembly is HUMAN_REQUIRED; declared, not worked around"
+  ],
+  "target_gate": "G07",
+  "change_class": "C3",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "AC-1: review-package refuses a non-ancestor, empty or unknown range; its package digest is reproducible",
+    "AC-2: repo refuses a verdict whose package digest does not recompute, whose authoring and reviewing runs are equal, with neither findings nor non-coverage, or whose APPROVE contradicts a blocking finding",
+    "AC-3: a re-review leaving a prior OPEN finding undispositioned, or dispositioning one that was not OPEN, is refused; a re-review cycle or two unrelated chains is refused",
+    "AC-4: review-check reports CURRENT before the candidate moves and STALE after, on a real git repository; recording the verdict does not move it",
+    "AC-5: every control mutation-tested",
+    "AC-6: WP-2026-0157 reconcile carried; badf_gate.py repo PASS; composed suite green in CI"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_review_verdict.py",
+    "tests/test_badf_enforcement_routing.py",
+    "tests/test_badf_git_composition.py",
+    "tests/test_badf_integrity.py"
+  ],
+  "evidence": [
+    "new tests",
+    "seeded mutations killed",
+    "repo PASS",
+    "composition record + CI compose composition: CURRENT and suite OK"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "39bd569639706b9256bba8f8f5a10f2dd2f2b748"
+  },
+  "expected_surfaces": {
+    "files": [
+      "scripts/badf_gate.py",
+      "schemas/review-verdict.schema.json",
+      "tests/test_badf_review_verdict.py",
+      "badf/demands/BADF-DEM-0143.json",
+      "docs/governance/AET_B_SUBSTRATE_DESIGN.md",
+      "work/WP-2026-0157/work-package.json"
+    ]
+  },
+  "note": "C3, because this work package edits an enforcement surface (scripts/badf_gate.py) and S1 binds it. Merge authority: none given for this work package; the PR waits for the operator. The C3 human-reserved approvals at G07 are a separate gate and are not claimed here."
+}

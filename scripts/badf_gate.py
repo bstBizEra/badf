@@ -918,6 +918,216 @@ def verify_enforcement_routing() -> None:
           f"(threshold {WP_NAMESPACE}{ENFORCEMENT_ROUTING_THRESHOLD:04d}), {routed} touching an enforcement surface, all {ENFORCEMENT_CLASS} (AET-B S1)")
 
 
+# ---- AET-B S3 (BADF-WP-0158): the review package and the verdict record ----
+# A review is bound to the exact candidate it read. `review-package` builds that candidate from
+# base..head and refuses a range that is not one (non-ancestor, empty, or unknown). A verdict under
+# work/<WP>/reviews/<REV-NN>.json carries the package, the authoring and reviewing run ids (which
+# must differ), and on a re-review a disposition for every finding the prior review left OPEN.
+# `repo` validates every verdict; `review-check` reads one against the candidate now, and a moved
+# candidate makes it STALE. This records who reviewed what. It permits nothing, and a run id
+# distinguishes sessions, not people (#261).
+REVIEW_DIR = "reviews"
+REVIEW_FINDING_DISPOSITIONS = ("ADDRESSED", "NOT_ADDRESSED")
+_REVIEW_PACKAGE_FIELDS = ("base_sha", "head_sha", "content_tree", "changed_files", "diff_digest")
+
+
+def review_package_digest(package: dict[str, Any]) -> str:
+    """The package's identity: a digest over its five bound fields, canonically serialised. A verdict
+    whose package_digest does not recompute from its own fields was edited after it was built."""
+    body = {k: package.get(k) for k in _REVIEW_PACKAGE_FIELDS}
+    return _digest_bytes(json.dumps(body, sort_keys=True, separators=(",", ":")).encode("utf-8"))
+
+
+def build_review_package(checkout: Path, wp: str, base: str, head: str) -> dict[str, Any]:
+    """The candidate a reviewer reads: base..head, with work/<wp>/ and the lockfile excluded exactly as
+    the content tree excludes them, so recording the verdict itself never moves the candidate.
+    Refuses an unknown revision, a base that is not an ancestor of head, and an empty range."""
+    def git(*a: str) -> subprocess.CompletedProcess:
+        return subprocess.run(["git", "-C", str(checkout), *a], capture_output=True)
+
+    shas = {}
+    for label, rev in (("base", base), ("head", head)):
+        r = git("rev-parse", "--verify", "--quiet", f"{rev}^{{commit}}")
+        if r.returncode:
+            raise ValidationError(f"review package: {label} {rev!r} is not a commit in {checkout} (AET-B S3)")
+        shas[label] = r.stdout.decode().strip()
+    if shas["base"] == shas["head"]:
+        raise ValidationError(f"review package: base and head are the same commit {shas['head'][:12]}; an empty range has nothing to review (AET-B S3)")
+    r = git("merge-base", "--is-ancestor", shas["base"], shas["head"])
+    if r.returncode == 1:
+        raise ValidationError(f"review package: base {shas['base'][:12]} is not an ancestor of head {shas['head'][:12]}; "
+                              "a review of a range that does not contain its own base reviews nothing in particular (AET-B S3)")
+    if r.returncode:
+        raise ValidationError(f"review package: cannot test ancestry in {checkout}: {r.stderr.decode().strip()}")
+    scope = ["--", ".", f":(exclude)work/{wp}", ":(exclude)badf/lockfile.json"]
+    names = git("diff", "--name-only", "--no-renames", shas["base"], shas["head"], *scope)
+    diff = git("diff", "--binary", "--full-index", "--no-renames", shas["base"], shas["head"], *scope)
+    if names.returncode or diff.returncode:
+        raise ValidationError(f"review package: cannot diff {shas['base'][:12]}..{shas['head'][:12]}: {(names.stderr or diff.stderr).decode().strip()}")
+    changed = sorted(p for p in names.stdout.decode().splitlines() if p)
+    if not changed:
+        raise ValidationError(f"review package: {shas['base'][:12]}..{shas['head'][:12]} changes nothing outside work/{wp}/ and the lockfile; "
+                              "an empty range has nothing to review (AET-B S3)")
+    package = {"work_package_id": wp, "base_sha": shas["base"], "head_sha": shas["head"],
+               "content_tree": content_tree(checkout, wp, shas["head"]), "changed_files": changed,
+               "diff_digest": _digest_bytes(diff.stdout)}
+    package["package_digest"] = review_package_digest(package)
+    return package
+
+
+def _run_key(value: Any) -> str:
+    return str(value or "").strip().casefold()
+
+
+def check_review_verdict(verdict: dict[str, Any], wp_id: str, prior: dict[str, Any] | None = None) -> list[str]:
+    """Problems with one verdict record. Pure: no reads, no git; the caller resolves `prior`.
+
+    Bound: the package digest recomputes from the verdict's own candidate fields.
+    Independent: the authoring and reviewing run ids differ. There is no deviation path at this
+      level; a review by the author's own run is not recorded as a review.
+    Honest: a verdict with no findings and no non_coverage claims full coverage (VER-I10), and an
+      APPROVE cannot stand beside an OPEN blocking finding of its own or a blocking prior finding it
+      marks NOT_ADDRESSED.
+    Complete re-review: every finding the prior review left OPEN gets exactly one disposition."""
+    label = f"review verdict {verdict.get('id', '?')} of {wp_id}"
+    try:
+        check_schema("review-verdict", verdict)
+    except ValidationError as exc:
+        return [f"{label}: {exc}"]
+    problems = []
+    if verdict["work_package_id"] != wp_id:
+        problems.append(f"{label}: work_package_id {verdict['work_package_id']} is not the work package it is recorded under")
+    cand = verdict["candidate"]
+    if cand["work_package_id"] != verdict["work_package_id"]:
+        problems.append(f"{label}: candidate.work_package_id {cand['work_package_id']} is not the verdict's work package; a package of another work package was reviewed")
+    if not cand["changed_files"]:
+        problems.append(f"{label}: candidate.changed_files is empty; a package of nothing was never built by review-package")
+    if review_package_digest(cand) != cand["package_digest"]:
+        problems.append(f"{label}: candidate.package_digest does not recompute from the candidate's own fields; the binding was edited after it was built")
+    author, reviewer = _run_key(verdict["author_run_id"]), _run_key(verdict["reviewer"]["reviewer_run_id"])
+    if not author or not reviewer:
+        problems.append(f"{label}: author_run_id and reviewer.reviewer_run_id must both be non-blank")
+    elif author == reviewer:
+        problems.append(f"{label}: the reviewing run {verdict['reviewer']['reviewer_run_id']!r} is the authoring run; "
+                        "a run reviewing its own output is not an independent review (AET-B S3 / AET-I04)")
+    findings = verdict["findings"]
+    ids = [f["finding_id"] for f in findings]
+    if len(ids) != len(set(ids)):
+        problems.append(f"{label}: duplicate finding id(s) {sorted({i for i in ids if ids.count(i) > 1})}")
+    if not findings and not [x for x in verdict["non_coverage"] if str(x).strip()]:
+        problems.append(f"{label}: no findings and no non_coverage claims comprehensive coverage; no findings is not correctness (VER-I10)")
+    open_blocking = sorted(f["finding_id"] for f in findings if f["status"] == "OPEN" and f["severity"] in BLOCKING_SEVERITIES)
+    if verdict["verdict"] == "APPROVE" and open_blocking:
+        problems.append(f"{label}: verdict APPROVE contradicts its own OPEN blocking finding(s) {open_blocking}")
+    has_prior, dispositions = "prior_review" in verdict, verdict.get("prior_findings")
+    if dispositions is not None and not has_prior:
+        problems.append(f"{label}: prior_findings without prior_review; a disposition must name the review it answers")
+    if has_prior:
+        if verdict["prior_review"] == verdict["id"]:
+            problems.append(f"{label}: prior_review names the verdict itself")
+        elif prior is None:
+            problems.append(f"{label}: prior_review {verdict['prior_review']} is not recorded under work/{wp_id}/{REVIEW_DIR}/")
+        else:
+            prior_open = {f["finding_id"]: f for f in prior.get("findings") or [] if f.get("status") == "OPEN"}
+            given = [d["finding_id"] for d in dispositions or []]
+            missing = sorted(set(prior_open) - set(given))
+            extra = sorted(set(given) - set(prior_open))
+            if missing:
+                problems.append(f"{label}: re-review leaves prior OPEN finding(s) {missing} of {prior.get('id')} without an ADDRESSED / NOT_ADDRESSED disposition")
+            if extra:
+                problems.append(f"{label}: re-review dispositions finding(s) {extra} that {prior.get('id')} did not leave OPEN")
+            if len(given) != len(set(given)):
+                problems.append(f"{label}: a prior finding is dispositioned more than once")
+            unaddressed = sorted(d["finding_id"] for d in dispositions or [] if d["disposition"] == "NOT_ADDRESSED"
+                                 and (prior_open.get(d["finding_id"]) or {}).get("severity") in BLOCKING_SEVERITIES)
+            if verdict["verdict"] == "APPROVE" and unaddressed:
+                problems.append(f"{label}: verdict APPROVE while blocking prior finding(s) {unaddressed} are NOT_ADDRESSED")
+    return problems
+
+
+def load_review_verdicts(checkout: Path, wp_id: str) -> dict[str, dict[str, Any]]:
+    """Every verdict under <checkout>/work/<wp>/reviews/, keyed by id. A file whose name is not its
+    id, or that is not a JSON mapping, is refused rather than skipped."""
+    out: dict[str, dict[str, Any]] = {}
+    for path in sorted((Path(checkout) / "work" / wp_id / REVIEW_DIR).glob("*.json")):
+        try:
+            rec = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            raise ValidationError(f"{path}: not a readable JSON review verdict ({exc}) (AET-B S3)")
+        if not isinstance(rec, dict) or f"{rec.get('id')}.json" != path.name:
+            raise ValidationError(f"{path}: a review verdict's file name must be its id (got id {rec.get('id') if isinstance(rec, dict) else None!r}) (AET-B S3)")
+        out[str(rec["id"])] = rec
+    return out
+
+
+def review_problems(checkout: Path, wp_id: str) -> tuple[dict[str, dict[str, Any]], list[str]]:
+    verdicts = load_review_verdicts(checkout, wp_id)
+    problems = []
+    for vid, v in verdicts.items():
+        problems += check_review_verdict(v, wp_id, verdicts.get(str(v.get("prior_review"))) if "prior_review" in v else None)
+        seen, cur = {vid}, v
+        while "prior_review" in cur and str(cur["prior_review"]) in verdicts:
+            nxt = str(cur["prior_review"])
+            if nxt in seen:
+                problems.append(f"review verdict {vid} of {wp_id}: its prior_review chain returns to {nxt}; a re-review chain has a first review (AET-B S3)")
+                break
+            seen.add(nxt)
+            cur = verdicts[nxt]
+    if verdicts and not problems:
+        try:
+            review_latest(verdicts)
+        except ValidationError as exc:
+            problems.append(str(exc))
+    return verdicts, problems
+
+
+def verify_review_verdicts() -> None:
+    """Every recorded verdict on every work package is well-formed, bound, independent and, on a
+    re-review, complete. Staleness against a moving head is review-check's, not repo's: repo stays a
+    function of the tree."""
+    total = wps = 0
+    for path, rec in self_work_packages():
+        wp = rec.get("id") or path.parent.name
+        verdicts, problems = review_problems(ROOT, wp)
+        if problems:
+            raise ValidationError("; ".join(problems))
+        if verdicts:
+            total += len(verdicts)
+            wps += 1
+    print(f"BADF REVIEW VERDICTS: {total} verdict(s) on {wps} work package(s); each bound to its package, "
+          "authoring and reviewing runs distinct, re-reviews complete (AET-B S3); staleness is read by review-check")
+
+
+def review_latest(verdicts: dict[str, dict[str, Any]]) -> dict[str, Any] | None:
+    """The end of the re-review chain: the verdict no other verdict names as its prior. More than one
+    end means two unrelated reviews of one work package; that is refused, not guessed between."""
+    named = {str(v.get("prior_review")) for v in verdicts.values() if "prior_review" in v}
+    ends = sorted(vid for vid in verdicts if vid not in named)
+    if len(ends) > 1:
+        raise ValidationError(f"review verdicts {ends} are each the end of a separate review chain; a re-review names its prior (AET-B S3)")
+    return verdicts[ends[0]] if ends else None
+
+
+def review_check(checkout: Path, wp_id: str, head: str = "HEAD") -> dict[str, Any]:
+    """The latest verdict, read against the candidate now: CURRENT when the package rebuilt from the
+    verdict's own base to <head> has the same content tree, changed files and diff (the head sha may
+    differ: committing the verdict under work/<WP>/ moves the head, not the candidate); STALE when the
+    candidate moved; NONE when no verdict is recorded. Read-only."""
+    verdicts, problems = review_problems(checkout, wp_id)
+    if problems:
+        raise ValidationError("; ".join(problems))
+    latest = review_latest(verdicts)
+    if latest is None:
+        return {"work_package_id": wp_id, "disposition": "NONE", "verdicts": 0}
+    cand = latest["candidate"]
+    now = build_review_package(checkout, wp_id, cand["base_sha"], head)
+    moved = [k for k in ("content_tree", "changed_files", "diff_digest") if now[k] != cand[k]]
+    return {"work_package_id": wp_id, "verdicts": len(verdicts), "latest": latest["id"], "verdict": latest["verdict"],
+            "reviewed_head": cand["head_sha"], "head_now": now["head_sha"],
+            "reviewed_content_tree": cand["content_tree"], "content_tree_now": now["content_tree"],
+            "moved": moved, "disposition": "STALE" if moved else "CURRENT"}
+
+
 # ---- AET-B-1 (#287, WP-2026-0130): the seat roster ----
 SEAT_RATCHET_THRESHOLD = 130
 _SEAT_FORBIDDEN_PERMISSION_KEYS = ("allowed_paths", "allowed_tools", "actions", "permissions", "prohibited")
@@ -1185,6 +1395,7 @@ def validate_repo() -> None:
     verify_work_ledger()
     verify_surface_ratchet()
     verify_enforcement_routing()
+    verify_review_verdicts()
     verify_seat_roster()
 
 def check_non_coverage(dossier: dict[str, Any], evidence_type: str, outcome: str) -> None:
@@ -5536,6 +5747,13 @@ def main() -> int:
     gc_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
     gc_parser.add_argument("--apply", action="store_true", help="delete the landed branches; without it nothing is written")
     gc_parser.add_argument("--wp", help="work package id that namespaces the recovery refs (required with --apply)")
+    rp_parser = subparsers.add_parser("review-package", help="build the review package of a work package: base..head with work/<WP>/ and the lockfile excluded; refuses a non-ancestor, empty or unknown range (read-only; AET-B S3)")
+    rp_parser.add_argument("wp"); rp_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
+    rp_parser.add_argument("--base", help="default: the work package's external_target.base_revision")
+    rp_parser.add_argument("--head", default="HEAD")
+    rv_parser = subparsers.add_parser("review-check", help="read a work package's latest review verdict against the candidate now: CURRENT (0) / STALE or NONE (HELD 3); read-only (AET-B S3)")
+    rv_parser.add_argument("wp"); rv_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
+    rv_parser.add_argument("--head", default="HEAD")
     rc_parser = subparsers.add_parser("git-release-check", help="verify a release ref: annotated, on main first-parent, record-bound, unmoved (badf-git GIT-H; read-only)")
     rc_parser.add_argument("tag"); rc_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
     rr_parser = subparsers.add_parser("git-release-record", help="write badf/releases/<version>.json as a HUMAN_REQUIRED release binding; binds an existing tag or HEAD; never creates a tag")
@@ -5586,6 +5804,30 @@ def main() -> int:
             print(f"BADF GATE PASS: git-baseline -- GIT_BASELINED {rec['source_head_sha'][:7]} on "
                   f"{rec['target_sha'][:7]} (ahead {rec['ahead']}, behind {rec['behind']})")
             return 0
+        elif args.command == "review-package":
+            base = args.base
+            if base is None:
+                rec = load_json(Path(args.path) / "work" / args.wp / "work-package.json")
+                base = str(((rec or {}).get("external_target") or {}).get("base_revision") or "")
+                if not base:
+                    raise ValidationError(f"{args.wp} declares no external_target.base_revision; pass --base")
+            pkg = build_review_package(args.path, args.wp, base, args.head)
+            print(json.dumps(pkg, indent=2))
+            print(f"BADF GATE PASS: review-package -- {args.wp} {pkg['base_sha'][:7]}..{pkg['head_sha'][:7]}, "
+                  f"{len(pkg['changed_files'])} file(s), content tree {pkg['content_tree'][:7]}, {pkg['package_digest'][:19]}")
+            return 0
+        elif args.command == "review-check":
+            v = review_check(args.path, args.wp, args.head)
+            print(json.dumps(v, indent=2))
+            if v["disposition"] == "CURRENT":
+                print(f"BADF GATE PASS: review-check -- {args.wp} {v['latest']} {v['verdict']} is CURRENT at {v['head_now'][:7]}")
+                return 0
+            if v["disposition"] == "NONE":
+                print(f"BADF GATE HELD: review-check -- {args.wp} has no review verdict recorded")
+                return 3
+            print(f"BADF GATE HELD: review-check -- {args.wp} {v['latest']} reviewed {v['reviewed_head'][:7]}; the candidate moved "
+                  f"({', '.join(v['moved'])}) at {v['head_now'][:7]}, so the verdict is STALE; a stale verdict is re-reviewed, never relabelled")
+            return 3
         elif args.command == "git-staleness":
             v = git_staleness(load_git_baseline_record(args.record), args.path)
             print(json.dumps(v, indent=2))
