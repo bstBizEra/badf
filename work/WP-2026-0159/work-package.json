@@ -1,0 +1,83 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0159",
+  "title": "AET-B S2: the dispatch envelope (a bounded piece of a work package handed to one held seat, narrowing never widening, read back through S3)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0144",
+  "objective": "Close #361. Build S2 of the AET-B design. A dispatch envelope at work/<WP>/dispatch/DSP-NN.json (schemas/dispatch-envelope.schema.json), with its brief beside it, is validated by repo: seat rostered and HELD; allowed paths within the work package's expected_surfaces; tools ACTIVE in badf/tool-registry.json; budget within the work package's; stop conditions including the work package's; required evidence non-empty; a required review naming a held reviewer seat other than the dispatched one; the brief bound by digest. badf_gate.py dispatch-check reads the dispatched diff through S3's review package: an out-of-envelope change is refused, and a required review holds the work until a CURRENT APPROVE by the named reviewer seat is recorded. Carry the WP-2026-0158 reconcile.",
+  "business_value": "Delegation becomes a record that can only narrow the work package it serves, and dispatched work is read back against it. A seat cannot be handed more paths, tools or budget than the work package carries, and work that strays outside its envelope, or skips the review the envelope required, is refused or held rather than absorbed.",
+  "in_scope": [
+    "scripts/badf_gate.py: check_dispatch_envelope, verify_dispatch_envelopes (wired into validate_repo), dispatch_check, and the dispatch-check subcommand",
+    "schemas/dispatch-envelope.schema.json",
+    "tests/test_badf_dispatch_envelope.py",
+    "docs/governance/AET_B_SUBSTRATE_DESIGN.md: a dated update recording S2",
+    "carry the WP-2026-0158 reconcile (CLOSED, landed_as 19b5866, composition_verified true)"
+  ],
+  "out_of_scope": [
+    "S4 and S5 (separate work packages)",
+    "a scheduler, coordinator or runtime that dispatches anything",
+    "any change to the seat roster, tool or MCP registries, or the authority matrix",
+    "MCP servers in allowed_tools (none registered; refused by default)",
+    "identity: a run id distinguishes sessions, not people (#261)",
+    "the G07 self-dossier -- assembly is HUMAN_REQUIRED; declared, not worked around"
+  ],
+  "target_gate": "G07",
+  "change_class": "C3",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "AC-1: repo refuses an envelope with an unrostered or vacant seat, an allowed path or glob outside the work package's surfaces, an unregistered or non-ACTIVE tool, a budget over the work package's (or none to bound it), a dropped stop condition, empty required evidence, an invalid review designation, or a missing, misplaced or altered brief",
+    "AC-2: dispatch-check refuses an out-of-envelope change on a real git repository and passes one within it",
+    "AC-3: with review required, dispatch-check is HELD on no verdict, a STALE verdict, a non-APPROVE verdict, or a verdict by another seat, and COMPLETE on a CURRENT APPROVE by the named seat",
+    "AC-4: every control mutation-tested",
+    "AC-5: WP-2026-0158 reconcile carried; badf_gate.py repo PASS; composed suite green in CI"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_dispatch_envelope.py",
+    "tests/test_badf_review_verdict.py",
+    "tests/test_badf_enforcement_routing.py",
+    "tests/test_badf_integrity.py"
+  ],
+  "evidence": [
+    "new tests",
+    "seeded mutations killed",
+    "repo PASS",
+    "composition record + CI compose composition: CURRENT and suite OK"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "19b58663e7cb5a11cd65b3c712113f5bbfa49e28"
+  },
+  "expected_surfaces": {
+    "files": [
+      "scripts/badf_gate.py",
+      "schemas/dispatch-envelope.schema.json",
+      "tests/test_badf_dispatch_envelope.py",
+      "badf/demands/BADF-DEM-0144.json",
+      "docs/governance/AET_B_SUBSTRATE_DESIGN.md",
+      "work/WP-2026-0158/work-package.json"
+    ]
+  },
+  "note": "C3, because this work package edits an enforcement surface (scripts/badf_gate.py) and S1 binds it. Merge authority: none given for this work package at the time of writing; the PR waits for the operator. The C3 human-reserved approvals at G07 are a separate gate and are not claimed here."
+}

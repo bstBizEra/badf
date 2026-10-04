@@ -1128,6 +1128,186 @@ def review_check(checkout: Path, wp_id: str, head: str = "HEAD") -> dict[str, An
             "moved": moved, "disposition": "STALE" if moved else "CURRENT"}
 
 
+# ---- AET-B S2 (BADF-WP-0159): the dispatch envelope ----
+# A dispatch hands one bounded piece of a work package to one seat. It is recorded at
+# work/<WP>/dispatch/<DSP-NN>.json with its brief beside it, and it may only narrow the work package
+# it serves:
+#   - its paths are a subset of expected_surfaces;
+#   - its tools are ACTIVE entries of badf/tool-registry.json;
+#   - its budget is within the work package's;
+#   - its stop conditions include the work package's.
+# `repo` validates every envelope against the record and the registries. `dispatch-check` reads the
+# dispatched work: S3's review package refuses a changed path the envelope does not allow, and when
+# the envelope requires review, it holds until a CURRENT APPROVE verdict by the named reviewer seat is
+# recorded. An envelope permits nothing the work package and authority matrix do not already permit.
+DISPATCH_DIR = "dispatch"
+_GLOB_CHARS = set("*?[")
+
+
+def _dispatch_registries(root: Path) -> tuple[dict[str, dict[str, Any]], dict[str, str]]:
+    """The seat roster and the tool registry an envelope is checked against, read from <root>
+    (repo validates the framework's own copies; a fixture repository carries its own)."""
+    seats = {str(s.get("id")): s for s in (load_json(Path(root) / "badf/seats.json").get("seats") or []) if isinstance(s, dict)}
+    tools = {str(t.get("id")): str(t.get("status")) for t in (load_json(Path(root) / "badf/tool-registry.json").get("tools") or []) if isinstance(t, dict)}
+    return seats, tools
+
+
+def _path_within_surfaces(path: str, surfaces: list[str]) -> bool:
+    """An allowed path narrows the work package only if it IS one of its patterns, or is a literal
+    path one of them covers. A new glob cannot be shown to be a subset, so it is refused."""
+    if path in surfaces:
+        return True
+    if _GLOB_CHARS & set(path):
+        return False
+    return any(_surface_match(path, s) for s in surfaces)
+
+
+def check_dispatch_envelope(env: dict[str, Any], wp_id: str, record: dict[str, Any], seats: dict[str, dict[str, Any]],
+                            tools: dict[str, str], brief: bytes | None) -> list[str]:
+    """Problems with one envelope. Pure: the caller reads the record, the registries and the brief."""
+    label = f"dispatch {env.get('id', '?')} of {wp_id}"
+    try:
+        check_schema("dispatch-envelope", env)
+    except ValidationError as exc:
+        return [f"{label}: {exc}"]
+    problems = []
+    if env["work_package_id"] != wp_id:
+        problems.append(f"{label}: work_package_id {env['work_package_id']} is not the work package it is recorded under")
+
+    def seated(role: str, sid: str) -> None:
+        seat = seats.get(sid)
+        if seat is None:
+            problems.append(f"{label}: {role} {sid!r} is not a seat in badf/seats.json")
+        elif seat.get("status") != "HELD":
+            problems.append(f"{label}: {role} {sid!r} is {seat.get('status')}; work is dispatched to a held seat, never to a vacancy")
+
+    seated("seat", env["seat"])
+    surfaces = [str(x) for x in ((record.get("expected_surfaces") or {}).get("files") or [])]
+    if not env["allowed_paths"]:
+        problems.append(f"{label}: allowed_paths is empty; an envelope that allows nothing dispatches nothing")
+    outside = sorted(p for p in env["allowed_paths"] if not _path_within_surfaces(p, surfaces))
+    if outside:
+        problems.append(f"{label}: allowed path(s) {outside} are not within {wp_id}'s expected_surfaces.files; a dispatch narrows its work package, never widens it")
+    if not env["allowed_tools"]:
+        problems.append(f"{label}: allowed_tools is empty")
+    unregistered = sorted(t for t in env["allowed_tools"] if t not in tools)
+    inactive = sorted(t for t in env["allowed_tools"] if t in tools and tools[t] != "ACTIVE")
+    if unregistered:
+        problems.append(f"{label}: tool(s) {unregistered} are not registered in badf/tool-registry.json (deny by default)")
+    if inactive:
+        problems.append(f"{label}: tool(s) {[f'{t} ({tools[t]})' for t in inactive]} are registered but not ACTIVE")
+    cap = (record.get("execution_budget") or {}).get("max_attempts")
+    attempts = env["budget"]["max_attempts"]
+    if not isinstance(cap, int) or isinstance(cap, bool):
+        problems.append(f"{label}: {wp_id} declares no execution_budget.max_attempts; a dispatch cannot be bounded by a budget that does not exist")
+    elif not 1 <= attempts <= cap:
+        problems.append(f"{label}: budget.max_attempts {attempts} is outside 1..{cap}, {wp_id}'s execution_budget.max_attempts")
+    if not env["stop_conditions"]:
+        problems.append(f"{label}: stop_conditions is empty")
+    dropped = sorted(set(record.get("stop_conditions") or []) - set(env["stop_conditions"]))
+    if dropped:
+        problems.append(f"{label}: stop condition(s) {dropped} of {wp_id} are dropped; a dispatch may add stop conditions, never remove them")
+    if not env["required_evidence"]:
+        problems.append(f"{label}: required_evidence is empty; dispatched work with nothing to show is not bounded by evidence")
+    review = env["review"]
+    if review["required"]:
+        if "reviewer_seat" not in review:
+            problems.append(f"{label}: review.required names no reviewer_seat")
+        else:
+            seated("reviewer_seat", review["reviewer_seat"])
+            if review["reviewer_seat"] == env["seat"]:
+                problems.append(f"{label}: reviewer_seat is the dispatched seat; a seat does not review its own dispatch (AET-I04)")
+    elif "reviewer_seat" in review:
+        problems.append(f"{label}: reviewer_seat is named but review.required is false; a named reviewer nobody is held to is decoration")
+    bpath = env["brief"]["path"]
+    if not bpath.startswith(f"work/{wp_id}/{DISPATCH_DIR}/") or "/../" in f"/{bpath}/" or not bpath.endswith(".md"):
+        problems.append(f"{label}: brief.path {bpath!r} is not a .md file under work/{wp_id}/{DISPATCH_DIR}/")
+    elif brief is None:
+        problems.append(f"{label}: brief {bpath} is not present")
+    elif _digest_bytes(brief) != env["brief"]["digest"]:
+        problems.append(f"{label}: brief {bpath} does not match brief.digest; the brief was edited after it was dispatched")
+    return problems
+
+
+def load_dispatch_envelopes(checkout: Path, wp_id: str) -> dict[str, dict[str, Any]]:
+    """Every envelope under <checkout>/work/<wp>/dispatch/, keyed by id; the file name is the id."""
+    out: dict[str, dict[str, Any]] = {}
+    for path in sorted((Path(checkout) / "work" / wp_id / DISPATCH_DIR).glob("*.json")):
+        try:
+            rec = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            raise ValidationError(f"{path}: not a readable JSON dispatch envelope ({exc}) (AET-B S2)")
+        if not isinstance(rec, dict) or f"{rec.get('id')}.json" != path.name:
+            raise ValidationError(f"{path}: a dispatch envelope's file name must be its id (got id {rec.get('id') if isinstance(rec, dict) else None!r}) (AET-B S2)")
+        out[str(rec["id"])] = rec
+    return out
+
+
+def dispatch_problems(checkout: Path, wp_id: str, record: dict[str, Any]) -> tuple[dict[str, dict[str, Any]], list[str]]:
+    envelopes = load_dispatch_envelopes(checkout, wp_id)
+    if not envelopes:
+        return envelopes, []
+    seats, tools = _dispatch_registries(checkout)
+    problems = []
+    for env in envelopes.values():
+        b = env.get("brief") if isinstance(env.get("brief"), dict) else {}
+        p = Path(checkout) / str(b.get("path") or "")
+        brief = p.read_bytes() if b.get("path") and p.is_file() else None
+        problems += check_dispatch_envelope(env, wp_id, record, seats, tools, brief)
+    return envelopes, problems
+
+
+def verify_dispatch_envelopes() -> None:
+    """Every recorded envelope narrows its work package and binds its brief. What the dispatched work
+    then changed is dispatch-check's, not repo's: repo stays a function of the tree."""
+    total = wps = 0
+    for path, rec in self_work_packages():
+        wp = rec.get("id") or path.parent.name
+        envelopes, problems = dispatch_problems(ROOT, wp, rec)
+        if problems:
+            raise ValidationError("; ".join(problems))
+        if envelopes:
+            total += len(envelopes)
+            wps += 1
+    print(f"BADF DISPATCH ENVELOPES: {total} envelope(s) on {wps} work package(s); each within its work package's surfaces, "
+          "budget and stop conditions, tools ACTIVE, seats held, brief bound (AET-B S2); the dispatched diff is read by dispatch-check")
+
+
+def dispatch_check(checkout: Path, wp_id: str, dsp_id: str, head: str = "HEAD") -> dict[str, Any]:
+    """The dispatched work, read against its envelope. An out-of-scope change is refused (exit 1). When
+    review is required, the latest S3 verdict must be CURRENT, APPROVE, and by the named reviewer seat,
+    or the work is HELD. Read-only."""
+    record = load_json(Path(checkout) / "work" / wp_id / "work-package.json")
+    envelopes, problems = dispatch_problems(checkout, wp_id, record)
+    if problems:
+        raise ValidationError("; ".join(problems))
+    if dsp_id not in envelopes:
+        raise ValidationError(f"{wp_id} has no dispatch envelope {dsp_id} under work/{wp_id}/{DISPATCH_DIR}/ (AET-B S2)")
+    env = envelopes[dsp_id]
+    pkg = build_review_package(checkout, wp_id, env["base_sha"], head)
+    outside = sorted(p for p in pkg["changed_files"] if not any(_surface_match(p, a) for a in env["allowed_paths"]))
+    if outside:
+        raise ValidationError(f"dispatch {dsp_id} of {wp_id}: the dispatched work changed {outside}, outside its allowed_paths; "
+                              "work outside the envelope is refused, never absorbed (AET-B S2)")
+    out = {"work_package_id": wp_id, "dispatch": dsp_id, "seat": env["seat"], "base_sha": env["base_sha"], "head_sha": pkg["head_sha"],
+           "changed_files": pkg["changed_files"], "scope": "WITHIN_ENVELOPE"}
+    if not env["review"]["required"]:
+        return {**out, "review": "NOT_REQUIRED", "disposition": "COMPLETE"}
+    want = env["review"]["reviewer_seat"]
+    rc = review_check(checkout, wp_id, head)
+    held = None
+    if rc["disposition"] != "CURRENT":
+        held = f"review {rc['disposition']}"
+    elif rc["verdict"] != "APPROVE":
+        held = f"latest verdict {rc['latest']} is {rc['verdict']}"
+    else:
+        identity = load_review_verdicts(checkout, wp_id)[rc["latest"]]["reviewer"]["identity"]
+        if identity != want:
+            held = f"latest verdict {rc['latest']} is by {identity!r}, not the envelope's reviewer_seat {want!r}"
+    return {**out, "review": rc["disposition"], "reviewer_seat": want, "held_because": held,
+            "disposition": "HELD" if held else "COMPLETE"}
+
+
 # ---- AET-B-1 (#287, WP-2026-0130): the seat roster ----
 SEAT_RATCHET_THRESHOLD = 130
 _SEAT_FORBIDDEN_PERMISSION_KEYS = ("allowed_paths", "allowed_tools", "actions", "permissions", "prohibited")
@@ -1396,6 +1576,7 @@ def validate_repo() -> None:
     verify_surface_ratchet()
     verify_enforcement_routing()
     verify_review_verdicts()
+    verify_dispatch_envelopes()
     verify_seat_roster()
 
 def check_non_coverage(dossier: dict[str, Any], evidence_type: str, outcome: str) -> None:
@@ -5754,6 +5935,9 @@ def main() -> int:
     rv_parser = subparsers.add_parser("review-check", help="read a work package's latest review verdict against the candidate now: CURRENT (0) / STALE or NONE (HELD 3); read-only (AET-B S3)")
     rv_parser.add_argument("wp"); rv_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
     rv_parser.add_argument("--head", default="HEAD")
+    dc_parser = subparsers.add_parser("dispatch-check", help="read a dispatched piece of work against its envelope: out-of-scope paths refused (1); COMPLETE (0) or HELD on review (3); read-only (AET-B S2)")
+    dc_parser.add_argument("wp"); dc_parser.add_argument("dispatch"); dc_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
+    dc_parser.add_argument("--head", default="HEAD")
     rc_parser = subparsers.add_parser("git-release-check", help="verify a release ref: annotated, on main first-parent, record-bound, unmoved (badf-git GIT-H; read-only)")
     rc_parser.add_argument("tag"); rc_parser.add_argument("path", nargs="?", type=Path, default=ROOT)
     rr_parser = subparsers.add_parser("git-release-record", help="write badf/releases/<version>.json as a HUMAN_REQUIRED release binding; binds an existing tag or HEAD; never creates a tag")
@@ -5827,6 +6011,15 @@ def main() -> int:
                 return 3
             print(f"BADF GATE HELD: review-check -- {args.wp} {v['latest']} reviewed {v['reviewed_head'][:7]}; the candidate moved "
                   f"({', '.join(v['moved'])}) at {v['head_now'][:7]}, so the verdict is STALE; a stale verdict is re-reviewed, never relabelled")
+            return 3
+        elif args.command == "dispatch-check":
+            v = dispatch_check(args.path, args.wp, args.dispatch, args.head)
+            print(json.dumps(v, indent=2))
+            summary = f"dispatch-check -- {args.wp} {args.dispatch} ({v['seat']}) {len(v['changed_files'])} file(s) within the envelope, review {v['review']}"
+            if v["disposition"] == "COMPLETE":
+                print(f"BADF GATE PASS: {summary}")
+                return 0
+            print(f"BADF GATE HELD: {summary}; {v['held_because']}")
             return 3
         elif args.command == "git-staleness":
             v = git_staleness(load_git_baseline_record(args.record), args.path)
