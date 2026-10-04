@@ -1949,6 +1949,7 @@
     "work/WP-2026-0157/work-package.json": "sha256:817b38ecf37c48b4610536f207afd6347e82a2a96a2193147b2206e785c51056",
     "work/WP-2026-0158/evidence/G07/composition-record.json": "sha256:9456d72d2d0d72635da1af3c127c8c76e8683e1041df0c3bbc8fd8903fe32fc3",
     "work/WP-2026-0158/work-package.json": "sha256:c93bb16e8d24bf9ae6cc9f7f4c1ff5922dce2e49bb33b4aa8d57d4bce1e9cd27",
+    "work/WP-2026-0159/evidence/G07/composition-record.json": "sha256:d8dff08ee57567d521686d908371d14dd5a996b60c3c60dd226c38753f39f1b2",
     "work/WP-2026-0159/work-package.json": "sha256:46be58e23ed4930ef71ccba632146a52630070c3a40408237ef8ca10bb8c945f"
   },
   "schema_version": "1.0.0"
