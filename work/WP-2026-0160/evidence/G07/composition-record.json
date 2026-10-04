@@ -1,0 +1,22 @@
+{
+  "record": "git-composition",
+  "schema_version": "1.0.0",
+  "observed_at": "2026-10-04T19:36:34Z",
+  "repository": "bstBizEra/badf",
+  "work_package_id": "WP-2026-0160",
+  "target_ref": "refs/heads/main",
+  "target_base_sha": "b9936e591530a74f919a86c80934b575c3a231e3",
+  "source_ref": "refs/heads/wp/WP-2026-0160-mas-std-gap-analysis",
+  "source_head_sha": "52284d0d024d9ca29073f69f1109a57ca62c1168",
+  "merge_base_sha": "b9936e591530a74f919a86c80934b575c3a231e3",
+  "merge_method": "squash",
+  "expected_result_tree": "8e59a3eb4601ff1e2f7a38ab853e22002eb79896",
+  "expected_content_tree": "ee295f195dd366a4ea98af3571e0336a391f0b53",
+  "policy_epoch": "BADF-2026-08-25",
+  "test_set_epoch": null,
+  "suite_pattern": "test_badf_integrity.py",
+  "non_coverage": [
+    "test_set_epoch: BADF defines no test-set/toolchain epoch; not recorded rather than invented",
+    "source_head_sha and expected_result_tree are informational: committing this record moves both; the binding is expected_content_tree (work/<WP>/ and the lockfile excluded)"
+  ]
+}

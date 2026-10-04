@@ -1,0 +1,74 @@
+{
+  "$schema": "../../schemas/work-package.schema.json",
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0160",
+  "title": "AET: MAS-STD gap analysis of the Agentic Engineer Team (research record, no build)",
+  "owner": "human_sponsor",
+  "repository": "bstBizEra/badf",
+  "demand": "BADF-DEM-0145",
+  "objective": "Close #363. Land the read-only research that assesses the AET against the operator-supplied MAS-STD production standard as docs/governance/MAS_STD_GAP_ANALYSIS.md: a clause-by-clause rating, doctrine conflicts with adopt/adapt/reject recommendations, a mapping onto AET-B S4/S5 and AET-C/D/E, a sequenced roadmap of candidate work packages, and external verification of OTel GenAI, MCP, A2A and OPA. It grants no authority and opens no rung. Carry the WP-2026-0159 reconcile.",
+  "business_value": "Gives the operator a measured, sourced reading of how far the AET is from a production agentic standard, which gaps are real defects in BADF's own records (ledger schema drift, unenforced budgets, registry non-conformance), and which parts of the standard BADF should reject. The next upgrade decision can then rest on evidence instead of convention.",
+  "in_scope": [
+    "docs/governance/MAS_STD_GAP_ANALYSIS.md (PROPOSED research record)",
+    "carry the WP-2026-0159 reconcile, written by `badf_gate.py reconcile WP-2026-0159` (CLOSED, landed_as b9936e5, composition_verified true)"
+  ],
+  "out_of_scope": [
+    "fixing any finding the report records (ledger schema drift, unenforced max_elapsed_minutes/max_cost, tool-registry conformance): each is a separate candidate work package needing its own authorization",
+    "badf_gate.py, schemas, registries, seats, authority matrix, lifecycle, AGENTS.md, docs/14 -- unchanged",
+    "opening any AET rung, or setting any benchmark threshold -- HUMAN_REQUIRED, operator's own channel (AET-I13)",
+    "the G07 self-dossier -- assembly is HUMAN_REQUIRED; declared, not worked around"
+  ],
+  "target_gate": "G07",
+  "change_class": "C1",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "AC-1: every MAS-STD clause (10 pillars, the handoff contract and its 3 rules, 8 checklist items) carries a rating, and every repository claim is labelled OBSERVED, INFERRED or UNVERIFIED",
+    "AC-2: every check the research ran is reported PASS, FAIL, BLOCKED or NOT_RUN with its cause",
+    "AC-3: the report states it grants no authority and opens no rung, and every roadmap id is a placeholder",
+    "AC-4: badf_gate.py repo PASS; composed suite green in CI"
+  ],
+  "permissions": [
+    "write: bstBizEra/badf via PR"
+  ],
+  "tests": [
+    "tests/test_badf_no_committed_conflict_markers.py",
+    "tests/test_badf_schema_drift.py",
+    "tests/test_badf_work_package_schema_extension.py",
+    "tests/test_badf_integrity.py"
+  ],
+  "evidence": [
+    "ledger-schema probe: check_schema refuses an AUTHORITY_CHECKED event (recorded in the report, section 7)",
+    "full-history run at b9936e5: repo PASS; unittest Ran 1332, OK (skipped=26)",
+    "repo PASS",
+    "composition record + CI compose composition: CURRENT and suite OK"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "revert the squash commit via PR"
+  },
+  "execution_budget": {
+    "max_attempts": 3
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "CREDENTIAL_EXPOSURE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED"
+  ],
+  "status": "IN_PROGRESS",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "b9936e591530a74f919a86c80934b575c3a231e3"
+  },
+  "expected_surfaces": {
+    "files": [
+      "docs/governance/MAS_STD_GAP_ANALYSIS.md",
+      "badf/demands/BADF-DEM-0145.json",
+      "work/WP-2026-0159/work-package.json"
+    ]
+  },
+  "note": "C1: documentation and records only. No gate, schema, authority, seat, registry or tool change, and no enforcement surface is touched. The report is PROPOSED; review acceptance of it opens nothing (docs/14 section 8, AET-I13). Merge authority: none given for this work package at the time of writing; the PR waits for the operator."
+}
