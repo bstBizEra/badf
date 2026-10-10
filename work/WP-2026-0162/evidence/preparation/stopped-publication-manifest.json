@@ -1,0 +1,11 @@
+{
+  "status": "EVIDENCE_ONLY",
+  "controller_baseline": "b9936e591530a74f919a86c80934b575c3a231e3",
+  "archive_commit": "62ec8957684ba77bb11632b9ff5ddb072547c587",
+  "archive_bundle_sha256": "cc6d18047350df5d49027371a301b255d0b703308c83a4010479e3ecb91ab1ad",
+  "archive_bundle_git_blob": "2267195ea2b8736666265f7e4d983bbd28d560d3",
+  "archive_source_diff_sha256": "d01a157c18ae74080bd295845a62a25c386b8b17e3707c1534c2e25a2e077760",
+  "archive_source_diff_git_blob": "ce157de4a3a7cc2915406935e631bd1a22b91abf",
+  "actual_stopped_head": "a8dd82f8f4860c5d08cba102d7790fc44b4da649",
+  "not_a_changed_framework_pin": true
+}

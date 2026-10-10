@@ -1,0 +1,19 @@
+{
+  "recorded_at": "2026-10-10T21:24:10Z",
+  "work_package": "WP-2026-0162",
+  "status": "DRAFT",
+  "human_authorization": "PENDING",
+  "claim_url": "https://github.com/bstBizEra/badf/issues/365#issuecomment-6102273738",
+  "work_package_digest": "sha256:d2737b0bfbbd778e436e6e73df06ef6daaa899067edf3296dfbb7714b84a294a",
+  "remaining_plan_digest": "sha256:eea58e99b568bfb989d94690076ed0ddb17f40d60ad0e3273ab52e8c6950b196",
+  "demand_authorized_record_digest": "sha256:1cd4ff13829b70a60a1cb9e0489b97fc69a9f8354e7d8eea3e6d34a925a81321",
+  "original_blocked_handoff_digest": "sha256:685da4b5392eaceee00f6f68410964b817254cb2b752b2b69f0d7e886f234021",
+  "archive_head": "a8dd82f8f4860c5d08cba102d7790fc44b4da649",
+  "archive_bundle_blob": "2267195ea2b8736666265f7e4d983bbd28d560d3",
+  "archive_evidence_commit": "62ec8957684ba77bb11632b9ff5ddb072547c587",
+  "accountable_owner": "Vily / Mr. Ounekhamvilay PHIMMASONE (@pvily), human session operator and accountable work owner",
+  "change_class": "C3",
+  "policy_epoch": "BADF-2026-08-25",
+  "budget_interpretation": "Initial pass plus at most4 globally counted corrective attempts; five total; strict STOP before sixth",
+  "authorization_not_borrowed": true
+}

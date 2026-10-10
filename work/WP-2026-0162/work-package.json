@@ -1,0 +1,120 @@
+{
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0162",
+  "title": "Complete allocator compatibility and composed verification from stopped candidate",
+  "owner": "Vily / Mr. Ounekhamvilay PHIMMASONE (@pvily), human session operator and accountable work owner",
+  "demand": "BADF-DEM-0147",
+  "repository": "bstBizEra/badf",
+  "objective": "Complete unchanged Issue365 allocator scope from the preserved unaccepted candidate, with exact prospective human authority and a WP-wide budget; retain original stopped history.",
+  "business_value": "Prevent ID collisions, target overwrite and invalid admission records while retaining existing human authority and offline evidence controls.",
+  "in_scope": [
+    "Inherit and challenge the exact unaccepted allocator source and evidence from stopped WP0161",
+    "Complete original Task6 receipt-version/provenance compatibility and documentation obligations",
+    "Complete original Task7 whole-candidate review, actual repo/full-suite/composition verification and governed acceptance preparation",
+    "Bounded fixes within inherited approved file map only, counted globally"
+  ],
+  "out_of_scope": [
+    "Runtime/product/release/deployment/G00 approval",
+    "Global allocator service or new network dependencies",
+    "Placeholder ledger, monkeypatch or unrelated PR merge",
+    "Separate Issue #366 demand-status correction"
+  ],
+  "target_gate": "G07",
+  "change_class": "C3",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "No landed-only fallback; explicit allocation consistent across all outputs",
+    "All malformed, conflicting, incomplete or stale inputs refuse before target writes",
+    "Same-ID/sibling-worktree and distinct-ID/same-target contenders cannot both succeed",
+    "Recovery retains evidence and foreign changes",
+    "Existing AGENTS preserved and G00 remains unsigned HUMAN_REQUIRED",
+    "Independent candidate review and composed-result verification under required BADF authority"
+  ],
+  "permissions": [
+    "PROPOSAL ONLY; exact successor-specific human authorization is pending",
+    "Proposed: isolate inherited source and complete named remaining implementation, tests, independent review and evidence under one global budget",
+    "No authorization is borrowed from WP0161; no prior budget compliance, STOP reset, human gate, acceptance, merge, deployment, runtime or credential authority",
+    "Original work/WP-2026-0161 and archived bundle bytes are immutable inherited source/evidence, never writable surfaces or mutation allowances. Any main-relative inherited evidence delta must be disclosed separately for acceptance; it supplies no write authority."
+  ],
+  "tests": [
+    "tests.test_badf_init_allocation",
+    "tests.test_badf_init_reservation",
+    "tests.test_badf_init_transaction",
+    "tests.test_badf_init",
+    "tests.test_badf_instance",
+    "tests.test_badf_demand",
+    "tests.test_badf_instance_validation",
+    "tests.test_badf_schema_drift",
+    "tests.test_badf_intent_docs"
+  ],
+  "evidence": [
+    "New published proposal claim6102273738 and fresh retained105-acquisition sweep/root reconciliation",
+    "Original DEM0147 export and authorization retained unchanged; new successor-specific decision pending",
+    "Exact stopped bundle/head, ten conservatively recordedretrytransitions/minimumsixsubstantive, immutableSTOP/BLOCKED",
+    "Existing Tasks1\u20135 independent engineering reviews and actual source-bound tests; final composed/wholecandidate/Windows acceptance pending"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "Before landing, abandon isolated candidate while preserving claim/evidence; after landing, reviewed revert under existing controls. Intake recovery must verify ownership/bytes and retain failed receipt/reservation; never recursively remove changed foreign data."
+  },
+  "status": "DRAFT",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "b9936e591530a74f919a86c80934b575c3a231e3"
+  },
+  "expected_surfaces": {
+    "files": [
+      "scripts/badf_init_allocation.py",
+      "scripts/badf_gate.py",
+      "schemas/init-allocation.schema.json",
+      "schemas/init-reservation.schema.json",
+      "schemas/init-receipt.schema.json",
+      "tests/_init_allocation.py",
+      "tests/test_badf_init_allocation.py",
+      "tests/test_badf_init_reservation.py",
+      "tests/test_badf_init_transaction.py",
+      "tests/_scratch.py",
+      "tests/test_badf_init.py",
+      "tests/test_badf_instance.py",
+      "tests/test_badf_demand.py",
+      "tests/test_badf_instance_validation.py",
+      "tests/test_badf_schema_drift.py",
+      "tests/test_badf_intent_docs.py",
+      "examples/init-allocation.json",
+      "docs/governance/INIT_ALLOCATION.md",
+      "README.md",
+      "docs/governance/PROJECT_INSTANCE.md",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "badf/demands/BADF-DEM-0147.json"
+    ],
+    "discovery_allowance": []
+  },
+  "source_baselines": {
+    "requirements": "https://github.com/bstBizEra/badf/issues/365; unchanged frozen body SHA630164ba87c1beee563e859a367acaf4b4da891f655fc67badaa2f4df1a786fc",
+    "architecture": "Original exact plan SHA4cedbb88f063a30beaf26fead8ab432e7edfb3b05ffd04bcb73c33b48c560205; successor remaining-plan.md",
+    "solution": "Inherited unaccepted archive head a8dd82f8f4860c5d08cba102d7790fc44b4da649; execution/source head19c33c0; original main b9936e5"
+  },
+  "execution_budget": {
+    "max_attempts": 5
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "BASELINE_STALE",
+    "CREDENTIAL_EXPOSURE",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED",
+    "PRODUCTION_INSTABILITY"
+  ],
+  "authority_requirement": {
+    "required_roles": [
+      "human_sponsor",
+      "security_authority",
+      "release_authority",
+      "service_owner"
+    ],
+    "derived_from": "C3"
+  }
+}

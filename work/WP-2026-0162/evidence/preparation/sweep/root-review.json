@@ -1,0 +1,27 @@
+{
+  "actual_reviewer": "/root",
+  "recorded_at": "2026-10-10T21:17:35Z",
+  "decision": "ACCEPT_FOR_PUBLISHED_SUCCESSOR_CLAIM",
+  "candidate": "WP-2026-0162",
+  "command": [
+    "python3",
+    "/workspace/scratch/73a88e00b13c/admission-checkouts/badf/scripts/badf_id_sweep.py",
+    "--from-dir",
+    "/workspace/scratch/73a88e00b13c/admission-evidence/successor-sweep"
+  ],
+  "exit_code": 0,
+  "report_digest": "sha256:c3230b1ac74e5f2ee4763edec81fb1834b5cb01bfb28c3fc96c96e67ae4773f9",
+  "manifest_digest": "sha256:857625477856034212da11da26d17c97cbbebbd18652e15ed84def19e922e697",
+  "raw_acquisitions": 105,
+  "reconciliation": [
+    "Script NEXT_FREE0161 is rejected: approved-channel direct root GitHub retrieval confirms existing published binding comment6100610515, same-proposal21 currentthreadmentions and occupied stopped localworktree.",
+    "0162 remote-visible five dumps contain zero literals; localoccurrences classified retained synthetic fixture/disclosure/patches, not allocations.",
+    "Fresh root, task5, task5reviewer, authorityreview, task2reviewer and sweepseat ZERO confirmations received; availablehistoricalotherparticipants disclosedzero in records; unavailableTask1 historicalactors are explicitnoncoverage, not fabricatedfreshresponses.",
+    "API hashes/recomputed dump consistency alone do not authenticate source; actual approved GitHubconnector acquisitions/knownclaim root retrieval are retained.",
+    "Commentcollection scope exactly prescribedopen/binding227 plusallclosedunmergedPRs; no allclosedthread globalcommentproof is claimed."
+  ],
+  "non_coverage": [
+    "Independentclones, invisible/unpushedworkoutsideobservedcommoncheckouts, removals/races/editsaftercapture and priorclosedcommentthreads outsideprotocolscope are notcovered.",
+    "Claim publication is proposal allocation only; no successor execution, budgetreset, humanauthorization or gates."
+  ]
+}
