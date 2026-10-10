@@ -1,0 +1,47 @@
+{
+  "status": "BLOCKED",
+  "reason": "BUDGET_EXHAUSTED",
+  "recorded_at": "2026-10-10T21:19:50Z",
+  "source_commit": "19c33c04ff9c473678f8747a1859cf1bcdeb306e",
+  "source_content_tree": "7c544565f1dc9dd310113171f7c16389f57af71c",
+  "original_framework_base": "b9936e591530a74f919a86c80934b575c3a231e3",
+  "original_global_budget": 5,
+  "minimum_substantive_retries": 6,
+  "conservatively_recorded_retries": 10,
+  "exhaustive_count_established": false,
+  "stopped_ledger_digest": "sha256:1c0d9daa64332be42bf6b8a8305ff17c45dccc5311a53ee8f709d2c540a3d473",
+  "completed_engineering_slices": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "task5_review": "reviews/REV-05.json",
+  "task5_green": "evidence/implementation/task5/green.json",
+  "task5_passed": {
+    "tests": 33,
+    "seconds": 379.754,
+    "output_boundaries": 110,
+    "skips": 0
+  },
+  "pending": [
+    "Task6 pinned receipt-version compatibility/retained allocation contract and caller documentation",
+    "Task7 whole-candidate independent challenge; actual composed repo and full discovery checks",
+    "Windows execution proof or explicit required-authority disposition",
+    "Separate C3/G07 acceptance and merge; later BizTrust pin reconciliation, fresh intake allocation and Issue366 resolution/adjudication, G00 decisions"
+  ],
+  "successor_claim": "https://github.com/bstBizEra/badf/issues/365#issuecomment-6102273738",
+  "successor": "WP-2026-0162",
+  "successor_authorized": false,
+  "no_approvals_implied": [
+    "prior budget compliance",
+    "C3/G07",
+    "merge",
+    "framework pin",
+    "BizTrust G00",
+    "runtime",
+    "release",
+    "deployment"
+  ]
+}

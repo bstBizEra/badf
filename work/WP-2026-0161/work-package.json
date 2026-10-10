@@ -1,0 +1,114 @@
+{
+  "schema_version": "1.0.0",
+  "id": "WP-2026-0161",
+  "title": "Require reviewed published allocation before BADF project intake",
+  "owner": "Vily / Mr. Ounekhamvilay PHIMMASONE (@pvily), human session operator and accountable work owner",
+  "demand": "BADF-DEM-0147",
+  "repository": "bstBizEra/badf",
+  "objective": "Refuse conflicting or unverified intake allocations before target mutation; consume an explicit published and independently reconciled WP claim.",
+  "business_value": "Prevent ID collisions, target overwrite and invalid admission records while retaining existing human authority and offline evidence controls.",
+  "in_scope": [
+    "Explicit intake allocation CLI and bound evidence contract",
+    "Offline sweep validation and independent reconciliation",
+    "Shared Git common-directory reservation, target/registry coordination and conservative recovery",
+    "Caller/schema/docs updates and negative-first tests"
+  ],
+  "out_of_scope": [
+    "Runtime/product/release/deployment/G00 approval",
+    "Global allocator service or new network dependencies",
+    "Placeholder ledger, monkeypatch or unrelated PR merge",
+    "Separate Issue #366 demand-status correction"
+  ],
+  "target_gate": "G07",
+  "change_class": "C3",
+  "data_classification": "internal",
+  "acceptance_criteria": [
+    "No landed-only fallback; explicit allocation consistent across all outputs",
+    "All malformed, conflicting, incomplete or stale inputs refuse before target writes",
+    "Same-ID/sibling-worktree and distinct-ID/same-target contenders cannot both succeed",
+    "Recovery retains evidence and foreign changes",
+    "Existing AGENTS preserved and G00 remains unsigned HUMAN_REQUIRED",
+    "Independent candidate review and composed-result verification under required BADF authority"
+  ],
+  "permissions": [
+    "Authorized: isolated branch edits implementing the exact reviewed allocator plan, contracts, callers, documentation and tests",
+    "Authorized: negative-first testing, independent review and acceptance/merge evidence preparation",
+    "No merge, release, deploy, runtime, human-role impersonation or gate approval authority",
+    "Same-session human decision: https://github.com/bstBizEra/badf/issues/365#issuecomment-6101568587"
+  ],
+  "tests": [
+    "Negative-first allocator/intake evidence, drift, path/sentinel, concurrency and failure-recovery tests",
+    "Positive explicit-allocation/AGENTS/G00 hold integration tests",
+    "python3 scripts/badf_gate.py repo on composed candidate",
+    "python3 -m unittest discover -s tests -p 'test_*.py' on composed candidate"
+  ],
+  "evidence": [
+    "Issue365 frozen body and exact exported demand",
+    "Published claim6100610515 and retained sweep inputs/report",
+    "Independent source/body/allocation design review",
+    "Future RED/GREEN, composed candidate checks and required approvals; NOT_RUN at proposal stage"
+  ],
+  "rollback": {
+    "reversible": true,
+    "method": "Before landing, abandon isolated candidate while preserving claim/evidence; after landing, reviewed revert under existing controls. Intake recovery must verify ownership/bytes and retain failed receipt/reservation; never recursively remove changed foreign data."
+  },
+  "status": "BLOCKED",
+  "external_target": {
+    "repository": "bstBizEra/badf",
+    "branch": "main",
+    "base_revision": "b9936e591530a74f919a86c80934b575c3a231e3"
+  },
+  "expected_surfaces": {
+    "files": [
+      "scripts/badf_init_allocation.py",
+      "scripts/badf_gate.py",
+      "schemas/init-allocation.schema.json",
+      "schemas/init-reservation.schema.json",
+      "schemas/init-receipt.schema.json",
+      "tests/_init_allocation.py",
+      "tests/test_badf_init_allocation.py",
+      "tests/test_badf_init_reservation.py",
+      "tests/test_badf_init_transaction.py",
+      "tests/_scratch.py",
+      "tests/test_badf_init.py",
+      "tests/test_badf_instance.py",
+      "tests/test_badf_demand.py",
+      "tests/test_badf_instance_validation.py",
+      "tests/test_badf_schema_drift.py",
+      "tests/test_badf_intent_docs.py",
+      "examples/init-allocation.json",
+      "docs/governance/INIT_ALLOCATION.md",
+      "README.md",
+      "docs/governance/PROJECT_INSTANCE.md",
+      "docs/governance/GITHUB_CONTROL_PLANE.md",
+      "badf/demands/BADF-DEM-0147.json"
+    ]
+  },
+  "source_baselines": {
+    "requirements": "https://github.com/bstBizEra/badf/issues/365; retained allocator-source-body.txt",
+    "architecture": "work/WP-2026-0161/evidence/authorization/allocator-implementation-plan.md",
+    "solution": "b9936e591530a74f919a86c80934b575c3a231e3"
+  },
+  "execution_budget": {
+    "max_attempts": 5
+  },
+  "stop_conditions": [
+    "AUTHORITY_CONFLICT",
+    "BASELINE_STALE",
+    "CREDENTIAL_EXPOSURE",
+    "UNEXPECTED_DESTRUCTIVE_SCOPE",
+    "POLICY_BYPASS",
+    "EVIDENCE_CORRUPTION",
+    "BUDGET_EXHAUSTED",
+    "PRODUCTION_INSTABILITY"
+  ],
+  "authority_requirement": {
+    "required_roles": [
+      "human_sponsor",
+      "security_authority",
+      "release_authority",
+      "service_owner"
+    ],
+    "derived_from": "C3"
+  }
+}
